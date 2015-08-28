@@ -30,10 +30,10 @@ var Logger = require('../lib/logger.js');
 var config = require('../config.js');
 var StatusMessage = require('../lib/apiclasses.js').StatusMessage;
 
-function stateIsClean() {
-  assert.equal(v8debugapi.numBreakpoints_(), 0,
+function stateIsClean(api) {
+  assert.equal(api.numBreakpoints_(), 0,
     'there should be no breakpoints active');
-  assert.equal(v8debugapi.numListeners_(), 0,
+  assert.equal(api.numListeners_(), 0,
     'there should be no listeners active');
   return true;
 }
@@ -41,26 +41,28 @@ function stateIsClean() {
 describe('v8debugapi', function() {
   config.cwd = process.cwd() + '/test';
   var logger = new Logger(config.logLevel);
-  assert.ok(v8debugapi.init(logger, config), 'should return true');
 
-  beforeEach(function() { assert(stateIsClean()); });
-  afterEach(function() { assert(stateIsClean()); });
+  var api = v8debugapi.create(logger, config);
+  assert.ok(api, 'should be able to create the api');
+
+  beforeEach(function() { assert(stateIsClean(api)); });
+  afterEach(function() { assert(stateIsClean(api)); });
 
   it('should be able to set and remove breakpoints', function() {
     // clone a clean breakpointInFoo
     var bp = {id: breakpointInFoo.id, location: breakpointInFoo.location};
-    var result = v8debugapi.set(bp);
+    var result = api.set(bp);
     assert.ok(result);
-    assert.equal(v8debugapi.numBreakpoints_(), 1);
-    v8debugapi.clear(bp);
+    assert.equal(api.numBreakpoints_(), 1);
+    api.clear(bp);
   });
 
   it('should accept breakpoint with ids 0 as a valid breakpoint',
     function() {
       var bp = { id: 0, location: breakpointInFoo.location};
-      var result = v8debugapi.set(bp);
+      var result = api.set(bp);
       assert.ok(result);
-      v8debugapi.clear(bp);
+      api.clear(bp);
     });
 
 
@@ -76,7 +78,7 @@ describe('v8debugapi', function() {
 
     badBreakpoints.forEach(function(bp) {
       it('should reject breakpoint ' + bp.id, function() {
-        var result = v8debugapi.set(bp);
+        var result = api.set(bp);
         assert(result === false, 'should return false');
         assert.ok(bp.status);
         assert.ok(bp.status instanceof StatusMessage);
@@ -88,13 +90,13 @@ describe('v8debugapi', function() {
       require('./fixtures/a/hello.js');
       require('./fixtures/b/hello.js');
       var bp = {id: 'ambiguous', location: {line: 1, path: 'hello.js'}};
-      var result = v8debugapi.set(bp);
+      var result = api.set(bp);
       assert(result === false);
       assert.ok(bp.status);
       assert.ok(bp.status instanceof StatusMessage);
       assert.ok(bp.status.isError);
       assert(bp.status.description.format ===
-        v8debugapi.messages.SOURCE_FILE_AMBIGUOUS);
+        api.messages.SOURCE_FILE_AMBIGUOUS);
     });
   });
 
@@ -108,9 +110,9 @@ describe('v8debugapi', function() {
             location: breakpointInFoo.location,
             condition: expr
           };
-          var result = v8debugapi.set(bp);
+          var result = api.set(bp);
           test(result);
-          v8debugapi.clear(bp);
+          api.clear(bp);
         });
       });
     });
@@ -168,11 +170,11 @@ describe('v8debugapi', function() {
 
     breakpoints.forEach(function(bp) {
       it('should handle breakpoint as ' + bp.location.path, function(done) {
-        var result = v8debugapi.set(bp);
+        var result = api.set(bp);
         assert.ok(result);
-        v8debugapi.wait(bp, function(err) {
+        api.wait(bp, function(err) {
           assert.ifError(err);
-          v8debugapi.clear(bp);
+          api.clear(bp);
           done();
         });
         process.nextTick(function() {foo(7);});
@@ -185,11 +187,11 @@ describe('v8debugapi', function() {
     it('should be possible to wait on a breakpoint', function(done) {
       // clone a clean breakpointInFoo
       var bp = {id: breakpointInFoo.id, location: breakpointInFoo.location};
-      var result = v8debugapi.set(bp);
+      var result = api.set(bp);
       assert.ok(result);
-      v8debugapi.wait(bp, function(err) {
+      api.wait(bp, function(err) {
         assert.ifError(err);
-        v8debugapi.clear(bp);
+        api.clear(bp);
         done();
       });
       process.nextTick(function() {foo(1);});
@@ -198,9 +200,9 @@ describe('v8debugapi', function() {
     it('should capture state', function(done) {
       // clone a clean breakpointInFoo
       var bp  = {id: breakpointInFoo.id, location: breakpointInFoo.location};
-      var result = v8debugapi.set(bp);
+      var result = api.set(bp);
       assert.ok(result);
-      v8debugapi.wait(bp, function(err) {
+      api.wait(bp, function(err) {
         assert.ifError(err);
         assert.ok(bp.stackFrames);
         assert.ok(bp.variableTable);
@@ -210,7 +212,7 @@ describe('v8debugapi', function() {
         assert.equal(topFrame['function'], 'foo');
         assert.equal(topFrame.arguments[0].name, 'n');
         assert.equal(topFrame.arguments[0].value, '2');
-        v8debugapi.clear(bp);
+        api.clear(bp);
         done();
       });
       process.nextTick(function() {foo(2);});
@@ -223,9 +225,9 @@ describe('v8debugapi', function() {
         location: breakpointInFoo.location,
         expressions: ['process']
       };
-      var result = v8debugapi.set(bp);
+      var result = api.set(bp);
       assert.ok(result);
-      v8debugapi.wait(bp, function(err) {
+      api.wait(bp, function(err) {
         assert.ifError(err);
         assert.ok(bp.stackFrames);
         assert.ok(bp.variableTable);
@@ -240,7 +242,7 @@ describe('v8debugapi', function() {
         assert.equal(watch.name, 'process');
         assert.ok(watch.varIndex);
 
-        v8debugapi.clear(bp);
+        api.clear(bp);
         done();
       });
       process.nextTick(function() {foo(3);});
@@ -253,9 +255,9 @@ describe('v8debugapi', function() {
         location: breakpointInFoo.location,
         expressions: [':)', 'process()', 'process=this']
       };
-      var result = v8debugapi.set(bp);
+      var result = api.set(bp);
       assert.ok(result);
-      v8debugapi.wait(bp, function(err) {
+      api.wait(bp, function(err) {
         assert.ifError(err);
         assert.ok(bp.stackFrames);
         assert.ok(bp.variableTable);
@@ -266,7 +268,7 @@ describe('v8debugapi', function() {
           assert(expr.status && expr.status.isError);
         }
 
-        v8debugapi.clear(bp);
+        api.clear(bp);
         done();
       });
       process.nextTick(function() {foo(3);});
@@ -279,9 +281,9 @@ describe('v8debugapi', function() {
         location: breakpointInFoo.location,
         condition: 'n===5'
       };
-      var result = v8debugapi.set(bp);
+      var result = api.set(bp);
       assert.ok(result);
-      v8debugapi.wait(bp, function(err) {
+      api.wait(bp, function(err) {
         assert.ifError(err);
         assert.ok(bp.stackFrames);
 
@@ -289,7 +291,7 @@ describe('v8debugapi', function() {
         assert.equal(topFrame['function'], 'foo');
         assert.equal(topFrame.arguments[0].name, 'n');
         assert.equal(topFrame.arguments[0].value, '5');
-        v8debugapi.clear(bp);
+        api.clear(bp);
         done();
       });
       process.nextTick(function() {foo(4); foo(5);});
@@ -304,9 +306,9 @@ describe('v8debugapi', function() {
           condition: 'if n == 3 then true else false'
         };
         var tt = require('./fixtures/coffee/transpile');
-        var result = v8debugapi.set(bp);
+        var result = api.set(bp);
         assert.ok(result);
-        v8debugapi.wait(bp, function(err) {
+        api.wait(bp, function(err) {
           assert.ifError(err);
           assert.ok(bp.stackFrames);
 
@@ -314,7 +316,7 @@ describe('v8debugapi', function() {
           assert.equal(topFrame['function'], 'foo');
           assert.equal(topFrame.arguments[0].name, 'n');
           assert.equal(topFrame.arguments[0].value, '3');
-          v8debugapi.clear(bp);
+          api.clear(bp);
           done();
         });
         process.nextTick(function() {tt.foo(2); tt.foo(3);});
@@ -329,9 +331,9 @@ describe('v8debugapi', function() {
             expressions: ['if n == 3 then Math.PI * n else n']
           };
         var tt = require('./fixtures/coffee/transpile');
-        var result = v8debugapi.set(bp);
+        var result = api.set(bp);
         assert.ok(result);
-        v8debugapi.wait(bp, function(err) {
+        api.wait(bp, function(err) {
           assert.ifError(err);
           assert.ok(bp.stackFrames);
           assert.ok(bp.variableTable);
@@ -342,7 +344,7 @@ describe('v8debugapi', function() {
             assert(expr.value === String(Math.PI * 3));
           }
 
-          v8debugapi.clear(bp);
+          api.clear(bp);
           done();
         });
         process.nextTick(function() {tt.foo(3);});
@@ -357,9 +359,9 @@ describe('v8debugapi', function() {
             expressions: [':)', 'n n, n', 'process=this', '((x) -> x x) n', 'return']
           };
         var tt = require('./fixtures/coffee/transpile');
-        var result = v8debugapi.set(bp);
+        var result = api.set(bp);
         assert.ok(result);
-        v8debugapi.wait(bp, function(err) {
+        api.wait(bp, function(err) {
           assert.ifError(err);
           assert.ok(bp.stackFrames);
           assert.ok(bp.variableTable);
@@ -370,7 +372,7 @@ describe('v8debugapi', function() {
             assert(expr.status && expr.status.isError);
           }
 
-          v8debugapi.clear(bp);
+          api.clear(bp);
           done();
         });
         process.nextTick(function() {tt.foo(3);});
@@ -383,15 +385,15 @@ describe('v8debugapi', function() {
           location: breakpointInFoo.location,
           condition: 'n===447'
         };
-        assert.ok(v8debugapi.set(bp));
-        v8debugapi.wait(bp, function() {
+        assert.ok(api.set(bp));
+        api.wait(bp, function() {
           assert(false, 'should not reach here');
         });
         process.nextTick(function() {
           foo(6);
           process.nextTick(function() {
-            v8debugapi.clear(bp);
-            assert(stateIsClean());
+            api.clear(bp);
+            assert(stateIsClean(api));
             done();
           });
         });
@@ -400,13 +402,13 @@ describe('v8debugapi', function() {
       it('should be possible to set multiple breakpoints at once', function() {
         var bp1 = { id: 'bp1', location: { path: __filename, line: 4 }};
         var bp2 = { id: 'bp2', location: { path: __filename, line: 5 }};
-        assert.ok(v8debugapi.set(bp1));
-        assert.ok(v8debugapi.set(bp2));
-        assert.equal(v8debugapi.numBreakpoints_(), 2);
-        v8debugapi.clear(bp1);
-        assert.equal(v8debugapi.numBreakpoints_(), 1);
-        v8debugapi.clear(bp2);
-        assert.equal(v8debugapi.numBreakpoints_(), 0);
+        assert.ok(api.set(bp1));
+        assert.ok(api.set(bp2));
+        assert.equal(api.numBreakpoints_(), 2);
+        api.clear(bp1);
+        assert.equal(api.numBreakpoints_(), 1);
+        api.clear(bp2);
+        assert.equal(api.numBreakpoints_(), 0);
       });
 
   });
