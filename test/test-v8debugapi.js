@@ -240,7 +240,7 @@ describe('v8debugapi', function() {
 
         var watch = bp.evaluatedExpressions[0];
         assert.equal(watch.name, 'process');
-        assert.ok(watch.varIndex);
+        assert.ok(watch.varTableIndex);
 
         api.clear(bp);
         done();
