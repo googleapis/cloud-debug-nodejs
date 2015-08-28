@@ -22,7 +22,7 @@
 var config = require('./config.js');
 var Logger = require('./lib/logger.js');
 var logger = new Logger(config.logLevel, '@google/cloud-debug');
-var agent = require('./lib/debug/debuglet.js');
+var agent = require('./lib/debuglet.js');
 
 // exports is populated by the agent
 module.exports = {};
