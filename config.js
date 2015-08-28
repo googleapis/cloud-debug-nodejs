@@ -17,10 +17,10 @@
 
 // Default configuration
 module.exports = {
-  enabled: process.env.GCLOUD_DEBUG_ENABLED || false,
+  enabled: process.env.GCLOUD_DEBUG_DISABLED || true,
   workingDirectory: process.cwd(),
   // Log levels: 0-disabled,1-error,2-warn,3-info,4-debug
-  logLevel: process.env.GCLOUD_INSIGHTS_LOGLEVEL || 1,
+  logLevel: process.env.GCLOUD_DEBUG_LOGLEVEL || 1,
   // How frequently should the list of breakpoints be refreshed from the
   // cloud debug server
   breakpointUpdateIntervalSec: 10,

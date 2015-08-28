@@ -20,35 +20,11 @@
 // application. The path-length here needs to be minimal.
 
 var config = require('./config.js');
-var agents = [];
-var agent;
+var Logger = require('./lib/logger.js');
+var logger = new Logger(config.logLevel, '@google/cloud-debug');
+var agent = require('./lib/debug/debuglet.js');
 
-// exports is populated by the agents below
+// exports is populated by the agent
 module.exports = {};
+agent.start(config, logger, module.exports);
 
-if (config.debug.enabled) {
-  agent = require('./lib/debug/debuglet.js');
-  agents.push(agent);
-}
-
-if (config.trace.enabled) {
-  agent = require('./lib/trace/agent.js');
-  agents.push(agent);
-}
-
-if (config.profile.enabled) {
-  agent = require('./lib/profile/agent.js');
-  agents.push(agent);
-}
-
-// If we have at least one agent active
-if (agents.length > 0) {
-  // First activate a logger
-  var Logger = require('./lib/logger.js');
-  var logger = new Logger(config.logLevel, 'gcloud-insights');
-
-  agents.forEach(function(a) {
-    a.start(config, logger, module.exports);
-  });
-
-}
