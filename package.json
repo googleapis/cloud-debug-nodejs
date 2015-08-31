@@ -56,11 +56,11 @@
     "proxyquire": "^1.4.0"
   },
   "dependencies": {
+    "@google/cloud-diagnostics-common": "^0.1.1",
     "acorn": "^2.3.0",
     "coffee-script": "^1.9.3",
     "findit": "^2.0.0",
     "google-auth-library": "^0.9.5",
-    "moment": "^2.10.6",
     "request": "^2.61.0",
     "source-map": "^0.4.4"
   }

@@ -22,11 +22,15 @@ var proxyquire = require('proxyquire');
 
 // require DebugletAPI while stubbing auth to bypass authentication
 //
+var utils = {
+  // return vanilla request to bypass authentication
+  authorizedRequestFactory: function(/*scopes*/) { return request; },
+  getProjectNumber: function(callback) { callback(null, 'project123'); }
+};
 var DebugletApi = proxyquire('../lib/debugletapi.js', {
-  './utils.js': {
-    // return vanilla request to bypass authentication
-    authorizedRequestFactory: function(/*scopes*/) { return request; },
-    getProjectNumber: function(callback) { callback(null, 'project123'); }
+  '@google/cloud-diagnostics-common': {
+    logger: null,
+    utils: utils
   }
 });
 

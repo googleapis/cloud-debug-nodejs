@@ -20,8 +20,8 @@
 // application. The path-length here needs to be minimal.
 
 var config = require('./config.js');
-var Logger = require('./lib/logger.js');
-var logger = new Logger(config.logLevel, '@google/cloud-debug');
+var logger = require('@google/cloud-diagnostics-common').logger.create(
+  config.logLevel, '@google/cloud-debug');
 var agent = require('./lib/debuglet.js');
 
 // exports is populated by the agent
