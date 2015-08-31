@@ -26,7 +26,7 @@ var breakpointInFoo = {
 
 var assert = require('assert');
 var v8debugapi = require('../lib/v8debugapi.js');
-var Logger = require('@google/cloud-diagnostics-common').logger;
+var logModule = require('@google/cloud-diagnostics-common').logger;
 var config = require('../config.js');
 var StatusMessage = require('../lib/apiclasses.js').StatusMessage;
 
@@ -40,7 +40,7 @@ function stateIsClean(api) {
 
 describe('v8debugapi', function() {
   config.cwd = process.cwd() + '/test';
-  var logger = Logger.create(config.logLevel);
+  var logger = logModule.create(config.logLevel);
 
   var api = v8debugapi.create(logger, config);
   assert.ok(api, 'should be able to create the api');

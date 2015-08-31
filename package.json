@@ -56,7 +56,7 @@
     "proxyquire": "^1.4.0"
   },
   "dependencies": {
-    "@google/cloud-diagnostics-common": "^0.1.1",
+    "@google/cloud-diagnostics-common": "^0.2.0",
     "acorn": "^2.3.0",
     "coffee-script": "^1.9.3",
     "findit": "^2.0.0",
