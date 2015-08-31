@@ -48,21 +48,25 @@ describe('v8debugapi', function() {
   beforeEach(function() { assert(stateIsClean(api)); });
   afterEach(function() { assert(stateIsClean(api)); });
 
-  it('should be able to set and remove breakpoints', function() {
+  it('should be able to set and remove breakpoints', function(done) {
     // clone a clean breakpointInFoo
     var bp = {id: breakpointInFoo.id, location: breakpointInFoo.location};
-    var result = api.set(bp);
-    assert.ok(result);
-    assert.equal(api.numBreakpoints_(), 1);
-    api.clear(bp);
+    api.set(bp, function(err) {
+      assert.ifError(err);
+      assert.equal(api.numBreakpoints_(), 1);
+      api.clear(bp);
+      done();
+    });
   });
 
   it('should accept breakpoint with ids 0 as a valid breakpoint',
-    function() {
+    function(done) {
       var bp = { id: 0, location: breakpointInFoo.location};
-      var result = api.set(bp);
-      assert.ok(result);
-      api.clear(bp);
+      api.set(bp, function(err) {
+        assert.ifError(err);
+        api.clear(bp);
+        done();
+      });
     });
 
 
@@ -77,31 +81,37 @@ describe('v8debugapi', function() {
     ];
 
     badBreakpoints.forEach(function(bp) {
-      it('should reject breakpoint ' + bp.id, function() {
-        var result = api.set(bp);
-        assert(result === false, 'should return false');
-        assert.ok(bp.status);
-        assert.ok(bp.status instanceof StatusMessage);
-        assert.ok(bp.status.isError);
+      it('should reject breakpoint ' + bp.id, function(done) {
+        api.set(bp, function(err) {
+          assert.ok(err, 'should return an error');
+          assert.ok(bp.status);
+          assert.ok(bp.status instanceof StatusMessage);
+          assert.ok(bp.status.isError);
+          done();
+        });
+
       });
     });
 
-    it('should reject breakpoint when filename is ambiguous', function() {
+    it('should reject breakpoint when filename is ambiguous', function(done) {
       require('./fixtures/a/hello.js');
       require('./fixtures/b/hello.js');
       var bp = {id: 'ambiguous', location: {line: 1, path: 'hello.js'}};
-      var result = api.set(bp);
-      assert(result === false);
-      assert.ok(bp.status);
-      assert.ok(bp.status instanceof StatusMessage);
-      assert.ok(bp.status.isError);
-      assert(bp.status.description.format ===
-        api.messages.SOURCE_FILE_AMBIGUOUS);
+      api.set(bp, function(err) {
+        assert.ok(err);
+        assert.ok(bp.status);
+        assert.ok(bp.status instanceof StatusMessage);
+        assert.ok(bp.status.isError);
+        assert(bp.status.description.format ===
+          api.messages.SOURCE_FILE_AMBIGUOUS);
+        done();
+      });
+
     });
   });
 
   function conditionTests(subject, test, expressions) {
-    describe(subject, function() {
+    describe(subject, function(done) {
       expressions.forEach(function(expr) {
         it('should validate breakpoint with condition "'+expr+'"', function() {
           // make a clean copy of breakpointInFoo
@@ -110,14 +120,16 @@ describe('v8debugapi', function() {
             location: breakpointInFoo.location,
             condition: expr
           };
-          var result = api.set(bp);
-          test(result);
-          api.clear(bp);
+          api.set(bp, function(err) {
+            test(err);
+            api.clear(bp);
+            done();
+          });
         });
       });
     });
   }
-  conditionTests('invalid conditions', function(result) { assert(!result); }, [
+  conditionTests('invalid conditions', assert, [
     // syntax errors
     '*',
     'j+',
@@ -145,7 +157,7 @@ describe('v8debugapi', function() {
     'x++',
     '[1, 2, 3, 4, x = 1, x == 1, x === 1]'
   ]);
-  conditionTests('valid conditions', assert, [
+  conditionTests('valid conditions', function(err) { assert.ifError(err); }, [
     null,
     '',
     ';',
@@ -175,14 +187,15 @@ describe('v8debugapi', function() {
 
     breakpoints.forEach(function(bp) {
       it('should handle breakpoint as ' + bp.location.path, function(done) {
-        var result = api.set(bp);
-        assert.ok(result);
-        api.wait(bp, function(err) {
+        api.set(bp, function(err) {
           assert.ifError(err);
-          api.clear(bp);
-          done();
+          api.wait(bp, function(err) {
+            assert.ifError(err);
+            api.clear(bp);
+            done();
+          });
+          process.nextTick(function() {foo(7);});
         });
-        process.nextTick(function() {foo(7);});
       });
     });
   });
@@ -192,35 +205,38 @@ describe('v8debugapi', function() {
     it('should be possible to wait on a breakpoint', function(done) {
       // clone a clean breakpointInFoo
       var bp = {id: breakpointInFoo.id, location: breakpointInFoo.location};
-      var result = api.set(bp);
-      assert.ok(result);
-      api.wait(bp, function(err) {
+      api.set(bp, function(err) {
         assert.ifError(err);
-        api.clear(bp);
-        done();
+        api.wait(bp, function(err) {
+          assert.ifError(err);
+          api.clear(bp);
+          done();
+        });
+        process.nextTick(function() {foo(1);});
       });
-      process.nextTick(function() {foo(1);});
+
     });
 
     it('should capture state', function(done) {
       // clone a clean breakpointInFoo
       var bp  = {id: breakpointInFoo.id, location: breakpointInFoo.location};
-      var result = api.set(bp);
-      assert.ok(result);
-      api.wait(bp, function(err) {
+      api.set(bp, function(err) {
         assert.ifError(err);
-        assert.ok(bp.stackFrames);
-        assert.ok(bp.variableTable);
+        api.wait(bp, function(err) {
+          assert.ifError(err);
+          assert.ok(bp.stackFrames);
+          assert.ok(bp.variableTable);
 
-        var topFrame = bp.stackFrames[0];
-        assert.ok(topFrame);
-        assert.equal(topFrame['function'], 'foo');
-        assert.equal(topFrame.arguments[0].name, 'n');
-        assert.equal(topFrame.arguments[0].value, '2');
-        api.clear(bp);
-        done();
-      });
+          var topFrame = bp.stackFrames[0];
+          assert.ok(topFrame);
+          assert.equal(topFrame['function'], 'foo');
+          assert.equal(topFrame.arguments[0].name, 'n');
+          assert.equal(topFrame.arguments[0].value, '2');
+          api.clear(bp);
+          done();
+        });
       process.nextTick(function() {foo(2);});
+      });
     });
 
     it('should capture state with watch expressions', function(done) {
@@ -230,27 +246,29 @@ describe('v8debugapi', function() {
         location: breakpointInFoo.location,
         expressions: ['process']
       };
-      var result = api.set(bp);
-      assert.ok(result);
-      api.wait(bp, function(err) {
+      api.set(bp, function(err) {
         assert.ifError(err);
-        assert.ok(bp.stackFrames);
-        assert.ok(bp.variableTable);
-        assert.ok(bp.evaluatedExpressions);
+        api.wait(bp, function(err) {
+          assert.ifError(err);
+          assert.ok(bp.stackFrames);
+          assert.ok(bp.variableTable);
+          assert.ok(bp.evaluatedExpressions);
 
-        var topFrame = bp.stackFrames[0];
-        assert.equal(topFrame['function'], 'foo');
-        assert.equal(topFrame.arguments[0].name, 'n');
-        assert.equal(topFrame.arguments[0].value, '3');
+          var topFrame = bp.stackFrames[0];
+          assert.equal(topFrame['function'], 'foo');
+          assert.equal(topFrame.arguments[0].name, 'n');
+          assert.equal(topFrame.arguments[0].value, '3');
 
-        var watch = bp.evaluatedExpressions[0];
-        assert.equal(watch.name, 'process');
-        assert.ok(watch.varTableIndex);
+          var watch = bp.evaluatedExpressions[0];
+          assert.equal(watch.name, 'process');
+          assert.ok(watch.varTableIndex);
 
-        api.clear(bp);
-        done();
+          api.clear(bp);
+          done();
+        });
+        process.nextTick(function() {foo(3);});
       });
-      process.nextTick(function() {foo(3);});
+
     });
 
     it('should capture without values for invalid watch expressions', function(done) {
@@ -260,112 +278,8 @@ describe('v8debugapi', function() {
         location: breakpointInFoo.location,
         expressions: [':)', 'process()', 'process=this']
       };
-      var result = api.set(bp);
-      assert.ok(result);
-      api.wait(bp, function(err) {
+      api.set(bp, function(err) {
         assert.ifError(err);
-        assert.ok(bp.stackFrames);
-        assert.ok(bp.variableTable);
-        assert.ok(bp.evaluatedExpressions);
-
-        for (var i in bp.evaluatedExpressions) {
-          var expr = bp.evaluatedExpressions[i];
-          assert(expr.status && expr.status.isError);
-        }
-
-        api.clear(bp);
-        done();
-      });
-      process.nextTick(function() {foo(3);});
-    });
-
-    it('should be possible to set conditional breakpoints', function (done) {
-      // clone a clean breakpointInFoo
-      var bp  = {
-        id: breakpointInFoo.id,
-        location: breakpointInFoo.location,
-        condition: 'n===5'
-      };
-      var result = api.set(bp);
-      assert.ok(result);
-      api.wait(bp, function(err) {
-        assert.ifError(err);
-        assert.ok(bp.stackFrames);
-
-        var topFrame = bp.stackFrames[0];
-        assert.equal(topFrame['function'], 'foo');
-        assert.equal(topFrame.arguments[0].name, 'n');
-        assert.equal(topFrame.arguments[0].value, '5');
-        api.clear(bp);
-        done();
-      });
-      process.nextTick(function() {foo(4); foo(5);});
-    });
-
-    it('should be possible to set conditional breakpoints in compiled code',
-      function (done) {
-        var bp = {
-          id: 'coffee-id-1729',
-          location: { path: './test/fixtures/coffee/transpile.coffee',
-            line: 3 },
-          condition: 'if n == 3 then true else false'
-        };
-        var tt = require('./fixtures/coffee/transpile');
-        var result = api.set(bp);
-        assert.ok(result);
-        api.wait(bp, function(err) {
-          assert.ifError(err);
-          assert.ok(bp.stackFrames);
-
-          var topFrame = bp.stackFrames[0];
-          assert.equal(topFrame['function'], 'foo');
-          assert.equal(topFrame.arguments[0].name, 'n');
-          assert.equal(topFrame.arguments[0].value, '3');
-          api.clear(bp);
-          done();
-        });
-        process.nextTick(function() {tt.foo(2); tt.foo(3);});
-    });
-
-    it('should be possible to view watch expressions in compiled code',
-      function(done) {
-        var bp = {
-            id: 'coffee-id-1729',
-            location: { path: './test/fixtures/coffee/transpile.coffee',
-              line: 3 },
-            expressions: ['if n == 3 then Math.PI * n else n']
-          };
-        var tt = require('./fixtures/coffee/transpile');
-        var result = api.set(bp);
-        assert.ok(result);
-        api.wait(bp, function(err) {
-          assert.ifError(err);
-          assert.ok(bp.stackFrames);
-          assert.ok(bp.variableTable);
-          assert.ok(bp.evaluatedExpressions);
-
-          for (var i in bp.evaluatedExpressions) {
-            var expr = bp.evaluatedExpressions[i];
-            assert(expr.value === String(Math.PI * 3));
-          }
-
-          api.clear(bp);
-          done();
-        });
-        process.nextTick(function() {tt.foo(3);});
-    });
-
-    it('should capture without values for invalid watch expressions in compiled code',
-      function(done) {
-        var bp = {
-            id: 'coffee-id-1729',
-            location: { path: './test/fixtures/coffee/transpile.coffee',
-              line: 3 },
-            expressions: [':)', 'n n, n', 'process=this', '((x) -> x x) n', 'return']
-          };
-        var tt = require('./fixtures/coffee/transpile');
-        var result = api.set(bp);
-        assert.ok(result);
         api.wait(bp, function(err) {
           assert.ifError(err);
           assert.ok(bp.stackFrames);
@@ -380,7 +294,118 @@ describe('v8debugapi', function() {
           api.clear(bp);
           done();
         });
-        process.nextTick(function() {tt.foo(3);});
+        process.nextTick(function() {foo(3);});
+      });
+
+    });
+
+    it('should be possible to set conditional breakpoints', function (done) {
+      // clone a clean breakpointInFoo
+      var bp  = {
+        id: breakpointInFoo.id,
+        location: breakpointInFoo.location,
+        condition: 'n===5'
+      };
+      api.set(bp, function(err) {
+        assert.ifError(err);
+        api.wait(bp, function(err) {
+          assert.ifError(err);
+          assert.ok(bp.stackFrames);
+
+          var topFrame = bp.stackFrames[0];
+          assert.equal(topFrame['function'], 'foo');
+          assert.equal(topFrame.arguments[0].name, 'n');
+          assert.equal(topFrame.arguments[0].value, '5');
+          api.clear(bp);
+          done();
+        });
+        process.nextTick(function() {foo(4); foo(5);});
+      });
+
+    });
+
+    it('should be possible to set conditional breakpoints in compiled code',
+      function (done) {
+        var bp = {
+          id: 'coffee-id-1729',
+          location: { path: './test/fixtures/coffee/transpile.coffee',
+            line: 3 },
+          condition: 'if n == 3 then true else false'
+        };
+        var tt = require('./fixtures/coffee/transpile');
+        api.set(bp, function(err) {
+          assert.ifError(err);
+          api.wait(bp, function(err) {
+            assert.ifError(err);
+            assert.ok(bp.stackFrames);
+
+            var topFrame = bp.stackFrames[0];
+            assert.equal(topFrame['function'], 'foo');
+            assert.equal(topFrame.arguments[0].name, 'n');
+            assert.equal(topFrame.arguments[0].value, '3');
+            api.clear(bp);
+            done();
+          });
+          process.nextTick(function() {tt.foo(2); tt.foo(3);});
+        });
+    });
+
+    it('should be possible to view watch expressions in compiled code',
+      function(done) {
+        var bp = {
+            id: 'coffee-id-1729',
+            location: { path: './test/fixtures/coffee/transpile.coffee',
+              line: 3 },
+            expressions: ['if n == 3 then Math.PI * n else n']
+          };
+        var tt = require('./fixtures/coffee/transpile');
+        api.set(bp, function(err) {
+          assert.ifError(err);
+          api.wait(bp, function(err) {
+            assert.ifError(err);
+            assert.ok(bp.stackFrames);
+            assert.ok(bp.variableTable);
+            assert.ok(bp.evaluatedExpressions);
+
+            for (var i in bp.evaluatedExpressions) {
+              var expr = bp.evaluatedExpressions[i];
+              assert(expr.value === String(Math.PI * 3));
+            }
+
+            api.clear(bp);
+            done();
+          });
+          process.nextTick(function() {tt.foo(3);});
+        });
+    });
+
+    it('should capture without values for invalid watch expressions in compiled code',
+      function(done) {
+        var bp = {
+            id: 'coffee-id-1729',
+            location: { path: './test/fixtures/coffee/transpile.coffee',
+              line: 3 },
+            expressions: [':)', 'n n, n', 'process=this', '((x) -> x x) n', 'return']
+          };
+        var tt = require('./fixtures/coffee/transpile');
+        api.set(bp, function(err) {
+          assert.ifError(err);
+          api.wait(bp, function(err) {
+            assert.ifError(err);
+            assert.ok(bp.stackFrames);
+            assert.ok(bp.variableTable);
+            assert.ok(bp.evaluatedExpressions);
+
+            for (var i in bp.evaluatedExpressions) {
+              var expr = bp.evaluatedExpressions[i];
+              assert(expr.status && expr.status.isError);
+            }
+
+            api.clear(bp);
+            done();
+          });
+          process.nextTick(function() {tt.foo(3);});
+        });
     });
 
     it('should remove listener when breakpoint is cleared before hitting',
@@ -390,32 +415,39 @@ describe('v8debugapi', function() {
           location: breakpointInFoo.location,
           condition: 'n===447'
         };
-        assert.ok(api.set(bp));
-        api.wait(bp, function() {
-          assert(false, 'should not reach here');
-        });
-        process.nextTick(function() {
-          foo(6);
+        api.set(bp, function(err) {
+          assert.ifError(err);
+          api.wait(bp, function() {
+            assert(false, 'should not reach here');
+          });
           process.nextTick(function() {
-            api.clear(bp);
-            assert(stateIsClean(api));
-            done();
+            foo(6);
+            process.nextTick(function() {
+              api.clear(bp);
+              assert(stateIsClean(api));
+              done();
+            });
           });
         });
       });
 
-      it('should be possible to set multiple breakpoints at once', function() {
-        var bp1 = { id: 'bp1', location: { path: __filename, line: 4 }};
-        var bp2 = { id: 'bp2', location: { path: __filename, line: 5 }};
-        assert.ok(api.set(bp1));
-        assert.ok(api.set(bp2));
-        assert.equal(api.numBreakpoints_(), 2);
-        api.clear(bp1);
-        assert.equal(api.numBreakpoints_(), 1);
-        api.clear(bp2);
-        assert.equal(api.numBreakpoints_(), 0);
-      });
-
+      it('should be possible to set multiple breakpoints at once',
+        function(done) {
+          var bp1 = { id: 'bp1', location: { path: __filename, line: 4 }};
+          var bp2 = { id: 'bp2', location: { path: __filename, line: 5 }};
+          api.set(bp1, function(err) {
+            assert.ifError(err);
+            api.set(bp2, function(err) {
+              assert.ifError(err);
+              assert.equal(api.numBreakpoints_(), 2);
+              api.clear(bp1);
+              assert.equal(api.numBreakpoints_(), 1);
+              api.clear(bp2);
+              assert.equal(api.numBreakpoints_(), 0);
+              done();
+            });
+          });
+        });
   });
 
   it('should be possible to set deferred breakpoints');
