@@ -142,9 +142,13 @@ describe('v8debugapi', function() {
     '1, 2, 3, fib(), 4',
     '!fib()',
     '1+fib()',
-    'x++'
+    'x++',
+    '[1, 2, 3, 4, x = 1, x == 1, x === 1]'
   ]);
   conditionTests('valid conditions', assert, [
+    null,
+    '',
+    ';',
     'x == 1',
     'x === 1',
     'global <= 1',
@@ -154,7 +158,8 @@ describe('v8debugapi', function() {
     '{f: this?1:2}',
     '{f: process.env}',
     '1,2,3,{f:2},4',
-    'A[this?this:1]'
+    'A[this?this:1]',
+    '[1, 2, 3, 4, x == 1, x === 1, null, undefined]'
   ]);
 
   describe('path normalization', function() {
