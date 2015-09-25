@@ -106,8 +106,25 @@ describe('v8debugapi', function() {
           api.messages.SOURCE_FILE_AMBIGUOUS);
         done();
       });
-
     });
+
+    it('should reject breakpoint on non-existent line', function(done) {
+      require('./fixtures/foo.js');
+      var bp = {
+        id: 'non-existent line',
+        location: {path: './fixtures/foo.js', line: 500}
+      };
+      api.set(bp, function(err) {
+        assert.ok(err);
+        assert.ok(bp.status);
+        assert.ok(bp.status instanceof StatusMessage);
+        assert.ok(bp.status.isError);
+        assert(bp.status.description.format ===
+          api.messages.INVALID_LINE_NUMBER);
+        done();
+      });
+    });
+
   });
 
   function conditionTests(subject, test, expressions) {
@@ -406,7 +423,7 @@ describe('v8debugapi', function() {
           });
           process.nextTick(function() {tt.foo(3);});
         });
-    });
+      });
 
     it('should remove listener when breakpoint is cleared before hitting',
       function(done) {
