@@ -448,6 +448,19 @@ describe('v8debugapi', function() {
             });
           });
         });
+
+      it('should special-case line 1 to handle Node.js module wrapping',
+        function(done) {
+          var bp1 = { id: 'bp1', location: {path: __filename, line: 1}};
+          api.set(bp1, function(err) {
+            assert.ifError(err);
+            assert(bp1.location.column, 'a column should have been added');
+            assert(bp1.location.column ===
+                   require('module').wrap('something').indexOf('something'));
+            api.clear(bp1);
+            done();
+          });
+        });
   });
 
   it('should be possible to set deferred breakpoints');
