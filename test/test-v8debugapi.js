@@ -431,36 +431,56 @@ describe('v8debugapi', function() {
         });
       });
 
-      it('should be possible to set multiple breakpoints at once',
-        function(done) {
-          var bp1 = { id: 'bp1', location: { path: __filename, line: 4 }};
-          var bp2 = { id: 'bp2', location: { path: __filename, line: 5 }};
-          api.set(bp1, function(err) {
+    it('should be possible to set multiple breakpoints at once',
+      function(done) {
+        var bp1 = { id: 'bp1', location: { path: __filename, line: 4 }};
+        var bp2 = { id: 'bp2', location: { path: __filename, line: 5 }};
+        api.set(bp1, function(err) {
+          assert.ifError(err);
+          api.set(bp2, function(err) {
             assert.ifError(err);
-            api.set(bp2, function(err) {
-              assert.ifError(err);
-              assert.equal(api.numBreakpoints_(), 2);
-              api.clear(bp1);
-              assert.equal(api.numBreakpoints_(), 1);
-              api.clear(bp2);
-              assert.equal(api.numBreakpoints_(), 0);
-              done();
-            });
-          });
-        });
-
-      it('should special-case line 1 to handle Node.js module wrapping',
-        function(done) {
-          var bp1 = { id: 'bp1', location: {path: __filename, line: 1}};
-          api.set(bp1, function(err) {
-            assert.ifError(err);
-            assert(bp1.location.column, 'a column should have been added');
-            assert(bp1.location.column ===
-                   require('module').wrap('something').indexOf('something'));
+            assert.equal(api.numBreakpoints_(), 2);
             api.clear(bp1);
+            assert.equal(api.numBreakpoints_(), 1);
+            api.clear(bp2);
+            assert.equal(api.numBreakpoints_(), 0);
             done();
           });
         });
+      });
+
+    it('should special-case line 1 to handle Node.js module wrapping',
+      function(done) {
+        var bp1 = { id: 'bp1', location: {path: __filename, line: 1}};
+        api.set(bp1, function(err) {
+          assert.ifError(err);
+          assert(bp1.location.column, 'a column should have been added');
+          assert(bp1.location.column ===
+                 require('module').wrap('something').indexOf('something'));
+          api.clear(bp1);
+          done();
+        });
+      });
+
+    it('should correctly stop on line-1 breakpoints', function(done) {
+      var foo = require('./fixtures/foo.js');
+      var bp = { id: 'bp-line-1', location: {
+        path: 'foo.js',
+        line: 1,
+        column: 45
+      }};
+      api.set(bp, function(err) {
+        assert.ifError(err);
+        api.wait(bp, function(err) {
+          assert.ifError(err);
+          assert.ok(bp.stackFrames);
+
+          api.clear(bp);
+          done();
+        });
+        process.nextTick(function() {foo();});
+      });
+    });
   });
 
   it('should be possible to set deferred breakpoints');
