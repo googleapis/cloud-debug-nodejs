@@ -5,8 +5,9 @@
   "main": "index.js",
   "repository": "GoogleCloudPlatform/cloud-debug-nodejs",
   "scripts": {
-    "test": "jshint . && istanbul test ./node_modules/.bin/_mocha -- test --timeout 4000 --R spec",
-    "coverage": "istanbul cover ./node_modules/.bin/_mocha --report lcovonly -- test --timeout 4000 --R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
+    "test": "./bin/run-test.sh",
+    "coverage": "./bin/run-coverage.sh",
+    "bump": "./bin/run-bump.sh",
     "closure": "./node_modules/.bin/closure-npc"
   },
   "keywords": [

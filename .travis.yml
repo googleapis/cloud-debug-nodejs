@@ -5,3 +5,5 @@ node_js:
   - "2"
   - "4"
 
+after_success:
+  - ./bin/run-coverage.sh
