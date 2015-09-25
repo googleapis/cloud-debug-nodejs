@@ -26,5 +26,11 @@ var agent = require('./lib/debuglet.js');
 
 // exports is populated by the agent
 module.exports = {};
+if (process.env.hasOwnProperty('GCLOUD_DEBUG_LOGLEVEL')) {
+  config.logLevel = process.env.GCLOUD_DEBUG_LOGLEVEL;
+}
+if (process.env.hasOwnProperty('GCLOUD_DEBUG_DISABLE')) {
+  config.enabled = false;
+}
 agent.start(config, logger, module.exports);
 
