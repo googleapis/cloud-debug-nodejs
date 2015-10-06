@@ -29,6 +29,7 @@ var v8debugapi = require('../lib/v8debugapi.js');
 var logModule = require('@google/cloud-diagnostics-common').logger;
 var config = require('../config.js');
 var StatusMessage = require('../lib/apiclasses.js').StatusMessage;
+var scanner = require('../lib/scanner.js');
 
 function stateIsClean(api) {
   assert.equal(api.numBreakpoints_(), 0,
@@ -39,13 +40,23 @@ function stateIsClean(api) {
 }
 
 describe('v8debugapi', function() {
-  config.cwd = process.cwd() + '/test';
+  config.workingDirectory = process.cwd() + '/test';
   var logger = logModule.create(config.logLevel);
+  var api = null;
 
-  var api = v8debugapi.create(logger, config);
-  assert.ok(api, 'should be able to create the api');
-
-  beforeEach(function() { assert(stateIsClean(api)); });
+  beforeEach(function(done) {
+    if (!api) {
+      scanner.scan(config.workingDirectory, function(err, hash, fileStats) {
+        assert(!err);
+        api = v8debugapi.create(logger, config, fileStats);
+        assert.ok(api, 'should be able to create the api');
+        done();
+      });
+    } else {
+      assert(stateIsClean(api));
+      done();
+    }
+  });
   afterEach(function() { assert(stateIsClean(api)); });
 
   it('should be able to set and remove breakpoints', function(done) {
@@ -128,9 +139,9 @@ describe('v8debugapi', function() {
   });
 
   function conditionTests(subject, test, expressions) {
-    describe(subject, function(done) {
+    describe(subject, function() {
       expressions.forEach(function(expr) {
-        it('should validate breakpoint with condition "'+expr+'"', function() {
+        it('should validate breakpoint with condition "'+expr+'"', function(done) {
           // make a clean copy of breakpointInFoo
           var bp = {
             id: breakpointInFoo.id,

@@ -46,9 +46,11 @@ describe('scanner', function() {
 
     it('should return the same hash if the files don\'t change',
      function(done) {
-       scanner.scan(process.cwd(), function(err1, hash1, files1) {
+       scanner.scan(process.cwd(), function(err1, hash1, filesStats1) {
+         var files1 = Object.keys(filesStats1);
          assert.ifError(err1);
-         scanner.scan(process.cwd(), function(err2, hash2, files2) {
+         scanner.scan(process.cwd(), function(err2, hash2, filesStats2) {
+          var files2 = Object.keys(filesStats2);
           assert.ifError(err2);
           assert.deepEqual(files1.sort(), files2.sort());
           assert.strictEqual(hash1, hash2);
@@ -58,7 +60,8 @@ describe('scanner', function() {
     });
 
     it('should work with relative paths', function(done) {
-      scanner.scan(fixtureDir, function(err, hash, files) {
+      scanner.scan(fixtureDir, function(err, hash, fileStats) {
+        var files = Object.keys(fileStats);
         assert.ifError(err);
         assert.ok(hash);
         assert.ok(files.length !== 0);
@@ -68,7 +71,8 @@ describe('scanner', function() {
 
     it('should return a valid hash even when there are no javascript files',
       function(done) {
-        scanner.scan(fixture('nojs'), function(err, hash, files) {
+        scanner.scan(fixture('nojs'), function(err, hash, fileStats) {
+          var files = Object.keys(fileStats);
           assert.ifError(err);
           assert.ok(hash);
           assert.ok(files.length === 0);
@@ -79,11 +83,13 @@ describe('scanner', function() {
     it('should return a different hash if the files contents change',
       function(done) {
         fs.writeFileSync(fixture('tmp.js'), '1 + 1');
-        scanner.scan(fixtureDir, function(err1, hash1, files1) {
+        scanner.scan(fixtureDir, function(err1, hash1, filesStats1) {
+          var files1 = Object.keys(filesStats1);
           assert.ifError(err1);
           assert.ok(hash1);
           fs.writeFileSync(fixture('tmp.js'), '1 + 2');
-          scanner.scan(fixtureDir, function(err2, hash2, files2) {
+          scanner.scan(fixtureDir, function(err2, hash2, filesStats2) {
+            var files2 = Object.keys(filesStats2);
             assert.ifError(err2);
             assert.ok(hash2);
             assert.notStrictEqual(hash1, hash2);
@@ -96,17 +102,20 @@ describe('scanner', function() {
 
     it('should return an updated file list when file list changes',
       function(done) {
-        scanner.scan(fixtureDir, function(err1, hash1, files1) {
+        scanner.scan(fixtureDir, function(err1, hash1, fileStats1) {
+          var files1 = Object.keys(fileStats1);
           assert.ifError(err1);
           assert.ok(hash1);
           fs.writeFileSync(fixture('tmp.js'), ''); // empty.
-          scanner.scan(fixtureDir, function(err2, hash2, files2) {
+          scanner.scan(fixtureDir, function(err2, hash2, fileStats2) {
+            var files2 = Object.keys(fileStats2);
             assert.ifError(err2);
             assert.ok(hash2);
             assert.notStrictEqual(hash1, hash2);
             assert.ok(files1.length === files2.length - 1);
             fs.unlinkSync(fixture('tmp.js'));
-            scanner.scan(fixtureDir, function(err3, hash3, files3) {
+            scanner.scan(fixtureDir, function(err3, hash3, fileStats3) {
+              var files3 = Object.keys(fileStats3);
               assert.ifError(err3);
               assert.ok(hash3);
               assert.strictEqual(hash1, hash3);
