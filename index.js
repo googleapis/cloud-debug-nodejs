@@ -20,8 +20,7 @@
 // application. The path-length here needs to be minimal.
 
 var config = require('./config.js');
-var logger = require('@google/cloud-diagnostics-common').logger.create(
-  config.logLevel, '@google/cloud-debug');
+var logger = require('@google/cloud-diagnostics-common').logger;
 var agent = require('./lib/debuglet.js');
 
 // exports is populated by the agent
@@ -34,6 +33,7 @@ if (process.env.hasOwnProperty('GCLOUD_DEBUG_DISABLE')) {
 }
 
 if (config.enabled) {
-  agent.start(config, logger, module.exports);
+  agent.start(config, logger.create(config.logLevel, '@google/cloud-debug'),
+      module.exports);
 }
 

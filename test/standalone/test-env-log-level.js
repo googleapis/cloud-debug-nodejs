@@ -16,41 +16,29 @@
 
 'use strict';
 
-var LOGLEVEL = 4;
-process.env.GCLOUD_DEBUG_LOGLEVEL = LOGLEVEL;
+process.env.GCLOUD_DEBUG_LOGLEVEL = 3;
 
 var assert = require('assert');
-var proxyquire = require('proxyquire');
-var common = require('@google/cloud-diagnostics-common');
-
-// Mock the logger.
-var count = 0;
-var logger = {
-  create: function() {
-    return {
-      error: function() { count++; },
-      warn: function()  { count++; },
-      info: function()  { count++; },
-      debug: function() { count++; }
-    };
-  }
-}
 
 describe('should respect environment variables', function() {
-  it('should respect GCLOUD_DEBUG_LOGLEVEL', function(done) {
+  it('should respect GCLOUD_DEBUG_LOGLEVEL', function() {
     var agent = require('../../');
+    var logger = agent.private_.logger_;
+    var STRING1 = 'jjjjjjjjjjjjjjjjjfjfjfjf';
+    var STRING2 = 'kkkkkkkfkfkfkfkfkkffkkkk';
 
-    var DebugletApi = proxyquire('../..', {
-      '@google/cloud-diagnostics-common': {
-        logger: logger,
-        utils: common.utils
-      }
-    });
+    var buffer = [];
+    var oldLog = console.log;
 
-    setTimeout(function() {
-      assert(count > 0, 'Should have logged something');
-      done();
-    }, 2000)
+    console.log = function () {
+      buffer = buffer.concat([].slice.call(arguments));
+    };
+    logger.info(STRING1);
+    logger.debug(STRING2);
+    console.log = oldLog;
 
+    assert(buffer.indexOf(STRING1) !== -1);
+    assert(buffer.indexOf(STRING2) === -1);
   });
+
 });

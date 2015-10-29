@@ -23,7 +23,7 @@ var assert = require('assert');
 describe('should respect environment variables', function() {
   it('should respect GCLOUD_DEBUG_DISABLE', function() {
     var agent = require('../..');
-    assert(!agent.debug, 'Agent should not have started');
+    assert(!agent.private_, 'Agent should not have started');
   });
 
 });
