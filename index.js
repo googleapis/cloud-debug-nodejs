@@ -32,5 +32,8 @@ if (process.env.hasOwnProperty('GCLOUD_DEBUG_LOGLEVEL')) {
 if (process.env.hasOwnProperty('GCLOUD_DEBUG_DISABLE')) {
   config.enabled = false;
 }
-agent.start(config, logger, module.exports);
+
+if (config.enabled) {
+  agent.start(config, logger, module.exports);
+}
 
