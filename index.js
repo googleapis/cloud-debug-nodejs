@@ -21,7 +21,7 @@
 
 var config = require('./config.js');
 var logger = require('@google/cloud-diagnostics-common').logger;
-var agent = require('./lib/debuglet.js');
+var Debuglet = require('./lib/debuglet.js');
 
 // exports is populated by the agent
 module.exports = {};
@@ -33,7 +33,8 @@ if (process.env.hasOwnProperty('GCLOUD_DEBUG_DISABLE')) {
 }
 
 if (config.enabled) {
-  agent.start(config, logger.create(config.logLevel, '@google/cloud-debug'),
-      module.exports);
+  var debuglet = new Debuglet(
+    config, logger.create(config.logLevel, '@google/cloud-debug'));
+  debuglet.start();
+  module.exports.private_ = debuglet;
 }
-
