@@ -45,6 +45,23 @@ describe(__filename, function(){
     debuglet.start();
   });
 
+  it('should complain if GCLOUD_PROJECT_NUM is not numeric', function(done) {
+    var debuglet = new Debuglet(
+      config, logger.create(config.logLevel, '@google/cloud-debug'));
+
+    process.env.GCLOUD_PROJECT_NUM='11020304f2934';
+
+    debuglet.on('error', function(err) {
+      assert(err);
+      assert(err.message.indexOf('should be numeric') !== -1);
+      done();
+    });
+    debuglet.on('started', function() {
+      assert.fail();
+    });
+    debuglet.start();
+  });
+
   it('should error if a package.json doesn\'t exist');
 
   it('should register successfully otherwise', function(done) {
