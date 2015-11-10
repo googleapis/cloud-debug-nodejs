@@ -186,6 +186,10 @@ module.exports.runTest = function runTest() {
         assert.ok(arg, 'should find the n argument');
         assert.strictEqual(arg.value, '10');
         console.log('Test passed');
+        process.exit(0);
+      })
+      .catch(function(e) {
+        console.error(e);
       });
     });
   });
