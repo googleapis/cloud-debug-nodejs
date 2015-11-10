@@ -47,7 +47,7 @@ if [ "$cover" ]; then
   rm -rf ./coverage
 fi
 
-if [ ! -z "${e2e}" ]; then
+if [ "${TRAVIS_PULL_REQUEST}" = "false" -a ! -z "${e2e}" ]; then
   cd test/e2e
 
   echo -en "travis_fold:start:npm_install_test_e2e\\r" | tr / _
