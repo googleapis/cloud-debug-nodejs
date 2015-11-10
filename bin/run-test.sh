@@ -8,6 +8,10 @@ while true; do
       cover=1
       ;;
 
+    --e2e)
+      e2e=1
+      ;;
+
     *)
       break
   esac
@@ -16,7 +20,7 @@ while true; do
 done
 
 # Lint
-jshint . || exit 1
+$(npm bin)/jshint . || exit 1
 
 # Get test/coverage command
 counter=0
@@ -41,4 +45,18 @@ if [ "$cover" ]; then
   istanbul report lcovonly
   ./node_modules/coveralls/bin/coveralls.js < ./coverage/lcov.info
   rm -rf ./coverage
+fi
+
+if [ ! -z "${e2e}" ]; then
+  cd test/e2e
+
+  echo -en "travis_fold:start:npm_install_test_e2e\\r" | tr / _
+  echo "npm install in test/e2e"
+  npm install || exit 1
+  echo -en "travis_fold:end:npm_install_test_e2e\\r" | tr / _
+
+  # Need a key file and GCLOUD_PROJECT_NUM defined for the following to succeed.
+  node test.js
+
+  cd -
 fi

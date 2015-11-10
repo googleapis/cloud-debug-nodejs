@@ -2,15 +2,14 @@
   "name": "debug-e2e",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "test.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node test.js"
   },
   "author": "Ali Ijaz Sheikh <ofrobots@google.com>",
   "license": "Apache-2.0",
   "dependencies": {
-    "express": "^4.13.0",
-    "gcloud-insights": "https://storage.googleapis.com/d5a083a4-ff58-49c5-a852-036d08c01b63/c071be27-fbb9-470c-ba52-b3845e5be843/gcloud-insights-0.2.2.tgz",
-    "lodash": "^3.9.3"
+    "lodash": "^3.9.3",
+    "q": "^1.4.1"
   }
 }
