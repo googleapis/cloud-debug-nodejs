@@ -29,9 +29,8 @@ npm install --save @google/cloud-debug
    "scripts" {
      "start": "node --require @google/cloud-debug server.js"
    ...
-
-# Deploy and debug your application
 ```
+Navigate to the Debug tab within the [Google Developers Console][dev-console] to set breakpoints and start debugging.
 
 ## Detailed instructions
 
@@ -63,11 +62,7 @@ At this point you can deploy your application to AppEngine or to Google Compute 
 1. Alternatively, if are NOT using `gcloud auth login` on the machine where you will running your app, you can use service account credentials. To create a service account:
   1. Visit the [Google Developers Console][dev-console].
   2. Create a new project or click on an existing project.
-  3. Navigate to  **APIs & auth** > **APIs section** and turn on the following APIs (you may need to enable billing in order to use these services):
-    * Google Cloud Datastore API
-    * Google Cloud Storage
-    * Google Cloud Storage JSON API
-  4. Navigate to **APIs & auth** >  **Credentials** and then:
+  3. Navigate to **APIs & auth** >  **Credentials** and then:
     * If you want to use a new service account, click on **Create new Client ID** and select **Service account**. After the account is created, you will be prompted to download the JSON key file that the library uses to authenticate your requests.
     * If you want to generate a new key for an existing service account, click on **Generate new JSON key** and download the JSON key file.
 
@@ -87,7 +82,7 @@ As soon as that line of code is reached in any of the running instances of your 
 
 ## Limitations and Requirements
 * The root directory of your application needs to contain a `package.json` file.
-* You can condition and watch expressions to be evaluated in the context of your application. This leads to some issues you should be aware of
+* You can set breakpoint conditions and watch expressions to be evaluated in the context of your application. This leads to some issues you should be aware of
   * You may be able to view sensitive data of your own users by looking at the values of the variables.
   * The debug agent tries to ensure that all conditions and watchpoints you add are read-only and have no side effects. It catches, and disallows, all expressions that may have static side effects to prevent accidental state change. However, it presently does not catch expressions that have dynamic side-effects. For example, `o.f` looks like a property access, but dynamically, it may end up calling a getter function. We presently do NOT detect such dynamic-side effects.
 * With Node.js 4.x and older, your application may experience a performance impact when there are breakpoint active. There should be no impact to performance when no breakpoints are active. Node.js v5.x does not have this issue.
