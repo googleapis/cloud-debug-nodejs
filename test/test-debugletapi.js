@@ -204,31 +204,6 @@ describe('Debuglet API', function() {
           done();
         });
     });
-
-    it('should not tie down event loop on large breakpoints', function (done) {
-      this.timeout(20);
-      var huge = {};
-      for (var i = 0; i < 20000; i++) {
-        huge[i] = {};
-      }
-      var breakpoint = {id: 'breakpoint-0', location: {path: 'foo.js', line: 99}};
-      breakpoint.huge = huge;
-      setImmediate(function() {
-        done();
-      });
-      var scope = nock(url)
-        .put(api + '/debuggees/fake-debuggee/breakpoints/breakpoint-0', {
-          debuggeeId: 'fake-debuggee',
-          breakpoint: breakpoint
-          })
-        .reply(200, { kind: 'debugletcontroller#updateActiveBreakpointResponse'});
-      debugletapi.updateBreakpoint(breakpoint,
-        function(err, result) {
-          assert(!err, 'not expecting an error');
-          assert.equal(result.kind, 'debugletcontroller#updateActiveBreakpointResponse');
-          scope.done();
-        });
-    });
   });
 
 
