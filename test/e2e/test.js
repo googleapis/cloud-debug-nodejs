@@ -23,6 +23,7 @@ function fib(n) {
 process.env.GCLOUD_DEBUG_LOGLEVEL=3;
 
 var assert = require('assert');
+var util = require('util');
 var GoogleAuth = require('google-auth-library');
 var agent = require('../..');
 var _ = require('lodash'); // for _.find. Can't use ES6 yet.
@@ -105,7 +106,8 @@ module.exports.runTest = function runTest() {
 
       listDebuggees(project)
       .then(function(body) {
-        console.log('-- List of debuggees\n', body);
+        console.log('-- List of debuggees\n',
+          util.inspect(body, { depth: null}));
         assert.ok(body, 'should get a valid ListDebuggees response');
         assert.ok(body.debuggees, 'should have a debuggees property');
         var result = _.find(body.debuggees, function(d) {

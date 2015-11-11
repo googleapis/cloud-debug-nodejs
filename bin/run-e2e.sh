@@ -9,6 +9,7 @@ if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then
     -iv $encrypted_a8f6bb4bf8ae_iv \
     -in ../../node-team-debug-test-a03aecc1d97a.json.enc \
     -out node-team-debug-test-a03aecc1d97a.json -d
+  export GOOGLE_APPLICATION_CREDENTIALS=node-team-debug-test-a03aecc1d97a.json
 fi
 
 echo -en "travis_fold:start:npm_install_test_e2e\\r" | tr / _
