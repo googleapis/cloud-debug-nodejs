@@ -6,22 +6,19 @@
 [![Dependency Status][david-image]][david-url]
 [![devDependency Status][david-dev-image]][david-dev-url]
 
+> *This module is experimental, and should be used by early adopters. This module uses APIs there may be undocumented and may be subject to change without notice.*
 
-## Overview
-
-*This module is experimental, and should be used by early adopters. This module uses APIs there may be undocumented and may be subject to change without notice.*
-
-The Cloud Debugger is a feature of the Google Cloud Platform that lets you inspect the state of your application at any code location without stopping your application. For more information about the Cloud Debugger, see https://cloud.google.com/tools/cloud-debugger/. Here's an introductory video:
+This module provides Cloud Debug support for Node.js applications. [Google Cloud Debug](https://cloud.google.com/tools/cloud-debugger/) is a feature of [Google Cloud Platform](https://cloud.google.com/) that lets you debug your applications in production without stopping or pausing your application. Here's an introductory video:
 
 [![Cloud Debugger Intro](http://img.youtube.com/vi/tyHcK_kAOpw/0.jpg)](https://www.youtube.com/watch?v=tyHcK_kAOpw)
 
 ## Prerequisites
-* You are using Node.js 0.12+ for your application. (Node.js v5+ is recommended).
-* The source of your application is uploaded to your cloud project's [source repository](https://cloud.google.com/tools/cloud-repositories/docs/). The Debugger UI needs the source to be available in order to set breakpoints.
+* Your application will need to be using Node.js version 0.12 or greater. Node.js v5+ is recommended.
+* The source of your application is uploaded to a [cloud source repository](https://cloud.google.com/tools/cloud-repositories/docs/). The Debugger UI needs the source to be available in order to set breakpoints.
 
 ## Quick Start (Node.js v4.x+)
 ```shell
-# Install module, and save it as a dependency
+# Install with `npm` or add to your `package.json`.
 npm install --save @google/cloud-debug
 
 # Change the start command of your application in package.json
@@ -30,11 +27,11 @@ npm install --save @google/cloud-debug
      "start": "node --require @google/cloud-debug server.js"
    ...
 ```
-Navigate to the Debug tab within the [Google Developers Console][dev-console] to set breakpoints and start debugging.
+Deploy your application, and navigate to the [Debug tab][debug-tab] within the [Google Developers Console][dev-console] to set breakpoints and start debugging.
 
-## Detailed instructions
+## Installation
 
-1. Install the debug agent module.
+1. Install the debug agent module via `npm` or add it to your `package.json`.
 
    ```shell
    npm install --save @google/cloud-debug
@@ -51,24 +48,47 @@ Navigate to the Debug tab within the [Google Developers Console][dev-console] to
    require('@google/cloud-debug');
    ```
 
-At this point you can deploy your application to AppEngine or to Google Compute Engine and the debug agent will activate with no further action. If you want to run your application locally, you can still use the cloud debug agent, with a few additional steps:
+## Running on Google Cloud Platform
 
-1. The agent needs to know the numeric project id of your Google cloud project. You can obtain this information from the project's settings page in the Google Developers Console (click on the gear icon in the corner.)
+There are three different services that can host Node.js application to Google Cloud Platform.
 
-  ```shell
-  export GCLOUD_PROJECT_NUM=<your numeric project id>
-  ```
-1. You need to provide credentials to authenticate to the Cloud Debugger API. If you are using the [`gcloud` command line tools][gcloud-sdk] already, and are already logged in using `gcloud auth login`, you already have sufficient credentials, and no further action is required.
-1. Alternatively, if are NOT using `gcloud auth login` on the machine where you will running your app, you can use service account credentials. To create a service account:
-  1. Visit the [Google Developers Console][dev-console].
-  2. Create a new project or click on an existing project.
-  3. Navigate to **APIs & auth** >  **Credentials** and then:
-    * If you want to use a new service account, click on **Create new Client ID** and select **Service account**. After the account is created, you will be prompted to download the JSON key file that the library uses to authenticate your requests.
-    * If you want to generate a new key for an existing service account, click on **Generate new JSON key** and download the JSON key file.
+### Google App Engine Managed VMs
 
-### Debug UI
+If you are using [Google App Engine Managed VMs](https://cloud.google.com/appengine/docs/managed-vms/), you do not have to do any additional configuration.
 
-Once your application is running (deployed, or elsewhere), you should be able to use the Debug UI in your Cloud [developer console][dev-console]. You can find the Debug UI in the 'Operations > Debug' section in the navigation panel, or by simply searching for 'Debug' in the developer console.
+### Google Compute Engine
+
+Your VM instances need to be created with `cloud-platform` scope if created via [gcloud](https://cloud.google.com/sdk) or the 'Allow API access' checkbox selected if created via the [console](https://console.developers.google.com) (see screenshot).
+
+![GCE API](doc/images/gce.png?raw=true)
+
+If you already have VMs that were created without API access and do not wish to recreate it, you can follow the instructions for using a service account under [running elsewhere](#running-elsewhere).
+
+### Google Container Engine
+
+Container Engine nodes need to also be created with the `cloud-platform` scope, which is configurable during cluster creation. Alternatively, you can follow the instructions for using a service account under [running elsewhere](#running-elsewhere). It's recommended that you store the service account credentials as [Kubernetes Secret](http://kubernetes.io/v1.1/docs/user-guide/secrets.html).
+
+## Running elsewhere
+
+If your application is running outside of Google Cloud Platform, such as locally, on-premise, or on another cloud provider, you can still use Cloud Debug.
+
+1. You will need to specify the numeric project ID of your project. Your numeric project ID, or project number, is visible the Project information section on your project's [dashboard][dashboard].
+
+        export GCLOUD_PROJECT_NUM=<your numeric project id>
+
+2. You need to provide service account credentials to your application. The recommended way is via [Application Default Credentials](https://developers.google.com/identity/protocols/application-default-credentials).
+
+  1. [Create a new JSON service account key](https://console.developers.google.com/apis/credentials/serviceaccountkey).
+  2. Copy the key somewhere your application can access it. Be sure not to expose the key publicly.
+  3. Set the environment variable `GOOGLE_APPLICATION_CREDENTIALS` to the full path to the key. The debug agent will automatically look for this environment variable.
+
+3. Alternatively, if you are running your application on a machine where your are using the [`gcloud` command line tools][gcloud-sdk], and are logged using `gcloud auth login`, you already have sufficient credentials, and a service account key is not required.
+
+At this point you can deploy your application to  and the debug agent will activate with no further action. If you want to run your application locally, you can still use the cloud debug agent, with a few additional steps:
+
+## Using the Debugger
+
+Once your application is running (deployed, or elsewhere), you should be able to use the [Debug UI][debug-tab] in your Cloud [developer console][dev-console]. You can find the Debug UI in the 'Operations > Debug' section in the navigation panel, or by simply searching for 'Debug' in the developer console.
 
 ![Debug UI](doc/images/debug-ui.png?raw=true)
 
@@ -91,6 +111,8 @@ As soon as that line of code is reached in any of the running instances of your 
 
 [cloud-debugger]: https://cloud.google.com/tools/cloud-debugger/
 [dev-console]: https://console.developers.google.com/
+[dashboard]: https://console.developers.google.com/dashboard
+[debug-tab]: https://console.developers.google.com/debug
 [gcloud-sdk]: https://cloud.google.com/sdk/gcloud/
 [npm-image]: https://img.shields.io/npm/v/@google/cloud-debug.svg
 [npm-url]: https://npmjs.org/package/@google/cloud-debug
