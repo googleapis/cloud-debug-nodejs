@@ -352,7 +352,7 @@ describe('v8debugapi', function() {
 
     });
 
-    it('should be possible to set conditional breakpoints in compiled code',
+    it('should be possible to set conditional breakpoints in coffeescript',
       function (done) {
         var bp = {
           id: 'coffee-id-1729',
@@ -378,7 +378,33 @@ describe('v8debugapi', function() {
         });
     });
 
-    it('should be possible to view watch expressions in compiled code',
+    it('should be possible to set conditional breakpoints with babel',
+      function (done) {
+        var bp = {
+          id: 'babel-id-1729',
+          location: { path: './test/fixtures/es6/transpile.es6',
+            line: 3 },
+          condition: 'i + j === 3'
+        };
+        var tt = require('./fixtures/es6/transpile');
+        api.set(bp, function(err) {
+          assert.ifError(err);
+          api.wait(bp, function(err) {
+            assert.ifError(err);
+            assert.ok(bp.stackFrames);
+
+            var topFrame = bp.stackFrames[0];
+            assert.equal(topFrame['function'], 'foo');
+            assert.equal(topFrame.arguments[0].name, 'j');
+            assert.equal(topFrame.arguments[0].value, '2');
+            api.clear(bp);
+            done();
+          });
+          process.nextTick(function() {tt.foo(1); tt.foo(2);});
+        });
+    });
+
+    it('should be possible to view watch expressions in coffeescript',
       function(done) {
         var bp = {
             id: 'coffee-id-1729',
@@ -407,7 +433,7 @@ describe('v8debugapi', function() {
         });
     });
 
-    it('should capture without values for invalid watch expressions in compiled code',
+    it('should capture without values for invalid watch expressions in coffeescript',
       function(done) {
         var bp = {
             id: 'coffee-id-1729',

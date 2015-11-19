@@ -1,4 +1,4 @@
 node_modules
 test/e2e/node_modules
-test/fixtures/coffee
+test/fixtures
 coverage
