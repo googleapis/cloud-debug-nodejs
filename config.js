@@ -20,6 +20,11 @@ module.exports = {
   enabled: true,
   workingDirectory: process.cwd(),
 
+  // The path within your repository to the directory containing the
+  // package.json for your deployed application. This should be provided
+  // if your deployed application appears as a subdirectory of your repository.
+  appPathRelativeToRepository: undefined,
+
   // Log levels: 0-disabled,1-error,2-warn,3-info,4-debug.
   logLevel: 1,
 

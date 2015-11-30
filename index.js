@@ -31,6 +31,10 @@ if (process.env.hasOwnProperty('GCLOUD_DEBUG_LOGLEVEL')) {
 if (process.env.hasOwnProperty('GCLOUD_DEBUG_DISABLE')) {
   config.enabled = false;
 }
+if (process.env.hasOwnProperty('GCLOUD_DEBUG_REPO_APP_PATH')) {
+  config.appPathRelativeToRepository =
+    process.env.GCLOUD_DEBUG_REPO_APP_PATH;
+}
 
 if (config.enabled) {
   var debuglet = new Debuglet(

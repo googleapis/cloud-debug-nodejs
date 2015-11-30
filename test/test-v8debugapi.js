@@ -80,6 +80,28 @@ describe('v8debugapi', function() {
       });
     });
 
+  it('should disambiguate incorrect path if filename is unique',
+    function(done) {
+      require('./fixtures/foo.js');
+      var bp = { id: 0, location: {line: 1, path: '/test/foo.js'}};
+      api.set(bp, function(err) {
+        assert.ifError(err);
+        api.clear(bp);
+        done();
+      });
+    });
+
+  it('should disambiguate incorrect path if partial path is unique',
+    function(done) {
+      require('./fixtures/foo.js');
+      // hello.js is not unique but a/hello.js is.
+      var bp = { id: 0, location: {line: 1, path: '/Server/a/hello.js'}};
+      api.set(bp, function(err) {
+        assert.ifError(err);
+        api.clear(bp);
+        done();
+      });
+    });
 
   describe('invalid breakpoints', function() {
     var badBreakpoints = [
