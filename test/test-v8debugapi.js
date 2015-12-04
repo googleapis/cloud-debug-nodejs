@@ -80,6 +80,20 @@ describe('v8debugapi', function() {
       });
     });
 
+  it('should set error for breakpoint in non-js files',
+    function(done) {
+      require('./fixtures/key-bad.json');
+      var bp = { id: 0, location: {line: 1, path: 'fixtures/key-bad.json'}};
+      api.set(bp, function(err) {
+        assert.ok(err, 'should return an error');
+        assert.ok(bp.status);
+        assert.ok(bp.status instanceof StatusMessage);
+        assert.equal(bp.status.refersTo, 'BREAKPOINT_SOURCE_LOCATION');
+        assert.ok(bp.status.isError);
+        done();
+      });
+    });
+
   it('should disambiguate incorrect path if filename is unique',
     function(done) {
       require('./fixtures/foo.js');
