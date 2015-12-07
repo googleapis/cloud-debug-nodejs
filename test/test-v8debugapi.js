@@ -70,6 +70,22 @@ describe('v8debugapi', function() {
     });
   });
 
+  it('should be able to set breakpoint in node_modules', function(done) {
+    var bp = {
+      id: 0,
+      location: {
+        line: 1,
+        path: 'fixtures/node_modules/test.js'
+      }
+    };
+    api.set(bp, function(err) {
+      assert.ifError(err);
+      assert.equal(api.numBreakpoints_(), 1);
+      api.clear(bp);
+      done();
+    });
+  });
+
   it('should accept breakpoint with ids 0 as a valid breakpoint',
     function(done) {
       var bp = { id: 0, location: breakpointInFoo.location};

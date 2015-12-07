@@ -26,7 +26,7 @@ function run {
     C="$(npm bin)/istanbul cover --dir ./coverage/${counter}"
     ((counter++))
   fi
-  ($C "$(npm bin)/_mocha" -- $* --timeout 4000 --R spec) || exit 1
+  ($C "$(npm bin)/_mocha" -- $* --timeout 15000 --R spec) || exit 1
 }
 
 # Run test/coverage
