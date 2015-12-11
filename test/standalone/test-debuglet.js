@@ -34,12 +34,13 @@ describe(__filename, function(){
       .get('/computeMetadata/v1/project/numeric-project-id')
       .reply(404);
 
-    debuglet.on('error', function(err) {
+    debuglet.once('error', function(err) {
       assert(err);
+      debuglet.stop();
       scope.done();
       done();
     });
-    debuglet.on('started', function() {
+    debuglet.once('started', function() {
       assert.fail();
     });
     debuglet.start();
@@ -51,12 +52,13 @@ describe(__filename, function(){
 
     process.env.GCLOUD_PROJECT_NUM='11020304f2934';
 
-    debuglet.on('error', function(err) {
+    debuglet.once('error', function(err) {
       assert(err);
       assert(err.message.indexOf('should be numeric') !== -1);
+      debuglet.stop();
       done();
     });
-    debuglet.on('started', function() {
+    debuglet.once('started', function() {
       assert.fail();
     });
     debuglet.start();
@@ -80,11 +82,12 @@ describe(__filename, function(){
         }
       });
 
-    debuglet.on('started', function() {
+    debuglet.once('started', function() {
       debuglet.debugletApi_.request_ = request; // Avoid authing.
     });
-    debuglet.on('registered', function(id) {
+    debuglet.once('registered', function(id) {
       assert(id === 'foo');
+      debuglet.stop();
       scope.done();
       done();
     });
@@ -98,10 +101,111 @@ describe(__filename, function(){
 
   it('should fetch breakpoints');
 
-  it('should re-fetch breakpoints');
+  it('should re-fetch breakpoints on error', function(done) {
+    this.timeout(6000);
+    var debuglet = new Debuglet(
+      config, logger.create(config.logLevel, '@google/cloud-debug'));
+
+    process.env.GCLOUD_PROJECT_NUM=0;
+
+    var API = 'https://clouddebugger.googleapis.com';
+
+    var scope = nock(API)
+      .post('/v2/controller/debuggees/register')
+      .reply(200, {
+        debuggee: {
+          id: 'bar'
+        }
+      })
+      .post('/v2/controller/debuggees/register')
+      .reply(200, {
+        debuggee: {
+          id: 'bar'
+        }
+      })
+      .get('/v2/controller/debuggees/bar/breakpoints')
+      .reply(404)
+      .get('/v2/controller/debuggees/bar/breakpoints')
+      .reply(409)
+      .get('/v2/controller/debuggees/bar/breakpoints')
+      .reply(200, {
+        breakpoints: [{
+          id: 'test',
+          location: { path: 'fixtures/foo.js', line: 2 }
+        }]
+      });
+
+    debuglet.once('started', function() {
+      debuglet.debugletApi_.request_ = request; // Avoid authing.
+    });
+    debuglet.once('registered', function reg(id) {
+      assert(id === 'bar');
+      setTimeout(function() {
+        assert.deepEqual(debuglet.activeBreakpointMap_.test, {
+          id: 'test',
+          location: { path: 'fixtures/foo.js', line: 2 }
+        });
+        debuglet.stop();
+        scope.done();
+        done();
+      }, 1000);
+    });
+
+    debuglet.start();
+  });
 
   it('should add a breakpoint');
 
-  it('should expire stale breakpoints');
+  it('should expire stale breakpoints', function(done) {
+    var oldTimeout = config.breakpointExpirationSec;
+    config.breakpointExpirationSec = 1;
+    this.timeout(6000);
+    var debuglet = new Debuglet(
+      config, logger.create(config.logLevel, '@google/cloud-debug'));
+
+    process.env.GCLOUD_PROJECT_NUM=0;
+
+    var bp = {
+      id: 'test',
+      location: { path: 'fixtures/foo.js', line: 2 }
+    };
+
+    var API = 'https://clouddebugger.googleapis.com';
+
+    var scope = nock(API)
+      .post('/v2/controller/debuggees/register')
+      .reply(200, {
+        debuggee: {
+          id: 'bar'
+        }
+      })
+      .get('/v2/controller/debuggees/bar/breakpoints')
+      .reply(200, {
+        breakpoints: [bp]
+      })
+      .put('/v2/controller/debuggees/bar/breakpoints/test', function(body) {
+        return body.breakpoint.status.description.format === 'The snapshot has expired';
+      })
+      .reply(200);
+
+    debuglet.once('started', function() {
+      debuglet.debugletApi_.request_ = request; // Avoid authing.
+    });
+    debuglet.once('registered', function(id) {
+      assert(id === 'bar');
+      setTimeout(function() {
+        assert.deepEqual(debuglet.activeBreakpointMap_.test, bp);
+        setTimeout(function() {
+          assert(!debuglet.activeBreakpointMap_.test);
+          debuglet.stop();
+          scope.done();
+          config.breakpointExpirationSec = oldTimeout;
+          done();
+        }, 1100);
+      }, 500);
+    });
+
+    debuglet.start();
+  });
 });
 
