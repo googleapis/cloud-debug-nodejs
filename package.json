@@ -50,10 +50,10 @@
   "devDependencies": {
     "closure-npc": "*",
     "coveralls": "^2.11.2",
-    "istanbul": "^0.3.17",
+    "istanbul": "^0.4.1",
     "jshint": "^2.7.0",
     "mocha": "^2.2.4",
-    "nock": "^2.13.0",
+    "nock": "^3.6.0",
     "proxyquire": "^1.4.0"
   },
   "dependencies": {
