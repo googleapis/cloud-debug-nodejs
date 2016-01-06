@@ -22,7 +22,6 @@
 var config = require('./config.js');
 var logger = require('@google/cloud-diagnostics-common').logger;
 var Debuglet = require('./lib/debuglet.js');
-var semver = require('semver');
 
 // exports is populated by the agent
 module.exports = {};
@@ -38,11 +37,6 @@ if (process.env.hasOwnProperty('GCLOUD_DEBUG_REPO_APP_PATH')) {
 }
 
 var log = logger.create(config.logLevel, '@google/cloud-debug');
-
-if (semver.satisfies(process.version, '5.2')) {
-  log.error('Debug is not supported on Node v5.2');
-  return;
-}
 
 if (config.enabled) {
   var debuglet = new Debuglet(config, log);

@@ -13,7 +13,7 @@ This module provides Cloud Debug support for Node.js applications. [Google Cloud
 [![Cloud Debugger Intro](http://img.youtube.com/vi/tyHcK_kAOpw/0.jpg)](https://www.youtube.com/watch?v=tyHcK_kAOpw)
 
 ## Prerequisites
-* Your application will need to be using Node.js version 0.12 or greater. Node.js v5+ is recommended.
+* Your application will need to be using Node.js version 0.12 or greater. Node.js v5+ is recommended. (Node.js v5.2.0 is not supported on account of [this bug](https://github.com/nodejs/node/issues/4297))
 * The source of your application is uploaded to a [cloud source repository](https://cloud.google.com/tools/cloud-repositories/docs/). The Debugger UI needs the source to be available in order to set breakpoints.
 
 ## Quick Start (Node.js v4.x+)
