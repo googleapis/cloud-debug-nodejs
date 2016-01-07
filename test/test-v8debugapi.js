@@ -414,6 +414,21 @@ describe('v8debugapi', function() {
         });
     });
 
+    it('should show error for invalid conditions in coffeescript',
+      function (done) {
+        var bp = {
+          id: 'coffee-id-1729',
+          location: { path: './test/fixtures/coffee/transpile.coffee',
+            line: 3 },
+          condition: 'process=false'
+        };
+        api.set(bp, function(err) {
+          assert(err);
+          assert.equal(err.message, 'Error compiling condition.');
+          done();
+        });
+    });
+
     it('should be possible to set conditional breakpoints with babel',
       function (done) {
         var bp = {
@@ -489,6 +504,16 @@ describe('v8debugapi', function() {
             for (var i in bp.evaluatedExpressions) {
               var expr = bp.evaluatedExpressions[i];
               assert(expr.status && expr.status.isError);
+              if (expr.name === ':)' ||
+                  expr.name === 'process=this' ||
+                  expr.name === 'return') {
+                assert.equal(expr.status.description.format,
+                  'Error Compiling Expression');
+              } else {
+                assert.notEqual(
+                  expr.status.description.format.indexOf('Unexpected token'),
+                  -1);
+              }
             }
 
             api.clear(bp);
