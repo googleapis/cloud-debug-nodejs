@@ -340,7 +340,7 @@ describe('v8debugapi', function() {
       var bp  = {
         id: breakpointInFoo.id,
         location: breakpointInFoo.location,
-        expressions: [':)', 'process()', 'process=this']
+        expressions: [':)', 'process()', 'process=this', 'i', 'process._not._def']
       };
       api.set(bp, function(err) {
         assert.ifError(err);
