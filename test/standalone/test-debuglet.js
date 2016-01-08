@@ -21,14 +21,35 @@ var logger = require('@google/cloud-diagnostics-common').logger;
 var config = require('../../config.js');
 var Debuglet = require('../../lib/debuglet.js');
 
+var DEBUGGEE_ID = 'bar';
+var API = 'https://clouddebugger.googleapis.com';
+var REGISTER_PATH = '/v2/controller/debuggees/register';
+var BPS_PATH = '/v2/controller/debuggees/' + DEBUGGEE_ID + '/breakpoints';
+
 var nock = require('nock');
 nock.disableNetConnect();
 
-describe(__filename, function(){
-  it('should not start unless we know the project num', function(done) {
-    var debuglet = new Debuglet(
-      config, logger.create(config.logLevel, '@google/cloud-debug'));
+var debuglet;
+var bp = {
+  id: 'test',
+  location: { path: 'fixtures/foo.js', line: 2 }
+};
 
+describe(__filename, function(){
+  beforeEach(function() {
+    process.env.GCLOUD_PROJECT_NUM = 0;
+    debuglet = new Debuglet(
+      config, logger.create(config.logLevel, '@google/cloud-debug'));
+    debuglet.once('started', function() {
+      debuglet.debugletApi_.request_ = request; // Avoid authing.
+    });
+  });
+
+  afterEach(function() {
+    debuglet.stop();
+  });
+
+  it('should not start unless we know the project num', function(done) {
     delete process.env.GCLOUD_PROJECT_NUM;
     var scope = nock('http://metadata.google.internal')
       .get('/computeMetadata/v1/project/numeric-project-id')
@@ -36,7 +57,6 @@ describe(__filename, function(){
 
     debuglet.once('error', function(err) {
       assert(err);
-      debuglet.stop();
       scope.done();
       done();
     });
@@ -47,15 +67,11 @@ describe(__filename, function(){
   });
 
   it('should complain if GCLOUD_PROJECT_NUM is not numeric', function(done) {
-    var debuglet = new Debuglet(
-      config, logger.create(config.logLevel, '@google/cloud-debug'));
-
     process.env.GCLOUD_PROJECT_NUM='11020304f2934';
 
     debuglet.once('error', function(err) {
       assert(err);
       assert(err.message.indexOf('should be numeric') !== -1);
-      debuglet.stop();
       done();
     });
     debuglet.once('started', function() {
@@ -67,28 +83,41 @@ describe(__filename, function(){
   it('should error if a package.json doesn\'t exist');
 
   it('should register successfully otherwise', function(done) {
-    var debuglet = new Debuglet(
-      config, logger.create(config.logLevel, '@google/cloud-debug'));
-
-    process.env.GCLOUD_PROJECT_NUM=0;
-
-    var API = 'https://clouddebugger.googleapis.com';
-    var PATH = '/v2/controller/debuggees/register';
     var scope = nock(API)
-      .post(PATH)
+      .post(REGISTER_PATH)
       .reply(200, {
         debuggee: {
-          id: 'foo'
+          id: DEBUGGEE_ID
         }
       });
 
-    debuglet.once('started', function() {
-      debuglet.debugletApi_.request_ = request; // Avoid authing.
-    });
     debuglet.once('registered', function(id) {
-      assert(id === 'foo');
-      debuglet.stop();
+      assert(id === DEBUGGEE_ID);
       scope.done();
+      done();
+    });
+
+    debuglet.start();
+  });
+
+  it('should pass source context to api if present', function(done) {
+    process.chdir('test/fixtures');
+
+    var scope = nock(API)
+      .post(REGISTER_PATH, function(body) {
+        return body.debuggee.sourceContexts[0] &&
+          body.debuggee.sourceContexts[0].a === 5;
+      })
+      .reply(200, {
+        debuggee: {
+          id: DEBUGGEE_ID
+        }
+      });
+
+    debuglet.once('registered', function(id) {
+      assert(id === DEBUGGEE_ID);
+      scope.done();
+      process.chdir('../..');
       done();
     });
 
@@ -103,49 +132,33 @@ describe(__filename, function(){
 
   it('should re-fetch breakpoints on error', function(done) {
     this.timeout(6000);
-    var debuglet = new Debuglet(
-      config, logger.create(config.logLevel, '@google/cloud-debug'));
-
-    process.env.GCLOUD_PROJECT_NUM=0;
-
-    var API = 'https://clouddebugger.googleapis.com';
 
     var scope = nock(API)
-      .post('/v2/controller/debuggees/register')
+      .post(REGISTER_PATH)
       .reply(200, {
         debuggee: {
-          id: 'bar'
+          id: DEBUGGEE_ID
         }
       })
-      .post('/v2/controller/debuggees/register')
+      .post(REGISTER_PATH)
       .reply(200, {
         debuggee: {
-          id: 'bar'
+          id: DEBUGGEE_ID
         }
       })
-      .get('/v2/controller/debuggees/bar/breakpoints')
+      .get(BPS_PATH)
       .reply(404)
-      .get('/v2/controller/debuggees/bar/breakpoints')
+      .get(BPS_PATH)
       .reply(409)
-      .get('/v2/controller/debuggees/bar/breakpoints')
+      .get(BPS_PATH)
       .reply(200, {
-        breakpoints: [{
-          id: 'test',
-          location: { path: 'fixtures/foo.js', line: 2 }
-        }]
+        breakpoints: [bp]
       });
 
-    debuglet.once('started', function() {
-      debuglet.debugletApi_.request_ = request; // Avoid authing.
-    });
     debuglet.once('registered', function reg(id) {
-      assert(id === 'bar');
+      assert(id === DEBUGGEE_ID);
       setTimeout(function() {
-        assert.deepEqual(debuglet.activeBreakpointMap_.test, {
-          id: 'test',
-          location: { path: 'fixtures/foo.js', line: 2 }
-        });
-        debuglet.stop();
+        assert.deepEqual(debuglet.activeBreakpointMap_.test, bp);
         scope.done();
         done();
       }, 1000);
@@ -157,44 +170,33 @@ describe(__filename, function(){
   it('should add a breakpoint');
 
   it('should report error on breakpoint set', function(done) {
-    var debuglet = new Debuglet(
-      config, logger.create(config.logLevel, '@google/cloud-debug'));
-
-    process.env.GCLOUD_PROJECT_NUM=0;
-
-    var bp = {
+    var errorBp = {
       id: 'test',
       location: { path: 'fixtures/foo', line: 2 }
     };
 
-    var API = 'https://clouddebugger.googleapis.com';
-
     var scope = nock(API)
-      .post('/v2/controller/debuggees/register')
+      .post(REGISTER_PATH)
       .reply(200, {
         debuggee: {
-          id: 'bar'
+          id: DEBUGGEE_ID
         }
       })
-      .get('/v2/controller/debuggees/bar/breakpoints')
+      .get(BPS_PATH)
       .reply(200, {
-        breakpoints: [bp]
+        breakpoints: [errorBp]
       })
-      .put('/v2/controller/debuggees/bar/breakpoints/test', function(body) {
+      .put(BPS_PATH + '/test', function(body) {
         var status = body.breakpoint.status;
         return status.isError &&
           status.description.format.indexOf('Only files with .js extensions') !== -1;
       })
       .reply(200);
 
-    debuglet.once('started', function() {
-      debuglet.debugletApi_.request_ = request; // Avoid authing.
-    });
     debuglet.once('registered', function(id) {
-      assert(id === 'bar');
+      assert(id === DEBUGGEE_ID);
       setTimeout(function() {
         assert(!debuglet.activeBreakpointMap_.test);
-        debuglet.stop();
         scope.done();
         done();
       }, 200);
@@ -210,28 +212,20 @@ describe(__filename, function(){
     var debuglet = new Debuglet(
       config, logger.create(config.logLevel, '@google/cloud-debug'));
 
-    process.env.GCLOUD_PROJECT_NUM=0;
-
-    var bp = {
-      id: 'test',
-      location: { path: 'fixtures/foo.js', line: 2 }
-    };
-
-    var API = 'https://clouddebugger.googleapis.com';
-
     var scope = nock(API)
-      .post('/v2/controller/debuggees/register')
+      .post(REGISTER_PATH)
       .reply(200, {
         debuggee: {
-          id: 'bar'
+          id: DEBUGGEE_ID
         }
       })
-      .get('/v2/controller/debuggees/bar/breakpoints')
+      .get(BPS_PATH)
       .reply(200, {
         breakpoints: [bp]
       })
-      .put('/v2/controller/debuggees/bar/breakpoints/test', function(body) {
-        return body.breakpoint.status.description.format === 'The snapshot has expired';
+      .put(BPS_PATH + '/test', function(body) {
+        return body.breakpoint.status.description.format ===
+          'The snapshot has expired';
       })
       .reply(200);
 
@@ -239,12 +233,11 @@ describe(__filename, function(){
       debuglet.debugletApi_.request_ = request; // Avoid authing.
     });
     debuglet.once('registered', function(id) {
-      assert(id === 'bar');
+      assert(id === DEBUGGEE_ID);
       setTimeout(function() {
         assert.deepEqual(debuglet.activeBreakpointMap_.test, bp);
         setTimeout(function() {
           assert(!debuglet.activeBreakpointMap_.test);
-          debuglet.stop();
           scope.done();
           config.breakpointExpirationSec = oldTimeout;
           done();
