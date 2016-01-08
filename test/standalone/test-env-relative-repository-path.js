@@ -22,6 +22,7 @@ process.env.GCLOUD_DEBUG_REPO_APP_PATH = '/my/project/root';
 var assert = require('assert');
 var agent = require('../..');
 var api;
+var h = require('../fixtures/a/hello.js');
 
 describe('repository relative paths', function() {
 
@@ -44,14 +45,18 @@ describe('repository relative paths', function() {
     var bp = {
       id: 0,
       location: {
-        line: 1,
+        line: 3,
         path: '/my/project/root/test/fixtures/a/hello.js'
       }
     };
     api.set(bp, function(err) {
       assert.ifError(err);
-      api.clear(bp);
-      done();
+      api.wait(bp, function(err) {
+        assert.ifError(err);
+        api.clear(bp);
+        done();
+      });
+      process.nextTick(function() { h.hello(); });
     });
   });
 
