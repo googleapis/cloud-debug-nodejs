@@ -156,6 +156,53 @@ describe(__filename, function(){
 
   it('should add a breakpoint');
 
+  it('should report error on breakpoint set', function(done) {
+    var debuglet = new Debuglet(
+      config, logger.create(config.logLevel, '@google/cloud-debug'));
+
+    process.env.GCLOUD_PROJECT_NUM=0;
+
+    var bp = {
+      id: 'test',
+      location: { path: 'fixtures/foo', line: 2 }
+    };
+
+    var API = 'https://clouddebugger.googleapis.com';
+
+    var scope = nock(API)
+      .post('/v2/controller/debuggees/register')
+      .reply(200, {
+        debuggee: {
+          id: 'bar'
+        }
+      })
+      .get('/v2/controller/debuggees/bar/breakpoints')
+      .reply(200, {
+        breakpoints: [bp]
+      })
+      .put('/v2/controller/debuggees/bar/breakpoints/test', function(body) {
+        var status = body.breakpoint.status;
+        return status.isError &&
+          status.description.format.indexOf('Only files with .js extensions') !== -1;
+      })
+      .reply(200);
+
+    debuglet.once('started', function() {
+      debuglet.debugletApi_.request_ = request; // Avoid authing.
+    });
+    debuglet.once('registered', function(id) {
+      assert(id === 'bar');
+      setTimeout(function() {
+        assert(!debuglet.activeBreakpointMap_.test);
+        debuglet.stop();
+        scope.done();
+        done();
+      }, 200);
+    });
+
+    debuglet.start();
+  });
+
   it('should expire stale breakpoints', function(done) {
     var oldTimeout = config.breakpointExpirationSec;
     config.breakpointExpirationSec = 1;
