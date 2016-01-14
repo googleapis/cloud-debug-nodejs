@@ -247,5 +247,16 @@ describe(__filename, function(){
 
     debuglet.start();
   });
+
+  describe('map subtract', function() {
+    it('should be correct', function() {
+      var a = { a: 1, b: 2 };
+      var b = { a: 1 };
+      assert.deepEqual(Debuglet.mapSubtract(a, b), [2]);
+      assert.deepEqual(Debuglet.mapSubtract(b, a), []);
+      assert.deepEqual(Debuglet.mapSubtract(a, {}), [1, 2]);
+      assert.deepEqual(Debuglet.mapSubtract({}, b), []);
+    });
+  });
 });
 
