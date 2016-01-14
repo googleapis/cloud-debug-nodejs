@@ -3,6 +3,10 @@
 /*3*/function foo(n) {
 /*4*/  return n+42;
 /*5*/}
+/*6*/function getterObject() {
+/*7*/  var hasGetter = { _a: 5, get a() { return this._a; } };
+/*8*/  return hasGetter.a;
+/*9*/}
 /**
  * Copyright 2015 Google Inc. All Rights Reserved.
  *
@@ -332,7 +336,40 @@ describe('v8debugapi', function() {
         });
         process.nextTick(function() {foo(3);});
       });
+    });
 
+    it('should report error for native prop or getter', function(done) {
+      var bp = {
+        id: 'fake-id-124',
+        location: { path: 'test-v8debugapi.js', line: 8 },
+        expressions: ['process.env', 'hasGetter']
+      };
+      api.set(bp, function(err) {
+        assert.ifError(err);
+        api.wait(bp, function(err) {
+          assert.ifError(err);
+
+          var procEnv = bp.evaluatedExpressions[0];
+          assert.equal(procEnv.name, 'process.env');
+          var envVal = bp.variableTable[procEnv.varTableIndex];
+          envVal.members.forEach(function(member) {
+            assert(bp.variableTable[member.varTableIndex].status.isError);
+          });
+          var hasGetter = bp.evaluatedExpressions[1];
+          var getterVal = bp.variableTable[hasGetter.varTableIndex];
+          assert(getterVal.members.some(function(m) {
+            return m.value === '5';
+          }));
+          assert(getterVal.members.some(function(m) {
+            var resolved = bp.variableTable[m.varTableIndex];
+            return resolved && resolved.status.isError;
+          }));
+
+          api.clear(bp);
+          done();
+        });
+        process.nextTick(function() {getterObject();});
+      });
     });
 
     it('should capture without values for invalid watch expressions', function(done) {
