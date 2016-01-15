@@ -46,7 +46,7 @@ describe('v8debugapi', function() {
 
   beforeEach(function(done) {
     if (!api) {
-      scanner.scan(config.workingDirectory, function(err, hash, fileStats) {
+      scanner.scan(true, config.workingDirectory, function(err, fileStats, hash) {
         assert(!err);
         api = v8debugapi.create(logger, config, fileStats);
         assert.ok(api, 'should be able to create the api');
