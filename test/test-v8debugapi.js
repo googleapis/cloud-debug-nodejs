@@ -336,6 +336,30 @@ describe('v8debugapi', function() {
       });
     });
 
+    it('should capture correct frame count', function(done) {
+      // clone a clean breakpointInFoo
+      var bp  = {id: breakpointInFoo.id, location: breakpointInFoo.location};
+      var oldMax = config.capture.maxFrames;
+      config.capture.maxFrames = 1;
+      api.set(bp, function(err) {
+        assert.ifError(err);
+        api.wait(bp, function(err) {
+          assert.ifError(err);
+          assert.ok(bp.stackFrames);
+          assert.equal(bp.stackFrames.length, config.capture.maxFrames);
+          var topFrame = bp.stackFrames[0];
+          assert.ok(topFrame);
+          assert.equal(topFrame['function'], 'foo');
+          assert.equal(topFrame.arguments[0].name, 'n');
+          assert.equal(topFrame.arguments[0].value, '2');
+          api.clear(bp);
+          config.capture.maxFrames = oldMax;
+          done();
+        });
+      process.nextTick(function() {foo(2);});
+      });
+    });
+
     it('should capture state with watch expressions', function(done) {
       // clone a clean breakpointInFoo
       var bp  = {

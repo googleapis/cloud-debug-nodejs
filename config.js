@@ -41,8 +41,7 @@ module.exports = {
 
     // Maximum number of stack frames to capture data for. The limit is aimed
     // to reduce overall capture time
-    // TODO: implement this
-    //maxFrames: 20,
+    maxFrames: 20,
 
     // Only collect locals and arguments on a few top frames. For the rest
     // only collect the source location
