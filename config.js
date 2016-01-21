@@ -46,8 +46,7 @@ module.exports = {
 
     // Only collect locals and arguments on a few top frames. For the rest
     // only collect the source location
-    // TODO: implement this
-    //maxExpandFrames: 5,
+    maxExpandFrames: 5,
 
     // To reduce the overall capture time, limit the number of properties
     // gathered on large object. A value of 0 disables the limit.

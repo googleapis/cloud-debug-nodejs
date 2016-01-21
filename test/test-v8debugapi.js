@@ -307,6 +307,35 @@ describe('v8debugapi', function() {
       });
     });
 
+    it('should resolve correct frame count', function(done) {
+      // clone a clean breakpointInFoo
+      var bp  = {id: breakpointInFoo.id, location: breakpointInFoo.location};
+      var oldCount = config.capture.maxExpandFrames;
+      config.capture.maxExpandFrames = 0;
+      api.set(bp, function(err) {
+        assert.ifError(err);
+        api.wait(bp, function(err) {
+          assert.ifError(err);
+          assert.ok(bp.stackFrames);
+          assert.ok(bp.variableTable);
+
+          var topFrame = bp.stackFrames[0];
+          assert.ok(topFrame);
+          assert.equal(topFrame['function'], 'foo');
+          assert.equal(topFrame.arguments.length, 1);
+          var argsVal = bp.variableTable[topFrame.arguments[0].varTableIndex];
+          assert(argsVal.status.isError);
+          assert.equal(topFrame.locals.length, 1);
+          var localsVal = bp.variableTable[topFrame.locals[0].varTableIndex];
+          assert(localsVal.status.isError);
+          api.clear(bp);
+          config.capture.maxExpandFrames = oldCount;
+          done();
+        });
+      process.nextTick(function() {foo(2);});
+      });
+    });
+
     it('should capture state with watch expressions', function(done) {
       // clone a clean breakpointInFoo
       var bp  = {
