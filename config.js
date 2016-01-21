@@ -58,12 +58,11 @@ module.exports = {
     // based on the length of names and values of the properties. This should
     // be somewhat proportional to the amount of processing needed to capture
     // the data and subsequently the network traffic.
-    maxDataSize: 20000
+    maxDataSize: 20000,
 
     // To limit the size of the buffer, we truncate long strings.
     // A value of 0 disables truncation.
-    // TODO: implement
-    //maxStringLength: 80
+    maxStringLength: 0
   },
 
 // These configuration options are for internal experimentation only.

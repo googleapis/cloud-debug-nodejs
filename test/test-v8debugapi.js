@@ -4,7 +4,7 @@
 /*4*/  return n+42;
 /*5*/}
 /*6*/function getterObject() {
-/*7*/  var hasGetter = { _a: 5, get a() { return this._a; } };
+/*7*/  var hasGetter = { _a: 5, get a() { return this._a; }, b: 'hello world' };
 /*8*/  return hasGetter.a;
 /*9*/}
 /**
@@ -366,6 +366,32 @@ describe('v8debugapi', function() {
           }));
 
           api.clear(bp);
+          done();
+        });
+        process.nextTick(function() {getterObject();});
+      });
+    });
+
+    it('should limit string length', function(done) {
+      var bp = {
+        id: 'fake-id-124',
+        location: { path: 'test-v8debugapi.js', line: 8 },
+        expressions: ['hasGetter']
+      };
+      var oldMax = config.capture.maxStringLength;
+      config.capture.maxStringLength = 3;
+      api.set(bp, function(err) {
+        assert.ifError(err);
+        api.wait(bp, function(err) {
+          assert.ifError(err);
+          var hasGetter = bp.evaluatedExpressions[0];
+          var getterVal = bp.variableTable[hasGetter.varTableIndex];
+          assert(getterVal.members.some(function(m) {
+            return m.value === 'hel...';
+          }));
+
+          api.clear(bp);
+          config.capture.maxStringLength = oldMax;
           done();
         });
         process.nextTick(function() {getterObject();});
