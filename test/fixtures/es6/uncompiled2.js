@@ -1,10 +1,9 @@
-"use strict";
-var i = 1;
-var foo = function foo(j) {
-  return i + j + "hi";
-};
+var j = 5;
+var bar = (k) => {
+  return j + k + `hi`;
+}
 
-module.exports.foo = foo;
+module.exports.bar = bar
 
 /**
  * Copyright 2015 Google Inc. All Rights Reserved.
