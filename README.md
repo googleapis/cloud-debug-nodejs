@@ -88,7 +88,7 @@ At this point you can deploy your application to  and the debug agent will activ
 
 ## Using the Debugger
 
-Once your application is running (deployed, or elsewhere), you should be able to use the [Debug UI][debug-tab] in your Cloud [developer console][dev-console]. You can find the Debug UI in the 'Operations > Debug' section in the navigation panel, or by simply searching for 'Debug' in the developer console.
+Once your application is running (deployed, or elsewhere), you should be able to use the [Debug UI][debug-tab] in your Cloud [developer console][dev-console]. You can find the Debug UI in the 'STACKDRIVER -> Debug' section in the navigation panel, or by simply searching for 'Debug' in the developer console.
 
 ![Debug UI](doc/images/debug-ui.png?raw=true)
 
