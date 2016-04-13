@@ -37,7 +37,7 @@ var bp = {
 
 describe(__filename, function(){
   beforeEach(function() {
-    process.env.GCLOUD_PROJECT_NUM = 0;
+    process.env.GCLOUD_PROJECT = 0;
     debuglet = new Debuglet(
       config, logger.create(config.logLevel, '@google/cloud-debug'));
     debuglet.once('started', function() {
@@ -50,7 +50,7 @@ describe(__filename, function(){
   });
 
   it('should not start unless we know the project num', function(done) {
-    delete process.env.GCLOUD_PROJECT_NUM;
+    delete process.env.GCLOUD_PROJECT;
     var scope = nock('http://metadata.google.internal')
       .get('/computeMetadata/v1/project/numeric-project-id')
       .reply(404);
@@ -66,17 +66,23 @@ describe(__filename, function(){
     debuglet.start();
   });
 
-  it('should complain if GCLOUD_PROJECT_NUM is not numeric', function(done) {
-    process.env.GCLOUD_PROJECT_NUM='11020304f2934';
+  it('should accept non-numeric GCLOUD_PROJECT', function(done) {
+    process.env.GCLOUD_PROJECT='11020304f2934';
 
-    debuglet.once('error', function(err) {
-      assert(err);
-      assert(err.message.indexOf('should be numeric') !== -1);
+    var scope = nock(API)
+      .post(REGISTER_PATH)
+      .reply(200, {
+        debuggee: {
+          id: DEBUGGEE_ID
+        }
+      });
+
+    debuglet.once('registered', function(id) {
+      assert(id === DEBUGGEE_ID);
+      scope.done();
       done();
     });
-    debuglet.once('started', function() {
-      assert.fail();
-    });
+
     debuglet.start();
   });
 

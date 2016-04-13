@@ -63,7 +63,7 @@ module.exports.runTest = function runTest() {
     assert.ok(api.debuggeeId_, 'debuglet has registered');
 
     var debuggee = api.debuggeeId_;
-    var project = api.projectNumber_;
+    var project = api.project_;
 
     // Get our own credentials because we need an extra scope
     var auth = new GoogleAuth();

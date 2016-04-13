@@ -34,7 +34,7 @@ var debuglet;
 
 describe(__filename, function(){
   beforeEach(function() {
-    process.env.GCLOUD_PROJECT_NUM = 0;
+    process.env.GCLOUD_PROJECT = 0;
     debuglet = new Debuglet(
       config, logger.create(config.logLevel, '@google/cloud-debug'));
     debuglet.once('started', function() {

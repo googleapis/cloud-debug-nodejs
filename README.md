@@ -13,7 +13,7 @@ This module provides Cloud Debug support for Node.js applications. [Google Cloud
 [![Cloud Debugger Intro](http://img.youtube.com/vi/tyHcK_kAOpw/0.jpg)](https://www.youtube.com/watch?v=tyHcK_kAOpw)
 
 ## Prerequisites
-* Your application will need to be using Node.js version 0.12 or greater. Node.js v5+ is recommended. (Node.js v5.2.0 is not supported on account of [this bug](https://github.com/nodejs/node/issues/4297))
+* Your application will need to be using Node.js version 0.12 or greater. Node.js v5+ is recommended.
 * The source of your application is uploaded to a [cloud source repository](https://cloud.google.com/tools/cloud-repositories/docs/). The Debugger UI needs the source to be available in order to set breakpoints.
 
 ## Quick Start (Node.js v4.x+)
@@ -21,32 +21,10 @@ This module provides Cloud Debug support for Node.js applications. [Google Cloud
 # Install with `npm` or add to your `package.json`.
 npm install --save @google/cloud-debug
 
-# Change the start command of your application in package.json
-   ...
-   "scripts" {
-     "start": "node --require @google/cloud-debug server.js"
-   ...
+# Require the agent at the top of your main script.
+require('@google/cloud-debug');
 ```
 Deploy your application, and navigate to the [Debug tab][debug-tab] within the [Google Developers Console][dev-console] to set breakpoints and start debugging.
-
-## Installation
-
-1. Install the debug agent module via `npm` or add it to your `package.json`.
-
-   ```shell
-   npm install --save @google/cloud-debug
-   ```
-1. Ensure that the module gets loaded during your application's startup. The best way to do this is via the `--require` command line option available in Node.js v4. You should add this option to the startup script section in your `package.json`.
-
-   ```
-   "scripts": {
-      "start": "node --require @google/cloud-debug server.js",
-   ```
-   If you are using Node.js v0.12.x, you will not be able to use the `--require` command line option. Instead you will have to manually load the debug agent module in the startup script of your application. For example, you may want to add the following
-   to your `server.js`:
-   ```javascript
-   require('@google/cloud-debug');
-   ```
 
 ## Running on Google Cloud Platform
 
@@ -72,13 +50,13 @@ Container Engine nodes need to also be created with the `cloud-platform` scope, 
 
 If your application is running outside of Google Cloud Platform, such as locally, on-premise, or on another cloud provider, you can still use Cloud Debug.
 
-1. You will need to specify the numeric project ID of your project. Your numeric project ID, or project number, is visible the Project information section on your project's [dashboard][dashboard].
+1. You will need to specify your project name. Your project name is visible in the [Google Cloud Console][cloud-console-projects], it may be something like `particular-future-12345`. If your application is [running on Google Cloud Platform](running-on-google-cloud-platform), you don't need to specify the project name.
 
-        export GCLOUD_PROJECT_NUM=<your numeric project id>
+        export GCLOUD_PROJECT=<project name>
 
-2. You need to provide service account credentials to your application. The recommended way is via [Application Default Credentials](https://developers.google.com/identity/protocols/application-default-credentials).
+2. You need to provide service account credentials to your application. The recommended way is via [Application Default Credentials][app-default-credentials].
 
-  1. [Create a new JSON service account key](https://console.developers.google.com/apis/credentials/serviceaccountkey).
+  1. [Create a new JSON service account key][service-account].
   2. Copy the key somewhere your application can access it. Be sure not to expose the key publicly.
   3. Set the environment variable `GOOGLE_APPLICATION_CREDENTIALS` to the full path to the key. The debug agent will automatically look for this environment variable.
 
@@ -110,10 +88,12 @@ As soon as that line of code is reached in any of the running instances of your 
 
 
 [cloud-debugger]: https://cloud.google.com/tools/cloud-debugger/
-[dev-console]: https://console.developers.google.com/
-[dashboard]: https://console.developers.google.com/dashboard
+[dev-console]: https://console.cloud.google.com/
 [debug-tab]: https://console.developers.google.com/debug
 [gcloud-sdk]: https://cloud.google.com/sdk/gcloud/
+[cloud-console-projects]: https://console.cloud.google.com/iam-admin/projects
+[app-default-credentials]: https://developers.google.com/identity/protocols/application-default-credentials
+[service-account]: https://console.developers.google.com/apis/credentials/serviceaccountkey
 [npm-image]: https://img.shields.io/npm/v/@google/cloud-debug.svg
 [npm-url]: https://npmjs.org/package/@google/cloud-debug
 [travis-image]: https://travis-ci.org/GoogleCloudPlatform/cloud-debug-nodejs.svg?branch=master

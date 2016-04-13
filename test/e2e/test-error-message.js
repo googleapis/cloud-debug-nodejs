@@ -31,7 +31,7 @@ describe(__filename, function() {
     var debuglet = new Debuglet(
       config, logger.create(config.logLevel, '@google/cloud-debug'));
 
-    process.env.GCLOUD_PROJECT_NUM=0;
+    process.env.GCLOUD_PROJECT=0;
 
     var API = 'https://clouddebugger.googleapis.com';
 

@@ -16,7 +16,7 @@
 
 'use strict';
 
-process.env.GCLOUD_PROJECT_NUM = 0;
+process.env.GCLOUD_PROJECT = 0;
 process.env.GCLOUD_DEBUG_REPO_APP_PATH = '/my/project/root';
 
 var assert = require('assert');
