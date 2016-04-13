@@ -53,12 +53,12 @@
     "istanbul": "^0.4.1",
     "jshint": "^2.7.0",
     "mocha": "^2.2.4",
-    "nock": "^3.6.0",
+    "nock": "^8.0.0",
     "proxyquire": "^1.4.0"
   },
   "dependencies": {
     "@google/cloud-diagnostics-common": "^0.2.0",
-    "acorn": "^2.3.0",
+    "acorn": "^2.7.0",
     "coffee-script": "^1.9.3",
     "findit": "^2.0.0",
     "google-auth-library": "^0.9.5",
