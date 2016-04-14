@@ -19,6 +19,7 @@ var assert = require('assert');
 var nock   = require('nock');
 var request = require('request');
 var proxyquire = require('proxyquire');
+var agentVersion = require('../package.json').version;
 
 // require DebugletAPI while stubbing auth to bypass authentication
 //
@@ -57,7 +58,10 @@ describe('Debuglet API', function() {
   describe('register', function() {
     it('should get a debuggeeId', function(done) {
       var scope = nock(url)
-        .post(api + '/debuggees/register')
+        .post(api + '/debuggees/register', function (body) {
+          return body.debuggee.agentVersion ===
+            ('google.com/node-gcp/v' + agentVersion);
+        })
         .reply(200, {
           debuggee: { id: 'fake-debuggee' },
           activePeriodSec: 600
@@ -68,6 +72,35 @@ describe('Debuglet API', function() {
         assert.equal(debugletapi.debuggeeId_, 'fake-debuggee');
         scope.done();
         done();
+      });
+    });
+
+    it('should have correct version without projectId', function(done) {
+      var oldProjNum = utils.getProjectNumber;
+      utils.getProjectNumber = function(callback) {
+        callback(new Error(), null);
+      };
+      process.GCLOUD_PROJECT = 'project123';
+      var debugletapi = new DebugletApi();
+      debugletapi.init('uid1234', { warn: function() {} }, function(err) {
+        var scope = nock(url)
+          .post(api + '/debuggees/register', function (body) {
+            return body.debuggee.agentVersion ===
+              ('google.com/node-standalone/v' + agentVersion);
+          })
+          .reply(200, {
+            debuggee: { id: 'fake-debuggee' },
+            activePeriodSec: 600
+          });
+        debugletapi.register(function(err, result) {
+          assert(!err, 'not expecting an error');
+          assert.equal(result.debuggee.id, 'fake-debuggee');
+          assert.equal(debugletapi.debuggeeId_, 'fake-debuggee');
+          scope.done();
+          delete process.GCLOUD_PROJECT;
+          utils.getProjectNumber = oldProjNum;
+          done();
+        });
       });
     });
 
