@@ -50,7 +50,8 @@ describe('v8debugapi', function() {
 
   beforeEach(function(done) {
     if (!api) {
-      scanner.scan(true, config.workingDirectory, function(err, fileStats, hash) {
+      scanner.scan(true, config.workingDirectory, logger,
+          function(err, fileStats, hash) {
         assert(!err);
         api = v8debugapi.create(logger, config, fileStats);
         assert.ok(api, 'should be able to create the api');
@@ -549,11 +550,11 @@ describe('v8debugapi', function() {
       function (done) {
         var bp = {
           id: 'babel-id-1729',
-          location: { path: './test/fixtures/es6/transpile.es6',
+          location: { path: './test/fixtures/es6/uncompiled.js',
             line: 3 },
           condition: 'i + j === 3'
         };
-        var tt = require('./fixtures/es6/transpile');
+        var tt = require('./fixtures/es6/compiled-es6');
         api.set(bp, function(err) {
           assert.ifError(err);
           api.wait(bp, function(err) {

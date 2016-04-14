@@ -195,7 +195,7 @@ describe(__filename, function(){
       .put(BPS_PATH + '/test', function(body) {
         var status = body.breakpoint.status;
         return status.isError &&
-          status.description.format.indexOf('Only files with .js extensions') !== -1;
+          status.description.format.indexOf('not found loaded on the debuggee') !== -1;
       })
       .reply(200);
 

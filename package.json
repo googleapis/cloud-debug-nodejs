@@ -64,7 +64,6 @@
     "google-auth-library": "^0.9.5",
     "request": "^2.61.0",
     "semver": "^5.1.0",
-    "source-map": "^0.5.1",
-    "split": "^1.0.0"
+    "source-map": "^0.5.1"
   }
 }
