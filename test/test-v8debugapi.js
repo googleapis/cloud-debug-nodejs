@@ -1,7 +1,7 @@
 /*1* KEEP THIS CODE AT THE TOP TO AVOID LINE NUMBER CHANGES */
 /*2*/'use strict';
 /*3*/function foo(n) {
-/*4*/  return n+42;
+/*4*/  var A = new Array(3); return n+42+A[0];
 /*5*/}
 /*6*/function getterObject() {
 /*7*/  var hasGetter = { _a: 5, get a() { return this._a; }, b: 'hello world' };
@@ -28,6 +28,8 @@ var breakpointInFoo = {
   location: { path: 'test-v8debugapi.js', line: 4 }
 };
 
+var MAX_INT = 2147483647; // Max signed int32.
+
 var assert = require('assert');
 var v8debugapi = require('../lib/v8debugapi.js');
 var logModule = require('@google/cloud-diagnostics-common').logger;
@@ -43,6 +45,67 @@ function stateIsClean(api) {
   return true;
 }
 
+function validateVariable(variable) {
+  if (variable.name) {
+    assert.equal(typeof variable.name, 'string');
+  }
+  if (variable.value) {
+    assert.equal(typeof variable.value, 'string');
+  }
+  if (variable.type) {
+    assert.equal(typeof variable.type, 'string');
+  }
+  if (variable.members) {
+    variable.members.forEach(validateVariable);
+  }
+  if (variable.varTableIndex) {
+    assert.ok(Number.isInteger(variable.varTableIndex) &&
+              variable.varTableIndex >= 0 &&
+              variable.varTableIndex <= MAX_INT);
+  }
+}
+
+function validateSourceLocation(location) {
+  if (location.path) {
+    assert.equal(typeof location.path, 'string');
+  }
+  if (location.line) {
+    assert.ok(Number.isInteger(location.line) &&
+              location.line >= 1 &&
+              location.line <= MAX_INT);
+  }
+}
+
+function validateStackFrame(frame) {
+  if (frame['function']) {
+    assert.equal(typeof frame['function'], 'string');
+  }
+  if (frame.location) {
+    validateSourceLocation(frame.location);
+  }
+  if (frame.arguments) {
+    frame.arguments.forEach(validateVariable);
+  }
+  if (frame.locals) {
+    frame.locals.forEach(validateVariable);
+  }
+}
+
+function validateBreakpoint(breakpoint) {
+  if (!breakpoint) {
+    return;
+  }
+  if (breakpoint.variableTable) {
+    breakpoint.variableTable.forEach(validateVariable);
+  }
+  if (breakpoint.evaluatedExpressions) {
+    breakpoint.evaluatedExpressions.forEach(validateVariable);
+  }
+  if (breakpoint.stackFrames) {
+    breakpoint.stackFrames.forEach(validateStackFrame);
+  }
+}
+
 describe('v8debugapi', function() {
   config.workingDirectory = process.cwd() + '/test';
   var logger = logModule.create(config.logLevel);
@@ -54,6 +117,15 @@ describe('v8debugapi', function() {
         assert(!err);
         api = v8debugapi.create(logger, config, fileStats);
         assert.ok(api, 'should be able to create the api');
+
+        // monkey-patch wait to add validation of the breakpoints.
+        var origWait = api.wait;
+        api.wait = function(bp, callback) {
+          origWait(bp, function(err) {
+            validateBreakpoint(bp);
+            callback(err);
+          });
+        };
         done();
       });
     } else {
