@@ -456,6 +456,16 @@ describe('v8debugapi', function() {
           assert.equal(watch.name, 'process');
           assert.ok(watch.varTableIndex);
 
+          // Make sure the process object looks sensible.
+          var processVal = bp.variableTable[watch.varTableIndex];
+          assert.ok(processVal);
+          assert.ok(processVal.members.some(function(m) {
+            return m.name === 'nextTick' && m.value.indexOf('function') === 0;
+          }));
+          assert.ok(processVal.members.some(function(m) {
+            return m.name === 'versions' && m.varTableIndex;
+          }));
+
           api.clear(bp);
           done();
         });
