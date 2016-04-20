@@ -700,6 +700,33 @@ describe('v8debugapi', function() {
         process.nextTick(function() {foo();});
       });
     });
+
+    it('should not silence errors thrown in the wait callback', function(done) {
+      var message = 'This exception should not be silenced';
+      // Remove the mocha listener.
+      var listeners = process.listeners('uncaughtException');
+      assert.equal(listeners.length, 1);
+      var originalListener = listeners[0];
+      process.removeListener('uncaughtException', originalListener);
+      process.once('uncaughtException', function(err) {
+        assert.ok(err);
+        assert.equal(err.message, message);
+        // Restore the mocha listener.
+        process.on('uncaughtException', originalListener);
+        done();
+      });
+
+      // clone a clean breakpointInFoo
+      var bp = {id: breakpointInFoo.id, location: breakpointInFoo.location};
+      api.set(bp, function(err) {
+        assert.ifError(err);
+        api.wait(bp, function(err) {
+          api.clear(bp);
+          throw new Error(message);
+        });
+        process.nextTick(function() {foo(1);});
+      });
+    });
   });
 
   it('should be possible to set deferred breakpoints');
