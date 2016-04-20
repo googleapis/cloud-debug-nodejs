@@ -62,7 +62,9 @@ If your application is running outside of Google Cloud Platform, such as locally
 
 3. Alternatively, if you are running your application on a machine where your are using the [`gcloud` command line tools][gcloud-sdk], and are logged using `gcloud auth login`, you already have sufficient credentials, and a service account key is not required.
 
-At this point you can deploy your application to  and the debug agent will activate with no further action. If you want to run your application locally, you can still use the cloud debug agent, with a few additional steps:
+4. Generate a `source-context.json` file which contains information about the version of the source code used to build the application. This file should be located in the root directory of your application. When you open the Stackdriver Debugger in the Cloud Platform Console, it uses the information in this file to display the correct version of the source.
+
+        gcloud preview app gen-repo-info-file
 
 ## Using the Debugger
 
