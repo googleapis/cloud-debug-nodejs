@@ -158,11 +158,13 @@ describe(__filename, function(){
           id: DEBUGGEE_ID
         }
       })
-      .get(BPS_PATH)
+      .get(BPS_PATH + '?success_on_timeout=true')
       .reply(404)
-      .get(BPS_PATH)
-      .reply(409)
-      .get(BPS_PATH)
+      .get(BPS_PATH + '?success_on_timeout=true')
+      .reply(200, {
+        wait_expired: true
+      })
+      .get(BPS_PATH + '?success_on_timeout=true')
       .reply(200, {
         breakpoints: [bp, logBp]
       })
@@ -202,7 +204,7 @@ describe(__filename, function(){
           id: DEBUGGEE_ID
         }
       })
-      .get(BPS_PATH)
+      .get(BPS_PATH + '?success_on_timeout=true')
       .reply(200, {
         breakpoints: [errorBp]
       })
@@ -239,7 +241,7 @@ describe(__filename, function(){
           id: DEBUGGEE_ID
         }
       })
-      .get(BPS_PATH)
+      .get(BPS_PATH + '?success_on_timeout=true')
       .reply(200, {
         breakpoints: [bp]
       })

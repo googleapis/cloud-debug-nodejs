@@ -141,7 +141,7 @@ describe('Debuglet API', function() {
 
     it('should deal with a missing breakpoints response', function(done) {
       var scope = nock(url)
-        .get(api + '/debuggees/fake-debuggee/breakpoints')
+        .get(api + '/debuggees/fake-debuggee/breakpoints?success_on_timeout=true')
         .reply(200, { kind: 'whatever' });
 
       debugletapi.listBreakpoints(function(err, response, result) {
@@ -157,8 +157,8 @@ describe('Debuglet API', function() {
       tests.forEach(function(invalidResponse, index) {
         it('should pass test ' + index, function(done) {
           var scope = nock(url)
-                        .get(api + '/debuggees/fake-debuggee/breakpoints')
-                        .reply(200, invalidResponse);
+            .get(api + '/debuggees/fake-debuggee/breakpoints?success_on_timeout=true')
+            .reply(200, invalidResponse);
           debugletapi.listBreakpoints(function(err, response, result) {
             assert(!err, 'not expecting an error');
             assert(!result.breakpoints, 'should not have breakpoints property');
@@ -171,8 +171,8 @@ describe('Debuglet API', function() {
 
     it('should throw error on http errors', function(done) {
       var scope = nock(url)
-                    .get(api + '/debuggees/fake-debuggee/breakpoints')
-                    .reply(403);
+        .get(api + '/debuggees/fake-debuggee/breakpoints?success_on_timeout=true')
+        .reply(403);
       debugletapi.listBreakpoints(function(err, response, result) {
         assert(err instanceof Error, 'expecting an error');
         assert(!result, 'should not have a result');
@@ -183,13 +183,14 @@ describe('Debuglet API', function() {
 
     it('should work with waitTokens', function(done) {
       var scope = nock(url)
-        .get(api + '/debuggees/fake-debuggee/breakpoints')
-        .reply(409);
+        .get(api + '/debuggees/fake-debuggee/breakpoints?success_on_timeout=true')
+        .reply(200, {
+          wait_expired: true
+        });
 
       debugletapi.listBreakpoints(function(err, response, result) {
         assert.ifError(err, 'not expecting an error');
-        assert(!result, 'should not have a result');
-        assert(response.statusCode === 409, 'should have the correct status code');
+        assert(response.body.wait_expired, 'should have expired set');
         scope.done();
         done();
       });
@@ -203,7 +204,7 @@ describe('Debuglet API', function() {
     testsBreakpoints.forEach(function(breakpoints, index) {
       it('should pass test ' + index, function(done) {
         var scope = nock(url)
-          .get(api + '/debuggees/fake-debuggee/breakpoints')
+          .get(api + '/debuggees/fake-debuggee/breakpoints?success_on_timeout=true')
           .reply(200, {
             breakpoints: breakpoints
           });
