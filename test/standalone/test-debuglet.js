@@ -32,6 +32,12 @@ nock.disableNetConnect();
 var debuglet;
 var bp = {
   id: 'test',
+  action: 'CAPTURE',
+  location: { path: 'fixtures/foo.js', line: 2 }
+};
+var logBp = {
+  id: 'testLog',
+  action: 'LOG',
   location: { path: 'fixtures/foo.js', line: 2 }
 };
 
@@ -158,13 +164,20 @@ describe(__filename, function(){
       .reply(409)
       .get(BPS_PATH)
       .reply(200, {
-        breakpoints: [bp]
-      });
+        breakpoints: [bp, logBp]
+      })
+      .put(BPS_PATH + '/' + logBp.id, function(body) {
+        var status = body.breakpoint.status;
+        return status.isError &&
+          status.description.format.indexOf('action is CAPTURE') !== -1;
+      })
+      .reply(200);
 
     debuglet.once('registered', function reg(id) {
       assert(id === DEBUGGEE_ID);
       setTimeout(function() {
         assert.deepEqual(debuglet.activeBreakpointMap_.test, bp);
+        assert(!debuglet.activeBreakpointMap_.testLog);
         scope.done();
         done();
       }, 1000);
@@ -178,6 +191,7 @@ describe(__filename, function(){
   it('should report error on breakpoint set', function(done) {
     var errorBp = {
       id: 'test',
+      action: 'CAPTURE',
       location: { path: 'fixtures/foo', line: 2 }
     };
 
