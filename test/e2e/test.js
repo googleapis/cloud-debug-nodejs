@@ -60,6 +60,7 @@ module.exports.runTest = function runTest() {
     var debuglet = agent.private_;
     assert.ok(debuglet.debugletApi_, 'debuglet api is active');
     var api = debuglet.debugletApi_;
+    assert.ok(api.uid_, 'debuglet provided unique id');
     assert.ok(api.debuggeeId_, 'debuglet has registered');
 
     var debuggee = api.debuggeeId_;
@@ -194,6 +195,8 @@ module.exports.runTest = function runTest() {
         console.error(e);
       });
     });
+  }).catch(function(e) {
+    console.error(e);
   });
 };
 
