@@ -1,5 +1,12 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## 2016-04-26, Version 0.8.1 (Experimental), @matthewloring
+
+### Commits
+
+* [[`5573e84fc5`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/5573e84fc5)] - Report unique ids when not on GCP (Matt Loring) 
+* [[`442e1bdcc0`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/442e1bdcc0)] - Add support for Node.js v6 (Matt Loring)
+
 ## 2016-04-25, Version 0.8.0 (Experimental), @matthewloring
 
 ### Notable changes
