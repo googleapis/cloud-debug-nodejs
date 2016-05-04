@@ -31,6 +31,7 @@ var v8debugapi = require('../../lib/v8debugapi.js');
 var logModule = require('@google/cloud-diagnostics-common').logger;
 var config = require('../../config.js');
 var scanner = require('../../lib/scanner.js');
+var path = require('path');
 
 function stateIsClean(api) {
   assert.equal(api.numBreakpoints_(), 0,
@@ -41,7 +42,7 @@ function stateIsClean(api) {
 }
 
 describe('v8debugapi', function() {
-  config.workingDirectory = process.cwd() + '/test/standalone';
+  config.workingDirectory = path.join(process.cwd(), 'test', 'standalone');
   var logger = logModule.create(config.logLevel);
   var api = null;
 

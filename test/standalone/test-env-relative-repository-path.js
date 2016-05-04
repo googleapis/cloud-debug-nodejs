@@ -16,8 +16,10 @@
 
 'use strict';
 
+var path = require('path');
+
 process.env.GCLOUD_PROJECT = 0;
-process.env.GCLOUD_DEBUG_REPO_APP_PATH = '/my/project/root';
+process.env.GCLOUD_DEBUG_REPO_APP_PATH = path.join(path.sep, 'my', 'project', 'root');
 
 var assert = require('assert');
 var agent = require('../..');
@@ -46,7 +48,8 @@ describe('repository relative paths', function() {
       id: 0,
       location: {
         line: 3,
-        path: '/my/project/root/test/fixtures/a/hello.js'
+        path: path.join(path.sep, 'my', 'project', 'root', 'test',
+          'fixtures', 'a', 'hello.js')
       }
     };
     api.set(bp, function(err) {
