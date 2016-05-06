@@ -17,56 +17,60 @@
 
 // Default configuration
 module.exports = {
-  enabled: true,
-  workingDirectory: process.cwd(),
+  debug: {
+    enabled: true,
+    workingDirectory: process.cwd(),
 
-  // The path within your repository to the directory containing the
-  // package.json for your deployed application. This should be provided
-  // if your deployed application appears as a subdirectory of your repository.
-  appPathRelativeToRepository: undefined,
+    // An identifier for the current code deployment.
+    description: undefined,
 
-  // Log levels: 0-disabled,1-error,2-warn,3-info,4-debug.
-  logLevel: 1,
+    // The path within your repository to the directory containing the
+    // package.json for your deployed application. This should be provided
+    // if your deployed application appears as a subdirectory of your repository.
+    appPathRelativeToRepository: undefined,
 
-  // How frequently should the list of breakpoints be refreshed from the
-  // cloud debug server.
-  breakpointUpdateIntervalSec: 10,
+    // Log levels: 0-disabled,1-error,2-warn,3-info,4-debug.
+    logLevel: 1,
 
-  // We expire stale breakpoints on the server.
-  breakpointExpirationSec: 60 * 60 * 24, // 24 hours
+    // How frequently should the list of breakpoints be refreshed from the
+    // cloud debug server.
+    breakpointUpdateIntervalSec: 10,
 
-  capture: {
-    // Whether to include details about stack frames belonging to node-core.
-    includeNodeModules: false,
+    // We expire stale breakpoints on the server.
+    breakpointExpirationSec: 60 * 60 * 24, // 24 hours
 
-    // Maximum number of stack frames to capture data for. The limit is aimed
-    // to reduce overall capture time
-    maxFrames: 20,
+    capture: {
+      // Whether to include details about stack frames belonging to node-core.
+      includeNodeModules: false,
 
-    // Only collect locals and arguments on a few top frames. For the rest
-    // only collect the source location
-    maxExpandFrames: 5,
+      // Maximum number of stack frames to capture data for. The limit is aimed
+      // to reduce overall capture time
+      maxFrames: 20,
 
-    // To reduce the overall capture time, limit the number of properties
-    // gathered on large object. A value of 0 disables the limit.
-    maxProperties: 0,
+      // Only collect locals and arguments on a few top frames. For the rest
+      // only collect the source location
+      maxExpandFrames: 5,
 
-    // Total 'size' of data to gather. This is NOT the number of bytes of data
-    // that are sent over the wire, but instead a very very coarse approximation
-    // based on the length of names and values of the properties. This should
-    // be somewhat proportional to the amount of processing needed to capture
-    // the data and subsequently the network traffic. A value of 0 disables the
-    // limit.
-    maxDataSize: 20000,
+      // To reduce the overall capture time, limit the number of properties
+      // gathered on large object. A value of 0 disables the limit.
+      maxProperties: 0,
 
-    // To limit the size of the buffer, we truncate long strings.
-    // A value of 0 disables truncation.
-    maxStringLength: 0
-  },
+      // Total 'size' of data to gather. This is NOT the number of bytes of data
+      // that are sent over the wire, but instead a very very coarse approximation
+      // based on the length of names and values of the properties. This should
+      // be somewhat proportional to the amount of processing needed to capture
+      // the data and subsequently the network traffic. A value of 0 disables the
+      // limit.
+      maxDataSize: 20000,
 
-// These configuration options are for internal experimentation only.
-internal: {
-  registerDelayOnFetcherErrorSec: 300 // 5 minutes.
-}
+      // To limit the size of the buffer, we truncate long strings.
+      // A value of 0 disables truncation.
+      maxStringLength: 0
+    },
 
+    // These configuration options are for internal experimentation only.
+    internal: {
+      registerDelayOnFetcherErrorSec: 300 // 5 minutes.
+    }
+  }
 };

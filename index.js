@@ -19,22 +19,37 @@
 // NOTE: this file is on the critical path for the startup of the user's
 // application. The path-length here needs to be minimal.
 
-var config = require('./config.js');
 var logger = require('@google/cloud-diagnostics-common').logger;
 var Debuglet = require('./lib/debuglet.js');
+var path = require('path');
+var _ = require('lodash');
+
+var initConfig = function() {
+  var config = {};
+  if (process.env.hasOwnProperty('GCLOUD_DIAGNOSTICS_CONFIG')) {
+    var c = require(path.resolve(process.env.GCLOUD_DIAGNOSTICS_CONFIG));
+    if (c && c.debug) {
+      _.defaultsDeep(config, c.debug);
+    }
+  }
+  var defaults = require('./config.js').debug;
+  _.defaultsDeep(config, defaults);
+  if (process.env.hasOwnProperty('GCLOUD_DEBUG_LOGLEVEL')) {
+    config.logLevel = process.env.GCLOUD_DEBUG_LOGLEVEL;
+  }
+  if (process.env.hasOwnProperty('GCLOUD_DEBUG_DISABLE')) {
+    config.enabled = false;
+  }
+  if (process.env.hasOwnProperty('GCLOUD_DEBUG_REPO_APP_PATH')) {
+    config.appPathRelativeToRepository =
+      process.env.GCLOUD_DEBUG_REPO_APP_PATH;
+  }
+  return config;
+};
 
 // exports is populated by the agent
 module.exports = {};
-if (process.env.hasOwnProperty('GCLOUD_DEBUG_LOGLEVEL')) {
-  config.logLevel = process.env.GCLOUD_DEBUG_LOGLEVEL;
-}
-if (process.env.hasOwnProperty('GCLOUD_DEBUG_DISABLE')) {
-  config.enabled = false;
-}
-if (process.env.hasOwnProperty('GCLOUD_DEBUG_REPO_APP_PATH')) {
-  config.appPathRelativeToRepository =
-    process.env.GCLOUD_DEBUG_REPO_APP_PATH;
-}
+var config = initConfig();
 
 var log = logger.create(config.logLevel, '@google/cloud-debug');
 

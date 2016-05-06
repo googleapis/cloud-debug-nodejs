@@ -29,7 +29,7 @@ var breakpointInFoo = {
 var assert = require('assert');
 var v8debugapi = require('../../lib/v8debugapi.js');
 var logModule = require('@google/cloud-diagnostics-common').logger;
-var config = require('../../config.js');
+var config = require('../../config.js').debug;
 var scanner = require('../../lib/scanner.js');
 var path = require('path');
 

@@ -42,10 +42,14 @@ nock.disableNetConnect();
 
 describe('Debuglet API', function() {
 
-  var debugletapi = new DebugletApi();
+  var debugletapi = new DebugletApi('Test debuglet');
 
   it('should return an instance when constructed', function() {
     assert.ok(debugletapi);
+  });
+
+  it('should have correct descriptor', function() {
+    assert.equal(debugletapi.descriptor_, 'Test debuglet');
   });
 
   it('should acquire the project number during init', function(done) {

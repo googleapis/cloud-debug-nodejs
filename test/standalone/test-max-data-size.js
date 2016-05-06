@@ -25,7 +25,7 @@ var assert = require('assert');
 var logModule = require('@google/cloud-diagnostics-common').logger;
 var v8debugapi = require('../../lib/v8debugapi.js');
 var scanner = require('../../lib/scanner.js');
-var config = require('../../config.js');
+var config = require('../../config.js').debug;
 var api;
 
 var breakpointInFoo = {
