@@ -51,11 +51,12 @@ module.exports = {
     // gathered on large object. A value of 0 disables the limit.
     maxProperties: 0,
 
-    // Total 'size' if data to gather. This is NOT the number of bytes of data
+    // Total 'size' of data to gather. This is NOT the number of bytes of data
     // that are sent over the wire, but instead a very very coarse approximation
     // based on the length of names and values of the properties. This should
     // be somewhat proportional to the amount of processing needed to capture
-    // the data and subsequently the network traffic.
+    // the data and subsequently the network traffic. A value of 0 disables the
+    // limit.
     maxDataSize: 20000,
 
     // To limit the size of the buffer, we truncate long strings.
