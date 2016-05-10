@@ -29,7 +29,7 @@ var agent = require('../..');
 var _ = require('lodash'); // for _.find. Can't use ES6 yet.
 var Q = require('q');
 
-var DEBUG_API = 'https://www.googleapis.com/debugger/v1beta';
+var DEBUG_API = 'https://clouddebugger.googleapis.com/v2/debugger';
 var SCOPES = [
     'https://www.googleapis.com/auth/cloud-platform',
     'https://www.googleapis.com/auth/cloud_debugger',
