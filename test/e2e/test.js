@@ -20,20 +20,22 @@ function fib(n) {
  * limitations under the License.
  */
 
-process.env.GCLOUD_DEBUG_LOGLEVEL=3;
+process.env.GCLOUD_DEBUG_LOGLEVEL=2;
 
 var assert = require('assert');
 var util = require('util');
 var GoogleAuth = require('google-auth-library');
-var agent = require('../..');
 var _ = require('lodash'); // for _.find. Can't use ES6 yet.
 var Q = require('q');
+var cluster = require('cluster');
 
 var DEBUG_API = 'https://clouddebugger.googleapis.com/v2/debugger';
 var SCOPES = [
     'https://www.googleapis.com/auth/cloud-platform',
     'https://www.googleapis.com/auth/cloud_debugger',
   ];
+
+var agent;
 
 function apiRequest(authClient, url, method, body) {
   method = method || 'GET';
@@ -54,14 +56,9 @@ function apiRequest(authClient, url, method, body) {
   return deferred.promise;
 }
 
-module.exports.runTest = function runTest() {
+function runTest() {
   Q.delay(10 * 1000).then(function() {
-    assert.ok(agent.private_, 'debuglet has initialized');
-    var debuglet = agent.private_;
-    assert.ok(debuglet.debugletApi_, 'debuglet api is active');
-    var api = debuglet.debugletApi_;
-    assert.ok(api.uid_, 'debuglet provided unique id');
-    assert.ok(api.debuggeeId_, 'debuglet has registered');
+    var api = agent.private_.debugletApi_;
 
     var debuggee = api.debuggeeId_;
     var project = api.project_;
@@ -159,11 +156,9 @@ module.exports.runTest = function runTest() {
         assert.ok(result.breakpoint);
         assert.ok(result.debuggee);
         console.log('-- waiting a bit before running fib');
-        return Q.delay(20 * 1000).then(function() { return result; });
+        return Q.delay(10 * 1000).then(function() { return result; });
       })
       .then(function(result) {
-        console.log('-- Running fib');
-        fib(12);
         console.log('-- waiting before checking if the breakpoint was hit');
         return Q.delay(10 * 1000).then(function() { return result; });
       })
@@ -198,9 +193,29 @@ module.exports.runTest = function runTest() {
   }).catch(function(e) {
     console.error(e);
   });
-};
+}
 
-// check if we were launched directly, if so run the test
-if (!module.parent) {
-  module.exports.runTest();
+if (cluster.isMaster) {
+  var handler = function(m) {
+    assert.ok(m.private_, 'debuglet has initialized');
+    var debuglet = m.private_;
+    assert.ok(debuglet.debugletApi_, 'debuglet api is active');
+    var api = debuglet.debugletApi_;
+    assert.ok(api.uid_, 'debuglet provided unique id');
+    assert.ok(api.debuggeeId_, 'debuglet has registered');
+    if (agent) {
+      assert.equal(agent.private_.debugletApi_.uid_, api.uid_);
+      assert.equal(agent.private_.debugletApi_.debuggeeId_, api.debuggeeId_);
+    } else {
+      agent = m;
+    }
+  };
+  for (var i = 0; i < 3; i++) {
+    cluster.fork().on('message', handler);
+  }
+  runTest();
+} else {
+  var agent = require('../..');
+  setTimeout(process.send.bind(process, agent), 7000);
+  setInterval(fib.bind(null, 12), 2000);
 }
