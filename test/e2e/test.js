@@ -215,6 +215,10 @@ if (cluster.isMaster) {
   }
   runTest();
 } else {
+  if (process.env.TRAVIS_SECURE_ENV_VARS) {
+    process.env.GOOGLE_APPLICATION_CREDENTIALS =
+      'node-team-debug-test-a03aecc1d97a.json';
+  }
   var agent = require('../..');
   setTimeout(process.send.bind(process, agent), 7000);
   setInterval(fib.bind(null, 12), 2000);
