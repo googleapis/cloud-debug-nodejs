@@ -42,8 +42,3 @@ if [ "$cover" ]; then
   ./node_modules/coveralls/bin/coveralls.js < ./coverage/lcov.info
   rm -rf ./coverage
 fi
-
-if [ -z "${TRAVIS_PULL_REQUEST}" ] || [ "${TRAVIS_PULL_REQUEST}" = "false" ]
-then
-  ./bin/run-e2e.sh
-fi
