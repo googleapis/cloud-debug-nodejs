@@ -36,6 +36,7 @@ var SCOPES = [
   ];
 
 var agent;
+var transcript = '';
 
 function apiRequest(authClient, url, method, body) {
   method = method || 'GET';
@@ -133,6 +134,45 @@ function runTest() {
       })
       .then(function(debuggee) {
         // Set a breakpoint
+        console.log('-- setting a logpoint');
+        var promise = setBreakpoint(debuggee, {
+          id: 'breakpoint-1',
+          location: {path: 'test.js', line: 5},
+          condition: 'n === 10',
+          action: 'LOG',
+          expressions: ['n'],
+          log_message_format: 'n is: $0'
+        });
+        // I don't know what I am doing. There is a better way to write the
+        // following using promises.
+        var result = promise.then(function(body) {
+          console.log('-- resolution of setBreakpoint', body);
+          assert.ok(body.breakpoint, 'should have set a breakpoint');
+          var breakpoint = body.breakpoint;
+          assert.ok(breakpoint.id, 'breakpoint should have an id');
+          assert.ok(breakpoint.location, 'breakpoint should have a location');
+          assert.strictEqual(breakpoint.location.path, 'test.js');
+          return { debuggee: debuggee, breakpoint: breakpoint };
+        });
+        return result;
+      })
+      .then(function(result) {
+        assert.ok(result.breakpoint);
+        assert.ok(result.debuggee);
+        console.log('-- waiting a bit before running fib');
+        return Q.delay(10 * 1000).then(function() { return result; });
+      })
+      .then(function(result) {
+        console.log('-- waiting before checking if the log was written');
+        return Q.delay(10 * 1000).then(function() { return result; });
+      })
+      .then(function(result) {
+        assert(transcript.indexOf('n is: 10') !== -1);
+        deleteBreakpoint(result.debuggee, result.breakpoint).then();
+        return result.debuggee;
+      })
+      .then(function(debuggee) {
+        // Set a breakpoint
         console.log('-- setting a breakpoint');
         var promise = setBreakpoint(debuggee, {
           id: 'breakpoint-1',
@@ -183,6 +223,8 @@ function runTest() {
         });
         assert.ok(arg, 'should find the n argument');
         assert.strictEqual(arg.value, '10');
+        console.log('-- checking log point was hit again');
+        assert.ok(transcript.split('n is: 10').length > 4);
         console.log('Test passed');
         process.exit(0);
       })
@@ -198,6 +240,7 @@ function runTest() {
 }
 
 if (cluster.isMaster) {
+  cluster.setupMaster({ silent: true });
   var handler = function(m) {
     assert.ok(m.private_, 'debuglet has initialized');
     var debuglet = m.private_;
@@ -212,8 +255,13 @@ if (cluster.isMaster) {
       agent = m;
     }
   };
+  var stdoutHandler = function(chunk) {
+    transcript += chunk;
+  };
   for (var i = 0; i < 3; i++) {
-    cluster.fork().on('message', handler);
+    var worker = cluster.fork();
+    worker.on('message', handler);
+    worker.process.stdout.on('data', stdoutHandler);
   }
   runTest();
 } else {

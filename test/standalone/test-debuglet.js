@@ -35,9 +35,9 @@ var bp = {
   action: 'CAPTURE',
   location: { path: 'fixtures/foo.js', line: 2 }
 };
-var logBp = {
+var errorBp = {
   id: 'testLog',
-  action: 'LOG',
+  action: 'FOO',
   location: { path: 'fixtures/foo.js', line: 2 }
 };
 
@@ -166,12 +166,12 @@ describe(__filename, function(){
       })
       .get(BPS_PATH + '?success_on_timeout=true')
       .reply(200, {
-        breakpoints: [bp, logBp]
+        breakpoints: [bp, errorBp]
       })
-      .put(BPS_PATH + '/' + logBp.id, function(body) {
+      .put(BPS_PATH + '/' + errorBp.id, function(body) {
         var status = body.breakpoint.status;
         return status.isError &&
-          status.description.format.indexOf('action is CAPTURE') !== -1;
+          status.description.format.indexOf('actions are CAPTURE') !== -1;
       })
       .reply(200);
 
@@ -278,6 +278,23 @@ describe(__filename, function(){
       assert.deepEqual(Debuglet.mapSubtract(b, a), []);
       assert.deepEqual(Debuglet.mapSubtract(a, {}), [1, 2]);
       assert.deepEqual(Debuglet.mapSubtract({}, b), []);
+    });
+  });
+
+  describe('format', function() {
+    it('should be correct', function() {
+      assert.deepEqual(Debuglet.format('hi', [5]), 'hi');
+      assert.deepEqual(Debuglet.format('hi $0', [5]), 'hi 5');
+      assert.deepEqual(Debuglet.format('hi $0 $1', [5, 'there']), 'hi 5 there');
+      assert.deepEqual(Debuglet.format('hi $0 $1', [5]), 'hi 5 $1');
+      assert.deepEqual(Debuglet.format('hi $0 $1 $0', [5]), 'hi 5 $1 5');
+      assert.deepEqual(Debuglet.format('hi $$', [5]), 'hi $');
+      assert.deepEqual(Debuglet.format('hi $$0', [5]), 'hi $0');
+      assert.deepEqual(Debuglet.format('hi $00', [5]), 'hi 50');
+      assert.deepEqual(Debuglet.format('hi $0', ['$1', 5]), 'hi $1');
+      assert.deepEqual(Debuglet.format('hi $11',
+        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd']
+      ), 'hi b');
     });
   });
 });
