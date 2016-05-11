@@ -188,10 +188,12 @@ function runTest() {
       })
       .catch(function(e) {
         console.error(e);
+        process.exit(1);
       });
     });
   }).catch(function(e) {
     console.error(e);
+    process.exit(1);
   });
 }
 
