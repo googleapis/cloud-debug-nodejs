@@ -53,7 +53,7 @@ module.exports = {
 
       // To reduce the overall capture time, limit the number of properties
       // gathered on large object. A value of 0 disables the limit.
-      maxProperties: 0,
+      maxProperties: 10,
 
       // Total 'size' of data to gather. This is NOT the number of bytes of data
       // that are sent over the wire, but instead a very very coarse approximation
@@ -65,7 +65,7 @@ module.exports = {
 
       // To limit the size of the buffer, we truncate long strings.
       // A value of 0 disables truncation.
-      maxStringLength: 0
+      maxStringLength: 100
     },
 
     // These configuration options are for internal experimentation only.

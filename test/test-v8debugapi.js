@@ -1,12 +1,13 @@
 /*1* KEEP THIS CODE AT THE TOP TO AVOID LINE NUMBER CHANGES */
 /*2*/'use strict';
 /*3*/function foo(n) {
-/*4*/  var A = new Array(3); return n+42+A[0];
-/*5*/}
-/*6*/function getterObject() {
-/*7*/  var hasGetter = { _a: 5, get a() { return this._a; }, b: 'hello world' };
-/*8*/  return hasGetter.a;
-/*9*/}
+/*4*/  var A = [1, 2, 3]; var B = { a: 5, b: 6, c: 7 };
+/*5*/  return n+42+A[0]+B.b;
+/*6*/}
+/*7*/function getterObject() {
+/*8*/  var hasGetter = { _a: 5, get a() { return this._a; }, b: 'hello world' };
+/*9*/  return hasGetter.a;
+/*10*/}
 /**
  * Copyright 2015 Google Inc. All Rights Reserved.
  *
@@ -449,6 +450,8 @@ describe('v8debugapi', function() {
         location: breakpointInFoo.location,
         expressions: ['process']
       };
+      var oldMax = config.capture.maxProperties;
+      config.capture.maxProperties = 0;
       api.set(bp, function(err) {
         assert.ifError(err);
         api.wait(bp, function(err) {
@@ -477,6 +480,7 @@ describe('v8debugapi', function() {
           }));
 
           api.clear(bp);
+          config.capture.maxProperties = oldMax;
           done();
         });
         process.nextTick(function() {foo(3);});
@@ -486,7 +490,7 @@ describe('v8debugapi', function() {
     it('should report error for native prop or getter', function(done) {
       var bp = {
         id: 'fake-id-124',
-        location: { path: 'test-v8debugapi.js', line: 8 },
+        location: { path: 'test-v8debugapi.js', line: 9 },
         expressions: ['process.env', 'hasGetter']
       };
       api.set(bp, function(err) {
@@ -520,7 +524,7 @@ describe('v8debugapi', function() {
     it('should limit string length', function(done) {
       var bp = {
         id: 'fake-id-124',
-        location: { path: 'test-v8debugapi.js', line: 8 },
+        location: { path: 'test-v8debugapi.js', line: 9 },
         expressions: ['hasGetter']
       };
       var oldMax = config.capture.maxStringLength;
@@ -540,6 +544,60 @@ describe('v8debugapi', function() {
           done();
         });
         process.nextTick(function() {getterObject();});
+      });
+    });
+
+    it('should limit array length', function(done) {
+      var bp = {
+        id: 'fake-id-124',
+        location: { path: 'test-v8debugapi.js', line: 5 },
+        expressions: ['A']
+      };
+      var oldMax = config.capture.maxProperties;
+      config.capture.maxProperties = 1;
+      api.set(bp, function(err) {
+        assert.ifError(err);
+        api.wait(bp, function(err) {
+          assert.ifError(err);
+          var foo = bp.evaluatedExpressions[0];
+          var fooVal = bp.variableTable[foo.varTableIndex];
+          assert.equal(fooVal.members.length, 1);
+          assert(foo.status.status.description.format.indexOf(
+            'Only first') !== -1);
+          assert(!foo.status.isError);
+
+          api.clear(bp);
+          config.capture.maxProperties = oldMax;
+          done();
+        });
+        process.nextTick(function() {foo(2);});
+      });
+    });
+
+    it('should limit object length', function(done) {
+      var bp = {
+        id: 'fake-id-124',
+        location: { path: 'test-v8debugapi.js', line: 5 },
+        expressions: ['B']
+      };
+      var oldMax = config.capture.maxProperties;
+      config.capture.maxProperties = 1;
+      api.set(bp, function(err) {
+        assert.ifError(err);
+        api.wait(bp, function(err) {
+          assert.ifError(err);
+          var foo = bp.evaluatedExpressions[0];
+          var fooVal = bp.variableTable[foo.varTableIndex];
+          assert.equal(fooVal.members.length, 1);
+          assert(foo.status.status.description.format.indexOf(
+            'Only first') !== -1);
+          assert(!foo.status.isError);
+
+          api.clear(bp);
+          config.capture.maxProperties = oldMax;
+          done();
+        });
+        process.nextTick(function() {foo(2);});
       });
     });
 
