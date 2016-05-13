@@ -1,5 +1,29 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## 2016-05-13, Version 0.8.2 (Experimental), @matthewloring
+
+### Notable changes
+
+**log points**:
+  * [[`61846c5062`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/61846c5062)] - Add support for log points (Matt Loring) 
+
+**configuration**:
+  * [[`c7e157226b`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/c7e157226b)] - Add config and more descriptive names on GCE/GKE (Matt Loring) 
+
+### Commits
+
+* [[`240a74858e`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/240a74858e)] - Correct log formatting for non-primitives (Matt Loring) 
+* [[`58006f0a00`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/58006f0a00)] - Fix breakpoint format on large variables (Matt Loring) 
+* [[`61846c5062`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/61846c5062)] - Add support for log points (Matt Loring) 
+* [[`5a39240e7c`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/5a39240e7c)] - Improve summarization of breakpoint capture (Matt Loring) 
+* [[`a67692df5c`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/a67692df5c)] - exit 1 on test failure (Matt Loring) 
+* [[`c7e157226b`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/c7e157226b)] - Add config and more descriptive names on GCE/GKE (Matt Loring) 
+* [[`3fcf3e86bb`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/3fcf3e86bb)] - Remove e2e tests from travis (Matt Loring) 
+* [[`a48084b8c8`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/a48084b8c8)] - Test debugger with cluster (Matt Loring) 
+* [[`430a8742a0`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/430a8742a0)] - Update tests to use v2 debugger api (Matt Loring) 
+* [[`21ef3b20a4`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/21ef3b20a4)] - Allow for unlimited data capture size (Matt Loring) 
+* [[`1f07e000ff`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/1f07e000ff)] - Start windows CI runs (Matt Loring)
+
 ## 2016-04-26, Version 0.8.1 (Experimental), @matthewloring
 
 ### Commits
