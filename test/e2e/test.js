@@ -177,6 +177,7 @@ function runTest() {
         var promise = setBreakpoint(debuggee, {
           id: 'breakpoint-1',
           location: {path: 'test.js', line: 5},
+          expressions: ['process'], // Process for large variable
           condition: 'n === 10'
         });
         // I don't know what I am doing. There is a better way to write the

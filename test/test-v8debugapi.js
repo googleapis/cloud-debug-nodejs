@@ -562,7 +562,7 @@ describe('v8debugapi', function() {
           var foo = bp.evaluatedExpressions[0];
           var fooVal = bp.variableTable[foo.varTableIndex];
           assert.equal(fooVal.members.length, 1);
-          assert(foo.status.status.description.format.indexOf(
+          assert(foo.status.description.format.indexOf(
             'Only first') !== -1);
           assert(!foo.status.isError);
 
@@ -589,7 +589,7 @@ describe('v8debugapi', function() {
           var foo = bp.evaluatedExpressions[0];
           var fooVal = bp.variableTable[foo.varTableIndex];
           assert.equal(fooVal.members.length, 1);
-          assert(foo.status.status.description.format.indexOf(
+          assert(foo.status.description.format.indexOf(
             'Only first') !== -1);
           assert(!foo.status.isError);
 
