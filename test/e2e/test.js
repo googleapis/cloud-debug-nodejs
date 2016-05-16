@@ -1,8 +1,8 @@
 /* KEEP THIS CODE AT THE TOP SO THAT THE BREAKPOINT LINE NUMBERS DON'T CHANGE */
 'use strict';
 function fib(n) {
-  if (n < 2) { return n; }
-  return fib(n - 1) + fib(n - 2);
+  if (n < 2) { return n; } var o = { a: [1, 'hi', true] };
+  return fib(n - 1, o) + fib(n - 2, o); // adding o to appease linter.
 }
 /**
  * Copyright 2015 Google Inc. All Rights Reserved.
@@ -140,8 +140,8 @@ function runTest() {
           location: {path: 'test.js', line: 5},
           condition: 'n === 10',
           action: 'LOG',
-          expressions: ['n'],
-          log_message_format: 'n is: $0'
+          expressions: ['o'],
+          log_message_format: 'o is: $0'
         });
         // I don't know what I am doing. There is a better way to write the
         // following using promises.
@@ -167,7 +167,7 @@ function runTest() {
         return Q.delay(10 * 1000).then(function() { return result; });
       })
       .then(function(result) {
-        assert(transcript.indexOf('n is: 10') !== -1);
+        assert(transcript.indexOf('o is: {"a":[1,"hi",true]}') !== -1);
         deleteBreakpoint(result.debuggee, result.breakpoint).then();
         return result.debuggee;
       })
@@ -225,7 +225,7 @@ function runTest() {
         assert.ok(arg, 'should find the n argument');
         assert.strictEqual(arg.value, '10');
         console.log('-- checking log point was hit again');
-        assert.ok(transcript.split('n is: 10').length > 4);
+        assert.ok(transcript.split('o is: {"a":[1,"hi",true]}').length > 4);
         console.log('Test passed');
         process.exit(0);
       })
