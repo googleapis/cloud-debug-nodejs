@@ -1,6 +1,6 @@
 {
   "name": "@google/cloud-debug",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "Node.js support for Google Cloud Debug",
   "main": "index.js",
   "repository": "GoogleCloudPlatform/cloud-debug-nodejs",
