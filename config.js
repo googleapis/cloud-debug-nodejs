@@ -70,7 +70,8 @@ module.exports = {
 
     // These configuration options are for internal experimentation only.
     internal: {
-      registerDelayOnFetcherErrorSec: 300 // 5 minutes.
+      registerDelayOnFetcherErrorSec: 300, // 5 minutes.
+      maxRegistrationRetryDelay: 40
     }
   }
 };

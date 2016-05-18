@@ -92,6 +92,31 @@ describe(__filename, function(){
     debuglet.start();
   });
 
+  it('should retry on failed registration', function(done) {
+    this.timeout(10000);
+    process.env.GCLOUD_PROJECT='11020304f2934';
+
+    var scope = nock(API)
+      .post(REGISTER_PATH)
+      .reply(404)
+      .post(REGISTER_PATH)
+      .reply(509)
+      .post(REGISTER_PATH)
+      .reply(200, {
+        debuggee: {
+          id: DEBUGGEE_ID
+        }
+      });
+
+    debuglet.once('registered', function(id) {
+      assert(id === DEBUGGEE_ID);
+      scope.done();
+      done();
+    });
+
+    debuglet.start();
+  });
+
   it('should error if a package.json doesn\'t exist');
 
   it('should register successfully otherwise', function(done) {
