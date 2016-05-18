@@ -247,8 +247,10 @@ describe('v8debugapi', function() {
         assert.ok(bp.status);
         assert.ok(bp.status instanceof StatusMessage);
         assert.ok(bp.status.isError);
-        assert(bp.status.description.format ===
-          api.messages.INVALID_LINE_NUMBER);
+        assert(bp.status.description.format.indexOf(
+          api.messages.INVALID_LINE_NUMBER) !== -1);
+        assert(bp.status.description.format.indexOf(
+          'foo.js:500') !== -1);
         done();
       });
     });
