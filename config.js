@@ -68,6 +68,14 @@ module.exports = {
       maxStringLength: 100
     },
 
+    log: {
+      // The maximum number of logs to record per second per logpoint.
+      maxLogsPerSecond: 50,
+      // Number of seconds to wait after the `maxLogsPerSecond` rate is hit before
+      // logging resumes per logpoint.
+      logDelaySeconds: 1
+    },
+
     // These configuration options are for internal experimentation only.
     internal: {
       registerDelayOnFetcherErrorSec: 300, // 5 minutes.
