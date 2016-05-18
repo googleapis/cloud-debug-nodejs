@@ -14,7 +14,7 @@ This module provides Cloud Debug support for Node.js applications. [Google Cloud
 
 ## Prerequisites
 * Your application will need to be using Node.js version 0.12 or greater. Node.js v5+ is recommended.
-* The source of your application is uploaded to a [cloud source repository](https://cloud.google.com/tools/cloud-repositories/docs/). The Debugger UI needs the source to be available in order to set breakpoints.
+* The source of your application is uploaded to a [cloud source repository](https://cloud.google.com/tools/cloud-repositories/docs/). The Debugger UI needs the source to be available in order to set snapshots.
 
 ## Quick Start (Node.js v4.x+)
 ```shell
@@ -24,7 +24,7 @@ npm install --save @google/cloud-debug
 # Require the agent at the top of your main script.
 require('@google/cloud-debug');
 ```
-Deploy your application, and navigate to the [Debug tab][debug-tab] within the [Google Developers Console][dev-console] to set breakpoints and start debugging.
+Deploy your application, and navigate to the [Debug tab][debug-tab] within the [Google Developers Console][dev-console] to set snapshots and start debugging.
 
 ## Running on Google Cloud Platform
 
@@ -82,10 +82,10 @@ As soon as that line of code is reached in any of the running instances of your 
 
 ## Limitations and Requirements
 * The root directory of your application needs to contain a `package.json` file.
-* You can set breakpoint conditions and watch expressions to be evaluated in the context of your application. This leads to some issues you should be aware of
+* You can set snapshot conditions and watch expressions to be evaluated in the context of your application. This leads to some issues you should be aware of
   * You may be able to view sensitive data of your own users by looking at the values of the variables.
   * The debug agent tries to ensure that all conditions and watchpoints you add are read-only and have no side effects. It catches, and disallows, all expressions that may have static side effects to prevent accidental state change. However, it presently does not catch expressions that have dynamic side-effects. For example, `o.f` looks like a property access, but dynamically, it may end up calling a getter function. We presently do NOT detect such dynamic-side effects.
-* With Node.js 4.x and older, your application may experience a performance impact when there are breakpoint active. There should be no impact to performance when no breakpoints are active. Node.js v5.x does not have this issue.
+* With Node.js 4.x and older, your application may experience a performance impact when there are snapshots active. There should be no impact to performance when no snapshots are active. Node.js v5.x does not have this issue.
 * Node.js v0.10.x or older are not supported as they lack some necessary APIs to avoid a permanent (life of the application) performance hit.
 
 
