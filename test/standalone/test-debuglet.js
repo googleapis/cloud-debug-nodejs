@@ -61,7 +61,7 @@ describe(__filename, function(){
       .get('/computeMetadata/v1/project/numeric-project-id')
       .reply(404);
 
-    debuglet.once('error', function(err) {
+    debuglet.once('initError', function(err) {
       assert(err);
       scope.done();
       done();
@@ -69,6 +69,22 @@ describe(__filename, function(){
     debuglet.once('started', function() {
       assert.fail();
     });
+    debuglet.start();
+  });
+
+  it('should not crash without project num', function(done) {
+    delete process.env.GCLOUD_PROJECT;
+    var scope = nock('http://metadata.google.internal')
+      .get('/computeMetadata/v1/project/numeric-project-id')
+      .reply(404);
+
+    debuglet.once('started', function() {
+      assert.fail();
+    });
+    setTimeout(function() {
+      scope.done();
+      done();
+    }, 1500);
     debuglet.start();
   });
 
