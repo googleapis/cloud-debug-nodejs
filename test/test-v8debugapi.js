@@ -38,6 +38,7 @@ var config = require('../config.js').debug;
 var StatusMessage = require('../lib/apiclasses.js').StatusMessage;
 var scanner = require('../lib/scanner.js');
 var path = require('path');
+var semver = require('semver');
 
 function stateIsClean(api) {
   assert.equal(api.numBreakpoints_(), 0,
@@ -540,6 +541,40 @@ describe('v8debugapi', function() {
           done();
         });
         process.nextTick(function() {getterObject();});
+      });
+    });
+
+    it('should work with array length despite being native', function(done) {
+      if (semver.satisfies(process.version, '<1.0')) {
+        return done();
+      }
+      var bp  = {
+        id: breakpointInFoo.id,
+        location:  { path: 'test-v8debugapi.js', line: 5 },
+        expressions: ['A']
+      };
+      api.set(bp, function(err) {
+        assert.ifError(err);
+        api.wait(bp, function(err) {
+          assert.ifError(err);
+
+          var arrEnv = bp.evaluatedExpressions[0];
+          assert.equal(arrEnv.name, 'A');
+          var envVal = bp.variableTable[arrEnv.varTableIndex];
+          var found = false;
+          envVal.members.forEach(function(member) {
+            if (member.name === 'length') {
+              assert(!member.varTableIndex);
+              assert.equal(member.value, 3);
+              found = true;
+            }
+          });
+          assert(found);
+
+          api.clear(bp);
+          done();
+        });
+        process.nextTick(function() {foo();});
       });
     });
 
