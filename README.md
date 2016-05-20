@@ -30,9 +30,9 @@ Deploy your application, and navigate to the [Debug tab][debug-tab] within the [
 
 There are three different services that can host Node.js application to Google Cloud Platform.
 
-### Google App Engine Managed VMs
+### Google App Engine Flexible Environment 
 
-If you are using [Google App Engine Managed VMs](https://cloud.google.com/appengine/docs/managed-vms/), you do not have to do any additional configuration.
+If you are using [Google App Engine Flexible Environment ](https://cloud.google.com/appengine/docs/flexible/), you do not have to do any additional configuration.
 
 ### Google Compute Engine
 
