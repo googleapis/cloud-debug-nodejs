@@ -21,7 +21,7 @@ This module provides Cloud Debug support for Node.js applications. [Google Cloud
 # Install with `npm` or add to your `package.json`.
 npm install --save @google/cloud-debug
 
-# Require the agent at the top of your main script.
+# Require the agent at the top of your main script (but after '@google/cloud-trace' if you are also using it).
 require('@google/cloud-debug');
 ```
 Deploy your application, and navigate to the [Debug tab][debug-tab] within the [Google Cloud Console][dev-console] to set snapshots and start debugging.
