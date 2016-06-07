@@ -403,6 +403,29 @@ describe('v8debugapi', function() {
 
     });
 
+    it('should work with multiply hit breakpoints', function(done) {
+      var oldWarn = logger.warn;
+      var logCount = 0;
+      // If an exception is thrown we will log
+      logger.warn = function() { logCount++; };
+      // clone a clean breakpointInFoo
+      var bp = {id: breakpointInFoo.id, location: breakpointInFoo.location};
+      api.set(bp, function(err) {
+        assert.ifError(err);
+        api.wait(bp, function(err) {
+          assert.ifError(err);
+          setTimeout(function() {
+            logger.warn = oldWarn;
+            assert.equal(logCount, 0);
+            api.clear(bp);
+            done();
+          }, 100);
+        });
+        process.nextTick(function() {foo(1);});
+        setTimeout(function() {foo(2);}, 50);
+      });
+    });
+
     it('should be possible to wait on a logpoint without expressions',
         function(done) {
       var bp = {
