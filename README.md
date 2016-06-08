@@ -21,10 +21,10 @@ This module provides Cloud Debug support for Node.js applications. [Google Cloud
 # Install with `npm` or add to your `package.json`.
 npm install --save @google/cloud-debug
 
-# Require the agent at the top of your main script.
+# Require the agent at the top of your main script (but after '@google/cloud-trace' if you are also using it).
 require('@google/cloud-debug');
 ```
-Deploy your application, and navigate to the [Debug tab][debug-tab] within the [Google Developers Console][dev-console] to set snapshots and start debugging.
+Deploy your application, and navigate to the [Debug tab][debug-tab] within the [Google Cloud Console][dev-console] to set snapshots and start debugging.
 
 ## Running on Google Cloud Platform
 
@@ -36,7 +36,7 @@ If you are using [Google App Engine Flexible Environment ](https://cloud.google.
 
 ### Google Compute Engine
 
-Your VM instances need to be created with `cloud-platform` scope if created via [gcloud](https://cloud.google.com/sdk) or the 'Allow API access' checkbox selected if created via the [console](https://console.developers.google.com) (see screenshot).
+Your VM instances need to be created with `cloud-platform` scope if created via [gcloud](https://cloud.google.com/sdk) or the 'Allow API access' checkbox selected if created via the [console](https://console.cloud.google.com) (see screenshot).
 
 ![GCE API](doc/images/gce.png?raw=true)
 
@@ -68,7 +68,7 @@ If your application is running outside of Google Cloud Platform, such as locally
 
 ## Using the Debugger
 
-Once your application is running (deployed, or elsewhere), you should be able to use the [Debug UI][debug-tab] in your Cloud [developer console][dev-console]. You can find the Debug UI in the 'STACKDRIVER -> Debug' section in the navigation panel, or by simply searching for 'Debug' in the developer console.
+Once your application is running (deployed, or elsewhere), you should be able to use the [Debug UI][debug-tab] in your Cloud [developer console][dev-console]. You can find the Debug UI in the 'STACKDRIVER -> Debug' section in the navigation panel, or by simply searching for 'Debug' in the cloud console.
 
 ![Debug UI](doc/images/debug-ui.png?raw=true)
 
@@ -91,11 +91,11 @@ As soon as that line of code is reached in any of the running instances of your 
 
 [cloud-debugger]: https://cloud.google.com/tools/cloud-debugger/
 [dev-console]: https://console.cloud.google.com/
-[debug-tab]: https://console.developers.google.com/debug
+[debug-tab]: https://console.cloud.google.com/debug
 [gcloud-sdk]: https://cloud.google.com/sdk/gcloud/
 [cloud-console-projects]: https://console.cloud.google.com/iam-admin/projects
-[app-default-credentials]: https://developers.google.com/identity/protocols/application-default-credentials
-[service-account]: https://console.developers.google.com/apis/credentials/serviceaccountkey
+[app-default-credentials]: https://cloud.google.com/identity/protocols/application-default-credentials
+[service-account]: https://console.cloud.google.com/apis/credentials/serviceaccountkey
 [npm-image]: https://img.shields.io/npm/v/@google/cloud-debug.svg
 [npm-url]: https://npmjs.org/package/@google/cloud-debug
 [travis-image]: https://travis-ci.org/GoogleCloudPlatform/cloud-debug-nodejs.svg?branch=master

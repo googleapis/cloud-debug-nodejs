@@ -370,6 +370,26 @@ describe('v8debugapi', function() {
 
     });
 
+    it('should be possible to wait on a logpoint without expressions',
+        function(done) {
+      var bp = {
+        id: breakpointInFoo.id,
+        action: 'LOG',
+        log_message_format: 'Hello World',
+        location: breakpointInFoo.location
+      };
+      api.set(bp, function(err) {
+        assert.ifError(err);
+        api.wait(bp, function(err) {
+          assert.ifError(err);
+          api.clear(bp);
+          done();
+        });
+        process.nextTick(function() {foo(1);});
+      });
+
+    });
+
     it('should capture state', function(done) {
       // clone a clean breakpointInFoo
       var bp  = {id: breakpointInFoo.id, location: breakpointInFoo.location};
