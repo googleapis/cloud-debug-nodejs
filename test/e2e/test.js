@@ -225,7 +225,8 @@ function runTest() {
         assert.ok(arg, 'should find the n argument');
         assert.strictEqual(arg.value, '10');
         console.log('-- checking log point was hit again');
-        assert.ok(transcript.split('o is: {"a":[1,"hi",true]}').length > 4);
+        assert.ok(
+          transcript.split('LOGPOINT: o is: {"a":[1,"hi",true]}').length > 4);
         console.log('Test passed');
         process.exit(0);
       })

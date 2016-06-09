@@ -158,7 +158,8 @@ function runTest() {
       .then(function(result) {
         // If no throttling occurs, we expect ~20 logs since we are logging
         // 2x per second over a 10 second period.
-        var logCount = transcript.split('o is: {"a":[1,"hi",true]}').length - 1;
+        var logCount =
+          transcript.split('LOGPOINT: o is: {"a":[1,"hi",true]}').length - 1;
         // A log count of greater than 10 indicates that we did not successfully
         // pause when the rate of `maxLogsPerSecond` was reached.
         assert(logCount < 10);
