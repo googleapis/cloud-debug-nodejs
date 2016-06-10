@@ -303,7 +303,9 @@ describe('v8debugapi', function() {
     '!fib()',
     '1+fib()',
     'x++',
-    '[1, 2, 3, 4, x = 1, x == 1, x === 1]'
+    '[1, 2, 3, 4, x = 1, x == 1, x === 1]',
+    '[0].values()',
+    'new Object()',
   ]);
   conditionTests('valid conditions', function(err) { assert.ifError(err); }, [
     null,
@@ -319,8 +321,38 @@ describe('v8debugapi', function() {
     '{f: process.env}',
     '1,2,3,{f:2},4',
     'A[this?this:1]',
-    '[1, 2, 3, 4, x == 1, x === 1, null, undefined]'
+    '[1, 2, 3, 4, x == 1, x === 1, null, undefined]',
+    '[0].values',
+    '[][0]',
+    '[0][' + MAX_INT + ']',
+    '"𠮷".length + (5| "𠮷")',
+    '/ٹوٹ بٹوٹ کے دو مُرغے تھے/',
   ]);
+
+  if (semver.satisfies(process.version, '>=4.0')) {
+    conditionTests('invalid conditions Node 4+', assert, [
+      '[][Symbol.iterator]()',
+      '`${[][Symbol.iterator]()}`',
+      '`${let x = 1}`',
+      '`${JSON.parse("{x:1}")}`',
+      '`${try {1}}`'
+    ]);
+    conditionTests('valid conditions Node 4+', function(err) {
+      assert.ifError(err);
+    }, [
+      '[][Symbol.iterator]',
+      '[..."peanut butter"]',
+      '[0,...[1,2,"foo"]]',
+      '`${1}`',
+      '`${[][1+1]}`',
+      '0b10101010',
+      '0o70000',
+      // Disabled because of suspect acorn issues?
+      // https://tonicdev.com/575b00351a0e0a1300505d00/575b00351a0e0a1300505d01
+      //'{["foo"]: 1}',
+      //'{ foo (a,b) {}}'
+    ]);
+  }
 
   describe('path normalization', function() {
     var breakpoints = [
