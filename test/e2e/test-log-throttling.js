@@ -201,7 +201,7 @@ if (cluster.isMaster) {
   runTest();
 } else {
   var agent = require('../..');
-  agent.private_.config_.log.maxLogsPerSecond = 1;
+  agent.private_.config_.log.maxLogsPerSecond = 2;
   agent.private_.config_.log.logDelaySeconds = 5;
   setTimeout(process.send.bind(process, agent), 7000);
   setInterval(fib.bind(null, 12), 500);

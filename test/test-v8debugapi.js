@@ -386,6 +386,53 @@ describe('v8debugapi', function() {
     });
   });
 
+  describe('log', function() {
+    var oldLPS;
+    var oldDS;
+
+    before(function() {
+      oldLPS = config.log.maxLogsPerSecond;
+      oldDS = config.log.logDelaySeconds;
+      config.log.maxLogsPerSecond = 1;
+      config.log.logDelaySeconds = 1;
+    });
+
+    after(function() {
+      config.log.maxLogsPerSecond = oldLPS;
+      config.log.logDelaySeconds = oldDS;
+      assert(stateIsClean(api));
+    });
+
+    it('should throttle correctly', function(done) {
+      var completed = false;
+      var bp = {
+        id: breakpointInFoo.id,
+        location: breakpointInFoo.location,
+        action: 'LOG',
+        logMessageFormat: 'cat'
+      };
+      api.set(bp, function(err) {
+        var transcript = '';
+        var runCount = 0;
+        assert.ifError(err);
+        api.log(bp, function(fmt) { transcript += fmt; },
+          function() { return completed; });
+        var interval = setInterval(function() {
+          foo(1);
+          runCount++;
+        }, 100);
+        setTimeout(function() {
+          completed = true;
+          assert.equal(transcript, 'catcat');
+          assert(runCount > 12);
+          clearInterval(interval);
+          api.clear(bp);
+          done();
+        }, 1500);
+      });
+    });
+  });
+
   describe('set and wait', function() {
 
     it('should be possible to wait on a breakpoint', function(done) {
@@ -431,7 +478,7 @@ describe('v8debugapi', function() {
       var bp = {
         id: breakpointInFoo.id,
         action: 'LOG',
-        log_message_format: 'Hello World',
+        logMessageFormat: 'Hello World',
         location: breakpointInFoo.location
       };
       api.set(bp, function(err) {
