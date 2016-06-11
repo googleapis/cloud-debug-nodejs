@@ -1,4 +1,4 @@
-# Node.js agent for Google Cloud Debug
+# Stackdriver Debugger agent for Node.js
 
 [![NPM Version][npm-image]][npm-url]
 [![Build Status][travis-image]][travis-url]
@@ -8,15 +8,14 @@
 
 > *This module is experimental, and should be used by early adopters. This module uses APIs there may be undocumented and may be subject to change without notice.*
 
-This module provides Cloud Debug support for Node.js applications. [Google Cloud Debug](https://cloud.google.com/tools/cloud-debugger/) is a feature of [Google Cloud Platform](https://cloud.google.com/) that lets you debug your applications in production without stopping or pausing your application. Here's an introductory video:
+This module provides Stackdriver Debugger support for Node.js applications. [Stackdriver Debugger](https://cloud.google.com/tools/cloud-debugger/) is a feature of [Google Cloud Platform](https://cloud.google.com/) that lets you debug your applications in production without stopping or pausing your application. Here's an introductory video:
 
 [![Cloud Debugger Intro](http://img.youtube.com/vi/tyHcK_kAOpw/0.jpg)](https://www.youtube.com/watch?v=tyHcK_kAOpw)
 
 ## Prerequisites
-* Your application will need to be using Node.js version 0.12 or greater. Node.js v5+ is recommended.
-* The source of your application is uploaded to a [cloud source repository](https://cloud.google.com/tools/cloud-repositories/docs/). The Debugger UI needs the source to be available in order to set snapshots.
+* Stackdriver Debugger is comptible with Node.js version 0.12 or greater. Node.js v5+ is recommended.
 
-## Quick Start (Node.js v4.x+)
+## Quick Start
 ```shell
 # Install with `npm` or add to your `package.json`.
 npm install --save @google/cloud-debug
@@ -24,13 +23,13 @@ npm install --save @google/cloud-debug
 # Require the agent at the top of your main script (but after '@google/cloud-trace' if you are also using it).
 require('@google/cloud-debug');
 ```
-Deploy your application, and navigate to the [Debug tab][debug-tab] within the [Google Cloud Console][dev-console] to set snapshots and start debugging.
+Deploy your application, and navigate to the [Strackdriver Debug view][debug-tab] within the [Google Cloud Console][dev-console] to set snapshots and start debugging.
 
 ## Running on Google Cloud Platform
 
 There are three different services that can host Node.js application to Google Cloud Platform.
 
-### Google App Engine Flexible Environment 
+### Google App Engine Flexible Environment
 
 If you are using [Google App Engine Flexible Environment ](https://cloud.google.com/appengine/docs/flexible/), you do not have to do any additional configuration.
 
@@ -48,7 +47,7 @@ Container Engine nodes need to also be created with the `cloud-platform` scope, 
 
 ## Running elsewhere
 
-If your application is running outside of Google Cloud Platform, such as locally, on-premise, or on another cloud provider, you can still use Cloud Debug.
+If your application is running outside of Google Cloud Platform, such as locally, on-premise, or on another cloud provider, you can still use Stackdriver Debugger.
 
 1. You will need to specify your project name. Your project name is visible in the [Google Cloud Console][cloud-console-projects], it may be something like `particular-future-12345`. If your application is [running on Google Cloud Platform](running-on-google-cloud-platform), you don't need to specify the project name.
 
@@ -72,7 +71,9 @@ Once your application is running (deployed, or elsewhere), you should be able to
 
 ![Debug UI](doc/images/debug-ui.png?raw=true)
 
-You can browse the code, and set a snapshot by clicking in the gutter (line number area). Once you set a snapshot, the debug agent will insert a momentary breakpoint at the code location in the running instances of the application.
+If your source is hosted in a [cloud source repository](https://cloud.google.com/tools/cloud-repositories/docs/), Stackdriver Debugger will display the source code of your application automatically. Alternatively, you can also point the debugger to local files, a GitHub or Bitbucket repository, through a Source Capture, or you can simply type in a filename and line number. More details are on source options are [available here](https://cloud.google.com/debugger/docs/source-options).
+
+If you have the source available, you can set a snapshot by clicking in the gutter (line number area). Once you set a snapshot, the debug agent will insert a momentary breakpoint at the code location in the running instances of the application.
 
 ![Breakpoint Set](doc/images/breakpoint-set.png?raw=true)
 
