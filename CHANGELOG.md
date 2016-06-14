@@ -1,5 +1,35 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## 2016-06-14, Version 0.8.3 (Experimental), @matthewloring
+
+### Notable changes
+
+**configuration**:
+  * [[`4aab7bfc1a`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/4aab7bfc1a)] - Configurable throttling for log points (Matt Loring) 
+
+**watch expressions**:
+  * [[`251e8aaaf7`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/251e8aaaf7)] - Allow ES6 conditions and watches (Ali Ijaz Sheikh) 
+
+### Commits
+
+* [[`0b98240eb2`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/0b98240eb2)] - Documentation updates (Ali Ijaz Sheikh) 
+* [[`4d2dfffa79`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/4d2dfffa79)] - Get e2e tests on travis (Matt Loring) 
+* [[`1e083488f6`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/1e083488f6)] - Resume logging after log quota is hit (Matt Loring) 
+* [[`a26278e702`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/a26278e702)] - Prevent calls to deleted breakpoint listeners (Matt Loring) 
+* [[`251e8aaaf7`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/251e8aaaf7)] - Allow ES6 conditions and watches (Ali Ijaz Sheikh) 
+* [[`49f5d9579c`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/49f5d9579c)] - Add LOGPOINT prefix to log point messages (Matt Loring) 
+* [[`4aab7bfc1a`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/4aab7bfc1a)] - Configurable throttling for log points (Matt Loring) 
+* [[`fedd5f4ec9`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/fedd5f4ec9)] - Special case array length reporting (Matt Loring) 
+* [[`8c0d15fa03`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/8c0d15fa03)] - Clarify module loading order in readme (Matt Loring) 
+* [[`fbb419503b`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/fbb419503b)] - Merge pull request #131 from bradabrams/patch-1 (Justin Beckwith) 
+* [[`d2a6ac1a53`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/d2a6ac1a53)] - Update README.md (Brad Abrams) 
+* [[`da40e94f03`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/da40e94f03)] - support log statements with no expressions (Matt Loring) 
+* [[`fbd31fe627`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/fbd31fe627)] - Rename Managed VMs to Flexible Environment (#129) (Steren) 
+* [[`58fe3f3d45`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/58fe3f3d45)] - Fixes crash if gcloud project isn't identified (Matt Loring) 
+* [[`594aa68c34`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/594aa68c34)] - Change language to use snapshot instead of breakpoint (Matt Loring) 
+* [[`b1027d2273`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/b1027d2273)] - Add registration retries (Matt Loring) 
+* [[`222209b450`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/222209b450)] - Report file and line number on invalid bp position (Matt Loring)
+
 ## 2016-05-13, Version 0.8.2 (Experimental), @matthewloring
 
 ### Notable changes
