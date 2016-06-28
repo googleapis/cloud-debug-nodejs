@@ -872,6 +872,113 @@ describe('v8debugapi', function() {
         });
         process.nextTick(function() {foo();});
       });
+    }); 
+
+    it('should be able to read context variables', function(done) {
+      var foo = require('./fixtures/basic-this.js');
+      var bp = { id: 'basicThisContext', location: {
+        path: 'basic-this.js',
+        line: 5,
+        column: 3
+      }};
+      api.set(bp, function(err) {
+        assert.ifError(err);
+        api.wait(bp, function(err) {
+          var expected = [
+            {
+              name: 'o',
+              value: 'false'
+            },
+            {
+              name: 'context', 
+              type: 'object',
+              members: [{name: 'o', value: 'true', type: 'boolean'}]
+            }
+          ];
+          assert.ifError(err);
+          assert.deepEqual(
+            bp.stackFrames[0].locals,
+            expected,
+            "Should have a local variable and a context variable"
+          );
+          api.clear(bp);
+          done();
+        });
+        // bind it to a new object to simplify comparison, otherwise
+        // the context will be the global namespace
+        process.nextTick(foo.bind({}));
+      });
+    });
+
+    it('should be able to read a nested context', function(done) {
+      var foo = require('./fixtures/nested-this.js');
+      var bp = { id: 'nestedThisContext', location: {
+        path: 'nested-this.js',
+        line: 6,
+        column: 5
+      }};
+
+      api.set(bp, function(err) {
+        assert.ifError(err);
+        api.wait(bp, function(err) {
+          var expected = [
+            {
+              name: 'k',
+              value: 'false',
+              type: 'boolean'
+            }
+          ];
+          assert.ifError(err);
+          assert.deepEqual(
+            bp.stackFrames[0].locals[0].members,
+            expected,
+            "Shoud have a reference to only the property set inside the inner function due to the bind"
+          );
+          api.clear(bp);
+          done();
+        });
+        // bind it to a new object to simplify comparison, otherwise
+        // the context will be the global namespace
+        process.nextTick(foo.bind({}));
+      });
+    });
+
+    it('should be able to read an outer context regardless of a nested context', function(done) {
+      var foo = require('./fixtures/nested-this.js');
+      var bp = { id: 'nestedThisContext', location: {
+        path: 'nested-this.js',
+        line: 10,
+        column: 3
+      }};
+
+      api.set(bp, function(err) {
+        assert.ifError(err);
+        api.wait(bp, function(err) {
+          var expected = [
+            {
+              name: 'k',
+              value: 'true',
+              type: 'boolean'
+            },
+            {
+              name: 'j',
+              type: 'function',
+              value: foo().toString()
+            }
+          ];
+          assert.ifError(err);
+          assert.deepEqual(
+            bp.stackFrames[0].locals[0].members,
+            expected,
+            "Shoud have a object mirroring the outer functions properties"
+          );
+          api.clear(bp);
+          done();
+        });
+        // bind it to a new object to simplify comparison, otherwise
+        // the context will be the global namespace
+        process.nextTick(foo.bind({}));
+      });
     });
 
     it('should not silence errors thrown in the wait callback', function(done) {
