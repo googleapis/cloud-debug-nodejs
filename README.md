@@ -63,7 +63,7 @@ If your application is running outside of Google Cloud Platform, such as locally
 
 4. Generate a `source-context.json` file which contains information about the version of the source code used to build the application. This file should be located in the root directory of your application. When you open the Stackdriver Debugger in the Cloud Platform Console, it uses the information in this file to display the correct version of the source.
 
-        gcloud preview app gen-repo-info-file
+        gcloud app gen-repo-info-file
 
 ## Using the Debugger
 
