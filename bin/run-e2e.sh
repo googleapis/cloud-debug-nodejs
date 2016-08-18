@@ -5,6 +5,7 @@ set -e
 cd test/e2e
 
 if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then
+  echo Decrypting credentials
   openssl aes-256-cbc -K $encrypted_e9782ba88cb0_key \
     -iv $encrypted_e9782ba88cb0_iv \
     -in ../../node-team-debug-test-dfc747dacb5b.json.enc \
