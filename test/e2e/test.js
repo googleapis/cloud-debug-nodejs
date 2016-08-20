@@ -28,6 +28,7 @@ var GoogleAuth = require('google-auth-library');
 var _ = require('lodash'); // for _.find. Can't use ES6 yet.
 var Q = require('q');
 var cluster = require('cluster');
+var semver = require('semver');
 
 var DEBUG_API = 'https://clouddebugger.googleapis.com/v2/debugger';
 var SCOPES = [
@@ -219,9 +220,12 @@ function runTest() {
         assert.ok(top.function, 'frame should have a function property');
         assert.strictEqual(top.function, 'fib');
 
-        var arg = _.find(top.arguments, function(a) {
-          return a.name === 'n';
-        });
+        var arg;
+        if (semver.satisfies(process.version, '>=4.0')) {
+          arg = _.find(top.locals, {name: 'n'});
+        } else {
+          arg = _.find(top.arguments, {name: 'n'});
+        }
         assert.ok(arg, 'should find the n argument');
         assert.strictEqual(arg.value, '10');
         console.log('-- checking log point was hit again');
