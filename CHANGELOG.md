@@ -1,5 +1,20 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## 2016-09-07, Version 0.8.4 (Experimental), @matthewloring
+
+### Notable changes
+
+**bug fixes**:
+  * [[`edcfb043a9`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/edcfb043a9)] - Add ScopeMirror traversal to state.js (#142) (Cristian Cavalli) 
+
+### Commits
+
+* [[`198fb1ec9a`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/198fb1ec9a)] - Make E2E tests ScopeMirror aware (#149) (Cristian Cavalli) 
+* [[`edcfb043a9`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/edcfb043a9)] - Add ScopeMirror traversal to state.js (#142) (Cristian Cavalli) 
+* [[`ab7273dc84`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/ab7273dc84)] - Update acorn/mocha dependencies (#144) (Matthew Loring) [#144](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/144)
+* [[`2ec5d1cd08`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/2ec5d1cd08)] - Fix typo in readme (#145) (Matthew Loring) 
+* [[`df9276b63a`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/df9276b63a)] - remove preview from gcloud app (#141) (Justin Beckwith) 
+
 ## 2016-06-14, Version 0.8.3 (Experimental), @matthewloring
 
 ### Notable changes
