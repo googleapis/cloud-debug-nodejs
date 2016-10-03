@@ -53,7 +53,7 @@ describe('Debuglet API', function() {
   });
 
   it('should acquire the project number during init', function(done) {
-    debugletapi.init('uid123', { warn: function() {} }, function(err) {
+    debugletapi.init('uid123', { warn: function() {} }, function(err, project) {
       assert(!err);
       done();
     });
@@ -86,7 +86,7 @@ describe('Debuglet API', function() {
       };
       process.GCLOUD_PROJECT = 'project123';
       var debugletapi = new DebugletApi();
-      debugletapi.init('uid1234', { warn: function() {} }, function(err) {
+      debugletapi.init('uid1234', { warn: function() {} }, function(err, project) {
         var scope = nock(url)
           .post(api + '/debuggees/register', function (body) {
             return body.debuggee.agentVersion ===
