@@ -1,5 +1,11 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## 2016-10-03, Version 0.8.5 (Experimental), @matthewloring
+
+### Commits
+
+* [[`ca08055108`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/ca08055108)] - Update diagnostics common (#155) (Matthew Loring) [#155](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/155)
+
 ## 2016-09-07, Version 0.8.4 (Experimental), @matthewloring
 
 ### Notable changes
