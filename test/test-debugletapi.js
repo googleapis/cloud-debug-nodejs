@@ -21,6 +21,10 @@ var request = require('request');
 var proxyquire = require('proxyquire');
 var agentVersion = require('../package.json').version;
 
+// the tests in this file rely on the GCLOUD_PROJECT environment variable
+// not being set
+delete process.env.GCLOUD_PROJECT;
+
 // require DebugletAPI while stubbing auth to bypass authentication
 //
 var utils = {
@@ -88,7 +92,7 @@ describe('Debuglet API', function() {
       utils.getProjectNumber = function(callback) {
         callback(new Error(), null);
       };
-      process.GCLOUD_PROJECT = 'project123';
+      process.env.GCLOUD_PROJECT = 'project123';
       var debugletapi = new DebugletApi();
       debugletapi.init('uid1234', { warn: function() {} }, function(err, project) {
         var scope = nock(url)
@@ -105,7 +109,7 @@ describe('Debuglet API', function() {
           assert.equal(result.debuggee.id, 'fake-debuggee');
           assert.equal(debugletapi.debuggeeId_, 'fake-debuggee');
           scope.done();
-          delete process.GCLOUD_PROJECT;
+          delete process.env.GCLOUD_PROJECT;
           utils.getProjectNumber = oldProjNum;
           done();
         });
