@@ -55,6 +55,7 @@ describe('Debuglet API', function() {
   it('should acquire the project number during init', function(done) {
     debugletapi.init('uid123', { warn: function() {} }, function(err, project) {
       assert(!err);
+      assert.equal(debugletapi.project_, project);
       done();
     });
   });
