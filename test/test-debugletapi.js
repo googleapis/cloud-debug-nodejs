@@ -53,18 +53,12 @@ describe('Debuglet API', function() {
   });
 
   it('should acquire the project number during init', function(done) {
-    var PROJECT = 'project123';
-    var oldProjNum = utils.getProjectNumber;
-    utils.getProjectNumber = function(callback) {
-      callback(null, PROJECT);
-    };
     debugletapi.init('uid123', { warn: function() {} }, function(err, project) {
       assert(!err);
       // make sure init() invokes the callback with the correct project name
-      assert.equal(project, PROJECT);
+      assert.equal(project, 'project123');
       // make sure the debugletapi is properly storing the project name
       assert.equal(debugletapi.project_, project);
-      utils.getProjectNumber = oldProjNum;
       done();
     });
   });
