@@ -37,7 +37,8 @@ describe('maxDataSize', function() {
   before(function(done) {
     if (!api) {
       var logger = logModule.create(config.logLevel);
-      scanner.scan(true, config.workingDirectory, function(err, fileStats, hash) {
+      scanner.scan(true, config.workingDirectory, /.js$/,
+      function(err, fileStats, hash) {
         assert(!err);
         api = v8debugapi.create(logger, config, fileStats);
         done();

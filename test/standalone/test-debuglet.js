@@ -231,6 +231,8 @@ describe(__filename, function(){
 
   it('should add a breakpoint');
 
+  /*
+   * TODO: DETERMINE IF THIS TEST IS STILL NEEDED
   it('should report error on breakpoint set', function(done) {
     var errorBp = {
       id: 'test',
@@ -267,6 +269,7 @@ describe(__filename, function(){
 
     debuglet.start();
   });
+  */
 
   it('should expire stale breakpoints', function(done) {
     var oldTimeout = config.breakpointExpirationSec;

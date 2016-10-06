@@ -110,13 +110,14 @@ function validateBreakpoint(breakpoint) {
 }
 
 describe('v8debugapi', function() {
-  config.workingDirectory = path.join(process.cwd(), 'test');
+  config.workingDirectory = process.cwd();
   var logger = logModule.create(config.logLevel);
   var api = null;
 
   beforeEach(function(done) {
     if (!api) {
-      scanner.scan(true, config.workingDirectory, function(err, fileStats, hash) {
+      scanner.scan(true, config.workingDirectory, /.js$|.map$/,
+      function(err, fileStats, hash) {
         assert(!err);
         api = v8debugapi.create(logger, config, fileStats);
         assert.ok(api, 'should be able to create the api');
