@@ -30,10 +30,10 @@ describe('repository relative paths', function() {
 
   before(function(done) {
     setTimeout(function() {
-      // Wait for v8deub api to initialize.
+      // Wait for v8debug api to initialize.
       api = agent.private_.v8debug_;
       done();
-    }, 100);
+    }, 300);
   });
 
   after(function() {
