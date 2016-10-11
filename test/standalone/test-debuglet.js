@@ -311,6 +311,65 @@ describe(__filename, function(){
     debuglet.start();
   });
 
+  // This test catches regressions in a bug where the agent would
+  // re-schedule an already expired breakpoint to expire if the
+  // server listed the breakpoint as active (which it may do depending
+  // on how quickly the expiry is processed).
+  // The test expires a breakpoint and then has the api respond with
+  // the breakpoint listed as active. It validates that the breakpoint
+  // is only expired with the server once.
+  it('should not update expired breakpoints', function(done) {
+    var oldTimeout = config.breakpointExpirationSec;
+    var oldFetchRate = config.breakpointUpdateIntervalSec;
+    config.breakpointExpirationSec = 1;
+    config.breakpointUpdateIntervalSec = 1;
+    this.timeout(6000);
+    var debuglet = new Debuglet(
+      config, logger.create(config.logLevel, '@google/cloud-debug'));
+
+    var scope = nock(API)
+      .post(REGISTER_PATH)
+      .reply(200, {
+        debuggee: {
+          id: DEBUGGEE_ID
+        }
+      })
+      .get(BPS_PATH + '?success_on_timeout=true')
+      .reply(200, {
+        breakpoints: [bp]
+      })
+      .put(BPS_PATH + '/test', function(body) {
+        return body.breakpoint.status.description.format ===
+          'The snapshot has expired';
+      })
+      .reply(200)
+      .get(BPS_PATH + '?success_on_timeout=true').times(4)
+      .reply(200, {
+        breakpoints: [bp]
+      });
+
+    debuglet.once('started', function() {
+      debuglet.debugletApi_.request_ = request; // Avoid authing.
+    });
+    debuglet.once('registered', function(id) {
+      assert(id === DEBUGGEE_ID);
+      setTimeout(function() {
+        assert.deepEqual(debuglet.activeBreakpointMap_.test, bp);
+        setTimeout(function() {
+          assert(!debuglet.activeBreakpointMap_.test);
+          // Fetcher disables if we re-update since endpoint isn't mocked twice
+          assert(debuglet.fetcherActive_);
+          scope.done();
+          config.breakpointExpirationSec = oldTimeout;
+          config.breakpointUpdateIntervalSec = oldFetchRate;
+          done();
+        }, 4500);
+      }, 500);
+    });
+
+    debuglet.start();
+  });
+
   describe('map subtract', function() {
     it('should be correct', function() {
       var a = { a: 1, b: 2 };
