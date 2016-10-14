@@ -59,17 +59,6 @@ describe('endsWith', function(){
       assert.strictEqual(polyfill.endsWith('这个很好', '不好'), false);
       done();
     });
-  
-   it('throws an error if the suffix is null or undefined',
-    function(done){
-      assert.throws(function(){
-        polyfill.endsWith('some text', null);
-      }, TypeError);
-      assert.throws(function(){
-        polyfill.endsWith('some text', undefined);
-      }, TypeError);
-      done();
-    });
 
   it('throws an error if the target text is null or undefined',
     function(done){
