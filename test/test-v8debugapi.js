@@ -110,7 +110,7 @@ function validateBreakpoint(breakpoint) {
 }
 
 describe('v8debugapi', function() {
-  config.workingDirectory = process.cwd();
+  config.workingDirectory = path.join(process.cwd(), 'test');
   var logger = logModule.create(config.logLevel);
   var api = null;
 

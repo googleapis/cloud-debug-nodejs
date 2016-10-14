@@ -39,7 +39,7 @@ var proxyquire = require('proxyquire');
  *  Note: The line numbers are zero-based
  */
 function testTool(tool, sourcemapData, inToOutLineNums) {
-  var Sourcemapper = proxyquire('../lib/sourcemapper', {
+  var Sourcemapper = proxyquire('../../lib/sourcemapper', {
     fs: {
       readFile: function(path, encoding, cb){
         cb(null, sourcemapData);
