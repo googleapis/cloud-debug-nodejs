@@ -26,10 +26,12 @@ var breakpointInFoo = {
   location: { path: 'test-duplicate-expressions.js', line: 4 }
 };
 
+var _ = require('lodash');
 var assert = require('assert');
 var v8debugapi = require('../../lib/v8debugapi.js');
 var logModule = require('@google/cloud-diagnostics-common').logger;
 var config = require('../../config.js').debug;
+var SourceMapper = require('../../lib/sourcemapper.js');
 var scanner = require('../../lib/scanner.js');
 var path = require('path');
 
@@ -51,9 +53,27 @@ describe('v8debugapi', function() {
       scanner.scan(true, config.workingDirectory, /.js$/,
         function(err, fileStats, hash) {
         assert(!err);
-        api = v8debugapi.create(logger, config, fileStats);
-        assert.ok(api, 'should be able to create the api');
-        done();
+
+        var jsFiles = _.pickBy(fileStats, function(value, key) {
+          return /.js$/.test(key);
+        });
+
+        // the current working directory with a single trailing path separator
+        var baseDir = path.normalize(process.cwd() + path.sep);
+        var mapFiles = Object.keys(fileStats).filter(function(file) {
+          return file && /.map$/.test(file);
+        })
+        .map(function(file) {
+          return path.normalize(file).replace(baseDir, '');
+        });
+
+        SourceMapper.create(mapFiles, function(err, mapper) {
+          assert(!err);
+
+          api = v8debugapi.create(logger, config, jsFiles, mapper);
+          assert.ok(api, 'should be able to create the api');
+          done();
+        });
       });
     } else {
       assert(stateIsClean(api));

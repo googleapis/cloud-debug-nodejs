@@ -19,7 +19,7 @@
 var assert = require('assert');
 var path = require('path');
 
-var Sourcemapper = require('../../lib/sourcemapper.js');
+var SourceMapper = require('../../lib/sourcemapper.js');
 
 /**
  * @param {string} tool The name of the tool that was used to generate the 
@@ -39,45 +39,54 @@ var Sourcemapper = require('../../lib/sourcemapper.js');
  *  Note: The line numbers are zero-based
  */
 function testTool(tool, mapFilePath, inputFilePath, outputFilePath, inToOutLineNums) {
-  var mockLogger = {
-    error: function() {}
-  };
-  new Sourcemapper([mapFilePath], mockLogger)
-    .do(function(hasMappingInfo, mappingInfo) {
-      describe('sourcemapper for tool ' + tool, function() {
-        it('for tool ' + tool +
-          ' it states that it has mapping info for files it knows about',
-          function(done) {
-            assert.equal(hasMappingInfo(inputFilePath), true);
-            done();
+  describe('sourcemapper for tool ' + tool, function() {
+    var sourcemapper;
+
+    it('for tool ' + tool,
+      function(done) {
+        setTimeout(function() {
+          assert.ok(sourcemapper, 'should create the SourceMapper quickly');
+          done();
+        }, 300);
+
+        SourceMapper.create([mapFilePath], function(err, mapper) {
+          assert.ifError(err);
+          sourcemapper = mapper;
+        });
+    });
+
+    it('for tool ' + tool +
+      ' it states that it has mapping info for files it knows about',
+      function(done) {
+        assert.equal(sourcemapper.hasMappingInfo(inputFilePath), true);
+        done();
+    });
+
+    it('for tool ' + tool + 
+      ' it states that it does not have mapping info for a file it ' +
+      'doesn\'t recognize',
+      function(done) {
+        assert.equal(sourcemapper.hasMappingInfo('INVALID_' + inputFilePath), false);
+        done();
+    });
+
+    var testLineMapping = function(inputLine, expectedOutputLine) {
+      var info = sourcemapper.mappingInfo(inputFilePath, inputLine, 0);
+      assert.notEqual(info, null,
+        'The mapping info for file ' + inputFilePath + ' must be non-null');
+      assert.equal(info.file, outputFilePath);
+      assert.equal(info.line, expectedOutputLine,
+        ' invalid mapping for input line ' + inputLine);
+    };
+
+    it('for tool ' + tool + ' it properly maps line numbers',
+      function(done) {
+        inToOutLineNums.forEach(function(inToOutPair) {
+          testLineMapping(inToOutPair[0], inToOutPair[1]);
         });
 
-        it('for tool ' + tool + 
-          ' it states that it does not have mapping info for a file it ' +
-          'doesn\'t recognize',
-          function(done) {
-            assert.equal(hasMappingInfo('INVALID_' + inputFilePath), false);
-            done();
-        });
-
-        var testLineMapping = function(inputLine, expectedOutputLine) {
-          var info = mappingInfo(inputFilePath, inputLine, 0);
-          assert.notEqual(info, null,
-            'The mapping info for file ' + inputFilePath + ' must be non-null');
-          assert.equal(info.file, outputFilePath);
-          assert.equal(info.line, expectedOutputLine,
-            ' invalid mapping for input line ' + inputLine);
-        };
-
-        it('for tool ' + tool + ' it properly maps line numbers',
-          function(done) {
-            inToOutLineNums.forEach(function(inToOutPair) {
-              testLineMapping(inToOutPair[0], inToOutPair[1]);
-            });
-
-            done();
-        });
-      });
+        done();
+    });
   });
 }
 
