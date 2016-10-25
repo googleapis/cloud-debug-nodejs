@@ -24,7 +24,7 @@ process.env.GCLOUD_DIAGNOSTICS_CONFIG = 'test/fixtures/test-config.js';
 var assert = require('assert');
 var logModule = require('@google/cloud-diagnostics-common').logger;
 var v8debugapi = require('../../lib/v8debugapi.js');
-var SourceMapper = require('../../lib/SourceMapper.js');
+var SourceMapper = require('../../lib/sourcemapper.js');
 var scanner = require('../../lib/scanner.js');
 var config = require('../../config.js').debug;
 var api;
