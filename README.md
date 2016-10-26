@@ -23,7 +23,7 @@ npm install --save @google/cloud-debug
 # Require the agent at the top of your main script (but after '@google/cloud-trace' if you are also using it).
 require('@google/cloud-debug');
 ```
-Deploy your application, and navigate to the [Strackdriver Debug view][debug-tab] within the [Google Cloud Console][dev-console] to set snapshots and start debugging.
+Deploy your application, and navigate to the [Stackdriver Debug view][debug-tab] within the [Google Cloud Console][dev-console] to set snapshots and start debugging.
 
 ## Running on Google Cloud Platform
 
