@@ -45,6 +45,12 @@ var initConfig = function(config_) {
     config.appPathRelativeToRepository =
       process.env.GCLOUD_DEBUG_REPO_APP_PATH;
   }
+  if (process.env.hasOwnProperty('GAE_MODULE_NAME')) {
+    config.serviceName = process.env.GAE_MODULE_NAME;
+  }
+  if (process.env.hasOwnProperty('GAE_MODULE_VERSION')) {
+    config.serviceVersion = process.env.GAE_MODULE_VERSION;
+  }
   return config;
 };
 
