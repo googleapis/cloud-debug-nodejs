@@ -25,7 +25,7 @@ var path = require('path');
 var _ = require('lodash');
 
 var initConfig = function(config_) {
-  var config = (config_ && config_.debug) || {};
+  var config = (config_ && config_.debug) || config_ || {};
 
   if (process.env.hasOwnProperty('GCLOUD_DIAGNOSTICS_CONFIG')) {
     var c = require(path.resolve(process.env.GCLOUD_DIAGNOSTICS_CONFIG));
