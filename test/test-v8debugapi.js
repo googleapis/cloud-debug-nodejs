@@ -37,6 +37,7 @@ var logModule = require('@google/cloud-diagnostics-common').logger;
 var config = require('../config.js').debug;
 var StatusMessage = require('../lib/apiclasses.js').StatusMessage;
 var scanner = require('../lib/scanner.js');
+var SourceMapper = require('../lib/sourcemapper.js');
 var path = require('path');
 var semver = require('semver');
 
@@ -116,20 +117,28 @@ describe('v8debugapi', function() {
 
   beforeEach(function(done) {
     if (!api) {
-      scanner.scan(true, config.workingDirectory, function(err, fileStats, hash) {
+      scanner.scan(true, config.workingDirectory, /.js$|.map$/,
+      function(err, fileStats, hash) {
         assert(!err);
-        api = v8debugapi.create(logger, config, fileStats);
-        assert.ok(api, 'should be able to create the api');
 
-        // monkey-patch wait to add validation of the breakpoints.
-        var origWait = api.wait;
-        api.wait = function(bp, callback) {
-          origWait(bp, function(err) {
-            validateBreakpoint(bp);
-            callback(err);
-          });
-        };
-        done();
+        var jsStats = fileStats.selectStats(/.js$/);
+        var mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
+        SourceMapper.create(mapFiles, function(err, mapper) {
+          assert(!err);
+
+          api = v8debugapi.create(logger, config, jsStats, mapper);
+          assert.ok(api, 'should be able to create the api');
+
+          // monkey-patch wait to add validation of the breakpoints.
+          var origWait = api.wait;
+          api.wait = function(bp, callback) {
+            origWait(bp, function(err) {
+              validateBreakpoint(bp);
+              callback(err);
+            });
+          };
+          done();
+        });
       });
     } else {
       assert(stateIsClean(api));

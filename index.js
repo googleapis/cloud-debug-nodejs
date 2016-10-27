@@ -24,8 +24,9 @@ var Debuglet = require('./lib/debuglet.js');
 var path = require('path');
 var _ = require('lodash');
 
-var initConfig = function() {
-  var config = {};
+var initConfig = function(config_) {
+  var config = (config_ && config_.debug) || config_ || {};
+
   if (process.env.hasOwnProperty('GCLOUD_DIAGNOSTICS_CONFIG')) {
     var c = require(path.resolve(process.env.GCLOUD_DIAGNOSTICS_CONFIG));
     if (c && c.debug) {
@@ -44,17 +45,41 @@ var initConfig = function() {
     config.appPathRelativeToRepository =
       process.env.GCLOUD_DEBUG_REPO_APP_PATH;
   }
+  if (process.env.hasOwnProperty('GAE_MODULE_NAME')) {
+    config.serviceName = process.env.GAE_MODULE_NAME;
+  }
+  if (process.env.hasOwnProperty('GAE_MODULE_VERSION')) {
+    config.serviceVersion = process.env.GAE_MODULE_VERSION;
+  }
   return config;
 };
 
-// exports is populated by the agent
-module.exports = {};
-var config = initConfig();
+var hasStarted = false;
+var log;
+function start(config_) {
+  if (hasStarted) {
+    return log.error('The cloud-debug agent has already been started.');
+  }
 
-var log = logger.create(config.logLevel, '@google/cloud-debug');
-
-if (config.enabled) {
-  var debuglet = new Debuglet(config, log);
-  debuglet.start();
-  module.exports.private_ = debuglet;
+  var config = initConfig(config_);
+  log = logger.create(config.logLevel, '@google/cloud-debug');
+  if (config.enabled) {
+    var debuglet = new Debuglet(config, log);
+    debuglet.start();
+    module.exports.private_ = debuglet;
+    hasStarted = true;
+  }
 }
+
+// exports is populated by the agent
+module.exports = {
+  start: start
+};
+
+setTimeout(function() {
+  if (!hasStarted){
+    start();
+    log.error('The cloud-debug agent has been automatically started.  ' +
+      'This action will be deprecated in the future.');
+  }
+}, 5*1000);

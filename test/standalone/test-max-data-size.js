@@ -24,6 +24,7 @@ process.env.GCLOUD_DIAGNOSTICS_CONFIG = 'test/fixtures/test-config.js';
 var assert = require('assert');
 var logModule = require('@google/cloud-diagnostics-common').logger;
 var v8debugapi = require('../../lib/v8debugapi.js');
+var SourceMapper = require('../../lib/sourcemapper.js');
 var scanner = require('../../lib/scanner.js');
 var config = require('../../config.js').debug;
 var api;
@@ -37,10 +38,18 @@ describe('maxDataSize', function() {
   before(function(done) {
     if (!api) {
       var logger = logModule.create(config.logLevel);
-      scanner.scan(true, config.workingDirectory, function(err, fileStats, hash) {
+      scanner.scan(true, config.workingDirectory, /.js$/,
+      function(err, fileStats, hash) {
         assert(!err);
-        api = v8debugapi.create(logger, config, fileStats);
-        done();
+
+        var jsStats = fileStats.selectStats(/.js$/);
+        var mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
+        SourceMapper.create(mapFiles, function(err, mapper) {
+          assert(!err);
+
+          api = v8debugapi.create(logger, config, jsStats, mapper);
+          done();
+        });
       });
     } else {
       done();
