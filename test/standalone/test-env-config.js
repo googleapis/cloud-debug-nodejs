@@ -17,7 +17,7 @@
 'use strict';
 
 process.env.GCLOUD_DIAGNOSTICS_CONFIG = 'test/fixtures/test-config.js';
-process.env.GCLOUD_DEBUG_LOGLEVEL = 4;
+process.env.GCLOUD_DEBUG_LOGLEVEL = 1;
 
 var assert = require('assert');
 
@@ -27,7 +27,7 @@ describe('should respect environment variables', function() {
     agent.start();
     var config = agent.private_.config_;
     // Set by env var
-    assert.equal(config.logLevel, 4);
+    assert.equal(config.logLevel, 1);
     // Set default + user config
     assert.equal(config.internal.registerDelayOnFetcherErrorSec, 300);
     // Set by user
