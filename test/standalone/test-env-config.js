@@ -24,6 +24,7 @@ var assert = require('assert');
 describe('should respect environment variables', function() {
   it('should respect GCLOUD_DIAGNOSTICS_CONFIG', function() {
     var agent = require('../..');
+    agent.start();
     var config = agent.private_.config_;
     // Set by env var
     assert.equal(config.logLevel, 4);

@@ -31,6 +31,7 @@ describe('module', function() {
   // Some tests depend on this private property.
   it('should have a debuglet as the private property', function() {
     var agent = require('../..');
+    agent.start();
     assert(agent.private_);
 
     // The private_ property needs to be a debuglet.
