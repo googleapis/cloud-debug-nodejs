@@ -19,6 +19,7 @@ var assert = require('assert');
 var v8debugapi = require('../../lib/v8debugapi.js');
 var logModule = require('@google/cloud-diagnostics-common').logger;
 var config = require('../../config.js').debug;
+var SourceMapper = require('../../lib/sourcemapper.js');
 var scanner = require('../../lib/scanner.js');
 var path = require('path');
 var semver = require('semver');
@@ -50,12 +51,18 @@ describe('v8debugapi', function() {
   });
   beforeEach(function(done) {
     if (!api) {
-      scanner.scan(true, config.workingDirectory, function(err, fileStats, hash) {
-        assert(!err);
-        api = v8debugapi.create(logger, config, fileStats);
-        assert.ok(api, 'should be able to create the api');
-        done();
-      });
+      scanner.scan(true, config.workingDirectory, /.js$/,
+        function(err, fileStats, hash) {
+          assert(!err);
+
+          var jsStats = fileStats.selectStats(/.js$/);
+          var mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
+          SourceMapper.create(mapFiles, function(err, mapper) {
+            api = v8debugapi.create(logger, config, jsStats, mapper);
+            assert.ok(api, 'should be able to create the api');
+            done();
+          });
+        });
     } else {
       assert(stateIsClean(api));
       done();
