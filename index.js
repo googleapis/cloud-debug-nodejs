@@ -54,31 +54,37 @@ var initConfig = function(config_) {
   return config;
 };
 
-var hasStarted = false;
-var log;
+module.exports = {
+  start: start,
+  hasStarted: hasStarted
+};
+
+var started_ = false;
+var log_;
+
+function hasStarted() {
+  return started_;
+}
+
 function start(config_) {
-  if (hasStarted) {
-    return log.error('The cloud-debug agent has already been started.');
+  if (started_) {
+    return log_.error('The cloud-debug agent has already been started.');
   }
 
   var config = initConfig(config_);
-  log = logger.create(config.logLevel, '@google/cloud-debug');
+  log_ = logger.create(config.logLevel, '@google/cloud-debug');
   if (config.enabled) {
-    var debuglet = new Debuglet(config, log);
+    var debuglet = new Debuglet(config, log_);
     debuglet.start();
     module.exports.private_ = debuglet;
-    hasStarted = true;
+    started_ = true;
   }
 }
 
-module.exports = {
-  start: start
-};
-
 setTimeout(function() {
-  if (!hasStarted){
+  if (!started_){
     start();
-    log.error('The cloud-debug agent has been automatically started.  ' +
+    log_.error('The cloud-debug agent has been automatically started.  ' +
       'This action will be deprecated in the future.');
   }
-}, 5*1000);
+}, 3*1000);

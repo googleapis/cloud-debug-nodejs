@@ -19,19 +19,22 @@
 var assert = require('assert');
 var Debuglet = require('../../lib/debuglet.js');
 
-
 describe('module', function() {
+  var agent;
+
+  before(function() {
+    agent = require('../..');
+    agent.start();
+    assert.strictEqual(agent.hasStarted(), true);
+  });
 
   it('should return the same agent on a second require', function() {
-    var obj1 = require('../..');
-    var obj2 = require('../..');
-    assert(obj1 === obj2);
+    var obj = require('../..');
+    assert(agent === obj);
   });
 
   // Some tests depend on this private property.
   it('should have a debuglet as the private property', function() {
-    var agent = require('../..');
-    agent.start();
     assert(agent.private_);
 
     // The private_ property needs to be a debuglet.
