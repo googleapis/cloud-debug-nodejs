@@ -30,6 +30,7 @@ describe('module', function() {
 
   it('should return the same agent on a second require', function() {
     var obj = require('../..');
+    obj.start();
     assert(agent === obj);
   });
 
