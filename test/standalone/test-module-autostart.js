@@ -24,6 +24,6 @@ describe('module', function() {
     setTimeout(function() {
       assert.strictEqual(agent.hasStarted(), true);
       done();
-    }, 3500);
+    }, 2500);
   });
 });

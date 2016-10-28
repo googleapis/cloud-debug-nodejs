@@ -87,4 +87,4 @@ setTimeout(function() {
     log_.error('The cloud-debug agent has been automatically started.  ' +
       'This action will be deprecated in the future.');
   }
-}, 3*1000);
+}, 1000);
