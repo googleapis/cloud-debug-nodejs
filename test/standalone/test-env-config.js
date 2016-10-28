@@ -18,6 +18,8 @@
 
 process.env.GCLOUD_DIAGNOSTICS_CONFIG = 'test/fixtures/test-config.js';
 process.env.GCLOUD_DEBUG_LOGLEVEL = 1;
+process.env.GAE_MODULE_NAME = 'a new name';
+process.env.GAE_MODULE_VERSION = 'a new version';
 
 var assert = require('assert');
 
@@ -28,6 +30,10 @@ describe('should respect environment variables', function() {
     var config = agent.private_.config_;
     // Set by env var
     assert.equal(config.logLevel, 1);
+    // Set by env var
+    assert.equal(config.serviceName, 'a new name');
+    // Set by env var
+    assert.equal(config.serviceVersion, 'a new version');
     // Set default + user config
     assert.equal(config.internal.registerDelayOnFetcherErrorSec, 300);
     // Set by user
