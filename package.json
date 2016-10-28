@@ -61,6 +61,7 @@
   "dependencies": {
     "@google/cloud-diagnostics-common": "0.2.5",
     "acorn": "^3.3.0",
+    "async": "^2.1.2",
     "coffee-script": "^1.9.3",
     "findit": "^2.0.0",
     "google-auth-library": "^0.9.5",

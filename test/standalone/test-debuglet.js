@@ -231,43 +231,6 @@ describe(__filename, function(){
 
   it('should add a breakpoint');
 
-  it('should report error on breakpoint set', function(done) {
-    var errorBp = {
-      id: 'test',
-      action: 'CAPTURE',
-      location: { path: 'fixtures/foo', line: 2 }
-    };
-
-    var scope = nock(API)
-      .post(REGISTER_PATH)
-      .reply(200, {
-        debuggee: {
-          id: DEBUGGEE_ID
-        }
-      })
-      .get(BPS_PATH + '?success_on_timeout=true')
-      .reply(200, {
-        breakpoints: [errorBp]
-      })
-      .put(BPS_PATH + '/test', function(body) {
-        var status = body.breakpoint.status;
-        return status.isError &&
-          status.description.format.indexOf('Only files with .js extensions') !== -1;
-      })
-      .reply(200);
-
-    debuglet.once('registered', function(id) {
-      assert(id === DEBUGGEE_ID);
-      setTimeout(function() {
-        assert(!debuglet.activeBreakpointMap_.test);
-        scope.done();
-        done();
-      }, 200);
-    });
-
-    debuglet.start();
-  });
-
   it('should expire stale breakpoints', function(done) {
     var oldTimeout = config.breakpointExpirationSec;
     config.breakpointExpirationSec = 1;
