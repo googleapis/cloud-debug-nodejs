@@ -23,11 +23,13 @@ module.exports = {
     // An identifier for the current code deployment.
     description: 'test config',
 
-    // An identifier for the current code's service name
-    serviceName: 'test service name',
+    serviceContext: {
+      // An identifier for the current code's service name
+      service: 'test service name',
 
-    // An identifier for the current code's version
-    serviceVersion: 'test version',
+      // An identifier for the current code's version
+      version: 'test version'
+    },
 
     // Log levels: 0-disabled,1-error,2-warn,3-info,4-debug.
     logLevel: 4,

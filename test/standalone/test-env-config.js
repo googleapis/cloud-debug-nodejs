@@ -31,9 +31,9 @@ describe('should respect environment variables', function() {
     // Set by env var
     assert.equal(config.logLevel, 1);
     // Set by env var
-    assert.equal(config.serviceName, 'a new name');
+    assert.equal(config.serviceContext.service, 'a new name');
     // Set by env var
-    assert.equal(config.serviceVersion, 'a new version');
+    assert.equal(config.serviceContext.version, 'a new version');
     // Set default + user config
     assert.equal(config.internal.registerDelayOnFetcherErrorSec, 300);
     // Set by user

@@ -48,8 +48,10 @@ describe('Debuglet API', function() {
 
   var debugletapi = new DebugletApi({
     description: 'Test debuglet',
-    serviceName: 'TestDebugletName',
-    serviceVersion: 'TestDebugletVersion'
+    serviceContext: {
+      service: 'TestDebugletName',
+      version: 'TestDebugletVersion'
+    }
   });
 
   it('should return an instance when constructed', function() {
