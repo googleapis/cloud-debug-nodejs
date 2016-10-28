@@ -71,7 +71,6 @@ function start(config_) {
   }
 }
 
-// exports is populated by the agent
 module.exports = {
   start: start
 };
