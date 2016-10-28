@@ -86,7 +86,9 @@ function start(config_) {
 setTimeout(function() {
   if (!started_){
     start();
-    log_.error('The cloud-debug agent has been automatically started.  ' +
-      'This action will be deprecated in the future.');
+    log_.error('The @google/cloud-debug agent now needs the start() ' +
+      'function to be called in ordered to start operating. To ease ' +
+      'migration we start the agent automatically after a 1 second delay, '+
+      'but this behaviour will be dropped in a future semver major release.');
   }
 }, 1000);
