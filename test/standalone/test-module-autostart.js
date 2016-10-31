@@ -22,7 +22,7 @@ describe('module', function() {
   it('should autostart', function(done) {
     var agent = require('../..');
     setTimeout(function() {
-      assert.strictEqual(agent.hasStarted(), true);
+      assert.strictEqual(agent.start.wasSuccessful_, true);
       done();
     }, 2500);
   });

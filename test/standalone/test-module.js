@@ -25,7 +25,7 @@ describe('module', function() {
   before(function() {
     agent = require('../..');
     agent.start();
-    assert.strictEqual(agent.hasStarted(), true);
+    assert.strictEqual(agent.start.wasSuccessful_, true);
   });
 
   it('should return the same agent on a second require', function() {

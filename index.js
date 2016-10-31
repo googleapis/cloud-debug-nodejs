@@ -57,19 +57,12 @@ var initConfig = function(config_) {
 };
 
 module.exports = {
-  start: start,
-  hasStarted: hasStarted
+  start: start
 };
 
-var started_ = false;
 var log_;
-
-function hasStarted() {
-  return started_;
-}
-
 function start(config_) {
-  if (started_) {
+  if (start.wasSuccessful_) {
     return log_.error('The cloud-debug agent has already been started.');
   }
 
@@ -79,12 +72,12 @@ function start(config_) {
     var debuglet = new Debuglet(config, log_);
     debuglet.start();
     module.exports.private_ = debuglet;
-    started_ = true;
+    start.wasSuccessful_ = true;
   }
 }
 
 setTimeout(function() {
-  if (!started_){
+  if (!start.wasSuccessful_){
     start();
     log_.error('The @google/cloud-debug agent now needs the start() ' +
       'function to be called in ordered to start operating. To ease ' +
