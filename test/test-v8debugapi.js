@@ -734,7 +734,7 @@ describe('v8debugapi', function() {
       });
     });
 
-    it('should limit array length', function(done) {
+    it('should not limit the length of an evaluated array', function(done) {
       var bp = {
         id: 'fake-id-124',
         location: { path: 'test-v8debugapi.js', line: 5 },
@@ -748,10 +748,8 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           var foo = bp.evaluatedExpressions[0];
           var fooVal = bp.variableTable[foo.varTableIndex];
-          assert.equal(fooVal.members.length, 1);
-          assert(foo.status.description.format.indexOf(
-            'Only first') !== -1);
-          assert(!foo.status.isError);
+          assert.equal(fooVal.members.length, 3);
+          assert.strictEqual(foo.status, undefined);
 
           api.clear(bp);
           config.capture.maxProperties = oldMax;
@@ -761,7 +759,7 @@ describe('v8debugapi', function() {
       });
     });
 
-    it('should limit object length', function(done) {
+    it('should not limit the length of an evaluated object', function(done) {
       var bp = {
         id: 'fake-id-124',
         location: { path: 'test-v8debugapi.js', line: 5 },
@@ -775,10 +773,8 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           var foo = bp.evaluatedExpressions[0];
           var fooVal = bp.variableTable[foo.varTableIndex];
-          assert.equal(fooVal.members.length, 1);
-          assert(foo.status.description.format.indexOf(
-            'Only first') !== -1);
-          assert(!foo.status.isError);
+          assert.equal(fooVal.members.length, 3);
+          assert.strictEqual(foo.status, undefined);
 
           api.clear(bp);
           config.capture.maxProperties = oldMax;
