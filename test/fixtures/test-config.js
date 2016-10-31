@@ -39,6 +39,9 @@ module.exports = {
       includeNodeModules: true,
     },
 
+    // This is only for testing the config priority
+    testPriority: 'from the config file',
+
   // These configuration options are for internal experimentation only.
   internal: {
     registerDelayOnFetcherErrorSec: 300 // 5 minutes.

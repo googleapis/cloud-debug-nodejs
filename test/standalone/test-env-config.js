@@ -26,8 +26,17 @@ var assert = require('assert');
 describe('should respect environment variables', function() {
   it('should respect GCLOUD_DIAGNOSTICS_CONFIG', function() {
     var agent = require('../..');
-    agent.start();
+    agent.start({
+      testPriority: 'from the supplied config',
+      logLevel: 2 // this value is intentionally different from the value
+                  // specified in the config file specified by 
+                  // GCLOUD_DIAGNOSTICS_CONFIG and the value of the 
+                  // environment value GCLOUD_DEBUG_LOGLEVEL
+    });
     var config = agent.private_.config_;
+    // This assert tests that the value set by an environment variable 
+    // takes priority over the value in the config file and priority over 
+    // the value given to the config supplied to the start() method.
     // Set by env var
     assert.equal(config.logLevel, 1);
     // Set by env var
@@ -44,6 +53,11 @@ describe('should respect environment variables', function() {
     assert.equal(config.description, 'test config');
     // In top level config not set by user
     assert.equal(config.breakpointUpdateIntervalSec, 10);
+    // This assert verifies that the value specified in the config given 
+    // to the start() method takes priority over the value specified in 
+    // the config file.
+    // In the config passed to the start() method
+    assert.equal(config.testPriority, 'from the supplied config');
   });
 
 });
