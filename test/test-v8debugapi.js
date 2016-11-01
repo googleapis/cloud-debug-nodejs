@@ -598,8 +598,10 @@ describe('v8debugapi', function() {
         location: breakpointInFoo.location,
         expressions: ['process']
       };
-      var oldMax = config.capture.maxProperties;
+      var oldMaxProps = config.capture.maxProperties;
+      var oldMaxData = config.capture.maxDataSize;
       config.capture.maxProperties = 0;
+      config.capture.maxDataSize = 20000;
       api.set(bp, function(err) {
         assert.ifError(err);
         api.wait(bp, function(err) {
@@ -633,7 +635,8 @@ describe('v8debugapi', function() {
           }));
 
           api.clear(bp);
-          config.capture.maxProperties = oldMax;
+          config.capture.maxDataSize = oldMaxData;
+          config.capture.maxProperties = oldMaxProps;
           done();
         });
         process.nextTick(function() {foo(3);});
@@ -646,6 +649,8 @@ describe('v8debugapi', function() {
         location: { path: 'test-v8debugapi.js', line: 9 },
         expressions: ['process.env', 'hasGetter']
       };
+      var oldMaxData = config.capture.maxDataSize;
+      config.capture.maxDataSize = 20000;
       api.set(bp, function(err) {
         assert.ifError(err);
         api.wait(bp, function(err) {
@@ -668,6 +673,7 @@ describe('v8debugapi', function() {
           }));
 
           api.clear(bp);
+          config.capture.maxDataSize = oldMaxData;
           done();
         });
         process.nextTick(function() {getterObject();});
@@ -714,8 +720,10 @@ describe('v8debugapi', function() {
         location: { path: 'test-v8debugapi.js', line: 9 },
         expressions: ['hasGetter']
       };
-      var oldMax = config.capture.maxStringLength;
+      var oldMaxLength = config.capture.maxStringLength;
+      var oldMaxData = config.capture.maxDataSize;
       config.capture.maxStringLength = 3;
+      config.capture.maxDataSize = 20000;
       api.set(bp, function(err) {
         assert.ifError(err);
         api.wait(bp, function(err) {
@@ -727,7 +735,8 @@ describe('v8debugapi', function() {
           }));
 
           api.clear(bp);
-          config.capture.maxStringLength = oldMax;
+          config.capture.maxDataSize = oldMaxData;
+          config.capture.maxStringLength = oldMaxLength;
           done();
         });
         process.nextTick(function() {getterObject();});
@@ -740,8 +749,10 @@ describe('v8debugapi', function() {
         location: { path: 'test-v8debugapi.js', line: 5 },
         expressions: ['A']
       };
-      var oldMax = config.capture.maxProperties;
+      var oldMaxProps = config.capture.maxProperties;
+      var oldMaxData = config.capture.maxDataSize;
       config.capture.maxProperties = 1;
+      config.capture.maxDataSize = 20000;
       api.set(bp, function(err) {
         assert.ifError(err);
         api.wait(bp, function(err) {
@@ -752,7 +763,8 @@ describe('v8debugapi', function() {
           assert.strictEqual(foo.status, undefined);
 
           api.clear(bp);
-          config.capture.maxProperties = oldMax;
+          config.capture.maxDataSize = oldMaxData;
+          config.capture.maxProperties = oldMaxProps;
           done();
         });
         process.nextTick(function() {foo(2);});
@@ -765,8 +777,10 @@ describe('v8debugapi', function() {
         location: { path: 'test-v8debugapi.js', line: 5 },
         expressions: ['B']
       };
-      var oldMax = config.capture.maxProperties;
+      var oldMaxProps = config.capture.maxProperties;
+      var oldMaxData = config.capture.maxDataSize;
       config.capture.maxProperties = 1;
+      config.capture.maxDataSize = 20000;
       api.set(bp, function(err) {
         assert.ifError(err);
         api.wait(bp, function(err) {
@@ -777,7 +791,8 @@ describe('v8debugapi', function() {
           assert.strictEqual(foo.status, undefined);
 
           api.clear(bp);
-          config.capture.maxProperties = oldMax;
+          config.capture.maxDataSize = oldMaxData;
+          config.capture.maxProperties = oldMaxProps;
           done();
         });
         process.nextTick(function() {foo(2);});
