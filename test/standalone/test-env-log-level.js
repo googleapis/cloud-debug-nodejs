@@ -23,6 +23,7 @@ var assert = require('assert');
 describe('should respect environment variables', function() {
   it('should respect GCLOUD_DEBUG_LOGLEVEL', function() {
     var agent = require('../../');
+    agent.start();
     var logger = agent.private_.logger_;
     var STRING1 = 'jjjjjjjjjjjjjjjjjfjfjfjf';
     var STRING2 = 'kkkkkkkfkfkfkfkfkkffkkkk';

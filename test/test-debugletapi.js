@@ -46,7 +46,13 @@ nock.disableNetConnect();
 
 describe('Debuglet API', function() {
 
-  var debugletapi = new DebugletApi('Test debuglet');
+  var debugletapi = new DebugletApi({
+    description: 'Test debuglet',
+    serviceContext: {
+      service: 'TestDebugletName',
+      version: 'TestDebugletVersion'
+    }
+  });
 
   it('should return an instance when constructed', function() {
     assert.ok(debugletapi);
@@ -54,6 +60,14 @@ describe('Debuglet API', function() {
 
   it('should have correct descriptor', function() {
     assert.equal(debugletapi.descriptor_, 'Test debuglet');
+  });
+
+  it('should have correct service name', function() {
+    assert.equal(debugletapi.serviceName_, 'TestDebugletName');
+  });
+
+  it('should have correct service version', function() {
+    assert.equal(debugletapi.serviceVersion_, 'TestDebugletVersion');
   });
 
   it('should acquire the project number during init', function(done) {
