@@ -743,60 +743,124 @@ describe('v8debugapi', function() {
       });
     });
 
-    it('should not limit the length of an evaluated array', function(done) {
-      var bp = {
-        id: 'fake-id-124',
-        location: { path: 'test-v8debugapi.js', line: 5 },
-        expressions: ['A']
-      };
-      var oldMaxProps = config.capture.maxProperties;
-      var oldMaxData = config.capture.maxDataSize;
-      config.capture.maxProperties = 1;
-      config.capture.maxDataSize = 20000;
-      api.set(bp, function(err) {
-        assert.ifError(err);
-        api.wait(bp, function(err) {
+    it('should not limit the length of an evaluated array based on maxProperties',
+      function(done) {
+        var bp = {
+          id: 'fake-id-124',
+          location: { path: 'test-v8debugapi.js', line: 5 },
+          expressions: ['A']
+        };
+        var oldMaxProps = config.capture.maxProperties;
+        var oldMaxData = config.capture.maxDataSize;
+        config.capture.maxProperties = 1;
+        config.capture.maxDataSize = 20000;
+        api.set(bp, function(err) {
           assert.ifError(err);
-          var foo = bp.evaluatedExpressions[0];
-          var fooVal = bp.variableTable[foo.varTableIndex];
-          assert.equal(fooVal.members.length, 3);
-          assert.strictEqual(foo.status, undefined);
+          api.wait(bp, function(err) {
+            assert.ifError(err);
+            var foo = bp.evaluatedExpressions[0];
+            var fooVal = bp.variableTable[foo.varTableIndex];
+            assert.equal(fooVal.members.length, 3);
+            assert.strictEqual(foo.status, undefined);
 
-          api.clear(bp);
-          config.capture.maxDataSize = oldMaxData;
-          config.capture.maxProperties = oldMaxProps;
-          done();
+            api.clear(bp);
+            config.capture.maxDataSize = oldMaxData;
+            config.capture.maxProperties = oldMaxProps;
+            done();
+          });
+          process.nextTick(function() {foo(2);});
         });
-        process.nextTick(function() {foo(2);});
-      });
     });
 
-    it('should not limit the length of an evaluated object', function(done) {
-      var bp = {
-        id: 'fake-id-124',
-        location: { path: 'test-v8debugapi.js', line: 5 },
-        expressions: ['B']
-      };
-      var oldMaxProps = config.capture.maxProperties;
-      var oldMaxData = config.capture.maxDataSize;
-      config.capture.maxProperties = 1;
-      config.capture.maxDataSize = 20000;
-      api.set(bp, function(err) {
-        assert.ifError(err);
-        api.wait(bp, function(err) {
+    it('should limit the length of an evaluated array based on maxDataSize',
+      function(done) {
+        var bp = {
+          id: 'fake-id-124',
+          location: { path: 'test-v8debugapi.js', line: 5 },
+          expressions: ['A']
+        };
+        var oldMaxProps = config.capture.maxProperties;
+        var oldMaxData = config.capture.maxDataSize;
+        config.capture.maxProperties = 5;
+        config.capture.maxDataSize = 1;
+        api.set(bp, function(err) {
           assert.ifError(err);
-          var foo = bp.evaluatedExpressions[0];
-          var fooVal = bp.variableTable[foo.varTableIndex];
-          assert.equal(fooVal.members.length, 3);
-          assert.strictEqual(foo.status, undefined);
+          api.wait(bp, function(err) {
+            assert.ifError(err);
+            var foo = bp.evaluatedExpressions[0];
+            var fooVal = bp.variableTable[foo.varTableIndex];
+            assert.equal(fooVal.members.length, 1);
+            assert(foo.status.description.format.indexOf(
+              'Truncating the results') !== -1);
+            assert(!foo.status.isError);
 
-          api.clear(bp);
-          config.capture.maxDataSize = oldMaxData;
-          config.capture.maxProperties = oldMaxProps;
-          done();
+            api.clear(bp);
+            config.capture.maxDataSize = oldMaxData;
+            config.capture.maxProperties = oldMaxProps;
+            done();
+          });
+          process.nextTick(function() {foo(2);});
         });
-        process.nextTick(function() {foo(2);});
-      });
+    });
+
+    it('should not limit the length of an evaluated object based on maxProperties',
+      function(done) {
+        var bp = {
+          id: 'fake-id-124',
+          location: { path: 'test-v8debugapi.js', line: 5 },
+          expressions: ['B']
+        };
+        var oldMaxProps = config.capture.maxProperties;
+        var oldMaxData = config.capture.maxDataSize;
+        config.capture.maxProperties = 1;
+        config.capture.maxDataSize = 20000;
+        api.set(bp, function(err) {
+          assert.ifError(err);
+          api.wait(bp, function(err) {
+            assert.ifError(err);
+            var foo = bp.evaluatedExpressions[0];
+            var fooVal = bp.variableTable[foo.varTableIndex];
+            assert.equal(fooVal.members.length, 3);
+            assert.strictEqual(foo.status, undefined);
+
+            api.clear(bp);
+            config.capture.maxDataSize = oldMaxData;
+            config.capture.maxProperties = oldMaxProps;
+            done();
+          });
+          process.nextTick(function() {foo(2);});
+        });
+    });
+
+    it('should limit the length of an evaluated object based on maxDataSize',
+      function(done) {
+        var bp = {
+          id: 'fake-id-124',
+          location: { path: 'test-v8debugapi.js', line: 5 },
+          expressions: ['B']
+        };
+        var oldMaxProps = config.capture.maxProperties;
+        var oldMaxData = config.capture.maxDataSize;
+        config.capture.maxProperties = 5;
+        config.capture.maxDataSize = 1;
+        api.set(bp, function(err) {
+          assert.ifError(err);
+          api.wait(bp, function(err) {
+            assert.ifError(err);
+            var foo = bp.evaluatedExpressions[0];
+            var fooVal = bp.variableTable[foo.varTableIndex];
+            assert.equal(fooVal.members.length, 1);
+            assert(foo.status.description.format.indexOf(
+              'Truncating the results') !== -1);
+            assert(!foo.status.isError);
+
+            api.clear(bp);
+            config.capture.maxDataSize = oldMaxData;
+            config.capture.maxProperties = oldMaxProps;
+            done();
+          });
+          process.nextTick(function() {foo(2);});
+        });
     });
 
     it('should capture without values for invalid watch expressions', function(done) {
