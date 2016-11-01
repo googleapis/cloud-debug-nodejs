@@ -29,6 +29,7 @@ var h = require('../fixtures/a/hello.js');
 describe('repository relative paths', function() {
 
   before(function(done) {
+    agent.start();
     setTimeout(function() {
       // Wait for v8debug api to initialize.
       api = agent.private_.v8debug_;
