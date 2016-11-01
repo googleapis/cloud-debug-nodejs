@@ -24,6 +24,14 @@ module.exports = {
     // An identifier for the current code deployment.
     description: undefined,
 
+    serviceContext: {
+      // An identifier for the deployed application's service name
+      service: undefined,
+
+      // An identifier for the deployed application's version
+      version: undefined
+    },
+
     // The path within your repository to the directory containing the
     // package.json for your deployed application. This should be provided
     // if your deployed application appears as a subdirectory of your repository.
