@@ -29,7 +29,13 @@ Deploy your application, and navigate to the [Stackdriver Debug view][debug-tab]
 
 See [the default configuration](config.js) for a list of possible configuration options. These options can be passed to the agent through the object argument to the start command as shown below:
 ```
-require('@google/cloud-debug').start({logLevel: 2});
+require('@google/cloud-debug').start({
+  logLevel: 2,
+  serviceContext: {
+      service: 'my-service',
+      version: '1'
+    }
+});
 ```
 
 ## Running on Google Cloud Platform
