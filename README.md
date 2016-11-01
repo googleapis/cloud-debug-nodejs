@@ -27,22 +27,10 @@ Deploy your application, and navigate to the [Stackdriver Debug view][debug-tab]
 
 ## Configuration
 
-First, some configuration options can be specified through environment variables:
-
-* `GCLOUD_DEBUG_DISABLE` specifies whether to enable or disable the agent
-* `GCLOUD_DEBUG_LOGLEVEL` specifies the debug level
-* `GCLOUD_DEBUG_REPO_APP_PATH` specifies the path within your repository to the directory containing the `package.json` for your deployed application
-* `GAE_MODULE_NAME` specifies the service name of the deployed application
-* `GAE_MODULE_VERSION` specifies the version of the deployed application
-
-Next, see [the default configuration](config.js) for a list of possible configuration options. These options can be passed to the agent through the object argument to the start command as shown below:
+See [the default configuration](config.js) for a list of possible configuration options. These options can be passed to the agent through the object argument to the start command as shown below:
 ```
 require('@google/cloud-debug').start({logLevel: 2});
 ```
-
-Last, you can also provide configuration through a config file.  You can start by copying the default config file and modifying it to suit your needs. The `GCLOUD_DIAGNOSTICS_CONFIG` environment variable should point to your configuration file.
-
-Note that configuration options specified through environment variables take precedence over options passed to the start command, which take precedence over options specified in a config file.
 
 ## Running on Google Cloud Platform
 
