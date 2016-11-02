@@ -91,7 +91,7 @@ describe('v8debugapi', function() {
         } else {
           assert.deepEqual(
             locals[0],
-            {name: 'e', varTableIndex: 6}
+            {name: 'e', varTableIndex: 7}
           );
         }
         
