@@ -53,15 +53,28 @@ If your application is running outside of Google Cloud Platform, such as locally
 
         export GCLOUD_PROJECT=<project name>
 
-2. You need to provide service account credentials to your application.
+1. You need to provide service account credentials to your application.
   * The recommended way is via [Application Default Credentials][app-default-credentials].
     1. [Create a new JSON service account key][service-account].
-    2. Copy the key somewhere your application can access it. Be sure not to expose the key publicly.
-    3. Set the environment variable `GOOGLE_APPLICATION_CREDENTIALS` to the full path to the key. The debug agent will automatically look for this environment variable.
+    1. Copy the key somewhere your application can access it. Be sure not to expose the key publicly.
+    1. Set the environment variable `GOOGLE_APPLICATION_CREDENTIALS` to the full path to the key. The debug agent will automatically look for this environment variable.
   * If you are running your application on a machine where your are using the [`gcloud` command line tools][gcloud-sdk], and are logged using `gcloud auth login`, you already have sufficient credentials, and a service account key is not required.
-  * Alternatively, you may set the keyFilename or credentials configuration field to the full path or contents to the key file, respectively. Setting either of these fields will override either setting GOOGLE_APPLICATION_CREDENTIALS or logging in using gcloud. (See the [default configuration](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/blob/master/config.js) for more details.)
+  * Alternatively, you may set the keyFilename or credentials configuration field to the full path or contents to the key file, respectively. Setting either of these fields will override either setting GOOGLE_APPLICATION_CREDENTIALS or logging in using gcloud. For example:
 
-3. Generate a `source-context.json` file which contains information about the version of the source code used to build the application. This file should be located in the root directory of your application. When you open the Stackdriver Debugger in the Cloud Platform Console, it uses the information in this file to display the correct version of the source.
+    ```js
+    // Require and start the agent with configuration options
+    require('@google/cloud-debug').start({
+      // The path to your key file:
+      keyFilename: '/path/to/keyfile.json',
+
+      // Or the contents of the key file:
+      credentials: require('./path/to/keyfile.json')
+    });
+    ```
+    
+    See the [default configuration](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/blob/master/config.js) for more details.
+
+1. Generate a `source-context.json` file which contains information about the version of the source code used to build the application. This file should be located in the root directory of your application. When you open the Stackdriver Debugger in the Cloud Platform Console, it uses the information in this file to display the correct version of the source.
 
         gcloud app gen-repo-info-file
 
