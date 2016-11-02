@@ -760,7 +760,16 @@ describe('v8debugapi', function() {
             assert.ifError(err);
             var foo = bp.evaluatedExpressions[0];
             var fooVal = bp.variableTable[foo.varTableIndex];
-            assert.equal(fooVal.members.length, 3);
+            if (semver.satisfies(process.version, '<1.6')) {
+              // In v0.12 there are members for the attributes
+              // '1', '2', and '3'
+              assert.equal(fooVal.members.length, 3);
+            }
+            else {
+              // After v0.12 there are members for the attributes 
+              // '1', '2', '3', and 'length'
+              assert.equal(fooVal.members.length, 4);
+            }
             assert.strictEqual(foo.status, undefined);
 
             api.clear(bp);
