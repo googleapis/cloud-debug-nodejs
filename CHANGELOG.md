@@ -1,6 +1,15 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
-## 2016-11-03, Version 0.8.6 (Experimental), @dominicdkramer
+## 2016-11-03, Version 0.9.0 (Experimental), @dominickramer
+
+### Notable changes
+
+**sourcemap support:**
+  * [[`f8bb4dc16d`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/f8bb4dc16d)] - Add improved support for transpiled code (#159) (Dominic Kramer)
+
+**configuration:**
+  * [[`a131faf7a8`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/a131faf7a8)] - Add the start() Method and the Ability to Specify the Service Name/Version in the Debug Config (#167) (Dominic Kramer)
+  * [[`5b35412827`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/5b35412827)] - Added keyFilename/credentials to config object (#169) (Kelvin Jin) [#169](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/169)
 
 ### Commits
 
@@ -14,15 +23,6 @@
 * [[`66e57868c4`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/66e57868c4)] - Avoid doubly expiring breakpoints (#157) (Matthew Loring) [#157](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/157)
 * [[`7cfffa6d81`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/7cfffa6d81)] - Reduce flakiness caused by short timeout (#158) (Matthew Loring) [#158](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/158)
 * [[`9f0e2fdd92`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/9f0e2fdd92)] - Add debuggee name to the re-register log message (#154) (Dominic Kramer) [#154](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/154)
-
-### Notable changes
-
-**sourcemap support:**
-  * [[`f8bb4dc16d`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/f8bb4dc16d)] - Add improved support for transpiled code (#159) (Dominic Kramer)
-
-**configuration:**
-  * [[`a131faf7a8`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/a131faf7a8)] - Add the start() Method and the Ability to Specify the Service Name/Version in the Debug Config (#167) (Dominic Kramer)
-  * [[`5b35412827`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/5b35412827)] - Added keyFilename/credentials to config object (#169) (Kelvin Jin) [#169](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/169)
 
 ## 2016-10-03, Version 0.8.5 (Experimental), @matthewloring
 
