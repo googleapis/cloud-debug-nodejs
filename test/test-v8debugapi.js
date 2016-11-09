@@ -781,7 +781,7 @@ describe('v8debugapi', function() {
         });
     });
 
-    it('should limit the length of an evaluated array based on maxDataSize',
+    it('should display an error for an evaluated array beyond maxDataSize',
       function(done) {
         var bp = {
           id: 'fake-id-124',
@@ -798,10 +798,9 @@ describe('v8debugapi', function() {
             assert.ifError(err);
             var foo = bp.evaluatedExpressions[0];
             var fooVal = bp.variableTable[foo.varTableIndex];
-            assert.equal(fooVal.members.length, 1);
-            assert(foo.status.description.format.indexOf(
-              'Truncating the results') !== -1);
-            assert(!foo.status.isError);
+            assert(fooVal.status.description.format.indexOf(
+              'Max data size reached') !== -1);
+            assert(fooVal.status.isError);
 
             api.clear(bp);
             config.capture.maxDataSize = oldMaxData;
@@ -841,7 +840,7 @@ describe('v8debugapi', function() {
         });
     });
 
-    it('should limit the length of an evaluated object based on maxDataSize',
+    it('should display an error for an evaluated object beyond maxDataSize',
       function(done) {
         var bp = {
           id: 'fake-id-124',
@@ -858,10 +857,9 @@ describe('v8debugapi', function() {
             assert.ifError(err);
             var foo = bp.evaluatedExpressions[0];
             var fooVal = bp.variableTable[foo.varTableIndex];
-            assert.equal(fooVal.members.length, 1);
-            assert(foo.status.description.format.indexOf(
-              'Truncating the results') !== -1);
-            assert(!foo.status.isError);
+            assert(fooVal.status.description.format.indexOf(
+              'Max data size reached') !== -1);
+            assert(fooVal.status.isError);
 
             api.clear(bp);
             config.capture.maxDataSize = oldMaxData;
