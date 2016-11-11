@@ -870,6 +870,43 @@ describe('v8debugapi', function() {
         });
     });
 
+    it('should set the correct status messages if maxDataSize is reached',
+      function(done) {
+        var bp = {
+          id: 'fake-id-124',
+          location: { path: 'test-v8debugapi.js', line: 5 },
+          expressions: ['A']
+        };
+        var oldMaxProps = config.capture.maxProperties;
+        var oldMaxData = config.capture.maxDataSize;
+        config.capture.maxProperties = 1;
+        config.capture.maxDataSize = 1;
+        api.set(bp, function(err) {
+          assert.ifError(err);
+          api.wait(bp, function(err) {
+            assert.ifError(err);
+
+            var bResults = bp.stackFrames[0].locals.filter(function(value) {
+              return value.name === 'B';
+            });
+            assert(bResults);
+            assert.strictEqual(bResults.length, 1);
+
+            var bArray = bResults[0];
+            assert(bArray);
+            assert(bArray.status.description.format.indexOf(
+              'Max data size reached') !== -1);
+            assert(bArray.status.isError);
+
+            api.clear(bp);
+            config.capture.maxDataSize = oldMaxData;
+            config.capture.maxProperties = oldMaxProps;
+            done();
+          });
+          process.nextTick(function() {foo(2);});
+        });
+    });
+
     it('should capture without values for invalid watch expressions', function(done) {
       // clone a clean breakpointInFoo
       var bp  = {
