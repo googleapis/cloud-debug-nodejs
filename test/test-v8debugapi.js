@@ -660,7 +660,9 @@ describe('v8debugapi', function() {
           assert.equal(procEnv.name, 'process.env');
           var envVal = bp.variableTable[procEnv.varTableIndex];
           envVal.members.forEach(function(member) {
-            assert(bp.variableTable[member.varTableIndex].status.isError);
+            if (member.varTableIndex) {
+               assert(bp.variableTable[member.varTableIndex].status.isError);
+            }
           });
           var hasGetter = bp.evaluatedExpressions[1];
           var getterVal = bp.variableTable[hasGetter.varTableIndex];
@@ -757,10 +759,9 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           var foo = bp.evaluatedExpressions[0];
           var fooVal = bp.variableTable[foo.varTableIndex];
-          assert.equal(fooVal.members.length, 1);
-          assert(foo.status.description.format.indexOf(
-            'Only first') !== -1);
-          assert(!foo.status.isError);
+          // should have 1 element + truncation message.
+          assert.equal(fooVal.members.length, 2);
+          assert(fooVal.members[1].name.indexOf('Only first') !== -1);
 
           api.clear(bp);
           config.capture.maxProperties = oldMax;
@@ -784,7 +785,8 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           var foo = bp.evaluatedExpressions[0];
           var fooVal = bp.variableTable[foo.varTableIndex];
-          assert.equal(fooVal.members.length, 1);
+          // should have 1 element + truncation message
+          assert.equal(fooVal.members.length, 2);
           assert(foo.status.description.format.indexOf(
             'Only first') !== -1);
           assert(!foo.status.isError);
