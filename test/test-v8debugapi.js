@@ -787,9 +787,7 @@ describe('v8debugapi', function() {
           var fooVal = bp.variableTable[foo.varTableIndex];
           // should have 1 element + truncation message
           assert.equal(fooVal.members.length, 2);
-          assert(foo.status.description.format.indexOf(
-            'Only first') !== -1);
-          assert(!foo.status.isError);
+          assert(fooVal.members[1].name.indexOf('Only first') !== -1);
 
           api.clear(bp);
           config.capture.maxProperties = oldMax;
