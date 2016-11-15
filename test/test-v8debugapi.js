@@ -660,7 +660,7 @@ describe('v8debugapi', function() {
           assert.equal(procEnv.name, 'process.env');
           var envVal = bp.variableTable[procEnv.varTableIndex];
           envVal.members.forEach(function(member) {
-            if (member.varTableIndex) {
+            if (member.hasOwnProperty('varTableIndex')) {
                assert(bp.variableTable[member.varTableIndex].status.isError);
             }
           });

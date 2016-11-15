@@ -89,16 +89,13 @@ describe('v8debugapi', function() {
             {name: 'e', value: 'undefined'}
           );
         } else {
-          assert.deepEqual(
-            locals[0],
-            {name: 'e', varTableIndex: 7}
-          );
+          var e = locals[0];
+          assert(e.name === 'e');
+          assert(Number.isInteger(e.varTableIndex));
         }
-        
-        assert.deepEqual(
-          args[0],
-          {name: 'arguments_not_available', varTableIndex: 3}
-        );
+        var arg0 = args[0];
+        assert(arg0.name === 'arguments_not_available');
+        assert(Number.isInteger(arg0.varTableIndex));      
         api.clear(brk);
         done();
       });
@@ -130,10 +127,9 @@ describe('v8debugapi', function() {
             locals[0],
             {name: 'e', value: '2'}
           );
-          assert.deepEqual(
-            args[0],
-            {name: 'arguments_not_available', varTableIndex: 3}
-          );
+          var arg0 = args[0];
+          assert(arg0.name === 'arguments_not_available');
+          assert(Number.isInteger(arg0.varTableIndex));
         }
         api.clear(brk);
         done();
