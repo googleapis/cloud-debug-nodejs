@@ -544,16 +544,23 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           assert.ok(bp.stackFrames);
           assert.ok(bp.variableTable);
-
           var topFrame = bp.stackFrames[0];
           assert.ok(topFrame);
           assert.equal(topFrame['function'], 'foo');
           assert.equal(topFrame.arguments.length, 1);
           var argsVal = bp.variableTable[topFrame.arguments[0].varTableIndex];
           assert(argsVal.status.isError);
+          assert(argsVal.status.description.format.indexOf(
+            'Locals and arguments are only displayed') !== -1);
+          assert(argsVal.status.description.format.indexOf(
+            'config.capture.maxExpandFrames=0') !== -1);
           assert.equal(topFrame.locals.length, 1);
           var localsVal = bp.variableTable[topFrame.locals[0].varTableIndex];
           assert(localsVal.status.isError);
+          assert(localsVal.status.description.format.indexOf(
+            'Locals and arguments are only displayed') !== -1);
+          assert(localsVal.status.description.format.indexOf(
+            'config.capture.maxExpandFrames=0') !== -1);
           api.clear(bp);
           config.capture.maxExpandFrames = oldCount;
           done();
@@ -732,9 +739,15 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           var hasGetter = bp.evaluatedExpressions[0];
           var getterVal = bp.variableTable[hasGetter.varTableIndex];
-          assert(getterVal.members.some(function(m) {
+          var stringItems = getterVal.members.filter(function(m) {
             return m.value === 'hel...';
-          }));
+          });
+          assert(stringItems.length === 1);
+
+          var item = stringItems[0];
+          assert(item.status.description.format.indexOf('Only first') !== -1);
+          assert(item.status.description.format.indexOf(
+            'config.capture.maxStringLength=3') !== -1);
 
           api.clear(bp);
           config.capture.maxDataSize = oldMaxData;
@@ -762,6 +775,8 @@ describe('v8debugapi', function() {
           // should have 1 element + truncation message.
           assert.equal(fooVal.members.length, 2);
           assert(fooVal.members[1].name.indexOf('Only first') !== -1);
+          assert(fooVal.members[1].name.indexOf(
+            'config.capture.maxProperties=1') !== -1);
 
           api.clear(bp);
           config.capture.maxProperties = oldMax;
@@ -788,6 +803,8 @@ describe('v8debugapi', function() {
           // should have 1 element + truncation message
           assert.equal(fooVal.members.length, 2);
           assert(fooVal.members[1].name.indexOf('Only first') !== -1);
+          assert(fooVal.members[1].name.indexOf(
+            'config.capture.maxProperties=1') !== -1);
 
           api.clear(bp);
           config.capture.maxProperties = oldMax;
