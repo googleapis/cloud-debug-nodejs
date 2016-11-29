@@ -5,6 +5,7 @@
 [![Test Coverage][coveralls-image]][coveralls-url]
 [![Dependency Status][david-image]][david-url]
 [![devDependency Status][david-dev-image]][david-dev-url]
+[![Known Vulnerabilities][snyk-image]][snyk-url]
 
 > *This module is experimental, and should be used by early adopters. This module uses APIs that may be undocumented and subject to change without notice.*
 
@@ -131,4 +132,6 @@ As soon as that line of code is reached in any of the running instances of your 
 [david-image]: https://david-dm.org/GoogleCloudPlatform/cloud-debug-nodejs.svg
 [david-url]: https://david-dm.org/GoogleCloudPlatform/cloud-debug-nodejs
 [david-dev-image]: https://david-dm.org/GoogleCloudPlatform/cloud-debug-nodejs/dev-status.svg
-[david-dev-url]: https://david-dm.org/GoogleCloudPlatform/cloud-debug-nodejs#info=devDependencies
+[david-dev-url]: https://david-dm.org/GoogleCloudPlatform/cloud-debug-nodejs?type=dev
+[snyk-image]: https://snyk.io/test/github/GoogleCloudPlatform/cloud-debug-nodejs/badge.svg
+[snyk-url]: https://snyk.io/test/github/GoogleCloudPlatform/cloud-debug-nodejs
