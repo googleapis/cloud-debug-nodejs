@@ -1,5 +1,25 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## 2016-11-29, Version 0.9.1 (Experimental), @matthewloring
+
+### Notable changes
+
+**UI:**
+  * [[`d370e20e1e`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/d370e20e1e)] - Prioritize capturing expressions (#162) (Dominic Kramer) 
+  * [[`b89e31cb5f`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/b89e31cb5f)] - Evaluated expressions respect capture.maxProperties (#174) (Dominic Kramer) 
+  * [[`36d9a7b980`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/36d9a7b980)] - improve UX for truncated objects properties (#175) (Ali Ijaz Sheikh) 
+
+### Commits
+
+* [[`afc6edd7c7`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/afc6edd7c7)] - Add badges + update dependencies (Matt Loring) 
+* [[`d666c99fb1`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/d666c99fb1)] - Now status messages include config values (#177) (Dominic Kramer) 
+* [[`36d9a7b980`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/36d9a7b980)] - improve UX for truncated objects properties (#175) (Ali Ijaz Sheikh) 
+* [[`9b6961d8d0`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/9b6961d8d0)] - Begin testing against v7 on travis (#176) (Matthew Loring) [#176](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/176)
+* [[`b89e31cb5f`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/b89e31cb5f)] - Evaluated expressions respect capture.maxProperties (#174) (Dominic Kramer) 
+* [[`2a131c228f`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/2a131c228f)] - Correct the status shown if maxDataSize is reached (#173) (Dominic Kramer) 
+* [[`d370e20e1e`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/d370e20e1e)] - Prioritize capturing expressions (#162) (Dominic Kramer) 
+* [[`398d04a2eb`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/398d04a2eb)] - Update the gen-repo-info-file command (#172) (Ali Ijaz Sheikh)
+
 ## 2016-11-03, Version 0.9.0 (Experimental), @dominickramer
 
 ### Notable changes
