@@ -1,7 +1,7 @@
 'use strict';
 
-var v8debugapi = require('../lib/v8debugapi.js');
-var Logger = require('../lib/logger.js');
+var v8debugapi = require('../src/v8debugapi.js');
+var Logger = require('../src/logger.js');
 var config = require('../config.js');
 var assert = require('assert');
 var util = require('util');

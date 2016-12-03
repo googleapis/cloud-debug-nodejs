@@ -19,7 +19,7 @@ var assert = require('assert');
 var request = require('request');
 var logger = require('@google/cloud-diagnostics-common').logger;
 var config = require('../../config.js');
-var Debuglet = require('../../lib/debuglet.js');
+var Debuglet = require('../../src/debuglet.js');
 var semver = require('semver');
 
 var nock = require('nock');

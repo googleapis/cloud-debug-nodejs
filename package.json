@@ -1,48 +1,20 @@
 {
-  "name": "@google/cloud-debug",
-  "version": "0.9.1",
-  "description": "Node.js support for Google Cloud Debug",
-  "main": "index.js",
-  "repository": "GoogleCloudPlatform/cloud-debug-nodejs",
-  "scripts": {
-    "test": "./bin/run-test.sh",
-    "changelog": "./bin/run-changelog.sh",
-    "coverage": "./bin/run-test.sh -c",
-    "bump": "./bin/run-bump.sh",
-    "closure": "./node_modules/.bin/closure-npc"
-  },
+  "name": "@google-cloud/debug",
+  "version": "0.10.0",
+  "author": "Google Inc.",
+  "description": "Stackdriver Debug Agent for Node.js",
+  "main": "./src/index.js",
+  "repository": "googlecloudplatform/google-cloud-node",
   "keywords": [
     "google",
     "debugger",
     "debug",
-    "cloud"
-  ],
-  "author": "Google Inc.",
-  "contributors": [
-    {
-      "name": "Ali Ijaz Sheikh",
-      "email": "ofrobots@google.com"
-    },
-    {
-      "name": "Matt Loring",
-      "email": "mattloring@google.com"
-    },
-    {
-      "name": "Steven Kollars",
-      "email": "skollars@google.com"
-    },
-    {
-      "name": "Boris Bokowski",
-      "email": "bokowski@google.com"
-    },
-    {
-      "name": "Chuck Jazdzewski",
-      "email": "chuckj@google.com"
-    },
-    {
-      "name": "Scott McMaster",
-      "email": "smcmaster@google.com"
-    }
+    "cloud",
+    "cloud debug",
+    "cloud debugger",
+    "stackdriver debug",
+    "stackdriver debugger",
+    "stackdriver"
   ],
   "license": "Apache-2.0",
   "engines": {
@@ -70,5 +42,9 @@
     "semver": "^5.1.0",
     "source-map": "^0.5.1",
     "split": "^1.0.0"
+  },
+  "scripts": {
+    "test": "./bin/run-test.sh",
+    "coverage": "./bin/run-test.sh -c"
   }
 }

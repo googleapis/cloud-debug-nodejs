@@ -17,7 +17,7 @@
 'use strict';
 
 var assert = require('assert');
-var Debuglet = require('../../lib/debuglet.js');
+var Debuglet = require('../../src/debuglet.js');
 
 describe('module', function() {
   var agent;

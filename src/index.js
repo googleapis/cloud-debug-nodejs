@@ -16,11 +16,8 @@
 
 'use strict';
 
-// NOTE: this file is on the critical path for the startup of the user's
-// application. The path-length here needs to be minimal.
-
 var logger = require('@google/cloud-diagnostics-common').logger;
-var Debuglet = require('./lib/debuglet.js');
+var Debuglet = require('./debuglet.js');
 var path = require('path');
 var _ = require('lodash');
 
