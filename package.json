@@ -24,6 +24,7 @@
     "changelog-maker": "^2.2.2",
     "closure-npc": "*",
     "coveralls": "^2.11.2",
+    "extend": "^3.0.0",
     "istanbul": "^0.4.1",
     "jshint": "^2.7.0",
     "mocha": "^3.0.0",

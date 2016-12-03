@@ -25,8 +25,8 @@ var assert = require('assert');
 
 describe('should respect environment variables', function() {
   it('should respect GCLOUD_DIAGNOSTICS_CONFIG', function() {
-    var agent = require('../..');
-    agent.start({
+    var agent = require('../..')();
+    agent.startAgent({
       testPriority: 'from the supplied config',
       logLevel: 2 // this value is intentionally different from the value
                   // specified in the config file specified by 

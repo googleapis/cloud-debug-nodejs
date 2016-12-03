@@ -17,32 +17,36 @@
 'use strict';
 
 var assert = require('assert');
+var Debug = require('../..');
 var Debuglet = require('../../src/debuglet.js');
 
-describe('module', function() {
-  var agent;
+describe('Debug module', function() {
+  var debug;
 
   before(function() {
-    agent = require('../..');
-    agent.start();
-    assert.strictEqual(agent.start.wasSuccessful_, true);
+    debug = require('../..')();
+    debug.startAgent();
   });
 
-  it('should return the same agent on a second require', function() {
-    var obj = require('../..');
-    obj.start();
-    assert(agent === obj);
+  it('should return an instance on invocation', function() {
+    assert(debug instanceof Debug);
+  });
+
+  it('should throw on attempt to start a new agent', function() {
+    assert.throws(function() { debug.startAgent(); });
+    var debug2 = require('../..')();
+    assert.throws(function() { debug2.startAgent(); });
   });
 
   // Some tests depend on this private property.
   it('should have a debuglet as the private property', function() {
-    assert(agent.private_);
+    assert(debug.private_);
 
     // The private_ property needs to be a debuglet.
-    assert(agent.private_ instanceof Debuglet);
+    assert(debug.private_ instanceof Debuglet);
 
     // Debuglet needs to be an EventEmitter.
-    assert(agent.private_ instanceof require('events'));
+    assert(debug.private_ instanceof require('events'));
   });
 
 });

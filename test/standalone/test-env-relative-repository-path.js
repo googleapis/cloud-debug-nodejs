@@ -22,14 +22,14 @@ process.env.GCLOUD_PROJECT = 0;
 process.env.GCLOUD_DEBUG_REPO_APP_PATH = path.join(path.sep, 'my', 'project', 'root');
 
 var assert = require('assert');
-var agent = require('../..');
+var agent = require('../..')();
 var api;
 var h = require('../fixtures/a/hello.js');
 
 describe('repository relative paths', function() {
 
   before(function(done) {
-    agent.start();
+    agent.startAgent();
     setTimeout(function() {
       // Wait for v8debug api to initialize.
       api = agent.private_.v8debug_;
