@@ -35,9 +35,13 @@ var SCOPES = [
     'https://www.googleapis.com/auth/cloud-platform',
     'https://www.googleapis.com/auth/cloud_debugger',
   ];
+var CLUSTER_WORKERS = 3;
 
-var agent;
+var debuggee;
+var project;
 var transcript = '';
+
+var FILENAME = 'test-breakpoints.js';
 
 function apiRequest(authClient, url, method, body) {
   method = method || 'GET';
@@ -60,11 +64,6 @@ function apiRequest(authClient, url, method, body) {
 
 function runTest() {
   Q.delay(10 * 1000).then(function() {
-    var api = agent.private_.debugletApi_;
-
-    var debuggee = api.debuggeeId_;
-    var project = api.project_;
-
     // Get our own credentials because we need an extra scope
     var auth = new GoogleAuth();
     auth.getApplicationDefault(function(err, authClient) {
@@ -138,7 +137,7 @@ function runTest() {
         console.log('-- setting a logpoint');
         var promise = setBreakpoint(debuggee, {
           id: 'breakpoint-1',
-          location: {path: 'test.js', line: 5},
+          location: {path: FILENAME, line: 5},
           condition: 'n === 10',
           action: 'LOG',
           expressions: ['o'],
@@ -152,7 +151,7 @@ function runTest() {
           var breakpoint = body.breakpoint;
           assert.ok(breakpoint.id, 'breakpoint should have an id');
           assert.ok(breakpoint.location, 'breakpoint should have a location');
-          assert.strictEqual(breakpoint.location.path, 'test.js');
+          assert.strictEqual(breakpoint.location.path, FILENAME);
           return { debuggee: debuggee, breakpoint: breakpoint };
         });
         return result;
@@ -177,7 +176,7 @@ function runTest() {
         console.log('-- setting a breakpoint');
         var promise = setBreakpoint(debuggee, {
           id: 'breakpoint-1',
-          location: {path: 'test.js', line: 5},
+          location: {path: FILENAME, line: 5},
           expressions: ['process'], // Process for large variable
           condition: 'n === 10'
         });
@@ -189,7 +188,7 @@ function runTest() {
           var breakpoint = body.breakpoint;
           assert.ok(breakpoint.id, 'breakpoint should have an id');
           assert.ok(breakpoint.location, 'breakpoint should have a location');
-          assert.strictEqual(breakpoint.location.path, 'test.js');
+          assert.strictEqual(breakpoint.location.path, FILENAME);
           return { debuggee: debuggee, breakpoint: breakpoint };
         });
         return result;
@@ -245,33 +244,56 @@ function runTest() {
   });
 }
 
+// We run the test in a cluster. We spawn a few worker children that are going
+// to run the 'workload' (fib), and the master runs the tests, adding break
+// and log points and making sure they work. The workers hit the break
+// and log points.
 if (cluster.isMaster) {
   cluster.setupMaster({ silent: true });
   var handler = function(m) {
-    assert.ok(m.private_, 'debuglet has initialized');
-    var debuglet = m.private_;
-    assert.ok(debuglet.debugletApi_, 'debuglet api is active');
-    var api = debuglet.debugletApi_;
-    assert.ok(api.uid_, 'debuglet provided unique id');
-    assert.ok(api.debuggeeId_, 'debuglet has registered');
-    if (agent) {
-      assert.equal(agent.private_.debugletApi_.uid_, api.uid_);
-      assert.equal(agent.private_.debugletApi_.debuggeeId_, api.debuggeeId_);
+    if (!debuggee) {
+      // Cache the needed info from the first worker.
+      debuggee = m.private_.debugletApi_.debuggeeId_;
+      project = m.private_.debugletApi_.project_;
     } else {
-      agent = m;
+      // Make sure all other workers are consistent.
+      assert.equal(debuggee, m.private_.debugletApi_.debuggeeId_);
+      assert.equal(project, m.private_.debugletApi_.project_);
     }
   };
   var stdoutHandler = function(chunk) {
     transcript += chunk;
   };
-  for (var i = 0; i < 3; i++) {
+  for (var i = 0; i < CLUSTER_WORKERS; i++) {
     var worker = cluster.fork();
     worker.on('message', handler);
     worker.process.stdout.on('data', stdoutHandler);
+    worker.process.stderr.on('data', stdoutHandler);
   }
+  process.on('exit', function() {
+    console.log('child transcript: ', transcript);
+  });
   runTest();
 } else {
-  var agent = require('../..');
-  setTimeout(process.send.bind(process, agent), 7000);
-  setInterval(fib.bind(null, 12), 2000);
+  var debug = require('../..')();
+  debug.startAgent();
+
+  // Given the debug agent some time to start and then notify the cluster
+  // master.
+  setTimeout(function() {
+    assert.ok(debug.private_, 'debuglet has initialized');
+    var debuglet = debug.private_;
+    assert.ok(debuglet.debugletApi_, 'debuglet api is active');
+    var api = debuglet.debugletApi_;
+    assert.ok(api.uid_, 'debuglet provided unique id');
+    assert.ok(api.debuggeeId_, 'debuglet has registered');
+    // The parent process needs to know the debuggeeId and project.
+    process.send(debug);
+    setInterval(fib.bind(null, 12), 2000);
+  }, 7000);
+
 }
+
+process.on('exit', function() {
+  console.log('worker transcript:', transcript);
+});

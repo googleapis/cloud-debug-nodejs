@@ -16,6 +16,9 @@ echo "npm install in test/e2e"
 npm install
 echo -en "travis_fold:end:npm_install_test_e2e\\r" | tr / _
 
-node test.js || exit 1
+for t in test-breakpoints.js test-log-throttling.js ; do
+  echo "==== Running ${t} ===="
+  node $t || exit
+done
 
 cd -

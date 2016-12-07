@@ -46,6 +46,9 @@
   },
   "scripts": {
     "test": "./bin/run-test.sh",
-    "coverage": "./bin/run-test.sh -c"
+    "changelog": "./bin/run-changelog.sh",
+    "coverage": "./bin/run-test.sh -c",
+    "bump": "./bin/run-bump.sh",
+    "closure": "./node_modules/.bin/closure-npc"
   }
 }
