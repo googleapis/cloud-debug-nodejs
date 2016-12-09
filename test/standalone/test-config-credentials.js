@@ -18,17 +18,33 @@
 var path = require('path');
 var assert = require('assert');
 var nock = require('nock');
+var extend = require('extend');
+var logger = require('@google/cloud-diagnostics-common').logger;
+var defaultConfig = require('../../src/config.js').debug;
+var Debuglet = require('../../src/debuglet.js');
 
+nock.disableNetConnect();
 process.env.GCLOUD_PROJECT = 0;
 
 describe('test-config-credentials', function() {
+  var debuglet = null;
+
+  beforeEach(function() {
+    assert.equal(debuglet, null);
+  });
+
+  afterEach(function() {
+    assert.ok(debuglet);
+    debuglet.stop();
+    debuglet = null;
+  });
+
+
   it('should use the keyFilename field of the config object', function(done) {
     var credentials = require('../fixtures/gcloud-credentials.json');
-    var config = {
+    var config = extend({}, defaultConfig, {
       keyFilename: path.join('test', 'fixtures', 'gcloud-credentials.json')
-    };
-    var agent = require('../..');
-    nock.disableNetConnect();
+    });
     var scope = nock('https://accounts.google.com')
       .post('/o/oauth2/token', function(body) {
         assert.equal(body.client_id, credentials.client_id);
@@ -44,19 +60,17 @@ describe('test-config-credentials', function() {
     nock('https://clouddebugger.googleapis.com')
       .post('/v2/controller/debuggees/register', function() {
         scope.done();
-        agent.start.wasSuccessful_ = false;
         setImmediate(done);
         return true;
       }).reply(200);
-    agent.start(config);
+    debuglet = new Debuglet(config, logger.create(logger.WARN, 'testing'));
+    debuglet.start();
   });
 
   it('should use the credentials field of the config object', function(done) {
-    var config = {
+    var config = extend({}, defaultConfig, {
       credentials: require('../fixtures/gcloud-credentials.json')
-    };
-    var agent = require('../..');
-    nock.disableNetConnect();
+    });
     var scope = nock('https://accounts.google.com')
       .post('/o/oauth2/token', function(body) {
         assert.equal(body.client_id, config.credentials.client_id);
@@ -72,16 +86,16 @@ describe('test-config-credentials', function() {
     nock('https://clouddebugger.googleapis.com')
       .post('/v2/controller/debuggees/register', function() {
         scope.done();
-        agent.start.wasSuccessful_ = false;
         setImmediate(done);
         return true;
       }).reply(200);
-    agent.start(config);
+    debuglet = new Debuglet(config, logger.create(undefined, 'testing'));
+    debuglet.start();
   });
 
   it('should ignore credentials if keyFilename is provided', function(done) {
     var correctCredentials = require('../fixtures/gcloud-credentials.json');
-    var config = {
+    var config = extend({}, defaultConfig, {
       keyFilename: path.join('test', 'fixtures', 'gcloud-credentials.json'),
       credentials: {
         client_id: 'a',
@@ -89,15 +103,13 @@ describe('test-config-credentials', function() {
         refresh_token: 'c',
         type: 'authorized_user'
       }
-    };
+    });
     ['client_id', 'client_secret', 'refresh_token'].forEach(function (field) {
       assert(correctCredentials.hasOwnProperty(field));
       assert(config.credentials.hasOwnProperty(field));
       assert.notEqual(config.credentials[field],
         correctCredentials[field]);
     });
-    var agent = require('../..');
-    nock.disableNetConnect();
     var scope = nock('https://accounts.google.com')
       .post('/o/oauth2/token', function(body) {
         assert.equal(body.client_id, correctCredentials.client_id);
@@ -113,10 +125,10 @@ describe('test-config-credentials', function() {
     nock('https://clouddebugger.googleapis.com')
       .post('/v2/controller/debuggees/register', function() {
         scope.done();
-        agent.start.wasSuccessful_ = false;
         setImmediate(done);
         return true;
       }).reply(200);
-    agent.start(config);
+    debuglet = new Debuglet(config, logger.create(undefined, 'testing'));
+    debuglet.start();
   });
 });

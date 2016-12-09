@@ -28,6 +28,7 @@ var GoogleAuth = require('google-auth-library');
 var _ = require('lodash'); // for _.find. Can't use ES6 yet.
 var Q = require('q');
 var cluster = require('cluster');
+var extend = require('extend');
 
 var DEBUG_API = 'https://clouddebugger.googleapis.com/v2/debugger';
 var SCOPES = [
@@ -35,19 +36,21 @@ var SCOPES = [
     'https://www.googleapis.com/auth/cloud_debugger',
   ];
 
-var agent;
+var debuggee;
+var project;
 var transcript = '';
 
 function apiRequest(authClient, url, method, body) {
   method = method || 'GET';
 
   var deferred = Q.defer();
-  authClient.request({
+  var options = {
     url: url,
     method: method,
     json: true,
     body: body
-  }, function(err, body, response) {
+  };
+  authClient.request(options, function(err, body, response) {
     if (err) {
       deferred.reject(err);
     } else {
@@ -59,11 +62,6 @@ function apiRequest(authClient, url, method, body) {
 
 function runTest() {
   Q.delay(10 * 1000).then(function() {
-    var api = agent.private_.debugletApi_;
-
-    var debuggee = api.debuggeeId_;
-    var project = api.project_;
-
     // Get our own credentials because we need an extra scope
     var auth = new GoogleAuth();
     auth.getApplicationDefault(function(err, authClient) {
@@ -184,13 +182,11 @@ function runTest() {
 if (cluster.isMaster) {
   cluster.setupMaster({ silent: true });
   var handler = function(m) {
-    assert.ok(m.private_, 'debuglet has initialized');
-    var debuglet = m.private_;
-    assert.ok(debuglet.debugletApi_, 'debuglet api is active');
-    var api = debuglet.debugletApi_;
-    assert.ok(api.uid_, 'debuglet provided unique id');
-    assert.ok(api.debuggeeId_, 'debuglet has registered');
-    agent = m;
+    // Cache the needed info from the first worker.
+    if (!debuggee) {
+      debuggee = m.private_.debugletApi_.debuggeeId_;
+      project = m.private_.debugletApi_.project_;
+    }
   };
   var stdoutHandler = function(chunk) {
     transcript += chunk;
@@ -198,11 +194,29 @@ if (cluster.isMaster) {
   var worker = cluster.fork();
   worker.on('message', handler);
   worker.process.stdout.on('data', stdoutHandler);
+  worker.process.stderr.on('data', stdoutHandler);
+  process.on('exit', function() {
+    console.log('child transcript: ', transcript);
+  });
   runTest();
 } else {
-  var agent = require('../..');
-  agent.private_.config_.log.maxLogsPerSecond = 2;
-  agent.private_.config_.log.logDelaySeconds = 5;
-  setTimeout(process.send.bind(process, agent), 7000);
-  setInterval(fib.bind(null, 12), 500);
+  var debug = require('../..')();
+  var defaultConfig = require('../../src/config.js');
+  var config = extend({}, defaultConfig, {
+    log: {
+      maxLogsPerSecond: 2,
+      logDelaySeconds: 5
+    }
+  });
+  debug.startAgent(config);
+  setTimeout(function() {
+    assert.ok(debug.private_, 'debuglet has initialized');
+    var debuglet = debug.private_;
+    assert.ok(debuglet.debugletApi_, 'debuglet api is active');
+    var api = debuglet.debugletApi_;
+    assert.ok(api.uid_, 'debuglet provided unique id');
+    assert.ok(api.debuggeeId_, 'debuglet has registered');
+    process.send(debug);
+    setInterval(fib.bind(null, 12), 500);
+  }, 7000);
 }

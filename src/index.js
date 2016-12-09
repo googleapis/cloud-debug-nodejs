@@ -16,13 +16,41 @@
 
 'use strict';
 
-// NOTE: this file is on the critical path for the startup of the user's
-// application. The path-length here needs to be minimal.
-
 var logger = require('@google/cloud-diagnostics-common').logger;
-var Debuglet = require('./lib/debuglet.js');
+var Debuglet = require('./debuglet.js');
 var path = require('path');
 var _ = require('lodash');
+
+/**
+ * <p class="notice">
+ *   **This is an experimental release of Stackdriver Debug.** This API is not 
+ *   covered by any SLA of deprecation policy and may be subject to backwards
+ *   incompatible changes.
+ * </p>
+ * 
+ * This module provides Stackdriver Debugger support for Node.js applications. 
+ * [Stackdriver Debugger](https://cloud.google.com/debug/) is a feature of 
+ * [Google Cloud Platform](https://cloud.google.com/) that lets you debug your
+ * applications in production without stopping or pausing your application.
+ * 
+ * This module provides an agent that lets you automatically enable debugging
+ * without changes to your application. 
+ * 
+ * @constructor
+ * @alias module:debug
+ * 
+ * @resource [What is Stackdriver Debug]{@link https://cloud.google.com/debug/}
+ * 
+ * @param {object} options - [Configuration object](#/docs). NOTE: at the moment
+ *    this parameter is ignored.
+ */
+function Debug(options) {
+  if (!(this instanceof Debug)) {
+    //TODO(ofrobots)
+    //options = common.util.normalizeArguments(this, options);
+    return new Debug(options);
+  }
+}
 
 var initConfig = function(config_) {
   var config = config_ || {};
@@ -56,32 +84,32 @@ var initConfig = function(config_) {
   return config;
 };
 
-module.exports = {
-  start: start
+var debuglet;
+
+/**
+ * Start the Debug agent that will make your application available for debugging
+ * with Stackdriver Debug.
+ * 
+ * @param {object=} config - Debug configuration. TODO(ofrobots): get rid of
+ *     config.js and include jsdoc here
+ * TODO: add an optional callback function.
+ * 
+ * @resource [Introductory video]{@link https://www.youtube.com/watch?v=tyHcK_kAOpw}
+ * 
+ * @example
+ * debug.startAgent();
+ */
+Debug.prototype.startAgent = function(config_) {
+  if (debuglet) {
+    throw new Error('Debug Agent has already been started');
+  }
+  var config = initConfig(config_);
+  if (config.enabled) {
+    debuglet = new Debuglet(config, logger.create(config.logLevel, '@google-cloud/debug'));
+    debuglet.start();
+    this.private_ = debuglet;
+  }
 };
 
-var log_;
-function start(config_) {
-  if (start.wasSuccessful_) {
-    return log_.error('The cloud-debug agent has already been started.');
-  }
+module.exports = Debug;
 
-  var config = initConfig(config_);
-  log_ = logger.create(config.logLevel, '@google/cloud-debug');
-  if (config.enabled) {
-    var debuglet = new Debuglet(config, log_);
-    debuglet.start();
-    module.exports.private_ = debuglet;
-    start.wasSuccessful_ = true;
-  }
-}
-
-setTimeout(function() {
-  if (!start.wasSuccessful_){
-    start();
-    log_.error('The @google/cloud-debug agent now needs the start() ' +
-      'function to be called in ordered to start operating. To ease ' +
-      'migration we start the agent automatically after a 1 second delay, '+
-      'but this behaviour will be dropped in a future semver major release.');
-  }
-}, 1000);

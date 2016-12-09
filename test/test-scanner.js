@@ -24,7 +24,7 @@ var fixture = function(file) {
   return path.join(fixtureDir, file);
 };
 
-var scanner = require('../lib/scanner.js');
+var scanner = require('../src/scanner.js');
 
 describe('scanner', function() {
 

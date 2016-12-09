@@ -25,11 +25,11 @@
  */
 
 var assert = require('assert');
-var v8debugapi = require('../../lib/v8debugapi.js');
+var v8debugapi = require('../../src/v8debugapi.js');
 var logModule = require('@google/cloud-diagnostics-common').logger;
-var config = require('../../config.js').debug;
-var SourceMapper = require('../../lib/sourcemapper.js');
-var scanner = require('../../lib/scanner.js');
+var config = require('../../src/config.js').debug;
+var SourceMapper = require('../../src/sourcemapper.js');
+var scanner = require('../../src/scanner.js');
 var path = require('path');
 var semver = require('semver');
 

@@ -32,7 +32,7 @@ var utils = {
   authorizedRequestFactory: function(/*scopes*/) { return request; },
   getProjectNumber: function(callback) { callback(null, 'project123'); }
 };
-var DebugletApi = proxyquire('../lib/debugletapi.js', {
+var DebugletApi = proxyquire('../src/debugletapi.js', {
   '@google/cloud-diagnostics-common': {
     logger: null,
     utils: utils

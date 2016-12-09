@@ -32,12 +32,12 @@ var breakpointInFoo = {
 var MAX_INT = 2147483647; // Max signed int32.
 
 var assert = require('assert');
-var v8debugapi = require('../lib/v8debugapi.js');
+var v8debugapi = require('../src/v8debugapi.js');
 var logModule = require('@google/cloud-diagnostics-common').logger;
-var config = require('../config.js').debug;
-var StatusMessage = require('../lib/apiclasses.js').StatusMessage;
-var scanner = require('../lib/scanner.js');
-var SourceMapper = require('../lib/sourcemapper.js');
+var config = require('../src/config.js').debug;
+var StatusMessage = require('../src/apiclasses.js').StatusMessage;
+var scanner = require('../src/scanner.js');
+var SourceMapper = require('../src/sourcemapper.js');
 var path = require('path');
 var semver = require('semver');
 

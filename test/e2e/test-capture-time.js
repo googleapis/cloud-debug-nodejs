@@ -18,9 +18,9 @@
 var assert = require('assert');
 var request = require('request');
 var logger = require('@google/cloud-diagnostics-common').logger;
-var config = require('../../config.js');
+var config = require('../../src/config.js').debug;
 var semver = require('semver');
-var Debuglet = require('../../lib/debuglet.js');
+var Debuglet = require('../../src/debuglet.js');
 
 var DEBUGGEE_ID = 'bar';
 var API = 'https://clouddebugger.googleapis.com';
@@ -64,7 +64,7 @@ describe(__filename, function(){
           id: DEBUGGEE_ID
         }
       })
-      .get(BPS_PATH)
+      .get(BPS_PATH + '?success_on_timeout=true')
       .reply(200, {
         breakpoints: [expensiveBp]
       })
