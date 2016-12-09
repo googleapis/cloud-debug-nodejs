@@ -63,7 +63,7 @@
     "acorn": "^4.0.3",
     "async": "^2.1.2",
     "coffee-script": "^1.9.3",
-    "findit": "^2.0.0",
+    "findit2": "^2.2.3",
     "google-auth-library": "^0.9.5",
     "lodash": "^4.12.0",
     "request": "^2.61.0",
