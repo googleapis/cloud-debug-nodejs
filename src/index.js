@@ -18,7 +18,6 @@
 
 var logger = require('@google/cloud-diagnostics-common').logger;
 var Debuglet = require('./debuglet.js');
-var path = require('path');
 var _ = require('lodash');
 
 /**
@@ -55,19 +54,10 @@ function Debug(options) {
 var initConfig = function(config_) {
   var config = config_ || {};
 
-  if (process.env.hasOwnProperty('GCLOUD_DIAGNOSTICS_CONFIG')) {
-    var c = require(path.resolve(process.env.GCLOUD_DIAGNOSTICS_CONFIG));
-    if (c && c.debug) {
-      _.defaultsDeep(config, c.debug);
-    }
-  }
   var defaults = require('./config.js').debug;
   _.defaultsDeep(config, defaults);
   if (process.env.hasOwnProperty('GCLOUD_DEBUG_LOGLEVEL')) {
     config.logLevel = process.env.GCLOUD_DEBUG_LOGLEVEL;
-  }
-  if (process.env.hasOwnProperty('GCLOUD_DEBUG_DISABLE')) {
-    config.enabled = false;
   }
   if (process.env.hasOwnProperty('GCLOUD_DEBUG_REPO_APP_PATH')) {
     config.appPathRelativeToRepository =
