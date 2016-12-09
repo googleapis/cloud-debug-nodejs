@@ -36,15 +36,13 @@ var _ = require('lodash');
  * This module provides an agent that lets you automatically enable debugging
  * without changes to your application. 
  * 
- * A low level Client Library for the Debug will also be available through
- * this module, but is not present at the moment.
- * 
  * @constructor
  * @alias module:debug
  * 
  * @resource [What is Stackdriver Debug]{@link https://cloud.google.com/debug/}
  * 
- * @param {object} options - [Configuration object](#/docs).
+ * @param {object} options - [Configuration object](#/docs). NOTE: at the moment
+ *    this parameter is ignored.
  */
 function Debug(options) {
   if (!(this instanceof Debug)) {
@@ -52,7 +50,6 @@ function Debug(options) {
     //options = common.util.normalizeArguments(this, options);
     return new Debug(options);
   }
-  // TODO(ofrobots)
 }
 
 var initConfig = function(config_) {
