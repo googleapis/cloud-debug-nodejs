@@ -59,10 +59,6 @@ var initConfig = function(config_) {
   if (process.env.hasOwnProperty('GCLOUD_DEBUG_LOGLEVEL')) {
     config.logLevel = process.env.GCLOUD_DEBUG_LOGLEVEL;
   }
-  if (process.env.hasOwnProperty('GCLOUD_DEBUG_REPO_APP_PATH')) {
-    config.appPathRelativeToRepository =
-      process.env.GCLOUD_DEBUG_REPO_APP_PATH;
-  }
   if (process.env.hasOwnProperty('GAE_MODULE_NAME')) {
     config.serviceContext = config.serviceContext || {};
     config.serviceContext.service = process.env.GAE_MODULE_NAME;
