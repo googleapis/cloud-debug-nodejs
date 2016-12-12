@@ -181,11 +181,11 @@ function runTest() {
 
 if (cluster.isMaster) {
   cluster.setupMaster({ silent: true });
-  var handler = function(m) {
+  var handler = function(a) {
     // Cache the needed info from the first worker.
     if (!debuggee) {
-      debuggee = m.private_.debugletApi_.debuggeeId_;
-      project = m.private_.debugletApi_.project_;
+      debuggee = a[0];
+      project = a[1];
     }
   };
   var stdoutHandler = function(chunk) {
@@ -216,7 +216,7 @@ if (cluster.isMaster) {
     var api = debuglet.debugletApi_;
     assert.ok(api.uid_, 'debuglet provided unique id');
     assert.ok(api.debuggeeId_, 'debuglet has registered');
-    process.send(debug);
+    process.send([api.debuggeeId_, api.project_]);
     setInterval(fib.bind(null, 12), 500);
   }, 7000);
 }
