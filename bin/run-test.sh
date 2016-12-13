@@ -45,5 +45,6 @@ fi
 
 if [ "${TRAVIS_PULL_REQUEST}" = "false" ]
 then
+  npm run system-test
   ./bin/run-e2e.sh || exit 1
 fi
