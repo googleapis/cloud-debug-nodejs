@@ -26,6 +26,10 @@ require('@google/cloud-debug').start();
 ```
 Deploy your application, and navigate to the [Stackdriver Debug view][debug-tab] within the [Google Cloud Console][dev-console] to set snapshots and start debugging.
 
+## Configuration
+
+See [the default configuration](config.js) for a list of possible configuration options. You can start by copying the default config file and modifying it to suit your needs. The `GCLOUD_DIAGNOSTICS_CONFIG` environment variable should point to your configuration file.
+
 ## Running on Google Cloud Platform
 
 There are three different services that can host Node.js application to Google Cloud Platform.
