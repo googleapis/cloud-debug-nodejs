@@ -17,7 +17,7 @@
 'use strict';
 
 var logger = require('@google/cloud-diagnostics-common').logger;
-var Debuglet = require('./debuglet.js');
+var Debuglet = require('./agent/debuglet.js');
 var _ = require('lodash');
 
 /**

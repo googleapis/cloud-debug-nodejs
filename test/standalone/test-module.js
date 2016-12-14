@@ -18,7 +18,7 @@
 
 var assert = require('assert');
 var Debug = require('../..');
-var Debuglet = require('../../src/debuglet.js');
+var Debuglet = require('../../src/agent/debuglet.js');
 
 describe('Debug module', function() {
   var debug;

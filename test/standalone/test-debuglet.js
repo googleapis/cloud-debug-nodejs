@@ -19,7 +19,7 @@ var assert = require('assert');
 var request = require('request');
 var logger = require('@google/cloud-diagnostics-common').logger;
 var config = require('../../src/config.js').debug;
-var Debuglet = require('../../src/debuglet.js');
+var Debuglet = require('../../src/agent/debuglet.js');
 
 var DEBUGGEE_ID = 'bar';
 var API = 'https://clouddebugger.googleapis.com';
