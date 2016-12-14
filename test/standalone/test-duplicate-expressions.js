@@ -27,11 +27,11 @@ var breakpointInFoo = {
 };
 
 var assert = require('assert');
-var v8debugapi = require('../../src/v8debugapi.js');
+var v8debugapi = require('../../src/agent/v8debugapi.js');
 var logModule = require('@google/cloud-diagnostics-common').logger;
 var config = require('../../src/config.js').debug;
-var SourceMapper = require('../../src/sourcemapper.js');
-var scanner = require('../../src/scanner.js');
+var SourceMapper = require('../../src/agent/sourcemapper.js');
+var scanner = require('../../src/agent/scanner.js');
 var path = require('path');
 
 function stateIsClean(api) {

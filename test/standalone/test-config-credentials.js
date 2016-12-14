@@ -21,7 +21,7 @@ var nock = require('nock');
 var extend = require('extend');
 var logger = require('@google/cloud-diagnostics-common').logger;
 var defaultConfig = require('../../src/config.js').debug;
-var Debuglet = require('../../src/debuglet.js');
+var Debuglet = require('../../src/agent/debuglet.js');
 
 nock.disableNetConnect();
 process.env.GCLOUD_PROJECT = 0;
