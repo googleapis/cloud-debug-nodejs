@@ -19,7 +19,6 @@ var assert = require('assert');
 var nock   = require('nock');
 var request = require('./auth-request.js');
 var proxyquire = require('proxyquire');
-var agentVersion = require('../package.json').version;
 
 // the tests in this file rely on the GCLOUD_PROJECT environment variable
 // not being set
@@ -30,7 +29,7 @@ delete process.env.GCLOUD_PROJECT;
 var utils = {
   getProjectNumber: function(callback) { callback(null, 'project123'); }
 };
-var DebugletApi = proxyquire('../src/debugletapi.js', {
+var DebugletApi = proxyquire('../src/controller.js', {
   '@google/cloud-diagnostics-common': {
     logger: null,
     utils: utils
@@ -86,8 +85,7 @@ describe('Debuglet API', function() {
     it('should get a debuggeeId', function(done) {
       var scope = nock(url)
         .post(api + '/debuggees/register', function (body) {
-          return body.debuggee.agentVersion ===
-            ('google.com/node-gcp/v' + agentVersion);
+          return body.debuggee.agentVersion.indexOf('node-gcp') !== -1;
         })
         .reply(200, {
           debuggee: { id: 'fake-debuggee' },
@@ -112,8 +110,7 @@ describe('Debuglet API', function() {
       debugletapi.init('uid1234', { warn: function() {} }, function(err, project) {
         var scope = nock(url)
           .post(api + '/debuggees/register', function (body) {
-            return body.debuggee.agentVersion ===
-              ('google.com/node-standalone/v' + agentVersion);
+            return body.debuggee.agentVersion.indexOf('standalone') !== -1;
           })
           .reply(200, {
             debuggee: { id: 'fake-debuggee' },

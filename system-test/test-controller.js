@@ -25,9 +25,10 @@ assert.ok(
     'Need to have GCLOUD_PROJECT defined ' +
         'along with valid application default credentials to be able to run this ' +
         'test');
+var config = {};
 
-var debug = require('../')();
-var DebugletApi = require('../src/debugletapi.js');
+var debug = require('../')(config);
+var DebugletApi = require('../src/controller.js');
 
 describe('Debugletapi', function() {
 

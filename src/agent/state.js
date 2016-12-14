@@ -32,7 +32,7 @@ var remove = lodash.remove;
 var flatten = lodash.flatten;
 var isEmpty = lodash.isEmpty;
 
-var StatusMessage = require('../apiclasses.js').StatusMessage;
+var StatusMessage = require('../status-message.js');
 
 // Error message indices into the resolved variable table.
 var BUFFER_FULL_MESSAGE_INDEX = 0;

@@ -23,8 +23,7 @@
 
 /** @const */ var state = require('./state.js');
 /** @const */ var logModule = require('@google/cloud-diagnostics-common').logger;
-/** @const */ var apiclasses = require('../apiclasses.js');
-/** @const */ var StatusMessage = apiclasses.StatusMessage;
+/** @const */ var StatusMessage = require('../status-message.js');
 
 /** @const */ var messages = {
   INVALID_BREAKPOINT: 'invalid snapshot - id or location missing',

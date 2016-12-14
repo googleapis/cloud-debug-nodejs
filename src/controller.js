@@ -16,28 +16,23 @@
 
 'use strict';
 
+/*!
+ * @module debug/controller
+ */
+
 var fs = require('fs');
-var path = require('path');
 var assert = require('assert');
-var crypto = require('crypto');
-var pjson = require('../package.json');
 var qs = require('querystring');
 var utils = require('@google/cloud-diagnostics-common').utils;
-var StatusMessage = require('./apiclasses.js').StatusMessage;
+var Debuggee = require('./debuggee.js');
 
 /** @const {string} Cloud Debug API endpoint */
 var API = 'https://clouddebugger.googleapis.com/v2/controller';
 
-/* c.f. the Java Debugger agent */
-/** @const {string} */ var DEBUGGEE_MODULE_LABEL = 'module';
-/** @const {string} */ var DEBUGGEE_MAJOR_VERSION_LABEL = 'version';
-/** @const {string} */ var DEBUGGEE_MINOR_VERSION_LABEL = 'minorversion';
-
-
 /**
  * @constructor
  */
-function DebugletApi(config, debug) {
+function Controller(config, debug) {
   config = config || {};
 
   /** @priavate {Debug} */
@@ -68,7 +63,7 @@ function DebugletApi(config, debug) {
  * @param {Logger} logger a logger
  * @param {!function(?Error)} callback
  */
-DebugletApi.prototype.init = function(uid, logger, callback) {
+Controller.prototype.init = function(uid, logger, callback) {
   var that = this;
   that.uid_ = uid;
   that.nextWaitToken_ = null;
@@ -105,7 +100,7 @@ DebugletApi.prototype.init = function(uid, logger, callback) {
  * Register to the API
  * @param {!function(?Error,Object=)} callback
  */
-DebugletApi.prototype.register = function(callback) {
+Controller.prototype.register = function(callback) {
   this.register_(null, callback);
 };
 
@@ -114,7 +109,7 @@ DebugletApi.prototype.register = function(callback) {
  * Register an error to the API
  * @param {!string} errorMessage to be reported to the Debug API
  */
-DebugletApi.prototype.registerError = function(message) {
+Controller.prototype.registerError = function(message) {
   this.register_(message, function() {});
 };
 
@@ -126,66 +121,12 @@ DebugletApi.prototype.registerError = function(message) {
  * @param {!function(?Error,Object=)} callback
  * @private
  */
-DebugletApi.prototype.register_ = function(errorMessage, callback) {
+Controller.prototype.register_ = function(errorMessage, callback) {
   var that = this;
-
-  var cwd = process.cwd();
-  var mainScript = path.relative(cwd, process.argv[1]);
-
-  var version = 'google.com/node-' +
-    (that.onGCP ? 'gcp' : 'standalone') +
-    '/v' + pjson.version;
-  var desc = process.title + ' ' + mainScript;
-  var labels = {
-    'main script': mainScript,
-    'process.title': process.title,
-    'node version': process.versions.node,
-    'V8 version': process.versions.v8,
-    'agent.name': pjson.name,
-    'agent.version': pjson.version,
-    'projectid': that.project_
-  };
-
-  var serviceName = that.serviceName_;
-  if (serviceName) {
-    desc += ' module:' + serviceName;
-    labels[DEBUGGEE_MODULE_LABEL] = serviceName;
-  }
-
-  var serviceVersion = that.serviceVersion_;
-  if (serviceVersion) {
-    desc += ' version:' + serviceVersion;
-    if (serviceVersion !== 'default') {
-      labels[DEBUGGEE_MAJOR_VERSION_LABEL] = serviceVersion;
-    }
-  }
-
-  var descriptor = that.descriptor_;
-  if (descriptor) {
-    desc += ' description:' + descriptor;
-  }
-
-  if (process.env.GAE_MINOR_VERSION) {
-    labels[DEBUGGEE_MINOR_VERSION_LABEL] = process.env.GAE_MINOR_VERSION;
-  }
-
-  var uniquifier = desc + version + that.uid_ + that.sourceContext_ +
-    JSON.stringify(labels);
-  uniquifier  = crypto.createHash('sha1').update(uniquifier).digest('hex');
-
-  var debuggee = {
-    project: that.project_,
-    uniquifier: uniquifier,
-    description: desc,
-    agentVersion: version,
-    labels: labels,
-    sourceContexts: [that.sourceContext_]
-  };
-
-  if (errorMessage) {
-    debuggee.status = new StatusMessage(StatusMessage.UNSPECIFIED, errorMessage,
-                                        true);
-  }
+  var debuggee = new Debuggee(
+      that.project_, that.uid_,
+      {service: that.serviceName_, version: that.serviceVersion_},
+      that.sourceContext_, that.descriptor_, errorMessage, that.onGCP);
 
   var options = {
     uri: API + '/debuggees/register',
@@ -214,7 +155,7 @@ DebugletApi.prototype.register_ = function(errorMessage, callback) {
  * Fetch the list of breakpoints from the server. Assumes we have registered.
  * @param {!function(?Error,Object=,Object=)} callback accepting (err, response, body)
  */
-DebugletApi.prototype.listBreakpoints = function(callback) {
+Controller.prototype.listBreakpoints = function(callback) {
   var that = this;
   assert(that.debuggeeId_, 'should register first');
   var query = { success_on_timeout: true };
@@ -250,7 +191,7 @@ DebugletApi.prototype.listBreakpoints = function(callback) {
  * @param {!Breakpoint} breakpoint
  * @param {!Function} callback accepting (err, body)
  */
-DebugletApi.prototype.updateBreakpoint =
+Controller.prototype.updateBreakpoint =
   function(breakpoint, callback) {
     assert(this.debuggeeId_, 'should register first');
 
@@ -280,4 +221,4 @@ DebugletApi.prototype.updateBreakpoint =
     }
   };
 
-module.exports = DebugletApi;
+module.exports = Controller;

@@ -24,26 +24,25 @@ var _ = require('lodash');
 
 /**
  * <p class="notice">
- *   **This is an experimental release of Stackdriver Debug.** This API is not 
+ *   **This is an experimental release of Stackdriver Debug.** This API is not
  *   covered by any SLA of deprecation policy and may be subject to backwards
  *   incompatible changes.
  * </p>
- * 
- * This module provides Stackdriver Debugger support for Node.js applications. 
- * [Stackdriver Debugger](https://cloud.google.com/debug/) is a feature of 
+ *
+ * This module provides Stackdriver Debugger support for Node.js applications.
+ * [Stackdriver Debugger](https://cloud.google.com/debug/) is a feature of
  * [Google Cloud Platform](https://cloud.google.com/) that lets you debug your
  * applications in production without stopping or pausing your application.
- * 
+ *
  * This module provides an agent that lets you automatically enable debugging
- * without changes to your application. 
- * 
+ * without changes to your application.
+ *
  * @constructor
  * @alias module:debug
- * 
+ *
  * @resource [What is Stackdriver Debug]{@link https://cloud.google.com/debug/}
- * 
- * @param {object} options - [Configuration object](#/docs). NOTE: at the moment
- *    this parameter is ignored.
+ *
+ * @param {object} options - [Configuration object](#/docs)
  */
 function Debug(options) {
   if (!(this instanceof Debug)) {
@@ -52,9 +51,10 @@ function Debug(options) {
   }
 
   var config = {
+    projectIdRequired: false,
     baseUrl: 'https://clouddebugger.googleapis.com/v2',
     scopes: [
-      // TODO: do we still need cloud-platform scope? 
+      // TODO: do we still need cloud-platform scope?
       'https://www.googleapis.com/auth/cloud-platform',
       'https://www.googleapis.com/auth/cloud_debugletcontroller'
       // TODO: the client library probably wants cloud_debugger scope as well.
@@ -90,13 +90,14 @@ var debuglet;
 /**
  * Start the Debug agent that will make your application available for debugging
  * with Stackdriver Debug.
- * 
+ *
  * @param {object=} config - Debug configuration. TODO(ofrobots): get rid of
  *     config.js and include jsdoc here?
  * TODO: add an optional callback function.
- * 
- * @resource [Introductory video]{@link https://www.youtube.com/watch?v=tyHcK_kAOpw}
- * 
+ *
+ * @resource [Introductory video]{@link
+ * https://www.youtube.com/watch?v=tyHcK_kAOpw}
+ *
  * @example
  * debug.startAgent();
  */
@@ -114,4 +115,3 @@ Debug.prototype.startAgent = function(config) {
 };
 
 module.exports = Debug;
-

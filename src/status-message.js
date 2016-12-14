@@ -1,6 +1,6 @@
 /**
- * Copyright 2015 Google Inc. All Rights Reserved.
  *
+ * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,13 +14,7 @@
  * limitations under the License.
  */
 
-// Classes corresponding to the Cloud Debuglet API
-
 'use strict';
-
-module.exports = {
-  StatusMessage: StatusMessage
-};
 
 /**
  * Status Message to be sent to the server
@@ -41,3 +35,5 @@ function StatusMessage(refersTo, description, isError) {
 /** @const */ StatusMessage.BREAKPOINT_EXPRESSION = 'BREAKPOINT_EXPRESSION';
 /** @const */ StatusMessage.VARIABLE_NAME = 'VARIABLE_NAME';
 /** @const */ StatusMessage.VARIABLE_VALUE = 'VARIABLE_VALUE';
+
+module.exports = StatusMessage;
