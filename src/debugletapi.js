@@ -21,6 +21,7 @@ var path = require('path');
 var assert = require('assert');
 var crypto = require('crypto');
 var pjson = require('../package.json');
+var qs = require('querystring');
 var utils = require('@google/cloud-diagnostics-common').utils;
 var StatusMessage = require('./apiclasses.js').StatusMessage;
 
@@ -225,12 +226,13 @@ DebugletApi.prototype.register_ = function(errorMessage, callback) {
 DebugletApi.prototype.listBreakpoints = function(callback) {
   var that = this;
   assert(that.debuggeeId_, 'should register first');
-  var url = API + '/debuggees/' + encodeURIComponent(that.debuggeeId_) +
-      '/breakpoints';
+  var query = { success_on_timeout: true };
   if (that.nextWaitToken_) {
-    url += '?waitToken=' + encodeURIComponent(that.nextWaitToken_);
+    query.waitToken = that.nextWaitToken;
   }
-  url += '?success_on_timeout=' + encodeURIComponent(true);
+
+  var url = API + '/debuggees/' + encodeURIComponent(that.debuggeeId_) +
+      '/breakpoints?' + qs.stringify(query);
   that.request_({url: url, json: true}, function(err, response, body) {
     if (!response) {
       callback(err || new Error('unknown error - request response missing'));
