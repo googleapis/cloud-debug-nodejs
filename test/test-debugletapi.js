@@ -17,7 +17,7 @@
 
 var assert = require('assert');
 var nock   = require('nock');
-var request = require('request');
+var request = require('./auth-request.js');
 var proxyquire = require('proxyquire');
 var agentVersion = require('../package.json').version;
 
@@ -28,8 +28,6 @@ delete process.env.GCLOUD_PROJECT;
 // require DebugletAPI while stubbing auth to bypass authentication
 //
 var utils = {
-  // return vanilla request to bypass authentication
-  authorizedRequestFactory: function(/*scopes*/) { return request; },
   getProjectNumber: function(callback) { callback(null, 'project123'); }
 };
 var DebugletApi = proxyquire('../src/debugletapi.js', {
@@ -38,6 +36,9 @@ var DebugletApi = proxyquire('../src/debugletapi.js', {
     utils: utils
   }
 });
+var fakeDebug = {
+  request: request
+};
 
 var url = 'https://clouddebugger.googleapis.com';
 var api = '/v2/controller';
@@ -52,7 +53,7 @@ describe('Debuglet API', function() {
       service: 'TestDebugletName',
       version: 'TestDebugletVersion'
     }
-  });
+  }, fakeDebug); // use vanilla request to bypass authentication
 
   it('should return an instance when constructed', function() {
     assert.ok(debugletapi);
@@ -107,7 +108,7 @@ describe('Debuglet API', function() {
         callback(new Error(), null);
       };
       process.env.GCLOUD_PROJECT = 'project123';
-      var debugletapi = new DebugletApi();
+      var debugletapi = new DebugletApi(null, fakeDebug);
       debugletapi.init('uid1234', { warn: function() {} }, function(err, project) {
         var scope = nock(url)
           .post(api + '/debuggees/register', function (body) {

@@ -45,6 +45,7 @@ describe('test-config-credentials', function() {
     var config = extend({}, defaultConfig, {
       keyFilename: path.join('test', 'fixtures', 'gcloud-credentials.json')
     });
+    var debug = require('../..')(config);
     var scope = nock('https://accounts.google.com')
       .post('/o/oauth2/token', function(body) {
         assert.equal(body.client_id, credentials.client_id);
@@ -63,7 +64,7 @@ describe('test-config-credentials', function() {
         setImmediate(done);
         return true;
       }).reply(200);
-    debuglet = new Debuglet(config, logger.create(logger.WARN, 'testing'));
+    debuglet = new Debuglet(debug, config, logger.create(logger.WARN, 'testing'));
     debuglet.start();
   });
 
@@ -71,6 +72,7 @@ describe('test-config-credentials', function() {
     var config = extend({}, defaultConfig, {
       credentials: require('../fixtures/gcloud-credentials.json')
     });
+    var debug = require('../..')(config);
     var scope = nock('https://accounts.google.com')
       .post('/o/oauth2/token', function(body) {
         assert.equal(body.client_id, config.credentials.client_id);
@@ -89,32 +91,34 @@ describe('test-config-credentials', function() {
         setImmediate(done);
         return true;
       }).reply(200);
-    debuglet = new Debuglet(config, logger.create(undefined, 'testing'));
+    debuglet = new Debuglet(debug, config, logger.create(undefined, 'testing'));
     debuglet.start();
   });
 
-  it('should ignore credentials if keyFilename is provided', function(done) {
-    var correctCredentials = require('../fixtures/gcloud-credentials.json');
-    var config = extend({}, defaultConfig, {
-      keyFilename: path.join('test', 'fixtures', 'gcloud-credentials.json'),
-      credentials: {
+  it('should ignore keyFilename if credentials is provided', function(done) {
+    var fileCredentials = require('../fixtures/gcloud-credentials.json');
+    var credentials = {
         client_id: 'a',
         client_secret: 'b',
         refresh_token: 'c',
         type: 'authorized_user'
-      }
+    };
+    var config = extend({}, defaultConfig, {
+      keyFilename: path.join('test', 'fixtures', 'gcloud-credentials.json'),
+      credentials: credentials
     });
+    var debug = require('../..')(config);
     ['client_id', 'client_secret', 'refresh_token'].forEach(function (field) {
-      assert(correctCredentials.hasOwnProperty(field));
+      assert(fileCredentials.hasOwnProperty(field));
       assert(config.credentials.hasOwnProperty(field));
       assert.notEqual(config.credentials[field],
-        correctCredentials[field]);
+        fileCredentials[field]);
     });
     var scope = nock('https://accounts.google.com')
       .post('/o/oauth2/token', function(body) {
-        assert.equal(body.client_id, correctCredentials.client_id);
-        assert.equal(body.client_secret, correctCredentials.client_secret);
-        assert.equal(body.refresh_token, correctCredentials.refresh_token);
+        assert.equal(body.client_id, credentials.client_id);
+        assert.equal(body.client_secret, credentials.client_secret);
+        assert.equal(body.refresh_token, credentials.refresh_token);
         return true;
       }).reply(200, {
         refresh_token: 'hello',
@@ -128,7 +132,7 @@ describe('test-config-credentials', function() {
         setImmediate(done);
         return true;
       }).reply(200);
-    debuglet = new Debuglet(config, logger.create(undefined, 'testing'));
+    debuglet = new Debuglet(debug, config, logger.create(undefined, 'testing'));
     debuglet.start();
   });
 });

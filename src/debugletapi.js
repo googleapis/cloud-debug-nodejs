@@ -33,23 +33,15 @@ var API = 'https://clouddebugger.googleapis.com/v2/controller';
 /** @const {string} */ var DEBUGGEE_MAJOR_VERSION_LABEL = 'version';
 /** @const {string} */ var DEBUGGEE_MINOR_VERSION_LABEL = 'minorversion';
 
-/** @const {Array<string>} list of scopes needed to operate with the debug API */
-var SCOPES = [
-  'https://www.googleapis.com/auth/cloud-platform',
-  'https://www.googleapis.com/auth/cloud_debugletcontroller'
-];
 
 /**
  * @constructor
  */
-function DebugletApi(config) {
-  var config_ = config || {};
+function DebugletApi(config, debug) {
+  config = config || {};
 
-  /** @private {Object} request style request object */
-  this.request_ = utils.authorizedRequestFactory(SCOPES, {
-    keyFile: config_.keyFilename,
-    credentials: config_.credentials
-  });
+  /** @priavate {Debug} */
+  this.debug_ = debug;
 
   /** @private {string} numeric project id */
   this.project_ = null;
@@ -58,13 +50,13 @@ function DebugletApi(config) {
   this.debuggeeId_ = null;
 
   /** @private {string} a descriptor of the current code version */
-  this.descriptor_ = config_.description;
+  this.descriptor_ = config.description;
 
   /** @private {string} the service name of the current code */
-  this.serviceName_ = config_.serviceContext && config_.serviceContext.service;
+  this.serviceName_ = config.serviceContext && config.serviceContext.service;
 
   /** @private {string} the version of the current code */
-  this.serviceVersion_ = config_.serviceContext && config_.serviceContext.version;
+  this.serviceVersion_ = config.serviceContext && config.serviceContext.version;
 }
 
 /**
@@ -196,13 +188,12 @@ DebugletApi.prototype.register_ = function(errorMessage, callback) {
   }
 
   var options = {
-    url: API + '/debuggees/register',
+    uri: API + '/debuggees/register',
     method: 'POST',
     json: true,
     body: { debuggee: debuggee }
   };
-
-  that.request_(options, function(err, response, body) {
+  this.debug_.request(options, function(err, body, response) {
     if (err) {
       callback(err);
     } else if (response.statusCode !== 200) {
@@ -231,9 +222,9 @@ DebugletApi.prototype.listBreakpoints = function(callback) {
     query.waitToken = that.nextWaitToken;
   }
 
-  var url = API + '/debuggees/' + encodeURIComponent(that.debuggeeId_) +
+  var uri = API + '/debuggees/' + encodeURIComponent(that.debuggeeId_) +
       '/breakpoints?' + qs.stringify(query);
-  that.request_({url: url, json: true}, function(err, response, body) {
+  that.debug_.request({uri: uri, json: true}, function(err, body, response) {
     if (!response) {
       callback(err || new Error('unknown error - request response missing'));
       return;
@@ -266,7 +257,7 @@ DebugletApi.prototype.updateBreakpoint =
     breakpoint.action = 'capture';
     breakpoint.isFinalState = true;
     var options = {
-      url: API + '/debuggees/' + encodeURIComponent(this.debuggeeId_) +
+      uri: API + '/debuggees/' + encodeURIComponent(this.debuggeeId_) +
         '/breakpoints/' + encodeURIComponent(breakpoint.id),
       json: true,
       method: 'PUT',
@@ -281,7 +272,7 @@ DebugletApi.prototype.updateBreakpoint =
     // stringify them. The try-catch keeps it resilient and avoids crashing the
     // user's app.
     try {
-      this.request_(options, function(err, response, body) {
+      this.debug_.request(options, function(err, body, response) {
         callback(err, body);
       });
     } catch (error) {

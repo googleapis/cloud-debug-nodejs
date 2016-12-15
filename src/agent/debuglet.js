@@ -46,7 +46,10 @@ module.exports = Debuglet;
  * @event 'stopped' if the agent stops due to a fatal error after starting
  * @constructor
  */
-function Debuglet(config, logger) {
+function Debuglet(debug, config, logger) {
+  /** @private {Debug} */
+  this.debug_ = debug;
+
   /** @private {object} */
   this.config_ = config || {};
 
@@ -69,7 +72,7 @@ function Debuglet(config, logger) {
   this.logger_ = logger;
 
   /** @private {DebugletApi} */
-  this.debugletApi_ = new DebugletApi(config);
+  this.debugletApi_ = new DebugletApi(this.config_, this.debug_);
 
   /** @private {Object.<string, Breakpoint>} */
   this.activeBreakpointMap_ = {};

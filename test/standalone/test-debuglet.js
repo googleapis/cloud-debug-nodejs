@@ -16,7 +16,7 @@
 'use strict';
 
 var assert = require('assert');
-var request = require('request');
+var request = require('../auth-request.js');
 var logger = require('@google/cloud-diagnostics-common').logger;
 var config = require('../../src/config.js').debug;
 var Debuglet = require('../../src/agent/debuglet.js');
@@ -29,6 +29,9 @@ var BPS_PATH = '/v2/controller/debuggees/' + DEBUGGEE_ID + '/breakpoints';
 var nock = require('nock');
 nock.disableNetConnect();
 
+// Disable error logging during the tests.
+config.logLevel = 0;
+
 var debuglet;
 var bp = {
   id: 'test',
@@ -40,12 +43,15 @@ var errorBp = {
   action: 'FOO',
   location: { path: 'fixtures/foo.js', line: 2 }
 };
+var fakeDebug = {
+  request: request
+};
 
 describe(__filename, function(){
   beforeEach(function() {
     process.env.GCLOUD_PROJECT = 0;
     debuglet = new Debuglet(
-      config, logger.create(config.logLevel, '@google/cloud-debug'));
+      fakeDebug, config, logger.create(config.logLevel, '@google/cloud-debug'));
     debuglet.once('started', function() {
       debuglet.debugletApi_.request_ = request; // Avoid authing.
     });
@@ -236,7 +242,7 @@ describe(__filename, function(){
     config.breakpointExpirationSec = 1;
     this.timeout(6000);
     var debuglet = new Debuglet(
-      config, logger.create(config.logLevel, '@google/cloud-debug'));
+      fakeDebug, config, logger.create(config.logLevel, '@google/cloud-debug'));
 
     var scope = nock(API)
       .post(REGISTER_PATH)
@@ -288,7 +294,7 @@ describe(__filename, function(){
     config.breakpointUpdateIntervalSec = 1;
     this.timeout(6000);
     var debuglet = new Debuglet(
-      config, logger.create(config.logLevel, '@google/cloud-debug'));
+      fakeDebug, config, logger.create(config.logLevel, '@google/cloud-debug'));
 
     var scope = nock(API)
       .post(REGISTER_PATH)

@@ -250,15 +250,15 @@ function runTest() {
 // and log points.
 if (cluster.isMaster) {
   cluster.setupMaster({ silent: true });
-  var handler = function(m) {
+  var handler = function(a) {
     if (!debuggee) {
       // Cache the needed info from the first worker.
-      debuggee = m.private_.debugletApi_.debuggeeId_;
-      project = m.private_.debugletApi_.project_;
+      debuggee = a[0];
+      project = a[1];
     } else {
       // Make sure all other workers are consistent.
-      assert.equal(debuggee, m.private_.debugletApi_.debuggeeId_);
-      assert.equal(project, m.private_.debugletApi_.project_);
+      assert.equal(debuggee, a[0]);
+      assert.equal(project, a[1]);
     }
   };
   var stdoutHandler = function(chunk) {
@@ -288,12 +288,8 @@ if (cluster.isMaster) {
     assert.ok(api.uid_, 'debuglet provided unique id');
     assert.ok(api.debuggeeId_, 'debuglet has registered');
     // The parent process needs to know the debuggeeId and project.
-    process.send(debug);
+    process.send([api.debuggeeId_, api.project_]);
     setInterval(fib.bind(null, 12), 2000);
   }, 7000);
 
 }
-
-process.on('exit', function() {
-  console.log('worker transcript:', transcript);
-});

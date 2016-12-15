@@ -17,7 +17,9 @@
 'use strict';
 
 var logger = require('@google/cloud-diagnostics-common').logger;
+var common = require('@google-cloud/common');
 var Debuglet = require('./agent/debuglet.js');
+var util = require('util');
 var _ = require('lodash');
 
 /**
@@ -45,11 +47,24 @@ var _ = require('lodash');
  */
 function Debug(options) {
   if (!(this instanceof Debug)) {
-    //TODO(ofrobots)
-    //options = common.util.normalizeArguments(this, options);
+    options = common.util.normalizeArguments(this, options);
     return new Debug(options);
   }
+
+  var config = {
+    baseUrl: 'https://clouddebugger.googleapis.com/v2',
+    scopes: [
+      // TODO: do we still need cloud-platform scope? 
+      'https://www.googleapis.com/auth/cloud-platform',
+      'https://www.googleapis.com/auth/cloud_debugletcontroller'
+      // TODO: the client library probably wants cloud_debugger scope as well.
+    ],
+    packageJson: require('../package.json')
+  };
+
+  common.Service.call(this, config, options);
 }
+util.inherits(Debug, common.Service);
 
 var initConfig = function(config_) {
   var config = config_ || {};
@@ -77,7 +92,7 @@ var debuglet;
  * with Stackdriver Debug.
  * 
  * @param {object=} config - Debug configuration. TODO(ofrobots): get rid of
- *     config.js and include jsdoc here
+ *     config.js and include jsdoc here?
  * TODO: add an optional callback function.
  * 
  * @resource [Introductory video]{@link https://www.youtube.com/watch?v=tyHcK_kAOpw}
@@ -85,13 +100,14 @@ var debuglet;
  * @example
  * debug.startAgent();
  */
-Debug.prototype.startAgent = function(config_) {
+Debug.prototype.startAgent = function(config) {
   if (debuglet) {
     throw new Error('Debug Agent has already been started');
   }
-  var config = initConfig(config_);
+  config = initConfig(config);
   if (config.enabled) {
-    debuglet = new Debuglet(config, logger.create(config.logLevel, '@google-cloud/debug'));
+    debuglet = new Debuglet(
+        this, config, logger.create(config.logLevel, '@google-cloud/debug'));
     debuglet.start();
     this.private_ = debuglet;
   }
