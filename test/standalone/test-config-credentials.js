@@ -90,9 +90,9 @@ describe('test-config-credentials', function() {
      });
 
   it('should use the keyFilename field of the config object', function(done) {
-    process.env.GCLOUD_PROJECT = '0';
     var credentials = require('../fixtures/gcloud-credentials.json');
     var config = extend({}, defaultConfig, {
+      projectId: 'fake-project',
       keyFilename: path.join('test', 'fixtures', 'gcloud-credentials.json')
     });
     var debug = require('../..')(config);
@@ -114,10 +114,10 @@ describe('test-config-credentials', function() {
   });
 
   it('should use the credentials field of the config object', function(done) {
-    process.env.GCLOUD_PROJECT = '0';
-    var config =
-        extend({}, defaultConfig,
-               {credentials: require('../fixtures/gcloud-credentials.json')});
+    var config = extend({}, defaultConfig, {
+      projectId: 'fake-project',
+      credentials: require('../fixtures/gcloud-credentials.json')
+    });
     var debug = require('../..')(config);
     var scope = nockOAuth2(function(body) {
       assert.equal(body.client_id, config.credentials.client_id);
@@ -136,7 +136,6 @@ describe('test-config-credentials', function() {
   });
 
   it('should ignore keyFilename if credentials is provided', function(done) {
-    process.env.GCLOUD_PROJECT = '0';
     var fileCredentials = require('../fixtures/gcloud-credentials.json');
     var credentials = {
       client_id: 'a',
@@ -145,15 +144,16 @@ describe('test-config-credentials', function() {
       type: 'authorized_user'
     };
     var config = extend({}, defaultConfig, {
+      projectId: 'fake-project',
       keyFilename: path.join('test', 'fixtures', 'gcloud-credentials.json'),
       credentials: credentials
     });
     var debug = require('../..')(config);
     var scope = nockOAuth2(function(body) {
-                    assert.equal(body.client_id, credentials.client_id);
-                    assert.equal(body.client_secret, credentials.client_secret);
-                    assert.equal(body.refresh_token, credentials.refresh_token);
-                    return true;
+      assert.equal(body.client_id, credentials.client_id);
+      assert.equal(body.client_secret, credentials.client_secret);
+      assert.equal(body.refresh_token, credentials.refresh_token);
+      return true;
     });
     // Since we have to get an auth token, this always gets intercepted second.
     nockRegister(function() {

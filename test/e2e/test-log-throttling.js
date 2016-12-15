@@ -212,11 +212,12 @@ if (cluster.isMaster) {
   setTimeout(function() {
     assert.ok(debug.private_, 'debuglet has initialized');
     var debuglet = debug.private_;
-    assert.ok(debuglet.debugletApi_, 'debuglet api is active');
-    var api = debuglet.debugletApi_;
-    assert.ok(api.uid_, 'debuglet provided unique id');
-    assert.ok(api.debuggeeId_, 'debuglet has registered');
-    process.send([api.debuggeeId_, api.project_]);
+    var debuggee = debuglet.debuggee_;
+    assert.ok(debuggee, 'should create debuggee');
+    assert.ok(debuggee.project, 'debuggee should have a project');
+    assert.ok(debuggee.id, 'debuggee should have registered');
+    // The parent process needs to know the debuggeeId and project.
+    process.send([debuggee.id, debuggee.project]);
     setInterval(fib.bind(null, 12), 500);
   }, 7000);
 }

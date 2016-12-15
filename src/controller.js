@@ -20,11 +20,8 @@
  * @module debug/controller
  */
 
-var fs = require('fs');
 var assert = require('assert');
 var qs = require('querystring');
-var utils = require('@google/cloud-diagnostics-common').utils;
-var Debuggee = require('./debuggee.js');
 
 /** @const {string} Cloud Debug API endpoint */
 var API = 'https://clouddebugger.googleapis.com/v2/controller';
@@ -32,104 +29,25 @@ var API = 'https://clouddebugger.googleapis.com/v2/controller';
 /**
  * @constructor
  */
-function Controller(config, debug) {
-  config = config || {};
-
+function Controller(debug) {
   /** @priavate {Debug} */
   this.debug_ = debug;
-
-  /** @private {string} project id */
-  this.project_ = config.projectId || process.env.GCLOUD_PROJECT;
 
   /** @private {string} debuggee id provided by the server once registered */
   this.debuggeeId_ = null;
 
-  /** @private {string} a descriptor of the current code version */
-  this.descriptor_ = config.description;
-
-  /** @private {string} the service name of the current code */
-  this.serviceName_ = config.serviceContext && config.serviceContext.service;
-
-  /** @private {string} the version of the current code */
-  this.serviceVersion_ = config.serviceContext && config.serviceContext.version;
+  /** @private {string} */
+  this.nextWaitToken_ = null;
 }
 
 /**
- * Initializes the Debuglet API. It requires a unique-id 'uniquifier' string
- * that identifies the version of source we have available on this client so
- * that it can be uniquely identified on the server.
- * @param {!string} uid unique identifier for the version of source loaded
- *     in the client
- * @param {Logger} logger a logger
- * @param {!function(?Error)} callback
- */
-Controller.prototype.init = function(uid, logger, callback) {
-  var that = this;
-  that.uid_ = uid;
-  that.nextWaitToken_ = null;
-
-  // We need to figure out whether we are running on GCP. We can use our ability
-  // to access the metadata service as a test for that.
-  // TODO: change this to getProjectId in the future.
-  utils.getProjectNumber(function(err, metadataProject) {
-    // We should get an error if we are not on GCP.
-    that.onGCP = !err;
-
-    // We prefer to use the locally available projectId as that is least 
-    // surprising to users.
-    var project = that.project_ || metadataProject;
-
-    // We if don't have a projectId by now, we fail with an error.
-    if (!project) {
-      return callback(err);
-    } else {
-      that.project_ = project;
-    }
-
-    // Locate the source context.
-    fs.readFile('source-context.json', 'utf8', function(err, data) {
-      try {
-        that.sourceContext_ = JSON.parse(data);
-      } catch (e) {
-        logger.warn('Malformed source-context.json file.');
-        // But we keep on going.
-      }
-      return callback(null, project);
-    });
-  });
-};
-
-/**
- * Register to the API
- * @param {!function(?Error,Object=)} callback
- */
-Controller.prototype.register = function(callback) {
-  this.register_(null, callback);
-};
-
-
-/**
- * Register an error to the API
- * @param {!string} errorMessage to be reported to the Debug API
- */
-Controller.prototype.registerError = function(message) {
-  this.register_(message, function() {});
-};
-
-
-/**
  * Register to the API (implementation)
- * @param {?string} errorMessage Should be null for normal startup, and non-
- *     null if there is a startup error that should be reported to the API
+ * 
  * @param {!function(?Error,Object=)} callback
  * @private
  */
-Controller.prototype.register_ = function(errorMessage, callback) {
+Controller.prototype.register = function(debuggee, callback) {
   var that = this;
-  var debuggee = new Debuggee(
-      that.project_, that.uid_,
-      {service: that.serviceName_, version: that.serviceVersion_},
-      that.sourceContext_, that.descriptor_, errorMessage, that.onGCP);
 
   var options = {
     uri: API + '/debuggees/register',
