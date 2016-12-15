@@ -24,12 +24,33 @@ var defaultConfig = require('../../src/config.js').debug;
 var Debuglet = require('../../src/agent/debuglet.js');
 
 nock.disableNetConnect();
-process.env.GCLOUD_PROJECT = 0;
+
+function accept() {
+  return true;
+}
+
+function nockOAuth2(validator) {
+  return nock('https://accounts.google.com')
+      .post('/o/oauth2/token', validator)
+      .reply(200, {
+        refresh_token: 'hello',
+        access_token: 'goodbye',
+        expiry_date: new Date(9999, 1, 1)
+      });
+}
+
+function nockRegister(validator) {
+  return nock('https://clouddebugger.googleapis.com')
+      .post('/v2/controller/debuggees/register', validator)
+      .reply(200);
+}
 
 describe('test-config-credentials', function() {
   var debuglet = null;
+  var envProject = process.env.GCLOUD_PROJECT;
 
   beforeEach(function() {
+    delete process.env.GCLOUD_PROJECT;
     assert.equal(debuglet, null);
   });
 
@@ -37,101 +58,110 @@ describe('test-config-credentials', function() {
     assert.ok(debuglet);
     debuglet.stop();
     debuglet = null;
+    process.env.GCLOUD_PROJECT = envProject;
   });
 
+  it('should use config.projectId in preference to the environment variable',
+     function(done) {
+       process.env.GCLOUD_PROJECT = 'should-not-be-used';
+
+       var config = extend({projectId: 'project-via-config'}, defaultConfig);
+       var debug = require('../../')(config);
+
+       // TODO: also make sure we don't request the project from metadata
+       // service.
+
+       var scope = nockOAuth2(accept);
+       nockRegister(function(body) {
+         assert.ok(body.debuggee);
+         assert.equal(body.debuggee.project, 'project-via-config');
+         scope.done();
+         setImmediate(done);
+         return true;
+       });
+
+       debuglet =
+           new Debuglet(debug, config, logger.create(logger.WARN, 'testing'));
+       debuglet.start();
+     });
 
   it('should use the keyFilename field of the config object', function(done) {
+    process.env.GCLOUD_PROJECT = '0';
     var credentials = require('../fixtures/gcloud-credentials.json');
     var config = extend({}, defaultConfig, {
       keyFilename: path.join('test', 'fixtures', 'gcloud-credentials.json')
     });
     var debug = require('../..')(config);
-    var scope = nock('https://accounts.google.com')
-      .post('/o/oauth2/token', function(body) {
-        assert.equal(body.client_id, credentials.client_id);
-        assert.equal(body.client_secret, credentials.client_secret);
-        assert.equal(body.refresh_token, credentials.refresh_token);
-        return true;
-      }).reply(200, {
-        refresh_token: 'hello',
-        access_token: 'goodbye',
-        expiry_date: new Date(9999, 1, 1)
-      });
-    // Since we have to get an auth token, this always gets intercepted second
-    nock('https://clouddebugger.googleapis.com')
-      .post('/v2/controller/debuggees/register', function() {
-        scope.done();
-        setImmediate(done);
-        return true;
-      }).reply(200);
-    debuglet = new Debuglet(debug, config, logger.create(logger.WARN, 'testing'));
+    var scope = nockOAuth2(function(body) {
+      assert.equal(body.client_id, credentials.client_id);
+      assert.equal(body.client_secret, credentials.client_secret);
+      assert.equal(body.refresh_token, credentials.refresh_token);
+      return true;
+    });
+    // Since we have to get an auth token, this always gets intercepted second.
+    nockRegister(function() {
+      scope.done();
+      setImmediate(done);
+      return true;
+    });
+    debuglet =
+        new Debuglet(debug, config, logger.create(logger.WARN, 'testing'));
     debuglet.start();
   });
 
   it('should use the credentials field of the config object', function(done) {
-    var config = extend({}, defaultConfig, {
-      credentials: require('../fixtures/gcloud-credentials.json')
-    });
+    process.env.GCLOUD_PROJECT = '0';
+    var config =
+        extend({}, defaultConfig,
+               {credentials: require('../fixtures/gcloud-credentials.json')});
     var debug = require('../..')(config);
-    var scope = nock('https://accounts.google.com')
-      .post('/o/oauth2/token', function(body) {
-        assert.equal(body.client_id, config.credentials.client_id);
-        assert.equal(body.client_secret, config.credentials.client_secret);
-        assert.equal(body.refresh_token, config.credentials.refresh_token);
-        return true;
-      }).reply(200, {
-        refresh_token: 'hello',
-        access_token: 'goodbye',
-        expiry_date: new Date(9999, 1, 1)
-      });
-    // Since we have to get an auth token, this always gets intercepted second
-    nock('https://clouddebugger.googleapis.com')
-      .post('/v2/controller/debuggees/register', function() {
-        scope.done();
-        setImmediate(done);
-        return true;
-      }).reply(200);
+    var scope = nockOAuth2(function(body) {
+      assert.equal(body.client_id, config.credentials.client_id);
+      assert.equal(body.client_secret, config.credentials.client_secret);
+      assert.equal(body.refresh_token, config.credentials.refresh_token);
+      return true;
+    });
+    // Since we have to get an auth token, this always gets intercepted second.
+    nockRegister(function() {
+      scope.done();
+      setImmediate(done);
+      return true;
+    });
     debuglet = new Debuglet(debug, config, logger.create(undefined, 'testing'));
     debuglet.start();
   });
 
   it('should ignore keyFilename if credentials is provided', function(done) {
+    process.env.GCLOUD_PROJECT = '0';
     var fileCredentials = require('../fixtures/gcloud-credentials.json');
     var credentials = {
-        client_id: 'a',
-        client_secret: 'b',
-        refresh_token: 'c',
-        type: 'authorized_user'
+      client_id: 'a',
+      client_secret: 'b',
+      refresh_token: 'c',
+      type: 'authorized_user'
     };
     var config = extend({}, defaultConfig, {
       keyFilename: path.join('test', 'fixtures', 'gcloud-credentials.json'),
       credentials: credentials
     });
     var debug = require('../..')(config);
-    ['client_id', 'client_secret', 'refresh_token'].forEach(function (field) {
+    var scope = nockOAuth2(function(body) {
+                    assert.equal(body.client_id, credentials.client_id);
+                    assert.equal(body.client_secret, credentials.client_secret);
+                    assert.equal(body.refresh_token, credentials.refresh_token);
+                    return true;
+    });
+    // Since we have to get an auth token, this always gets intercepted second.
+    nockRegister(function() {
+      scope.done();
+      setImmediate(done);
+      return true;
+    });
+    ['client_id', 'client_secret', 'refresh_token'].forEach(function(field) {
       assert(fileCredentials.hasOwnProperty(field));
       assert(config.credentials.hasOwnProperty(field));
-      assert.notEqual(config.credentials[field],
-        fileCredentials[field]);
+      assert.notEqual(config.credentials[field], fileCredentials[field]);
     });
-    var scope = nock('https://accounts.google.com')
-      .post('/o/oauth2/token', function(body) {
-        assert.equal(body.client_id, credentials.client_id);
-        assert.equal(body.client_secret, credentials.client_secret);
-        assert.equal(body.refresh_token, credentials.refresh_token);
-        return true;
-      }).reply(200, {
-        refresh_token: 'hello',
-        access_token: 'goodbye',
-        expiry_date: new Date(9999, 1, 1)
-      });
-    // Since we have to get an auth token, this always gets intercepted second
-    nock('https://clouddebugger.googleapis.com')
-      .post('/v2/controller/debuggees/register', function() {
-        scope.done();
-        setImmediate(done);
-        return true;
-      }).reply(200);
     debuglet = new Debuglet(debug, config, logger.create(undefined, 'testing'));
     debuglet.start();
   });

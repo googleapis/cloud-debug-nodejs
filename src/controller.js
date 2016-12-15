@@ -38,8 +38,8 @@ function Controller(config, debug) {
   /** @priavate {Debug} */
   this.debug_ = debug;
 
-  /** @private {string} numeric project id */
-  this.project_ = null;
+  /** @private {string} project id */
+  this.project_ = config.projectId || process.env.GCLOUD_PROJECT;
 
   /** @private {string} debuggee id provided by the server once registered */
   this.debuggeeId_ = null;
@@ -68,13 +68,25 @@ Controller.prototype.init = function(uid, logger, callback) {
   that.uid_ = uid;
   that.nextWaitToken_ = null;
 
-  function complete(err, project) {
-    if (err) {
-      callback(err, project);
-      return;
-    }
-    that.project_ = project;
+  // We need to figure out whether we are running on GCP. We can use our ability
+  // to access the metadata service as a test for that.
+  // TODO: change this to getProjectId in the future.
+  utils.getProjectNumber(function(err, metadataProject) {
+    // We should get an error if we are not on GCP.
+    that.onGCP = !err;
 
+    // We perfer to use the locally available projectId as that is least 
+    // surprising to users.
+    var project = that.project_ || metadataProject;
+
+    // We if don't have a projectId by now, we fail with an error.
+    if (!project) {
+      return callback(err);
+    } else {
+      that.project_ = project;
+    }
+
+    // Locate the source context.
     fs.readFile('source-context.json', 'utf8', function(err, data) {
       try {
         that.sourceContext_ = JSON.parse(data);
@@ -82,17 +94,8 @@ Controller.prototype.init = function(uid, logger, callback) {
         logger.warn('Malformed source-context.json file.');
         // But we keep on going.
       }
-      callback(null, project);
+      return callback(null, project);
     });
-  }
-
-  utils.getProjectNumber(function(err, project) {
-    that.onGCP = !!project;
-    if (process.env.GCLOUD_PROJECT) {
-      complete(null, process.env.GCLOUD_PROJECT);
-    } else {
-      complete(err, project);
-    }
   });
 };
 
@@ -132,13 +135,14 @@ Controller.prototype.register_ = function(errorMessage, callback) {
     uri: API + '/debuggees/register',
     method: 'POST',
     json: true,
-    body: { debuggee: debuggee }
+    body: {debuggee: debuggee}
   };
   this.debug_.request(options, function(err, body, response) {
     if (err) {
       callback(err);
     } else if (response.statusCode !== 200) {
-      callback(new Error('unable to register, statusCode ' + response.statusCode));
+      callback(
+          new Error('unable to register, statusCode ' + response.statusCode));
     } else if (!body.debuggee) {
       callback(new Error('invalid response body from server'));
     } else if (body.debuggee.isDisabled) {
@@ -153,18 +157,19 @@ Controller.prototype.register_ = function(errorMessage, callback) {
 
 /**
  * Fetch the list of breakpoints from the server. Assumes we have registered.
- * @param {!function(?Error,Object=,Object=)} callback accepting (err, response, body)
+ * @param {!function(?Error,Object=,Object=)} callback accepting (err, response,
+ * body)
  */
 Controller.prototype.listBreakpoints = function(callback) {
   var that = this;
   assert(that.debuggeeId_, 'should register first');
-  var query = { success_on_timeout: true };
+  var query = {success_on_timeout: true};
   if (that.nextWaitToken_) {
     query.waitToken = that.nextWaitToken;
   }
 
   var uri = API + '/debuggees/' + encodeURIComponent(that.debuggeeId_) +
-      '/breakpoints?' + qs.stringify(query);
+            '/breakpoints?' + qs.stringify(query);
   that.debug_.request({uri: uri, json: true}, function(err, body, response) {
     if (!response) {
       callback(err || new Error('unknown error - request response missing'));
@@ -176,7 +181,7 @@ Controller.prototype.listBreakpoints = function(callback) {
       return;
     } else if (response.statusCode !== 200) {
       callback(new Error('unable to list breakpoints, status code ' +
-        response.statusCode));
+                         response.statusCode));
       return;
     } else {
       body = body || {};
@@ -191,34 +196,29 @@ Controller.prototype.listBreakpoints = function(callback) {
  * @param {!Breakpoint} breakpoint
  * @param {!Function} callback accepting (err, body)
  */
-Controller.prototype.updateBreakpoint =
-  function(breakpoint, callback) {
-    assert(this.debuggeeId_, 'should register first');
+Controller.prototype.updateBreakpoint = function(breakpoint, callback) {
+  assert(this.debuggeeId_, 'should register first');
 
-    breakpoint.action = 'capture';
-    breakpoint.isFinalState = true;
-    var options = {
-      uri: API + '/debuggees/' + encodeURIComponent(this.debuggeeId_) +
-        '/breakpoints/' + encodeURIComponent(breakpoint.id),
-      json: true,
-      method: 'PUT',
-      body: {
-        debuggeeId: this.debuggeeId_,
-        breakpoint: breakpoint
-      }
-    };
-
-    // We need to have a try/catch here because a JSON.stringify will be done
-    // by request. Some V8 debug mirror objects get a throw when we attempt to
-    // stringify them. The try-catch keeps it resilient and avoids crashing the
-    // user's app.
-    try {
-      this.debug_.request(options, function(err, body, response) {
-        callback(err, body);
-      });
-    } catch (error) {
-      callback(error);
-    }
+  breakpoint.action = 'capture';
+  breakpoint.isFinalState = true;
+  var options = {
+    uri: API + '/debuggees/' + encodeURIComponent(this.debuggeeId_) +
+             '/breakpoints/' + encodeURIComponent(breakpoint.id),
+    json: true,
+    method: 'PUT',
+    body: {debuggeeId: this.debuggeeId_, breakpoint: breakpoint}
   };
+
+  // We need to have a try/catch here because a JSON.stringify will be done
+  // by request. Some V8 debug mirror objects get a throw when we attempt to
+  // stringify them. The try-catch keeps it resilient and avoids crashing the
+  // user's app.
+  try {
+    this.debug_.request(options,
+                        function(err, body, response) { callback(err, body); });
+  } catch (error) {
+    callback(error);
+  }
+};
 
 module.exports = Controller;
