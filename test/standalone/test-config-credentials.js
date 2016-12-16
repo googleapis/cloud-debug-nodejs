@@ -20,7 +20,7 @@ var assert = require('assert');
 var nock = require('nock');
 var extend = require('extend');
 var logger = require('@google/cloud-diagnostics-common').logger;
-var defaultConfig = require('../../src/config.js').debug;
+var defaultConfig = require('../../src/agent/config.js');
 var Debuglet = require('../../src/agent/debuglet.js');
 
 var envProject = process.env.GCLOUD_PROJECT;

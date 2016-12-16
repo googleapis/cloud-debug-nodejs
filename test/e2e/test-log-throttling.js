@@ -201,7 +201,7 @@ if (cluster.isMaster) {
   runTest();
 } else {
   var debug = require('../..')();
-  var defaultConfig = require('../../src/config.js');
+  var defaultConfig = require('../../src/agent/config.js');
   var config = extend({}, defaultConfig, {
     log: {
       maxLogsPerSecond: 2,
