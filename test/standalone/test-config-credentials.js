@@ -23,6 +23,8 @@ var logger = require('@google/cloud-diagnostics-common').logger;
 var defaultConfig = require('../../src/config.js').debug;
 var Debuglet = require('../../src/agent/debuglet.js');
 
+var envProject = process.env.GCLOUD_PROJECT;
+
 nock.disableNetConnect();
 
 function accept() {
@@ -47,7 +49,6 @@ function nockRegister(validator) {
 
 describe('test-config-credentials', function() {
   var debuglet = null;
-  var envProject = process.env.GCLOUD_PROJECT;
 
   beforeEach(function() {
     delete process.env.GCLOUD_PROJECT;
@@ -69,7 +70,7 @@ describe('test-config-credentials', function() {
          projectId: 'project-via-config',
          credentials: require('../fixtures/gcloud-credentials.json')
        });
-       var debug = require('../../')(config);
+       var debug = require('../..')(config);
 
        // TODO: also make sure we don't request the project from metadata
        // service.
