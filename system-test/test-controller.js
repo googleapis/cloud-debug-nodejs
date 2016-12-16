@@ -52,7 +52,7 @@ describe('Controller', function() {
     controller.register(debuggee, function(err, body) {
       assert.ifError(err, 'should be able to register successfull');
 
-      controller.listBreakpoints(function(err, response, body) {
+      controller.listBreakpoints(debuggee, function(err, response, body) {
         assert.ifError(err, 'should successfully list breakpoints');
         assert.ok(body);
         assert.ok(body.nextWaitToken);

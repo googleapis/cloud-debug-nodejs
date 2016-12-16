@@ -45,13 +45,7 @@ var api = '/v2/controller';
 
 nock.disableNetConnect();
 
-describe('Debuglet API', function() {
-
-  var controller = new Controller(fakeDebug);
-
-  it('should return an instance when constructed', function() {
-    assert.ok(controller);
-  });
+describe('Controller API', function() {
 
   describe('register', function() {
     it('should get a debuggeeId', function(done) {
@@ -61,10 +55,10 @@ describe('Debuglet API', function() {
               .reply(200,
                      {debuggee: {id: 'fake-debuggee'}, activePeriodSec: 600});
       var debuggee = new Debuggee('fake-project', 'fake-id');
+      var controller = new Controller(fakeDebug);
       controller.register(debuggee, function(err, result) {
         assert(!err, 'not expecting an error');
         assert.equal(result.debuggee.id, 'fake-debuggee');
-        assert.equal(controller.debuggeeId_, 'fake-debuggee');
         scope.done();
         done();
       });
@@ -86,7 +80,6 @@ describe('Debuglet API', function() {
       controller.register(debuggee, function(err, result) {
         assert(!err, 'not expecting an error');
         assert.equal(result.debuggee.id, 'fake-debuggee');
-        assert.equal(controller.debuggeeId_, 'fake-debuggee');
         scope.done();
         delete process.env.GCLOUD_PROJECT;
         utils.getProjectNumber = oldProjNum;
@@ -105,6 +98,7 @@ describe('Debuglet API', function() {
                       activePeriodSec: 600,
                     });
       var debuggee = new Debuggee('fake-project', 'fake-id');
+      var controller = new Controller(fakeDebug);
       controller.register(debuggee, function(err/*, result*/) {
         assert(err, 'expected an error');
         scope.done();
@@ -125,6 +119,7 @@ describe('Debuglet API', function() {
           activePeriodSec: 600
         });
       var debuggee = new Debuggee('fake-project', 'fake-id');
+      var controller = new Controller(fakeDebug);
       controller.register(debuggee, function(err/*, result*/) {
         assert.ifError(err);
         done();
@@ -136,7 +131,9 @@ describe('Debuglet API', function() {
         .get(api + '/debuggees/fake-debuggee/breakpoints?success_on_timeout=true')
         .reply(200, { kind: 'whatever' });
 
-      controller.listBreakpoints(function(err, response, result) {
+      var debuggee = { id: 'fake-debuggee' };
+      var controller = new Controller(fakeDebug);
+      controller.listBreakpoints(debuggee, function(err, response, result) {
         assert(!err, 'not expecting an error');
         assert(!result.breakpoints, 'should not have a breakpoints property');
         scope.done();
@@ -151,7 +148,9 @@ describe('Debuglet API', function() {
           var scope = nock(url)
             .get(api + '/debuggees/fake-debuggee/breakpoints?success_on_timeout=true')
             .reply(200, invalidResponse);
-          controller.listBreakpoints(function(err, response, result) {
+          var debuggee = { id: 'fake-debuggee' };
+          var controller = new Controller(fakeDebug);
+          controller.listBreakpoints(debuggee, function(err, response, result) {
             assert(!err, 'not expecting an error');
             assert(!result.breakpoints, 'should not have breakpoints property');
             scope.done();
@@ -165,7 +164,9 @@ describe('Debuglet API', function() {
       var scope = nock(url)
         .get(api + '/debuggees/fake-debuggee/breakpoints?success_on_timeout=true')
         .reply(403);
-      controller.listBreakpoints(function(err, response, result) {
+      var debuggee = { id: 'fake-debuggee' };
+      var controller = new Controller(fakeDebug);
+      controller.listBreakpoints(debuggee, function(err, response, result) {
         assert(err instanceof Error, 'expecting an error');
         assert(!result, 'should not have a result');
         scope.done();
@@ -179,8 +180,9 @@ describe('Debuglet API', function() {
         .reply(200, {
           wait_expired: true
         });
-
-      controller.listBreakpoints(function(err, response, result) {
+      var debuggee = { id: 'fake-debuggee' };
+      var controller = new Controller(fakeDebug);
+      controller.listBreakpoints(debuggee, function(err, response, result) {
         assert.ifError(err, 'not expecting an error');
         assert(response.body.wait_expired, 'should have expired set');
         scope.done();
@@ -200,8 +202,9 @@ describe('Debuglet API', function() {
           .reply(200, {
             breakpoints: breakpoints
           });
-
-        controller.listBreakpoints(function(err, response, result) {
+        var debuggee = { id: 'fake-debuggee' };
+        var controller = new Controller(fakeDebug);
+        controller.listBreakpoints(debuggee, function(err, response, result) {
           assert(!err, 'not expecting an error');
           assert(result.breakpoints, 'should have a breakpoints property');
           var bps = result.breakpoints;
@@ -222,7 +225,9 @@ describe('Debuglet API', function() {
           breakpoint: breakpoint
           })
         .reply(200, { kind: 'debugletcontroller#updateActiveBreakpointResponse'});
-      controller.updateBreakpoint(breakpoint,
+      var debuggee = { id: 'fake-debuggee' };
+      var controller = new Controller(fakeDebug);
+      controller.updateBreakpoint(breakpoint, debuggee,
         function(err, result) {
           assert(!err, 'not expecting an error');
           assert.equal(result.kind, 'debugletcontroller#updateActiveBreakpointResponse');

@@ -42,8 +42,8 @@ var _ = require('lodash');
  * @param {?boolean} onGCP - set to true when the debuggee is running inside
  *     Google Cloud Platform.
  */
-function Debuggee(projectId, uid, serviceContext, sourceContext, description,
-                  errorMessage, onGCP) {
+function Debuggee(projectId, uid, serviceContext, sourceContext,
+                  description, errorMessage, onGCP) {
   if (!(this instanceof Debuggee)) {
     return new Debuggee(projectId, uid, serviceContext, sourceContext,
                         description, errorMessage, onGCP);

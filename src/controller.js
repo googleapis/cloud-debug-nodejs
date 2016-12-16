@@ -21,7 +21,9 @@
  */
 
 var assert = require('assert');
+var common = require('@google-cloud/common');
 var qs = require('querystring');
+var util = require('util');
 
 /** @const {string} Cloud Debug API endpoint */
 var API = 'https://clouddebugger.googleapis.com/v2/controller';
@@ -30,15 +32,16 @@ var API = 'https://clouddebugger.googleapis.com/v2/controller';
  * @constructor
  */
 function Controller(debug) {
-  /** @priavate {Debug} */
-  this.debug_ = debug;
-
-  /** @private {string} debuggee id provided by the server once registered */
-  this.debuggeeId_ = null;
+  common.ServiceObject.call(this, {
+    parent: debug,
+    baseUrl: '/controller'
+  });
 
   /** @private {string} */
   this.nextWaitToken_ = null;
 }
+
+util.inherits(Controller, common.ServiceObject);
 
 /**
  * Register to the API (implementation)
@@ -47,15 +50,13 @@ function Controller(debug) {
  * @private
  */
 Controller.prototype.register = function(debuggee, callback) {
-  var that = this;
-
   var options = {
     uri: API + '/debuggees/register',
     method: 'POST',
     json: true,
     body: {debuggee: debuggee}
   };
-  this.debug_.request(options, function(err, body, response) {
+  this.request(options, function(err, body, response) {
     if (err) {
       callback(err);
     } else if (response.statusCode !== 200) {
@@ -66,7 +67,7 @@ Controller.prototype.register = function(debuggee, callback) {
     } else if (body.debuggee.isDisabled) {
       callback('Debuggee is disabled on server');
     } else {
-      that.debuggeeId_ = body.debuggee.id;
+      debuggee.id = body.debuggee.id;
       callback(null, body);
     }
   });
@@ -78,17 +79,17 @@ Controller.prototype.register = function(debuggee, callback) {
  * @param {!function(?Error,Object=,Object=)} callback accepting (err, response,
  * body)
  */
-Controller.prototype.listBreakpoints = function(callback) {
+Controller.prototype.listBreakpoints = function(debuggee, callback) {
   var that = this;
-  assert(that.debuggeeId_, 'should register first');
+  assert(debuggee.id, 'should have a registered debuggee');
   var query = {success_on_timeout: true};
   if (that.nextWaitToken_) {
-    query.waitToken = that.nextWaitToken;
+    query.waitToken = that.nextWaitToken_;
   }
 
-  var uri = API + '/debuggees/' + encodeURIComponent(that.debuggeeId_) +
+  var uri = API + '/debuggees/' + encodeURIComponent(debuggee.id) +
             '/breakpoints?' + qs.stringify(query);
-  that.debug_.request({uri: uri, json: true}, function(err, body, response) {
+  that.request({uri: uri, json: true}, function(err, body, response) {
     if (!response) {
       callback(err || new Error('unknown error - request response missing'));
       return;
@@ -114,17 +115,17 @@ Controller.prototype.listBreakpoints = function(callback) {
  * @param {!Breakpoint} breakpoint
  * @param {!Function} callback accepting (err, body)
  */
-Controller.prototype.updateBreakpoint = function(breakpoint, callback) {
-  assert(this.debuggeeId_, 'should register first');
+Controller.prototype.updateBreakpoint = function(breakpoint, debuggee, callback) {
+  assert(debuggee.id, 'should have a registered debuggee');
 
   breakpoint.action = 'capture';
   breakpoint.isFinalState = true;
   var options = {
-    uri: API + '/debuggees/' + encodeURIComponent(this.debuggeeId_) +
+    uri: API + '/debuggees/' + encodeURIComponent(debuggee.id) +
              '/breakpoints/' + encodeURIComponent(breakpoint.id),
     json: true,
     method: 'PUT',
-    body: {debuggeeId: this.debuggeeId_, breakpoint: breakpoint}
+    body: {debuggeeId: debuggee.id, breakpoint: breakpoint}
   };
 
   // We need to have a try/catch here because a JSON.stringify will be done
@@ -132,7 +133,7 @@ Controller.prototype.updateBreakpoint = function(breakpoint, callback) {
   // stringify them. The try-catch keeps it resilient and avoids crashing the
   // user's app.
   try {
-    this.debug_.request(options,
+    this.request(options,
                         function(err, body, response) { callback(err, body); });
   } catch (error) {
     callback(error);

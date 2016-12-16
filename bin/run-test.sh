@@ -43,8 +43,16 @@ if [ "$cover" ]; then
   rm -rf ./coverage
 fi
 
-if [ "${TRAVIS_PULL_REQUEST}" = "false" ]
+if [ -z "${TRAVIS_PULL_REQUEST}" ] || [ "${TRAVIS_PULL_REQUEST}" = "false" ]
 then
-  npm run system-test
-  ./bin/run-e2e.sh || exit 1
+  if [ -z "${GCLOUD_PROJECT}"]; then
+    echo "============================================================"
+    echo "Unable to run system and e2e tests. Provide valid project id"
+    echo "via GCLOUD_PROJECT and ensure auth credentials are available"
+    echo "============================================================"
+    exit 1
+  else
+    npm run system-test
+    ./bin/run-e2e.sh || exit 1
+  fi
 fi
