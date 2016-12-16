@@ -267,15 +267,17 @@ Debuglet.prototype.scheduleBreakpointFetch_ = function(seconds) {
     assert(that.fetcherActive_);
 
     that.logger_.info('Fetching breakpoints');
-    that.debugletApi_.listBreakpoints(function(err, response, body) {
+    that.debugletApi_.listBreakpoints(that.debuggee_, function(err, response,
+                                                               body) {
       if (err) {
         that.logger_.error('Unable to fetch breakpoints – stopping fetcher',
-          err);
+                           err);
         that.fetcherActive_ = false;
-        // We back-off from fetching breakpoints, and try to register again after
-        // a while. Successful registration will restart the breakpoint fetcher.
+        // We back-off from fetching breakpoints, and try to register again
+        // after a while. Successful registration will restart the breakpoint 
+        // fetcher.
         that.scheduleRegistration_(
-          that.config_.internal.registerDelayOnFetcherErrorSec);
+            that.config_.internal.registerDelayOnFetcherErrorSec);
         return;
       }
 
@@ -444,14 +446,15 @@ Debuglet.prototype.completeBreakpoint_ = function(breakpoint) {
   var that = this;
 
   that.logger_.info('\tupdating breakpoint data on server', breakpoint.id);
-  that.debugletApi_.updateBreakpoint(breakpoint, function(err/*, body*/) {
-    if (err) {
-      that.logger_.error('Unable to complete breakpoint on server', err);
-    } else {
-      that.completedBreakpointMap_[breakpoint.id] = true;
-      that.removeBreakpoint_(breakpoint);
-    }
-  });
+  that.debugletApi_.updateBreakpoint(
+      breakpoint, that.debuggee_, function(err /*, body*/) {
+        if (err) {
+          that.logger_.error('Unable to complete breakpoint on server', err);
+        } else {
+          that.completedBreakpointMap_[breakpoint.id] = true;
+          that.removeBreakpoint_(breakpoint);
+        }
+      });
 };
 
 /**
@@ -462,11 +465,12 @@ Debuglet.prototype.completeBreakpoint_ = function(breakpoint) {
 Debuglet.prototype.rejectBreakpoint_ = function(breakpoint) {
   var that = this;
 
-  that.debugletApi_.updateBreakpoint(breakpoint, function(err/*, body*/) {
-    if (err) {
-      that.logger_.error('Unable to complete breakpoint on server', err);
-    }
-  });
+  that.debugletApi_.updateBreakpoint(
+      breakpoint, that.debuggee_, function(err /*, body*/) {
+        if (err) {
+          that.logger_.error('Unable to complete breakpoint on server', err);
+        }
+      });
 };
 
 /**

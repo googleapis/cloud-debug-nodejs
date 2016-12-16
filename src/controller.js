@@ -33,9 +33,6 @@ function Controller(debug) {
   /** @priavate {Debug} */
   this.debug_ = debug;
 
-  /** @private {string} debuggee id provided by the server once registered */
-  this.debuggeeId_ = null;
-
   /** @private {string} */
   this.nextWaitToken_ = null;
 }
@@ -47,8 +44,6 @@ function Controller(debug) {
  * @private
  */
 Controller.prototype.register = function(debuggee, callback) {
-  var that = this;
-
   var options = {
     uri: API + '/debuggees/register',
     method: 'POST',
@@ -66,7 +61,7 @@ Controller.prototype.register = function(debuggee, callback) {
     } else if (body.debuggee.isDisabled) {
       callback('Debuggee is disabled on server');
     } else {
-      that.debuggeeId_ = body.debuggee.id;
+      debuggee.id = body.debuggee.id;
       callback(null, body);
     }
   });
@@ -78,15 +73,15 @@ Controller.prototype.register = function(debuggee, callback) {
  * @param {!function(?Error,Object=,Object=)} callback accepting (err, response,
  * body)
  */
-Controller.prototype.listBreakpoints = function(callback) {
+Controller.prototype.listBreakpoints = function(debuggee, callback) {
   var that = this;
-  assert(that.debuggeeId_, 'should register first');
+  assert(debuggee.id, 'should have a registered debuggee');
   var query = {success_on_timeout: true};
   if (that.nextWaitToken_) {
-    query.waitToken = that.nextWaitToken;
+    query.waitToken = that.nextWaitToken_;
   }
 
-  var uri = API + '/debuggees/' + encodeURIComponent(that.debuggeeId_) +
+  var uri = API + '/debuggees/' + encodeURIComponent(debuggee.id) +
             '/breakpoints?' + qs.stringify(query);
   that.debug_.request({uri: uri, json: true}, function(err, body, response) {
     if (!response) {
@@ -114,17 +109,17 @@ Controller.prototype.listBreakpoints = function(callback) {
  * @param {!Breakpoint} breakpoint
  * @param {!Function} callback accepting (err, body)
  */
-Controller.prototype.updateBreakpoint = function(breakpoint, callback) {
-  assert(this.debuggeeId_, 'should register first');
+Controller.prototype.updateBreakpoint = function(breakpoint, debuggee, callback) {
+  assert(debuggee.id, 'should have a registered debuggee');
 
   breakpoint.action = 'capture';
   breakpoint.isFinalState = true;
   var options = {
-    uri: API + '/debuggees/' + encodeURIComponent(this.debuggeeId_) +
+    uri: API + '/debuggees/' + encodeURIComponent(debuggee.id) +
              '/breakpoints/' + encodeURIComponent(breakpoint.id),
     json: true,
     method: 'PUT',
-    body: {debuggeeId: this.debuggeeId_, breakpoint: breakpoint}
+    body: {debuggeeId: debuggee.id, breakpoint: breakpoint}
   };
 
   // We need to have a try/catch here because a JSON.stringify will be done
