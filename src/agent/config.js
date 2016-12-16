@@ -50,8 +50,8 @@ module.exports = {
    * @property {object=} Identifies the context of the running service -
    * [ServiceContext](https://cloud.google.com/error-reporting/reference/rest/v1beta1/ServiceContext?authuser=2).
    * This information is utilized in the UI to identify all the running
-   * instances of your service. This is disocvered automatically when your
-   * application is running on Google Cloud Platform. You may optionally chose
+   * instances of your service. This is discovered automatically when your
+   * application is running on Google Cloud Platform. You may optionally choose
    * to provide this information yourself to identify your service differently
    * from the default mechanism.
    * @memberof DebugAgentConfig
@@ -181,7 +181,7 @@ module.exports = {
     logDelaySeconds: 1
   },
 
-  //
+  // FIXME(ofrobots): stop accepting this property here
   // A path to a key file relative to the current working directory. If this
   // field is set, the contents of the pointed file will be used for
   // authentication instead of your application default credentials.
