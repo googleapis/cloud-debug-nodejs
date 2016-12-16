@@ -65,20 +65,23 @@ describe('test-config-credentials', function() {
      function(done) {
        process.env.GCLOUD_PROJECT = 'should-not-be-used';
 
-       var config = extend({projectId: 'project-via-config'}, defaultConfig);
+       var config = extend({}, defaultConfig, {
+         projectId: 'project-via-config',
+         credentials: require('../fixtures/gcloud-credentials.json')
+       });
        var debug = require('../../')(config);
 
        // TODO: also make sure we don't request the project from metadata
        // service.
 
-       var scope = nockOAuth2(accept);
-       nockRegister(function(body) {
-         assert.ok(body.debuggee);
-         assert.equal(body.debuggee.project, 'project-via-config');
-         scope.done();
-         setImmediate(done);
-         return true;
-       });
+        var scope = nockOAuth2(accept);
+        nockRegister(function(body) {
+          assert.ok(body.debuggee);
+          assert.equal(body.debuggee.project, 'project-via-config');
+          scope.done();
+          setImmediate(done);
+          return true;
+        });
 
        debuglet =
            new Debuglet(debug, config, logger.create(logger.WARN, 'testing'));
