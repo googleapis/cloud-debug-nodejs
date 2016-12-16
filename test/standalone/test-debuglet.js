@@ -17,9 +17,10 @@
 
 var assert = require('assert');
 var request = require('../auth-request.js');
-var logger = require('@google/cloud-diagnostics-common').logger;
-var config = require('../../src/config.js').debug;
+var loggerModule = require('@google/cloud-diagnostics-common').logger;
+var defaultConfig = require('../../src/config.js').debug;
 var Debuglet = require('../../src/agent/debuglet.js');
+var extend = require('extend');
 
 var DEBUGGEE_ID = 'bar';
 var API = 'https://clouddebugger.googleapis.com';
@@ -29,10 +30,8 @@ var BPS_PATH = '/v2/controller/debuggees/' + DEBUGGEE_ID + '/breakpoints';
 var nock = require('nock');
 nock.disableNetConnect();
 
-// Disable error logging during the tests.
-config.logLevel = 0;
+var logger = loggerModule.create(process.env.GCLOUD_DEBUG_LOGLEVEL || 0, 'test');
 
-var debuglet;
 var bp = {
   id: 'test',
   action: 'CAPTURE',
@@ -44,25 +43,27 @@ var errorBp = {
   location: { path: 'fixtures/foo.js', line: 2 }
 };
 var fakeDebug = {
-  request: request
+  request: request // avoid authentication that happens through
+  // google-auth-library.
 };
 
 describe(__filename, function(){
+  var debuglet;
+
   beforeEach(function() {
-    process.env.GCLOUD_PROJECT = 0;
-    debuglet = new Debuglet(
-      fakeDebug, config, logger.create(config.logLevel, '@google/cloud-debug'));
-    debuglet.once('started', function() {
-      debuglet.debugletApi_.request_ = request; // Avoid authing.
-    });
+    delete process.env.GCLOUD_PROJECT;
   });
 
   afterEach(function() {
+    assert.ok(debuglet);
     debuglet.stop();
   });
 
-  it('should not start unless we know the project num', function(done) {
-    delete process.env.GCLOUD_PROJECT;
+  it('should not start when projectId is not available', function(done) {
+    debuglet = new Debuglet(fakeDebug, defaultConfig, logger);
+
+    // The following mock is neccessary for the case when the test is running
+    // on GCP. In that case we will get the projectId from the metadata service.
     var scope = nock('http://metadata.google.internal')
       .get('/computeMetadata/v1/project/numeric-project-id')
       .reply(404);
@@ -79,7 +80,10 @@ describe(__filename, function(){
   });
 
   it('should not crash without project num', function(done) {
-    delete process.env.GCLOUD_PROJECT;
+    debuglet = new Debuglet(fakeDebug, defaultConfig, logger);
+
+    // The following mock is neccessary for the case when the test is running
+    // on GCP. In that case we will get the projectId from the metadata service.
     var scope = nock('http://metadata.google.internal')
       .get('/computeMetadata/v1/project/numeric-project-id')
       .reply(404);
@@ -96,6 +100,7 @@ describe(__filename, function(){
 
   it('should accept non-numeric GCLOUD_PROJECT', function(done) {
     process.env.GCLOUD_PROJECT='11020304f2934';
+    debuglet = new Debuglet(fakeDebug, defaultConfig, logger);
 
     var scope = nock(API)
       .post(REGISTER_PATH)
@@ -117,6 +122,7 @@ describe(__filename, function(){
   it('should retry on failed registration', function(done) {
     this.timeout(10000);
     process.env.GCLOUD_PROJECT='11020304f2934';
+    debuglet = new Debuglet(fakeDebug, defaultConfig, logger);
 
     var scope = nock(API)
       .post(REGISTER_PATH)
@@ -142,6 +148,9 @@ describe(__filename, function(){
   it('should error if a package.json doesn\'t exist');
 
   it('should register successfully otherwise', function(done) {
+    var config = extend({}, defaultConfig, {projectId: 'fake-project'});
+    debuglet = new Debuglet(fakeDebug, config, logger);
+
     var scope = nock(API)
       .post(REGISTER_PATH)
       .reply(200, {
@@ -161,6 +170,9 @@ describe(__filename, function(){
 
   it('should pass source context to api if present', function(done) {
     process.chdir('test/fixtures');
+
+    var config = extend({}, defaultConfig, {projectId: 'fake-project'});
+    debuglet = new Debuglet(fakeDebug, config, logger);
 
     var scope = nock(API)
       .post(REGISTER_PATH, function(body) {
@@ -191,6 +203,9 @@ describe(__filename, function(){
 
   it('should re-fetch breakpoints on error', function(done) {
     this.timeout(6000);
+
+    var config = extend({}, defaultConfig, {projectId: 'fake-project'});
+    debuglet = new Debuglet(fakeDebug, config, logger);
 
     var scope = nock(API)
       .post(REGISTER_PATH)
@@ -238,11 +253,11 @@ describe(__filename, function(){
   it('should add a breakpoint');
 
   it('should expire stale breakpoints', function(done) {
-    var oldTimeout = config.breakpointExpirationSec;
-    config.breakpointExpirationSec = 1;
+    var config = extend({}, defaultConfig, {
+      projectId: 'fake-project', 
+      breakpointExpirationSec: 1
+    });
     this.timeout(6000);
-    var debuglet = new Debuglet(
-      fakeDebug, config, logger.create(config.logLevel, '@google/cloud-debug'));
 
     var scope = nock(API)
       .post(REGISTER_PATH)
@@ -261,9 +276,7 @@ describe(__filename, function(){
       })
       .reply(200);
 
-    debuglet.once('started', function() {
-      debuglet.debugletApi_.request_ = request; // Avoid authing.
-    });
+    debuglet = new Debuglet(fakeDebug, config, logger);
     debuglet.once('registered', function(id) {
       assert(id === DEBUGGEE_ID);
       setTimeout(function() {
@@ -271,7 +284,6 @@ describe(__filename, function(){
         setTimeout(function() {
           assert(!debuglet.activeBreakpointMap_.test);
           scope.done();
-          config.breakpointExpirationSec = oldTimeout;
           done();
         }, 1100);
       }, 500);
@@ -288,13 +300,12 @@ describe(__filename, function(){
   // the breakpoint listed as active. It validates that the breakpoint
   // is only expired with the server once.
   it('should not update expired breakpoints', function(done) {
-    var oldTimeout = config.breakpointExpirationSec;
-    var oldFetchRate = config.breakpointUpdateIntervalSec;
-    config.breakpointExpirationSec = 1;
-    config.breakpointUpdateIntervalSec = 1;
+    var config = extend({}, defaultConfig, {
+      projectId: 'fake-project', 
+      breakpointExpirationSec: 1,
+      breakpointUpdateIntervalSec: 1
+    });
     this.timeout(6000);
-    var debuglet = new Debuglet(
-      fakeDebug, config, logger.create(config.logLevel, '@google/cloud-debug'));
 
     var scope = nock(API)
       .post(REGISTER_PATH)
@@ -317,9 +328,7 @@ describe(__filename, function(){
         breakpoints: [bp]
       });
 
-    debuglet.once('started', function() {
-      debuglet.debugletApi_.request_ = request; // Avoid authing.
-    });
+    debuglet = new Debuglet(fakeDebug, config, logger);
     debuglet.once('registered', function(id) {
       assert(id === DEBUGGEE_ID);
       setTimeout(function() {
@@ -329,8 +338,6 @@ describe(__filename, function(){
           // Fetcher disables if we re-update since endpoint isn't mocked twice
           assert(debuglet.fetcherActive_);
           scope.done();
-          config.breakpointExpirationSec = oldTimeout;
-          config.breakpointUpdateIntervalSec = oldFetchRate;
           done();
         }, 4500);
       }, 500);
