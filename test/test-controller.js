@@ -19,17 +19,18 @@ var assert = require('assert');
 var nock   = require('nock');
 var request = require('./auth-request.js');
 var proxyquire = require('proxyquire');
+var Debuggee = require('../src/debuggee.js');
 
 // the tests in this file rely on the GCLOUD_PROJECT environment variable
 // not being set
 delete process.env.GCLOUD_PROJECT;
 
-// require DebugletAPI while stubbing auth to bypass authentication
+// require controller while stubbing auth to bypass authentication
 //
 var utils = {
   getProjectNumber: function(callback) { callback(null, 'project123'); }
 };
-var DebugletApi = proxyquire('../src/controller.js', {
+var Controller = proxyquire('../src/controller.js', {
   '@google/cloud-diagnostics-common': {
     logger: null,
     utils: utils
@@ -46,55 +47,24 @@ nock.disableNetConnect();
 
 describe('Debuglet API', function() {
 
-  var debugletapi = new DebugletApi({
-    description: 'Test debuglet',
-    serviceContext: {
-      service: 'TestDebugletName',
-      version: 'TestDebugletVersion'
-    }
-  }, fakeDebug); // use vanilla request to bypass authentication
+  var controller = new Controller(fakeDebug);
 
   it('should return an instance when constructed', function() {
-    assert.ok(debugletapi);
-  });
-
-  it('should have correct descriptor', function() {
-    assert.equal(debugletapi.descriptor_, 'Test debuglet');
-  });
-
-  it('should have correct service name', function() {
-    assert.equal(debugletapi.serviceName_, 'TestDebugletName');
-  });
-
-  it('should have correct service version', function() {
-    assert.equal(debugletapi.serviceVersion_, 'TestDebugletVersion');
-  });
-
-  it('should acquire the project number during init', function(done) {
-    debugletapi.init('uid123', { warn: function() {} }, function(err, project) {
-      assert(!err);
-      // make sure init() invokes the callback with the correct project name
-      assert.equal(project, 'project123');
-      // make sure the debugletapi is properly storing the project name
-      assert.equal(debugletapi.project_, project);
-      done();
-    });
+    assert.ok(controller);
   });
 
   describe('register', function() {
     it('should get a debuggeeId', function(done) {
-      var scope = nock(url)
-        .post(api + '/debuggees/register', function (body) {
-          return body.debuggee.agentVersion.indexOf('node-gcp') !== -1;
-        })
-        .reply(200, {
-          debuggee: { id: 'fake-debuggee' },
-          activePeriodSec: 600
-        });
-      debugletapi.register(function(err, result) {
+      var scope =
+          nock(url)
+              .post(api + '/debuggees/register')
+              .reply(200,
+                     {debuggee: {id: 'fake-debuggee'}, activePeriodSec: 600});
+      var debuggee = new Debuggee('fake-project', 'fake-id');
+      controller.register(debuggee, function(err, result) {
         assert(!err, 'not expecting an error');
         assert.equal(result.debuggee.id, 'fake-debuggee');
-        assert.equal(debugletapi.debuggeeId_, 'fake-debuggee');
+        assert.equal(controller.debuggeeId_, 'fake-debuggee');
         scope.done();
         done();
       });
@@ -106,25 +76,21 @@ describe('Debuglet API', function() {
         callback(new Error(), null);
       };
       process.env.GCLOUD_PROJECT = 'project123';
-      var debugletapi = new DebugletApi(null, fakeDebug);
-      debugletapi.init('uid1234', { warn: function() {} }, function(err, project) {
-        var scope = nock(url)
-          .post(api + '/debuggees/register', function (body) {
-            return body.debuggee.agentVersion.indexOf('standalone') !== -1;
-          })
-          .reply(200, {
-            debuggee: { id: 'fake-debuggee' },
-            activePeriodSec: 600
-          });
-        debugletapi.register(function(err, result) {
-          assert(!err, 'not expecting an error');
-          assert.equal(result.debuggee.id, 'fake-debuggee');
-          assert.equal(debugletapi.debuggeeId_, 'fake-debuggee');
-          scope.done();
-          delete process.env.GCLOUD_PROJECT;
-          utils.getProjectNumber = oldProjNum;
-          done();
-        });
+      var controller = new Controller(fakeDebug);
+      var scope =
+          nock(url)
+              .post(api + '/debuggees/register')
+              .reply(200,
+                     {debuggee: {id: 'fake-debuggee'}, activePeriodSec: 600});
+      var debuggee = new Debuggee('fake-project', 'fake-id');
+      controller.register(debuggee, function(err, result) {
+        assert(!err, 'not expecting an error');
+        assert.equal(result.debuggee.id, 'fake-debuggee');
+        assert.equal(controller.debuggeeId_, 'fake-debuggee');
+        scope.done();
+        delete process.env.GCLOUD_PROJECT;
+        utils.getProjectNumber = oldProjNum;
+        done();
       });
     });
 
@@ -138,7 +104,8 @@ describe('Debuglet API', function() {
                       },
                       activePeriodSec: 600,
                     });
-      debugletapi.register(function(err/*, result*/) {
+      var debuggee = new Debuggee('fake-project', 'fake-id');
+      controller.register(debuggee, function(err/*, result*/) {
         assert(err, 'expected an error');
         scope.done();
         done();
@@ -157,7 +124,8 @@ describe('Debuglet API', function() {
           debuggee: { id: 'fake-debuggee' },
           activePeriodSec: 600
         });
-      debugletapi.register(function(err/*, result*/) {
+      var debuggee = new Debuggee('fake-project', 'fake-id');
+      controller.register(debuggee, function(err/*, result*/) {
         assert.ifError(err);
         done();
       });
@@ -168,7 +136,7 @@ describe('Debuglet API', function() {
         .get(api + '/debuggees/fake-debuggee/breakpoints?success_on_timeout=true')
         .reply(200, { kind: 'whatever' });
 
-      debugletapi.listBreakpoints(function(err, response, result) {
+      controller.listBreakpoints(function(err, response, result) {
         assert(!err, 'not expecting an error');
         assert(!result.breakpoints, 'should not have a breakpoints property');
         scope.done();
@@ -183,7 +151,7 @@ describe('Debuglet API', function() {
           var scope = nock(url)
             .get(api + '/debuggees/fake-debuggee/breakpoints?success_on_timeout=true')
             .reply(200, invalidResponse);
-          debugletapi.listBreakpoints(function(err, response, result) {
+          controller.listBreakpoints(function(err, response, result) {
             assert(!err, 'not expecting an error');
             assert(!result.breakpoints, 'should not have breakpoints property');
             scope.done();
@@ -197,7 +165,7 @@ describe('Debuglet API', function() {
       var scope = nock(url)
         .get(api + '/debuggees/fake-debuggee/breakpoints?success_on_timeout=true')
         .reply(403);
-      debugletapi.listBreakpoints(function(err, response, result) {
+      controller.listBreakpoints(function(err, response, result) {
         assert(err instanceof Error, 'expecting an error');
         assert(!result, 'should not have a result');
         scope.done();
@@ -212,7 +180,7 @@ describe('Debuglet API', function() {
           wait_expired: true
         });
 
-      debugletapi.listBreakpoints(function(err, response, result) {
+      controller.listBreakpoints(function(err, response, result) {
         assert.ifError(err, 'not expecting an error');
         assert(response.body.wait_expired, 'should have expired set');
         scope.done();
@@ -233,7 +201,7 @@ describe('Debuglet API', function() {
             breakpoints: breakpoints
           });
 
-        debugletapi.listBreakpoints(function(err, response, result) {
+        controller.listBreakpoints(function(err, response, result) {
           assert(!err, 'not expecting an error');
           assert(result.breakpoints, 'should have a breakpoints property');
           var bps = result.breakpoints;
@@ -254,7 +222,7 @@ describe('Debuglet API', function() {
           breakpoint: breakpoint
           })
         .reply(200, { kind: 'debugletcontroller#updateActiveBreakpointResponse'});
-      debugletapi.updateBreakpoint(breakpoint,
+      controller.updateBreakpoint(breakpoint,
         function(err, result) {
           assert(!err, 'not expecting an error');
           assert.equal(result.kind, 'debugletcontroller#updateActiveBreakpointResponse');

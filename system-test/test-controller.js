@@ -17,50 +17,46 @@
 'use strict';
 
 var assert = require('assert');
-var Logger = require('@google/cloud-diagnostics-common').logger;
-var logger = Logger.create();
 
 assert.ok(
     process.env.GCLOUD_PROJECT,
     'Need to have GCLOUD_PROJECT defined ' +
         'along with valid application default credentials to be able to run this ' +
         'test');
-var config = {};
 
-var debug = require('../')(config);
-var DebugletApi = require('../src/controller.js');
+var Controller = require('../src/controller.js');
+var Debuggee = require('../src/debuggee.js');
+var debug = require('../')();
 
-describe('Debugletapi', function() {
+
+describe('Controller', function() {
 
   it('should register successfully', function(done) {
-    var debugletApi = new DebugletApi({}, debug);
-    debugletApi.init('test-uid-1', logger, function(err) {
-      assert.ifError(err, 'init should complete successfully');
+    var controller = new Controller(debug);
+    var debuggee =
+        new Debuggee(process.env.GCLOUD_PROJECT, 'test-uid-' + Date.now());
 
-      debugletApi.register(function(err, body) {
-        assert.ifError(err, 'should be able to register successfull');
-        assert.ok(body);
-        assert.ok(body.debuggee);
-        assert.ok(body.debuggee.id);
-        done();
-      });
+    controller.register(debuggee, function(err, body) {
+      assert.ifError(err, 'should be able to register successfull');
+      assert.ok(body);
+      assert.ok(body.debuggee);
+      assert.ok(body.debuggee.id);
+      done();
     });
   });
 
   it('should list breakpoints', function(done) {
-    var debugletApi = new DebugletApi({}, debug);
-    debugletApi.init('test-uid-2', logger, function(err) {
-      assert.ifError(err, 'init should complete successfully');
+    var controller = new Controller(debug);
+    var debuggee =
+        new Debuggee(process.env.GCLOUD_PROJECT, 'test-uid-' + Date.now());
+    controller.register(debuggee, function(err, body) {
+      assert.ifError(err, 'should be able to register successfull');
 
-      debugletApi.register(function(err, body) {
-        assert.ifError(err, 'should be able to register successfull');
-
-        debugletApi.listBreakpoints(function(err, response, body) {
-          assert.ifError(err, 'should successfully list breakpoints');
-          assert.ok(body);
-          assert.ok(body.nextWaitToken);
-          done();
-        });
+      controller.listBreakpoints(function(err, response, body) {
+        assert.ifError(err, 'should successfully list breakpoints');
+        assert.ok(body);
+        assert.ok(body.nextWaitToken);
+        done();
       });
     });
   });

@@ -23,9 +23,11 @@ var util = require('util');
 var semver = require('semver');
 
 var v8debugapi = require('./v8debugapi.js');
+var Debuggee = require('../debuggee.js');
 var DebugletApi = require('../controller.js');
 var scanner = require('./scanner.js');
-var Logger = require('@google/cloud-diagnostics-common').logger;
+var common = require('@google/cloud-diagnostics-common');
+var Logger = common.logger;
 var StatusMessage = require('../status-message.js');
 var SourceMapper = require('./sourcemapper.js');
 
@@ -72,7 +74,10 @@ function Debuglet(debug, config, logger) {
   this.logger_ = logger;
 
   /** @private {DebugletApi} */
-  this.debugletApi_ = new DebugletApi(this.config_, this.debug_);
+  this.debugletApi_ = new DebugletApi(this.debug_);
+
+  /** @private {Debuggee} */
+  this.debuggee_ = null;
 
   /** @private {Object.<string, Breakpoint>} */
   this.activeBreakpointMap_ = {};
@@ -125,30 +130,83 @@ Debuglet.prototype.start = function() {
 
         that.logger_.info('Unique ID for this Application: ' + id);
 
-        that.debugletApi_.init(id, that.logger_, function(err, project) {
+        that.getProjectId_(function(err, project, onGCP) {
           if (err) {
-            that.logger_.error('Unable to initialize the debuglet api' +
-              ' -- disabling debuglet', err);
+            that.logger_.error('Unable to discover projectId. Please provide ' +
+                               'the projectId to be able to use the Debuglet',
+                               err);
             that.emit('initError', err);
             return;
           }
 
-          if (semver.satisfies(process.version, '5.2 || <0.12')) {
-            // Using an unsupported version. We report an error message about the
-            // Node.js version, but we keep on running. The idea is that the user
-            // may miss the error message on the console. This way we can report the
-            // error when the user tries to set a breakpoint.
-            that.logger_.error(NODE_VERSION_MESSAGE);
-          }
+          that.getSourceContext_(function(err, sourceContext) {
+            if (err) {
+              that.logger_.warn('Unable to discover source context', err);
+              // This is ignorable.
+            }
 
-          // We can register as a debuggee now.
-          that.running_ = true;
-          that.project_ = project;
-          that.scheduleRegistration_(0 /* immediately */);
-          that.emit('started');
+            if (semver.satisfies(process.version, '5.2 || <0.12')) {
+              // Using an unsupported version. We report an error message about the
+              // Node.js version, but we keep on running. The idea is that the user
+              // may miss the error message on the console. This way we can report the
+              // error when the user tries to set a breakpoint.
+              that.logger_.error(NODE_VERSION_MESSAGE);
+            }
+
+            // We can register as a debuggee now.
+            that.running_ = true;
+            that.project_ = project;
+            that.debuggee_ = new Debuggee(
+                project, id, that.config_.serviceContext, sourceContext,
+                that.config_.description, null, onGCP);
+            that.scheduleRegistration_(0 /* immediately */);
+            that.emit('started');
+          });
         });
       });
     });
+  });
+};
+
+
+/**
+ * @private
+ */
+Debuglet.prototype.getProjectId_ = function(callback) {
+  var that = this;
+
+  // We need to figure out whether we are running on GCP. We can use our ability
+  // to access the metadata service as a test for that.
+  // TODO: change this to getProjectId in the future.
+  common.utils.getProjectNumber(function(err, metadataProject) {
+    // We should get an error if we are not on GCP.
+    var onGCP = !err;
+
+    // We perfer to use the locally available projectId as that is least
+    // surprising to users.
+    var project = that.config_.projectId || process.env.GCLOUD_PROJECT ||
+                  metadataProject;
+
+    // We if don't have a projectId by now, we fail with an error.
+    if (!project) {
+      return callback(err);
+    }
+    return callback(null, project, onGCP);
+  });
+};
+
+Debuglet.prototype.getSourceContext_ =
+    function(callback) {
+  fs.readFile('source-context.json', 'utf8', function(err, data) {
+    // TODO: deal with err here
+    var sourceContext;
+    try {
+      sourceContext = JSON.parse(data);
+    } catch (e) {
+      err = 'Malformed source-context.json file:' + e;
+      // But we keep on going.
+    }
+    return callback(err, sourceContext);
   });
 };
 
@@ -172,7 +230,7 @@ Debuglet.prototype.scheduleRegistration_ = function(seconds) {
       return;
     }
 
-    that.debugletApi_.register(function(err, result) {
+    that.debugletApi_.register(that.debuggee_, function(err, result) {
       if (err) {
         onError(err);
         return;
@@ -185,7 +243,7 @@ Debuglet.prototype.scheduleRegistration_ = function(seconds) {
       }
 
       that.logger_.info('Registered as debuggee:', result.debuggee.id);
-
+      that.debuggee_.id = result.debuggee.id;
       that.emit('registered', result.debuggee.id);
       if (!that.fetcherActive_) {
         that.scheduleBreakpointFetch_(0);
