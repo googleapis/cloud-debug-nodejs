@@ -75,7 +75,7 @@ Controller.prototype.init = function(uid, logger, callback) {
     // We should get an error if we are not on GCP.
     that.onGCP = !err;
 
-    // We perfer to use the locally available projectId as that is least 
+    // We prefer to use the locally available projectId as that is least 
     // surprising to users.
     var project = that.project_ || metadataProject;
 

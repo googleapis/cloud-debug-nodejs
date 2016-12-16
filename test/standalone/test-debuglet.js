@@ -43,7 +43,8 @@ var errorBp = {
   location: { path: 'fixtures/foo.js', line: 2 }
 };
 var fakeDebug = {
-  request: request // avoid authing.
+  request: request // avoid authentication that happens through
+  // google-auth-library.
 };
 
 describe(__filename, function(){
