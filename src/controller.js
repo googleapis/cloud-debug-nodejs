@@ -21,7 +21,9 @@
  */
 
 var assert = require('assert');
+var common = require('@google-cloud/common');
 var qs = require('querystring');
+var util = require('util');
 
 /** @const {string} Cloud Debug API endpoint */
 var API = 'https://clouddebugger.googleapis.com/v2/controller';
@@ -30,12 +32,16 @@ var API = 'https://clouddebugger.googleapis.com/v2/controller';
  * @constructor
  */
 function Controller(debug) {
-  /** @priavate {Debug} */
-  this.debug_ = debug;
+  common.ServiceObject.call(this, {
+    parent: debug,
+    baseUrl: '/controller'
+  });
 
   /** @private {string} */
   this.nextWaitToken_ = null;
 }
+
+util.inherits(Controller, common.ServiceObject);
 
 /**
  * Register to the API (implementation)
@@ -50,7 +56,7 @@ Controller.prototype.register = function(debuggee, callback) {
     json: true,
     body: {debuggee: debuggee}
   };
-  this.debug_.request(options, function(err, body, response) {
+  this.request(options, function(err, body, response) {
     if (err) {
       callback(err);
     } else if (response.statusCode !== 200) {
@@ -83,7 +89,7 @@ Controller.prototype.listBreakpoints = function(debuggee, callback) {
 
   var uri = API + '/debuggees/' + encodeURIComponent(debuggee.id) +
             '/breakpoints?' + qs.stringify(query);
-  that.debug_.request({uri: uri, json: true}, function(err, body, response) {
+  that.request({uri: uri, json: true}, function(err, body, response) {
     if (!response) {
       callback(err || new Error('unknown error - request response missing'));
       return;
@@ -127,7 +133,7 @@ Controller.prototype.updateBreakpoint = function(breakpoint, debuggee, callback)
   // stringify them. The try-catch keeps it resilient and avoids crashing the
   // user's app.
   try {
-    this.debug_.request(options,
+    this.request(options,
                         function(err, body, response) { callback(err, body); });
   } catch (error) {
     callback(error);
