@@ -1205,5 +1205,4 @@ describe('v8debugapi', function() {
   });
 
   it('should be possible to set deferred breakpoints');
-  it('should be possible to access intercepted properties');
 });
