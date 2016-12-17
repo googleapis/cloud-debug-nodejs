@@ -69,7 +69,7 @@ describe(__filename, function(){
       .reply(404);
 
     debuglet.once('initError', function(err) {
-      assert(err);
+      assert.ok(err);
       scope.done();
       done();
     });
@@ -111,7 +111,7 @@ describe(__filename, function(){
       });
 
     debuglet.once('registered', function(id) {
-      assert(id === DEBUGGEE_ID);
+      assert.equal(id, DEBUGGEE_ID);
       scope.done();
       done();
     });
@@ -137,7 +137,7 @@ describe(__filename, function(){
       });
 
     debuglet.once('registered', function(id) {
-      assert(id === DEBUGGEE_ID);
+      assert.equal(id, DEBUGGEE_ID);
       scope.done();
       done();
     });
@@ -145,7 +145,18 @@ describe(__filename, function(){
     debuglet.start();
   });
 
-  it('should error if a package.json doesn\'t exist');
+  it('should error if a package.json doesn\'t exist', function(done) {
+    var config = extend({}, defaultConfig,
+      {projectId: 'fake-project', workingDirectory: __dirname});
+    debuglet = new Debuglet(fakeDebug, config, logger);
+
+    debuglet.once('initError', function(err) {
+      assert(err);
+      done();
+    });
+
+    debuglet.start();
+  });
 
   it('should register successfully otherwise', function(done) {
     var config = extend({}, defaultConfig, {projectId: 'fake-project'});
@@ -160,7 +171,7 @@ describe(__filename, function(){
       });
 
     debuglet.once('registered', function(id) {
-      assert(id === DEBUGGEE_ID);
+      assert.equal(id, DEBUGGEE_ID);
       scope.done();
       done();
     });
@@ -186,7 +197,7 @@ describe(__filename, function(){
       });
 
     debuglet.once('registered', function(id) {
-      assert(id === DEBUGGEE_ID);
+      assert.equal(id, DEBUGGEE_ID);
       scope.done();
       process.chdir('../..');
       done();
@@ -195,11 +206,103 @@ describe(__filename, function(){
     debuglet.start();
   });
 
-  it('should de-activate when the server responds with isDisabled');
+  it('should de-activate when the server responds with isDisabled', function(done) {
+    this.timeout(4000);
+    var config = extend({}, defaultConfig, {projectId: 'fake-project'});
+    debuglet = new Debuglet(fakeDebug, config, logger);
 
-  it('should re-register when registration expires');
+    var scope = nock(API)
+      .post(REGISTER_PATH)
+      .reply(200, {
+        debuggee: {
+          id: DEBUGGEE_ID,
+          isDisabled: true
+        }
+      })
+      .post(REGISTER_PATH)
+      .reply(200, {
+        debuggee: {
+          id: DEBUGGEE_ID
+        }
+      });
 
-  it('should fetch breakpoints');
+    debuglet.once('registered', function(id) {
+      assert.equal(id, DEBUGGEE_ID);
+      setImmediate(function() {
+        assert.ok(debuglet.fetcherActive_);
+        scope.done();
+        done();
+      });
+    });
+
+    setTimeout(function() {
+      assert.ok(!debuglet.fetcherActive_);
+    }, 1000);
+
+    debuglet.start();
+  });
+
+  it('should re-register when registration expires', function(done) {
+    var config = extend({}, defaultConfig, {projectId: 'fake-project'});
+    debuglet = new Debuglet(fakeDebug, config, logger);
+
+    var scope = nock(API)
+      .post(REGISTER_PATH)
+      .reply(200, {
+        debuggee: {
+          id: DEBUGGEE_ID
+        }
+      })
+      .get(BPS_PATH + '?success_on_timeout=true')
+      .reply(404)
+      .post(REGISTER_PATH)
+      .reply(200, {
+        debuggee: {
+          id: DEBUGGEE_ID
+        }
+      });
+
+    debuglet.once('registered', function(id) {
+      assert.equal(id, DEBUGGEE_ID);
+      debuglet.once('registered', function(id) {
+        assert.equal(id, DEBUGGEE_ID);
+        scope.done();
+        done();
+      });
+    });
+
+    debuglet.start();
+  });
+
+  it('should fetch and add breakpoints', function(done) {
+    this.timeout(2000);
+
+    var config = extend({}, defaultConfig, {projectId: 'fake-project'});
+    debuglet = new Debuglet(fakeDebug, config, logger);
+
+    var scope = nock(API)
+      .post(REGISTER_PATH)
+      .reply(200, {
+        debuggee: {
+          id: DEBUGGEE_ID
+        }
+      })
+      .get(BPS_PATH + '?success_on_timeout=true')
+      .reply(200, {
+        breakpoints: [bp]
+      });
+
+    debuglet.once('registered', function reg(id) {
+      assert.equal(id, DEBUGGEE_ID);
+      setTimeout(function() {
+        assert.deepEqual(debuglet.activeBreakpointMap_.test, bp);
+        scope.done();
+        done();
+      }, 1000);
+    });
+
+    debuglet.start();
+  });
 
   it('should re-fetch breakpoints on error', function(done) {
     this.timeout(6000);
@@ -238,7 +341,7 @@ describe(__filename, function(){
       .reply(200);
 
     debuglet.once('registered', function reg(id) {
-      assert(id === DEBUGGEE_ID);
+      assert.equal(id, DEBUGGEE_ID);
       setTimeout(function() {
         assert.deepEqual(debuglet.activeBreakpointMap_.test, bp);
         assert(!debuglet.activeBreakpointMap_.testLog);
@@ -249,8 +352,6 @@ describe(__filename, function(){
 
     debuglet.start();
   });
-
-  it('should add a breakpoint');
 
   it('should expire stale breakpoints', function(done) {
     var config = extend({}, defaultConfig, {
@@ -278,7 +379,7 @@ describe(__filename, function(){
 
     debuglet = new Debuglet(fakeDebug, config, logger);
     debuglet.once('registered', function(id) {
-      assert(id === DEBUGGEE_ID);
+      assert.equal(id, DEBUGGEE_ID);
       setTimeout(function() {
         assert.deepEqual(debuglet.activeBreakpointMap_.test, bp);
         setTimeout(function() {
@@ -330,7 +431,7 @@ describe(__filename, function(){
 
     debuglet = new Debuglet(fakeDebug, config, logger);
     debuglet.once('registered', function(id) {
-      assert(id === DEBUGGEE_ID);
+      assert.equal(id, DEBUGGEE_ID);
       setTimeout(function() {
         assert.deepEqual(debuglet.activeBreakpointMap_.test, bp);
         setTimeout(function() {
