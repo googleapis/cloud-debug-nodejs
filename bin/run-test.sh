@@ -45,7 +45,7 @@ fi
 
 if [ -z "${TRAVIS_PULL_REQUEST}" ] || [ "${TRAVIS_PULL_REQUEST}" = "false" ]
 then
-  if [ -z "${GCLOUD_PROJECT}"]; then
+  if [ -z "${GCLOUD_PROJECT}" ]; then
     echo "============================================================"
     echo "Unable to run system and e2e tests. Provide valid project id"
     echo "via GCLOUD_PROJECT and ensure auth credentials are available"

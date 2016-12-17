@@ -154,6 +154,7 @@ Debuglet.prototype.start = function() {
             }
 
             // We can register as a debuggee now.
+            that.logger_.debug('Starting debuggee, project', project);
             that.running_ = true;
             that.project_ = project;
             that.debuggee_ = new Debuggee(
@@ -184,7 +185,7 @@ Debuglet.prototype.getProjectId_ = function(callback) {
 
     // We perfer to use the locally available projectId as that is least
     // surprising to users.
-    var project = that.config_.projectId || process.env.GCLOUD_PROJECT ||
+    var project = that.debug_.options.projectId || process.env.GCLOUD_PROJECT ||
                   metadataProject;
 
     // We if don't have a projectId by now, we fail with an error.
@@ -506,6 +507,7 @@ Debuglet.prototype.scheduleBreakpointExpiry_ = function(breakpoint) {
  * Stops the Debuglet
  */
 Debuglet.prototype.stop = function() {
+  this.logger_.debug('Stopping Debuglet');
   this.running_ = false;
   this.emit('stopped');
 };
