@@ -73,7 +73,7 @@ If your application is running outside of Google Cloud Platform, such as locally
     });
     ```
     
-    See the [default configuration](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/blob/master/config.js) for more details.
+   See the [default configuration][config-js] for more details.
 
 1. Generate a `source-context.json` file which contains information about the version of the source code used to build the application. This file should be located in the root directory of your application. When you open the Stackdriver Debugger in the Cloud Platform Console, it uses the information in this file to display the correct version of the source.
 
@@ -81,7 +81,7 @@ If your application is running outside of Google Cloud Platform, such as locally
 
 ## Configuration
 
-See [the default configuration](config.js) for a list of possible configuration options. These options can be passed to the agent through the object argument to the start command as shown below:
+See [the default configuration][config-js] for a list of possible configuration options. These options can be passed to the agent through the object argument to the start command as shown below:
 
         require('@google/cloud-debug').start({
           logLevel: 2,
@@ -135,3 +135,4 @@ As soon as that line of code is reached in any of the running instances of your 
 [david-dev-url]: https://david-dm.org/GoogleCloudPlatform/cloud-debug-nodejs?type=dev
 [snyk-image]: https://snyk.io/test/github/GoogleCloudPlatform/cloud-debug-nodejs/badge.svg
 [snyk-url]: https://snyk.io/test/github/GoogleCloudPlatform/cloud-debug-nodejs
+[config-js]: https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/blob/master/src/agent/config.js
