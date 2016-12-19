@@ -80,13 +80,15 @@ function runTest() {
       });
     });
   }).then(function(authClient) {
-    // Inject scopes if they have not been injected by the environment
+    // List debuggees
+
+    // (Inject scopes if they have not been injected by the environment)
     if (authClient.createScopedRequired &&
         authClient.createScopedRequired()) {
       authClient = authClient.createScoped(SCOPES);
     }
 
-    // Define API endpoints
+    // (Define API endpoints)
     var api = {
       listDebuggees: function(project) {
         return apiRequest(authClient, DEBUG_API + '/debuggees?project=' +
@@ -112,6 +114,9 @@ function runTest() {
 
     return Promise.all([api, api.listDebuggees(globalProject)]);
   }).then(function(results) {
+    // Check that the debuggee created in this test is among the list of
+    // debuggees, then list its breakpoints
+
     var api = results[0];
     var body = results[1];
 
@@ -126,6 +131,8 @@ function runTest() {
 
     return Promise.all([api, api.listBreakpoints(globalDebuggee)]);
   }).then(function(results) {
+    // Delete every breakpoint
+
     var api = results[0];
     var body = results[1];
 
@@ -138,12 +145,13 @@ function runTest() {
 
     return Promise.all([api, Promise.all(promises)]);
   }).then(function(results) {
+    // Set a breakpoint at which the debugger should write to a log
+
     var api = results[0];
     var deleteResults = results[1];
 
     console.log('-- delete results', deleteResults);
 
-    // Set a breakpoint
     console.log('-- setting a logpoint');
     var promise = api.setBreakpoint(globalDebuggee, {
       id: 'breakpoint-1',
@@ -155,6 +163,9 @@ function runTest() {
     });
     return Promise.all([api, promise]);
   }).then(function(results) {
+    // Check that the breakpoint was set, and then wait for the log to be
+    // written to
+
     var api = results[0];
     var body = results[1];
 
@@ -168,12 +179,16 @@ function runTest() {
     console.log('-- waiting before checking if the log was written');
     return Promise.all([api, breakpoint, delay(10 * 1000)]);
   }).then(function(results) {
+    // Check the contents of the log, and then delete the breakpoint
+
     var api = results[0];
     var breakpoint = results[1];
 
     assert(transcript.indexOf('o is: {"a":[1,"hi",true]}') !== -1);
     return Promise.all([api, api.deleteBreakpoint(globalDebuggee, breakpoint)]);
   }).then(function(results) {
+    // Set another breakpoint at the same location
+
     var api = results[0];
     var body = results[1];
 
@@ -186,6 +201,9 @@ function runTest() {
     });
     return Promise.all([api, promise]);
   }).then(function(results) {
+    // Check that the breakpoint was set, and then wait for the breakpoint to
+    // be hit
+
     var api = results[0];
     var body = results[1];
 
@@ -196,9 +214,11 @@ function runTest() {
     assert.ok(breakpoint.location, 'breakpoint should have a location');
     assert.strictEqual(breakpoint.location.path, FILENAME);
 
-    console.log('-- waiting before checking if the log was written');
+    console.log('-- waiting before checking if breakpoint was hit');
     return Promise.all([api, breakpoint, delay(10 * 1000)]);
   }).then(function(results) {
+    // Get the breakpoint
+
     var api = results[0];
     var breakpoint = results[1];
 
@@ -206,6 +226,9 @@ function runTest() {
     return Promise.all([api,
       api.getBreakpoint(globalDebuggee, breakpoint)]);
   }).then(function(results) {
+    // Check that the breakpoint was hit and contains the correct information,
+    // which ends the test
+
     var api = results[0];
     var body = results[1];
 
