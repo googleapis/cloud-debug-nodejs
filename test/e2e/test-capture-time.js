@@ -18,7 +18,7 @@
 var assert = require('assert');
 var request = require('request');
 var logger = require('@google/cloud-diagnostics-common').logger;
-var config = require('../../src/config.js').debug;
+var config = require('../../src/agent/config.js');
 var semver = require('semver');
 var Debuglet = require('../../src/debuglet.js');
 

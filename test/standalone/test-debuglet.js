@@ -18,7 +18,7 @@
 var assert = require('assert');
 var request = require('../auth-request.js');
 var loggerModule = require('@google/cloud-diagnostics-common').logger;
-var defaultConfig = require('../../src/config.js').debug;
+var defaultConfig = require('../../src/agent/config.js');
 var Debuglet = require('../../src/agent/debuglet.js');
 var extend = require('extend');
 

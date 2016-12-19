@@ -69,7 +69,7 @@ util.inherits(Debug, common.Service);
 var initConfig = function(config_) {
   var config = config_ || {};
 
-  var defaults = require('./config.js').debug;
+  var defaults = require('./agent/config.js');
   _.defaultsDeep(config, defaults);
   if (process.env.hasOwnProperty('GCLOUD_DEBUG_LOGLEVEL')) {
     config.logLevel = process.env.GCLOUD_DEBUG_LOGLEVEL;
@@ -105,6 +105,8 @@ Debug.prototype.startAgent = function(config) {
   if (debuglet) {
     throw new Error('Debug Agent has already been started');
   }
+
+  // FIXME(ofrobots): the initConfig logic belongs in the agent/ directory.
   config = initConfig(config);
   if (config.enabled) {
     debuglet = new Debuglet(
