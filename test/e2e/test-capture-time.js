@@ -17,7 +17,6 @@
 
 var assert = require('assert');
 var request = require('request');
-var logger = require('@google/cloud-diagnostics-common').logger;
 var config = require('../../src/agent/config.js');
 var semver = require('semver');
 var Debuglet = require('../../src/debuglet.js');
@@ -35,8 +34,7 @@ var debuglet;
 describe(__filename, function(){
   beforeEach(function() {
     process.env.GCLOUD_PROJECT = 0;
-    debuglet = new Debuglet(
-      config, logger.create(config.logLevel, '@google/cloud-debug'));
+    debuglet = new Debuglet(config);
     debuglet.once('started', function() {
       debuglet.debugletApi_.request_ = request; // Avoid authing.
     });

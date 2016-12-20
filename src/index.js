@@ -16,11 +16,9 @@
 
 'use strict';
 
-var logger = require('@google/cloud-diagnostics-common').logger;
 var common = require('@google-cloud/common');
 var Debuglet = require('./agent/debuglet.js');
 var util = require('util');
-var _ = require('lodash');
 
 /**
  * <p class="notice">
@@ -73,30 +71,6 @@ function Debug(options) {
 }
 util.inherits(Debug, common.Service);
 
-var initConfig = function(config_) {
-  var config = config_ || {};
-
-  if (config.keyFilename || config.credentials || config.projectId) {
-    throw new Error('keyFilename, projectId or credentials should be provided' + 
-                    ' to the Debug module constructor rather than startAgent');
-  }
-
-  var defaults = require('./agent/config.js');
-  _.defaultsDeep(config, defaults);
-  if (process.env.hasOwnProperty('GCLOUD_DEBUG_LOGLEVEL')) {
-    config.logLevel = process.env.GCLOUD_DEBUG_LOGLEVEL;
-  }
-  if (process.env.hasOwnProperty('GAE_MODULE_NAME')) {
-    config.serviceContext = config.serviceContext || {};
-    config.serviceContext.service = process.env.GAE_MODULE_NAME;
-  }
-  if (process.env.hasOwnProperty('GAE_MODULE_VERSION')) {
-    config.serviceContext = config.serviceContext || {};
-    config.serviceContext.version = process.env.GAE_MODULE_VERSION;
-  }
-  return config;
-};
-
 var debuglet;
 
 /**
@@ -118,14 +92,9 @@ Debug.prototype.startAgent = function(config) {
     throw new Error('Debug Agent has already been started');
   }
 
-  // FIXME(ofrobots): the initConfig logic belongs in the agent/ directory.
-  config = initConfig(config);
-  if (config.enabled) {
-    debuglet = new Debuglet(
-        this, config, logger.create(config.logLevel, '@google-cloud/debug'));
-    debuglet.start();
-    this.private_ = debuglet;
-  }
+  debuglet = new Debuglet(this, config);
+  debuglet.start();
+  this.private_ = debuglet;
 };
 
 module.exports = Debug;
