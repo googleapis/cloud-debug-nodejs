@@ -18,36 +18,18 @@
 var path = require('path');
 var assert = require('assert');
 var nock = require('nock');
+var nocks = require('../nocks.js');
 var extend = require('extend');
 var logger = require('@google/cloud-diagnostics-common').logger;
-var defaultConfig = require('../../src/agent/config.js');
+var defaultOptions = {};
+var config = require('../../src/agent/config.js');
 var Debuglet = require('../../src/agent/debuglet.js');
 
 var envProject = process.env.GCLOUD_PROJECT;
 
 nock.disableNetConnect();
 
-function accept() {
-  return true;
-}
-
-function nockOAuth2(validator) {
-  return nock('https://accounts.google.com')
-      .post('/o/oauth2/token', validator)
-      .reply(200, {
-        refresh_token: 'hello',
-        access_token: 'goodbye',
-        expiry_date: new Date(9999, 1, 1)
-      });
-}
-
-function nockRegister(validator) {
-  return nock('https://clouddebugger.googleapis.com')
-      .post('/v2/controller/debuggees/register', validator)
-      .reply(200);
-}
-
-describe('test-config-credentials', function() {
+describe('test-options-credentials', function() {
   var debuglet = null;
 
   beforeEach(function() {
@@ -62,23 +44,23 @@ describe('test-config-credentials', function() {
     process.env.GCLOUD_PROJECT = envProject;
   });
 
-  it('should use config.projectId in preference to the environment variable',
+  it('should use options.projectId in preference to the environment variable',
      function(done) {
        process.env.GCLOUD_PROJECT = 'should-not-be-used';
 
-       var config = extend({}, defaultConfig, {
-         projectId: 'project-via-config',
+       var options = extend({}, defaultOptions, {
+         projectId: 'project-via-options',
          credentials: require('../fixtures/gcloud-credentials.json')
        });
-       var debug = require('../..')(config);
+       var debug = require('../..')(options);
 
        // TODO: also make sure we don't request the project from metadata
        // service.
 
-        var scope = nockOAuth2(accept);
-        nockRegister(function(body) {
+        var scope = nocks.oauth2();
+        nocks.register(function(body) {
           assert.ok(body.debuggee);
-          assert.equal(body.debuggee.project, 'project-via-config');
+          assert.equal(body.debuggee.project, 'project-via-options');
           scope.done();
           setImmediate(done);
           return true;
@@ -89,21 +71,21 @@ describe('test-config-credentials', function() {
        debuglet.start();
      });
 
-  it('should use the keyFilename field of the config object', function(done) {
+  it('should use the keyFilename field of the options object', function(done) {
     var credentials = require('../fixtures/gcloud-credentials.json');
-    var config = extend({}, defaultConfig, {
+    var options = extend({}, defaultOptions, {
       projectId: 'fake-project',
       keyFilename: path.join('test', 'fixtures', 'gcloud-credentials.json')
     });
-    var debug = require('../..')(config);
-    var scope = nockOAuth2(function(body) {
+    var debug = require('../..')(options);
+    var scope = nocks.oauth2(function(body) {
       assert.equal(body.client_id, credentials.client_id);
       assert.equal(body.client_secret, credentials.client_secret);
       assert.equal(body.refresh_token, credentials.refresh_token);
       return true;
     });
     // Since we have to get an auth token, this always gets intercepted second.
-    nockRegister(function() {
+    nocks.register(function() {
       scope.done();
       setImmediate(done);
       return true;
@@ -113,20 +95,20 @@ describe('test-config-credentials', function() {
     debuglet.start();
   });
 
-  it('should use the credentials field of the config object', function(done) {
-    var config = extend({}, defaultConfig, {
+  it('should use the credentials field of the options object', function(done) {
+    var options = extend({}, defaultOptions, {
       projectId: 'fake-project',
       credentials: require('../fixtures/gcloud-credentials.json')
     });
-    var debug = require('../..')(config);
-    var scope = nockOAuth2(function(body) {
-      assert.equal(body.client_id, config.credentials.client_id);
-      assert.equal(body.client_secret, config.credentials.client_secret);
-      assert.equal(body.refresh_token, config.credentials.refresh_token);
+    var debug = require('../..')(options);
+    var scope = nocks.oauth2(function(body) {
+      assert.equal(body.client_id, options.credentials.client_id);
+      assert.equal(body.client_secret, options.credentials.client_secret);
+      assert.equal(body.refresh_token, options.credentials.refresh_token);
       return true;
     });
     // Since we have to get an auth token, this always gets intercepted second.
-    nockRegister(function() {
+    nocks.register(function() {
       scope.done();
       setImmediate(done);
       return true;
@@ -143,28 +125,28 @@ describe('test-config-credentials', function() {
       refresh_token: 'c',
       type: 'authorized_user'
     };
-    var config = extend({}, defaultConfig, {
+    var options = extend({}, defaultOptions, {
       projectId: 'fake-project',
       keyFilename: path.join('test', 'fixtures', 'gcloud-credentials.json'),
       credentials: credentials
     });
-    var debug = require('../..')(config);
-    var scope = nockOAuth2(function(body) {
+    var debug = require('../..')(options);
+    var scope = nocks.oauth2(function(body) {
       assert.equal(body.client_id, credentials.client_id);
       assert.equal(body.client_secret, credentials.client_secret);
       assert.equal(body.refresh_token, credentials.refresh_token);
       return true;
     });
     // Since we have to get an auth token, this always gets intercepted second.
-    nockRegister(function() {
+    nocks.register(function() {
       scope.done();
       setImmediate(done);
       return true;
     });
     ['client_id', 'client_secret', 'refresh_token'].forEach(function(field) {
       assert(fileCredentials.hasOwnProperty(field));
-      assert(config.credentials.hasOwnProperty(field));
-      assert.notEqual(config.credentials[field], fileCredentials[field]);
+      assert(options.credentials.hasOwnProperty(field));
+      assert.notEqual(options.credentials[field], fileCredentials[field]);
     });
     debuglet = new Debuglet(debug, config, logger.create(undefined, 'testing'));
     debuglet.start();

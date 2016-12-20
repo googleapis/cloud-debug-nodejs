@@ -20,9 +20,11 @@ var assert = require('assert');
 
 assert.ok(
     process.env.GCLOUD_PROJECT,
-    'Need to have GCLOUD_PROJECT defined ' +
-        'along with valid application default credentials to be able to run this ' +
-        'test');
+    'Need to have GCLOUD_PROJECT defined to be able to run this test');
+assert.ok(
+    process.env.GOOGLE_APPLICATION_CREDENTIALS,
+    'Need to have GOOGLE_APPLICATION_CREDENTIALS defined to be able to run ' +
+    'this test');
 
 var Controller = require('../src/controller.js');
 var Debuggee = require('../src/debuggee.js');

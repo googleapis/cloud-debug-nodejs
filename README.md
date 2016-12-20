@@ -19,12 +19,25 @@ This module provides Stackdriver Debugger support for Node.js applications. [Sta
 ## Quick Start
 ```shell
 # Install with `npm` or add to your `package.json`.
-npm install --save @google/cloud-debug
-
-# Require and start the agent at the top of your main script (but after '@google/cloud-trace' if you are also using it).
-require('@google/cloud-debug').start();
+npm install --save @google-cloud/debug
 ```
-Deploy your application, and navigate to the [Stackdriver Debug view][debug-tab] within the [Google Cloud Console][dev-console] to set snapshots and start debugging.
+
+```js
+// Require and start in the startup of your application:
+var debug = require('@google-cloud/debug')();
+debug.startAgent();
+// No config necessary if your code is running on Google Cloud Platform.
+
+// ... or, if you are running elsewhere, you can manually provide credentials:
+var debug = require('@google-cloud/debug')({
+  projectId: 'particular-future-12345',
+  keyFilename: '/path/to/keyfile.json'
+});
+debug.startAgent();
+```
+
+This starts the automatic Debugger Agent that enables your app to be debuggable using the Stackdriver [Stackdriver Debug view][debug-tab] within
+the [Google Cloud Console][dev-console]. You can start adding snapshots and log-points to your application.
 
 ## Running on Google Cloud Platform
 
@@ -50,9 +63,21 @@ Container Engine nodes need to also be created with the `cloud-platform` scope, 
 
 If your application is running outside of Google Cloud Platform, such as locally, on-premise, or on another cloud provider, you can still use Stackdriver Debugger.
 
-1. You will need to specify your project name. Your project name is visible in the [Google Cloud Console][cloud-console-projects], it may be something like `particular-future-12345`. If your application is [running on Google Cloud Platform](running-on-google-cloud-platform), you don't need to specify the project name.
+1. You will need to specify your project name. Your project name is visible in the [Google Cloud Console][cloud-console-projects], it may be something like `particular-future-12345`. If your application is [running on Google Cloud Platform](running-on-google-cloud-platform), you don't need to specify the project name. You can specify this either in the module options, or through an environment variable:
 
+        ```js
+        // In your app:
+        var debug = require('@google-cloud/debug')({
+          projectId: 'particular-future-12345',
+          keyFilename: '/path/to/keyfile.json'
+        });
+        debug.startAgent();
+        ```
+
+        ```bash
+        # Or in Bash:
         export GCLOUD_PROJECT=<project name>
+        ```
 
 1. You need to provide service account credentials to your application.
   * The recommended way is via [Application Default Credentials][app-default-credentials].
@@ -64,7 +89,7 @@ If your application is running outside of Google Cloud Platform, such as locally
 
     ```js
     // Require and start the agent with configuration options
-    require('@google/cloud-debug').start({
+    require('@google-cloud/debug').start({
       // The path to your key file:
       keyFilename: '/path/to/keyfile.json',
 
@@ -72,24 +97,26 @@ If your application is running outside of Google Cloud Platform, such as locally
       credentials: require('./path/to/keyfile.json')
     });
     ```
-    
-   See the [default configuration][config-js] for more details.
+
+   See the [configuration object][configuration-object] for more details.
 
 1. Generate a `source-context.json` file which contains information about the version of the source code used to build the application. This file should be located in the root directory of your application. When you open the Stackdriver Debugger in the Cloud Platform Console, it uses the information in this file to display the correct version of the source.
 
         gcloud beta debug source gen-repo-info-file
 
-## Configuration
+## Debug Agent Settings
 
-See [the default configuration][config-js] for a list of possible configuration options. These options can be passed to the agent through the object argument to the start command as shown below:
+You can customize the behaviour of the automatic debugger agent. See [the agent configuration][config-js] for a list of possible configuration options. These options can be passed to the agent through the object argument to the startAgent method as shown below:
 
-        require('@google/cloud-debug').start({
-          logLevel: 2,
+        ```js
+        debug.startAgent({
           serviceContext: {
               service: 'my-service',
-              version: '1'
-            }
+              version: 'version-1'
+          },
+          capture: { maxFramesFrames: 20, maxProperties: 100 }
         });
+        ```
 
 ## Using the Debugger
 
@@ -123,8 +150,8 @@ As soon as that line of code is reached in any of the running instances of your 
 [cloud-console-projects]: https://console.cloud.google.com/iam-admin/projects
 [app-default-credentials]: https://cloud.google.com/identity/protocols/application-default-credentials
 [service-account]: https://console.cloud.google.com/apis/credentials/serviceaccountkey
-[npm-image]: https://img.shields.io/npm/v/@google/cloud-debug.svg
-[npm-url]: https://npmjs.org/package/@google/cloud-debug
+[npm-image]: https://img.shields.io/npm/v/@google-cloud/debug.svg
+[npm-url]: https://npmjs.org/package/@google-cloud/debug
 [travis-image]: https://travis-ci.org/GoogleCloudPlatform/cloud-debug-nodejs.svg?branch=master
 [travis-url]: https://travis-ci.org/GoogleCloudPlatform/cloud-debug-nodejs
 [coveralls-image]: https://img.shields.io/coveralls/GoogleCloudPlatform/cloud-debug-nodejs/master.svg
@@ -136,3 +163,4 @@ As soon as that line of code is reached in any of the running instances of your 
 [snyk-image]: https://snyk.io/test/github/GoogleCloudPlatform/cloud-debug-nodejs/badge.svg
 [snyk-url]: https://snyk.io/test/github/GoogleCloudPlatform/cloud-debug-nodejs
 [config-js]: https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/blob/master/src/agent/config.js
+[configuration-object]: https://googlecloudplatform.github.io/google-cloud-node/#/docs/google-cloud/0.45.0/google-cloud
