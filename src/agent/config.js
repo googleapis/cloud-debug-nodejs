@@ -20,13 +20,6 @@
  */
 
 module.exports = {
-  /**
-   * @property {boolean} Whether the debug agent should be started.
-   * @memberof DebugAgentConfig
-   * @default
-   */
-  enabled: true,
-
   // FIXME(ofrobots): presently this is dependent what cwd() is at the time this
   // file is first required. We should make the default config static.
   /**

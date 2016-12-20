@@ -20,7 +20,6 @@ var assert = require('assert');
 var nock = require('nock');
 var nocks = require('../nocks.js');
 var extend = require('extend');
-var logger = require('@google/cloud-diagnostics-common').logger;
 var defaultOptions = {};
 var config = require('../../src/agent/config.js');
 var Debuglet = require('../../src/agent/debuglet.js');
@@ -66,8 +65,7 @@ describe('test-options-credentials', function() {
           return true;
         });
 
-       debuglet =
-           new Debuglet(debug, config, logger.create(logger.WARN, 'testing'));
+        debuglet = new Debuglet(debug, config);
        debuglet.start();
      });
 
@@ -90,8 +88,7 @@ describe('test-options-credentials', function() {
       setImmediate(done);
       return true;
     });
-    debuglet =
-        new Debuglet(debug, config, logger.create(logger.WARN, 'testing'));
+    debuglet = new Debuglet(debug, config);
     debuglet.start();
   });
 
@@ -113,7 +110,7 @@ describe('test-options-credentials', function() {
       setImmediate(done);
       return true;
     });
-    debuglet = new Debuglet(debug, config, logger.create(undefined, 'testing'));
+    debuglet = new Debuglet(debug, config);
     debuglet.start();
   });
 
@@ -148,7 +145,7 @@ describe('test-options-credentials', function() {
       assert(options.credentials.hasOwnProperty(field));
       assert.notEqual(options.credentials[field], fileCredentials[field]);
     });
-    debuglet = new Debuglet(debug, config, logger.create(undefined, 'testing'));
+    debuglet = new Debuglet(debug, config);
     debuglet.start();
   });
 });

@@ -16,7 +16,6 @@
 'use strict';
 
 var assert = require('assert');
-var loggerModule = require('@google/cloud-diagnostics-common').logger;
 var defaultConfig = require('../../src/agent/config.js');
 var Debuglet = require('../../src/agent/debuglet.js');
 var extend = require('extend');
@@ -31,8 +30,6 @@ var fakeCredentials = require('../fixtures/gcloud-credentials.json');
 var nock = require('nock');
 var nocks = require('../nocks.js');
 nock.disableNetConnect();
-
-var logger = loggerModule.create(process.env.GCLOUD_DEBUG_LOGLEVEL || 0, 'test');
 
 var bp = {
   id: 'test',
@@ -59,7 +56,7 @@ describe(__filename, function(){
 
   it('should not start when projectId is not available', function(done) {
     var debug = require('../..')();
-    debuglet = new Debuglet(debug, defaultConfig, logger);
+    debuglet = new Debuglet(debug, defaultConfig);
 
     // The following mock is neccessary for the case when the test is running
     // on GCP. In that case we will get the projectId from the metadata service.
@@ -80,7 +77,7 @@ describe(__filename, function(){
 
   it('should not crash without project num', function(done) {
     var debug = require('../..')();
-    debuglet = new Debuglet(debug, defaultConfig, logger);
+    debuglet = new Debuglet(debug, defaultConfig);
 
     // The following mock is neccessary for the case when the test is running
     // on GCP. In that case we will get the projectId from the metadata service.
@@ -101,7 +98,7 @@ describe(__filename, function(){
   it('should accept non-numeric GCLOUD_PROJECT', function(done) {
     var debug = require('../..')(
         {projectId: '11020304f2934', credentials: fakeCredentials});
-    debuglet = new Debuglet(debug, defaultConfig, logger);
+    debuglet = new Debuglet(debug, defaultConfig);
 
     nocks.oauth2();
     var scope = nock(API)
@@ -125,7 +122,7 @@ describe(__filename, function(){
     this.timeout(10000);
     process.env.GCLOUD_PROJECT='11020304f2934';
     var debug = require('../..')({credentials: fakeCredentials});
-    debuglet = new Debuglet(debug, defaultConfig, logger);
+    debuglet = new Debuglet(debug, defaultConfig);
 
     nocks.oauth2();
     var scope = nock(API)
@@ -153,7 +150,7 @@ describe(__filename, function(){
     var debug = require('../..')(
         {projectId: 'fake-project', credentials: fakeCredentials});
     var config = extend({}, defaultConfig, {workingDirectory: __dirname});
-    debuglet = new Debuglet(debug, config, logger);
+    debuglet = new Debuglet(debug, config);
 
     nocks.oauth2();
     debuglet.once('initError', function(err) {
@@ -167,7 +164,7 @@ describe(__filename, function(){
   it('should register successfully otherwise', function(done) {
     var debug = require('../..')(
         {projectId: 'fake-project', credentials: fakeCredentials});
-    debuglet = new Debuglet(debug, defaultConfig, logger);
+    debuglet = new Debuglet(debug, defaultConfig);
 
     nocks.oauth2();
     var scope =
@@ -188,7 +185,7 @@ describe(__filename, function(){
 
     var debug = require('../..')(
         {projectId: 'fake-project', credentials: fakeCredentials});
-    debuglet = new Debuglet(debug, defaultConfig, logger);
+    debuglet = new Debuglet(debug, defaultConfig);
 
     nocks.oauth2();
     var scope = nock(API)
@@ -216,7 +213,7 @@ describe(__filename, function(){
     this.timeout(4000);
     var debug = require('../..')(
         {projectId: 'fake-project', credentials: fakeCredentials});
-    debuglet = new Debuglet(debug, defaultConfig, logger);
+    debuglet = new Debuglet(debug, defaultConfig);
 
     nocks.oauth2();
     var scope = nock(API)
@@ -253,7 +250,7 @@ describe(__filename, function(){
   it('should re-register when registration expires', function(done) {
     var debug = require('../..')(
         {projectId: 'fake-project', credentials: fakeCredentials});
-    debuglet = new Debuglet(debug, defaultConfig, logger);
+    debuglet = new Debuglet(debug, defaultConfig);
 
     nocks.oauth2();
     var scope = nock(API)
@@ -288,7 +285,7 @@ describe(__filename, function(){
     this.timeout(2000);
     var debug = require('../..')(
         {projectId: 'fake-project', credentials: fakeCredentials});
-    debuglet = new Debuglet(debug, defaultConfig, logger);
+    debuglet = new Debuglet(debug, defaultConfig);
 
     nocks.oauth2();
     var scope = nock(API)
@@ -320,7 +317,7 @@ describe(__filename, function(){
 
     var debug = require('../..')(
         {projectId: 'fake-project', credentials: fakeCredentials});
-    debuglet = new Debuglet(debug, defaultConfig, logger);
+    debuglet = new Debuglet(debug, defaultConfig);
 
     nocks.oauth2();
     var scope = nock(API)
@@ -390,7 +387,7 @@ describe(__filename, function(){
       })
       .reply(200);
 
-    debuglet = new Debuglet(debug, config, logger);
+    debuglet = new Debuglet(debug, config);
     debuglet.once('registered', function(id) {
       assert.equal(id, DEBUGGEE_ID);
       setTimeout(function() {
@@ -444,7 +441,7 @@ describe(__filename, function(){
         breakpoints: [bp]
       });
 
-    debuglet = new Debuglet(debug, config, logger);
+    debuglet = new Debuglet(debug, config);
     debuglet.once('registered', function(id) {
       assert.equal(id, DEBUGGEE_ID);
       setTimeout(function() {

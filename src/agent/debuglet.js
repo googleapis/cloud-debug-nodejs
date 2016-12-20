@@ -19,12 +19,14 @@
 var fs = require('fs');
 var path = require('path');
 var EventEmitter = require('events').EventEmitter;
+var extend = require('extend');
 var util = require('util');
 var semver = require('semver');
 
 var v8debugapi = require('./v8debugapi.js');
 var Debuggee = require('../debuggee.js');
 var DebugletApi = require('../controller.js');
+var defaultConfig = require('./config.js');
 var scanner = require('./scanner.js');
 var common = require('@google/cloud-diagnostics-common');
 var Logger = common.logger;
@@ -41,19 +43,20 @@ var BREAKPOINT_ACTION_MESSAGE = 'The only currently supported breakpoint actions
 module.exports = Debuglet;
 
 /**
- * @param {Object} config The option parameters for the Debuglet.
+ * @param {Debug} debug - A Debug instance.
+ * @param {object=} config - The option parameters for the Debuglet.
  * @event 'error' on startup errors
  * @event 'started' once the startup tasks are completed
  * @event 'registered' once successfully registered to the debug api
  * @event 'stopped' if the agent stops due to a fatal error after starting
  * @constructor
  */
-function Debuglet(debug, config, logger) {
+function Debuglet(debug, config) {
+  /** @private {object} */
+  this.config_ = this.normalizeConfig_(config);
+
   /** @private {Debug} */
   this.debug_ = debug;
-
-  /** @private {object} */
-  this.config_ = config || {};
 
   /**
    * @private {object} V8 Debug API. This can be null if the Node.js version
@@ -71,7 +74,7 @@ function Debuglet(debug, config, logger) {
   this.fetcherActive_ = false;
 
   /** @private {Logger} */
-  this.logger_ = logger;
+  this.logger_ = Logger.create(this.config_.logLevel, '@google-cloud/debug');
 
   /** @private {DebugletApi} */
   this.debugletApi_ = new DebugletApi(this.debug_);
@@ -89,6 +92,28 @@ function Debuglet(debug, config, logger) {
 }
 
 util.inherits(Debuglet, EventEmitter);
+
+Debuglet.prototype.normalizeConfig_ = function(config) {
+  config = extend({}, defaultConfig, config);
+
+  if (config.keyFilename || config.credentials || config.projectId) {
+    throw new Error('keyFilename, projectId or credentials should be provided' + 
+                    ' to the Debug module constructor rather than startAgent');
+  }
+
+  if (process.env.hasOwnProperty('GCLOUD_DEBUG_LOGLEVEL')) {
+    config.logLevel = process.env.GCLOUD_DEBUG_LOGLEVEL;
+  }
+  if (process.env.hasOwnProperty('GAE_MODULE_NAME')) {
+    config.serviceContext = config.serviceContext || {};
+    config.serviceContext.service = process.env.GAE_MODULE_NAME;
+  }
+  if (process.env.hasOwnProperty('GAE_MODULE_VERSION')) {
+    config.serviceContext = config.serviceContext || {};
+    config.serviceContext.version = process.env.GAE_MODULE_VERSION;
+  }
+  return config;
+};
 
 /**
  * Starts the Debuglet. It is important that this is as quick as possible
