@@ -190,7 +190,6 @@ function runTest() {
     // Set another breakpoint at the same location
 
     var api = results[0];
-    var body = results[1];
 
     console.log('-- setting a breakpoint');
     var promise = api.setBreakpoint(globalDebuggee, {
@@ -229,7 +228,6 @@ function runTest() {
     // Check that the breakpoint was hit and contains the correct information,
     // which ends the test
 
-    var api = results[0];
     var body = results[1];
 
     var arg;
