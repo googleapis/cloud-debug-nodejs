@@ -36,7 +36,10 @@ describe('Controller', function() {
   it('should register successfully', function(done) {
     var controller = new Controller(debug);
     var debuggee =
-        new Debuggee(process.env.GCLOUD_PROJECT, 'test-uid-' + Date.now());
+        new Debuggee({
+          project: process.env.GCLOUD_PROJECT, 
+          uniquifier: 'test-uid-' + Date.now()
+        });
 
     controller.register(debuggee, function(err, body) {
       assert.ifError(err, 'should be able to register successfully');
@@ -50,7 +53,10 @@ describe('Controller', function() {
   it('should list breakpoints', function(done) {
     var controller = new Controller(debug);
     var debuggee =
-        new Debuggee(process.env.GCLOUD_PROJECT, 'test-uid-' + Date.now());
+        new Debuggee({
+          project: process.env.GCLOUD_PROJECT, 
+          uniquifier: 'test-uid-' + Date.now()
+        });
     controller.register(debuggee, function(err, body) {
       assert.ifError(err, 'should be able to register successfully');
 

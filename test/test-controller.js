@@ -54,7 +54,8 @@ describe('Controller API', function() {
               .post(api + '/debuggees/register')
               .reply(200,
                      {debuggee: {id: 'fake-debuggee'}, activePeriodSec: 600});
-      var debuggee = new Debuggee('fake-project', 'fake-id');
+      var debuggee =
+          new Debuggee({project: 'fake-project', uniquifier: 'fake-id'});
       var controller = new Controller(fakeDebug);
       controller.register(debuggee, function(err, result) {
         assert(!err, 'not expecting an error');
@@ -76,7 +77,8 @@ describe('Controller API', function() {
               .post(api + '/debuggees/register')
               .reply(200,
                      {debuggee: {id: 'fake-debuggee'}, activePeriodSec: 600});
-      var debuggee = new Debuggee('fake-project', 'fake-id');
+      var debuggee =
+          new Debuggee({project: 'fake-project', uniquifier: 'fake-id'});
       controller.register(debuggee, function(err, result) {
         assert(!err, 'not expecting an error');
         assert.equal(result.debuggee.id, 'fake-debuggee');
@@ -97,7 +99,8 @@ describe('Controller API', function() {
                       },
                       activePeriodSec: 600,
                     });
-      var debuggee = new Debuggee('fake-project', 'fake-id');
+      var debuggee =
+          new Debuggee({project: 'fake-project', uniquifier: 'fake-id'});
       var controller = new Controller(fakeDebug);
       controller.register(debuggee, function(err/*, result*/) {
         assert(err, 'expected an error');
@@ -118,7 +121,8 @@ describe('Controller API', function() {
           debuggee: { id: 'fake-debuggee' },
           activePeriodSec: 600
         });
-      var debuggee = new Debuggee('fake-project', 'fake-id');
+      var debuggee =
+          new Debuggee({project: 'fake-project', uniquifier: 'fake-id'});
       var controller = new Controller(fakeDebug);
       controller.register(debuggee, function(err/*, result*/) {
         assert.ifError(err);

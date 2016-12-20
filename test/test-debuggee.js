@@ -21,48 +21,23 @@ var Debuggee = require('../src/debuggee.js');
 describe('Debuggee', function() {
 
   it('should create a Debuggee instance on valid input', function() {
-    var debuggee = new Debuggee('project', 'uid');
+    var debuggee = new Debuggee({project:'project', uniquifier: 'uid'});
     assert.ok(debuggee instanceof Debuggee);
   });
 
   it('should create a Debuggee on a call without new', function() {
-    var debuggee = Debuggee('project', 'uid');
+    var debuggee = new Debuggee({project:'project', uniquifier: 'uid'});
     assert.ok(debuggee instanceof Debuggee);
   });
 
   it('should throw on invalid input', function() {
-    assert.throws(function() { new Debuggee(); });
-    assert.throws(function() { new Debuggee(5); });
-    assert.throws(function() { new Debuggee(undefined); });
-    assert.throws(function() { new Debuggee('test'); });
-    assert.throws(function() { new Debuggee('test', null); });
-  });
-
-  it('should have sensible labels', function() {
-    var debuggee = new Debuggee('some project', 'id', {
-      service: 'some-service',
-      version: 'production'
+    assert.throws(function() { new Debuggee({}); });
+    assert.throws(function() { new Debuggee({project: 5}); });
+    assert.throws(function() { new Debuggee({project: undefined}); });
+    assert.throws(function() { new Debuggee({project: 'test'}); });
+    assert.throws(function() {
+      new Debuggee({project: 'test', uniquifier: null});
     });
-    assert.ok(debuggee);
-    assert.ok(debuggee.labels);
-    assert.strictEqual(debuggee.labels.module, 'some-service');
-    assert.strictEqual(debuggee.labels.version, 'production');
-  });
-
-  it('should not add a module label when service is default', function() {
-    var debuggee = new Debuggee('fancy-project', 'very-unique',
-                                {service: 'default', version: 'yellow.5'});
-    assert.ok(debuggee);
-    assert.ok(debuggee.labels);
-    assert.strictEqual(debuggee.labels.module, undefined);
-    assert.strictEqual(debuggee.labels.version, 'yellow.5');
-  });
-
-  it('should have an error statusMessage with the appropriate arg', function() {
-    var debuggee = new Debuggee('a', 'b', undefined, undefined, undefined,
-                                'Some Error Message');
-    assert.ok(debuggee);
-    assert.ok(debuggee.statusMessage);
   });
 
 });

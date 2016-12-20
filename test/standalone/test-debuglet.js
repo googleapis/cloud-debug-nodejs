@@ -45,7 +45,7 @@ var errorBp = {
   location: { path: 'fixtures/foo.js', line: 2 }
 };
 
-describe(__filename, function(){
+describe(__filename, function() {
   var debuglet;
 
   beforeEach(function() {
@@ -489,5 +489,35 @@ describe(__filename, function(){
       ), 'hi b');
     });
   });
-});
 
+  describe('createDebuggee', function() {
+    it('should have sensible labels', function() {
+      var debuggee = Debuglet.createDebuggee(
+          'some project', 'id',
+          {service: 'some-service', version: 'production'});
+      assert.ok(debuggee);
+      assert.ok(debuggee.labels);
+      assert.strictEqual(debuggee.labels.module, 'some-service');
+      assert.strictEqual(debuggee.labels.version, 'production');
+    });
+
+    it('should not add a module label when service is default', function() {
+      var debuggee =
+          Debuglet.createDebuggee('fancy-project', 'very-unique',
+                                  {service: 'default', version: 'yellow.5'});
+      assert.ok(debuggee);
+      assert.ok(debuggee.labels);
+      assert.strictEqual(debuggee.labels.module, undefined);
+      assert.strictEqual(debuggee.labels.version, 'yellow.5');
+    });
+
+    it('should have an error statusMessage with the appropriate arg',
+       function() {
+         var debuggee = Debuglet.createDebuggee(
+             'a', 'b', undefined, undefined, undefined, 'Some Error Message');
+         assert.ok(debuggee);
+         assert.ok(debuggee.statusMessage);
+       });
+  });
+
+});

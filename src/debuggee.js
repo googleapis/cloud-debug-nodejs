@@ -15,99 +15,62 @@
  */
 'use strict';
 
-var crypto = require('crypto');
-var path = require('path');
 var pjson = require('../package.json');
-var StatusMessage = require('./status-message.js');
 var _ = require('lodash');
 
 /**
  * Creates a Debuggee service object.
  * @ref https://cloud.google.com/debugger/api/reference/rest/v2/Debuggee
  *
- * @param {string} projectId - Google Cloud Project ID
- * @param {string} uid - unique identified for the source code on this instance.
- * @param {?object} serviceContext
- * @param {string} serviceContext.service - A string identifying the service/
- *     module that this instance belongs to.
- * @param {string} serviceContext.version - A string identifying the version of
- *     the service.
- * @param {?object} sourceContext
- * @param {?string} description - A user specified string identifying this
- *     debuggable instance.
- * @param {?string} errorMessage - A error string to register this as a erroring
- *     debuggable instance. This is useful if we have a problem starting the
- *     debugger support, and want to report to the API so that the users has a
- *     way of noticing.
- * @param {?boolean} onGCP - set to true when the debuggee is running inside
- *     Google Cloud Platform.
+ * @param {object} properties - an object with properties to use for Debuggee
+ *     initialization.
+ * @param {object} properties.project - Google Cloud Project ID
+ * @param {string} properties.uniquifier - Debuggee uniquifier within the
+ *     project. Any string that identifies the application within the project
+ *     can be used. Including environment and version or build IDs is
+ *     recommended.
+ * @param {?string} properties.description - A user specified string identifyin
+ *     this debuggable instance (default: none)
+ * @param {?string} properties.agentVersion - version ID of the agent. (default:
+ *     the version of this module)
+ * @param {?object} labels - a set of custom properties about the debuggee that
+ *     are reported to the service.
+ * @param {?array<object>} properties.sourceContexts
+ * @param {?StatusMessage} properties.statusMessage - A error string to register
+ *     this as an erroring debuggable instance. This is useful if we have a
+ *     problem starting the debugger support, and want to report to the API so
+ *     that the user has a way of noticing.
+ *     TODO(ofrobots): has this been renamed to `status` in the API?
  */
-function Debuggee(projectId, uid, serviceContext, sourceContext,
-                  description, errorMessage, onGCP) {
+function Debuggee(properties) {
   if (!(this instanceof Debuggee)) {
-    return new Debuggee(projectId, uid, serviceContext, sourceContext,
-                        description, errorMessage, onGCP);
+    return new Debuggee(properties);
   }
 
-  if (!_.isString(projectId)) {
-    throw new Error('projectId must be a string');
+  properties = properties || {};
+
+  if (!_.isString(properties.project)) {
+    throw new Error('properties.project must be a string');
   }
-  if (!_.isString(uid)) {
-    throw new Error('uid must be a string');
-  }
-
-  var cwd = process.cwd();
-  var mainScript = path.relative(cwd, process.argv[1]);
-
-  var version = 'google.com/node-' + (onGCP ? 'gcp' : 'standalone') + '/v' +
-                pjson.version;
-  var desc = process.title + ' ' + mainScript;
-
-  var labels = {
-    'main script': mainScript,
-    'process.title': process.title,
-    'node version': process.versions.node,
-    'V8 version': process.versions.v8,
-    'agent.name': pjson.name,
-    'agent.version': pjson.version,
-    'projectid': projectId
-  };
-
-  if (serviceContext) {
-    if (_.isString(serviceContext.service) &&
-        serviceContext.service !== 'default') {
-      // As per app-engine-ids, the module label is not reported
-      // when it happens to be 'default'.
-      labels.module = serviceContext.service;
-      desc += ' module:' + serviceContext.service;
-    }
-
-    if (_.isString(serviceContext.version)) {
-      labels.version = serviceContext.version;
-      desc += ' version:' + serviceContext.version;
-    }
+  if (!_.isString(properties.uniquifier)) {
+    throw new Error('properties.uniquifier must be a string');
   }
 
-  if (description) {
-    desc += ' description:' + description;
+  this.project = properties.project;
+  this.uniquifier = properties.uniquifier;
+  this.agentVersion =
+      properties.agentVersion || (pjson.name + '/default/v' + pjson.version);
+  if (properties.description) {
+    this.description = properties.description;
   }
-
-  var uniquifier =
-      desc + version + uid + sourceContext + JSON.stringify(labels);
-  uniquifier = crypto.createHash('sha1').update(uniquifier).digest('hex');
-
-  if (errorMessage) {
-    this.statusMessage =
-        new StatusMessage(StatusMessage.UNSPECIFIED, errorMessage, true);
+  if (properties.labels) {
+    this.labels = properties.labels;
   }
-
-  this.project = projectId;
-  this.uniquifier = uniquifier;
-  this.description = desc;
-  this.agentVersion = version;
-  this.labels = labels;
-  if (sourceContext) {
-    this.sourceContexts = [sourceContext];
+  if (properties.sourceContexts) {
+    this.sourceContexts = properties.sourceContexts;
+  }
+  if (properties.statusMessage) {
+    this.statusMessage = properties.statusMessage;
   }
 }
 
