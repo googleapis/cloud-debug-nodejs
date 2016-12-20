@@ -16,12 +16,14 @@
 
 'use strict';
 
+var crypto = require('crypto');
 var fs = require('fs');
 var path = require('path');
 var EventEmitter = require('events').EventEmitter;
 var extend = require('extend');
 var util = require('util');
 var semver = require('semver');
+var _ = require('lodash');
 
 var v8debugapi = require('./v8debugapi.js');
 var Debuggee = require('../debuggee.js');
@@ -32,6 +34,7 @@ var common = require('@google/cloud-diagnostics-common');
 var Logger = common.logger;
 var StatusMessage = require('../status-message.js');
 var SourceMapper = require('./sourcemapper.js');
+var pjson = require('../../package.json');
 
 var assert = require('assert');
 
@@ -182,7 +185,7 @@ Debuglet.prototype.start = function() {
             that.logger_.debug('Starting debuggee, project', project);
             that.running_ = true;
             that.project_ = project;
-            that.debuggee_ = new Debuggee(
+            that.debuggee_ = Debuglet.createDebuggee(
                 project, id, that.config_.serviceContext, sourceContext,
                 that.config_.description, null, onGCP);
             that.scheduleRegistration_(0 /* immediately */);
@@ -194,11 +197,73 @@ Debuglet.prototype.start = function() {
   });
 };
 
-
 /**
  * @private
  */
-Debuglet.prototype.getProjectId_ = function(callback) {
+Debuglet.createDebuggee =
+    function(projectId, uid, serviceContext, sourceContext, description,
+             errorMessage, onGCP) {
+  var cwd = process.cwd();
+  var mainScript = path.relative(cwd, process.argv[1]);
+
+  var version = 'google.com/node-' + (onGCP ? 'gcp' : 'standalone') + '/v' +
+                pjson.version;
+  var desc = process.title + ' ' + mainScript;
+
+  var labels = {
+    'main script': mainScript,
+    'process.title': process.title,
+    'node version': process.versions.node,
+    'V8 version': process.versions.v8,
+    'agent.name': pjson.name,
+    'agent.version': pjson.version,
+    'projectid': projectId
+  };
+
+  if (serviceContext) {
+    if (_.isString(serviceContext.service) &&
+        serviceContext.service !== 'default') {
+      // As per app-engine-ids, the module label is not reported
+      // when it happens to be 'default'.
+      labels.module = serviceContext.service;
+      desc += ' module:' + serviceContext.service;
+    }
+
+    if (_.isString(serviceContext.version)) {
+      labels.version = serviceContext.version;
+      desc += ' version:' + serviceContext.version;
+    }
+  }
+
+  if (description) {
+    desc += ' description:' + description;
+  }
+
+  var uniquifier =
+      desc + version + uid + sourceContext + JSON.stringify(labels);
+  uniquifier = crypto.createHash('sha1').update(uniquifier).digest('hex');
+
+  var statusMessage =
+      errorMessage ?
+          new StatusMessage(StatusMessage.UNSPECIFIED, errorMessage, true) :
+          null;
+
+  var properties = {
+    project: projectId,
+    uniquifier: uniquifier,
+    description: desc,
+    agentVersion: version,
+    labels: labels,
+    statusMessage: statusMessage,
+    sourceContexts: [sourceContext]
+  };
+  return new Debuggee(properties);
+};
+
+    /**
+     * @private
+     */
+    Debuglet.prototype.getProjectId_ = function(callback) {
   var that = this;
 
   // We need to figure out whether we are running on GCP. We can use our ability
