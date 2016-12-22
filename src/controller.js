@@ -45,7 +45,7 @@ util.inherits(Controller, common.ServiceObject);
 
 /**
  * Register to the API (implementation)
- * 
+ *
  * @param {!function(?Error,Object=)} callback
  * @private
  */
@@ -112,10 +112,11 @@ Controller.prototype.listBreakpoints = function(debuggee, callback) {
 
 /**
  * Update the server about breakpoint state
+ * @param {!Debuggee} debuggee
  * @param {!Breakpoint} breakpoint
  * @param {!Function} callback accepting (err, body)
  */
-Controller.prototype.updateBreakpoint = function(breakpoint, debuggee, callback) {
+Controller.prototype.updateBreakpoint = function(debuggee, breakpoint, callback) {
   assert(debuggee.id, 'should have a registered debuggee');
 
   breakpoint.action = 'capture';

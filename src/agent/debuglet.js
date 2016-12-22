@@ -100,7 +100,7 @@ Debuglet.prototype.normalizeConfig_ = function(config) {
   config = extend({}, defaultConfig, config);
 
   if (config.keyFilename || config.credentials || config.projectId) {
-    throw new Error('keyFilename, projectId or credentials should be provided' + 
+    throw new Error('keyFilename, projectId or credentials should be provided' +
                     ' to the Debug module constructor rather than startAgent');
   }
 
@@ -151,7 +151,7 @@ Debuglet.prototype.start = function() {
           that.emit('initError', err);
           return;
         }
-        
+
         that.v8debug_ = v8debugapi.create(that.logger_, that.config_, jsStats, mapper);
 
         id = id || hash;
@@ -365,7 +365,7 @@ Debuglet.prototype.scheduleBreakpointFetch_ = function(seconds) {
                            err);
         that.fetcherActive_ = false;
         // We back-off from fetching breakpoints, and try to register again
-        // after a while. Successful registration will restart the breakpoint 
+        // after a while. Successful registration will restart the breakpoint
         // fetcher.
         that.scheduleRegistration_(
             that.config_.internal.registerDelayOnFetcherErrorSec);
@@ -538,7 +538,7 @@ Debuglet.prototype.completeBreakpoint_ = function(breakpoint) {
 
   that.logger_.info('\tupdating breakpoint data on server', breakpoint.id);
   that.debugletApi_.updateBreakpoint(
-      breakpoint, that.debuggee_, function(err /*, body*/) {
+      that.debuggee_, breakpoint, function(err /*, body*/) {
         if (err) {
           that.logger_.error('Unable to complete breakpoint on server', err);
         } else {
@@ -557,7 +557,7 @@ Debuglet.prototype.rejectBreakpoint_ = function(breakpoint) {
   var that = this;
 
   that.debugletApi_.updateBreakpoint(
-      breakpoint, that.debuggee_, function(err /*, body*/) {
+      that.debuggee_, breakpoint, function(err /*, body*/) {
         if (err) {
           that.logger_.error('Unable to complete breakpoint on server', err);
         }

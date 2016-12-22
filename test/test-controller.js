@@ -231,7 +231,7 @@ describe('Controller API', function() {
         .reply(200, { kind: 'debugletcontroller#updateActiveBreakpointResponse'});
       var debuggee = { id: 'fake-debuggee' };
       var controller = new Controller(fakeDebug);
-      controller.updateBreakpoint(breakpoint, debuggee,
+      controller.updateBreakpoint(debuggee, breakpoint,
         function(err, result) {
           assert(!err, 'not expecting an error');
           assert.equal(result.kind, 'debugletcontroller#updateActiveBreakpointResponse');
