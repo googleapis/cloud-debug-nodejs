@@ -24,6 +24,7 @@ var assert = require('assert');
 var common = require('@google-cloud/common');
 var qs = require('querystring');
 var util = require('util');
+var Debug = require('../src');
 
 /** @const {string} Cloud Debug API endpoint */
 var API = 'https://clouddebugger.googleapis.com/v2/debugger';
@@ -31,9 +32,9 @@ var API = 'https://clouddebugger.googleapis.com/v2/debugger';
 /**
  * @constructor
  */
-function Debugger(debug) {
+function Debugger() {
   common.ServiceObject.call(this, {
-    parent: debug,
+    parent: new Debug(),
     baseUrl: '/debugger'
   });
 
@@ -77,43 +78,48 @@ Debugger.prototype.listDebuggees = function(projectId, includeInactive, callback
       callback(new Error('unable to list debuggees, status code ' +
                          response.statusCode));
       return;
-    } else if (!body || !body.debuggees ||
-        body.debuggees.constructor !== Array) {
+    } else if (!body) {
       callback(new Error('invalid response body from server'));
     } else {
-      callback(null, body.debuggees);
+      if (body.debuggees) {
+        callback(null, body.debuggees);
+      } else {
+        callback(null, []);
+      }
     }
   });
 };
 
 /**
  * Gets a list of breakpoints in a given debuggee.
- * @param {string|Debuggee} debuggee - The debuggee whose breakpoints should be
- *     listed.
+ * @param {string} debuggeeId - The ID of the debuggee whose breakpoints should
+ *     be listed.
  * @param {object} options - An object containing options on the list of
  *     breakpoints. TODO(kjin): How to list possible options here?
  * @param {!function(?Error,Breakpoint[]=)} callback - A function that will be
  *     called with a list of Breakpoint objects as a parameter, or an Error
  *     object if an error occurred in obtaining it.
  */
-Debugger.prototype.listBreakpoints = function(debuggee, options, callback) {
+Debugger.prototype.listBreakpoints = function(debuggeeId, options, callback) {
   if (typeof(options) === 'function') {
     callback = options;
     options = {};
   }
 
   var query = {
-    action: 0 /*TODO(kjin)*/,
     clientVersion: this.clientVersion_,
     includeAllUsers: !!options.includeAllUsers,
     includeInactive: !!options.includeInactive,
     stripResults: !!options.stripResults
   };
+  if (options.action) {
+    query.action = action;
+  }
   if (this.nextWaitToken_) {
     query.waitToken = this.nextWaitToken_;
   }
 
-  var uri = API + '/debuggees/' + encodeURIComponent(debuggee.id) +
+  var uri = API + '/debuggees/' + encodeURIComponent(debuggeeId) +
             '/breakpoints?' + qs.stringify(query);
   this.request({uri: uri, json: true}, function(err, body, response) {
     if (!response) {
@@ -123,26 +129,29 @@ Debugger.prototype.listBreakpoints = function(debuggee, options, callback) {
       callback(new Error('unable to list breakpoints, status code ' +
                          response.statusCode));
       return;
-    } else if (!body || !body.breakpoints ||
-        body.breakpoints.constructor !== Array) {
+    } else if (!body) {
       callback(new Error('invalid response body from server'));
     } else {
-      that.nextWaitToken_ = body.nextWaitToken;
-      callback(null, body.breakpoints);
+      if (body.breakpoints) {
+        callback(null, body.breakpoints);
+      } else {
+        callback(null, []);
+      }
     }
   });
 };
 
 /**
  * Gets information about a given breakpoint.
+ * @param {string} debuggee - The ID of the debuggee in which the breakpoint
+ *     is set.
  * @param {string} breakpointId - The ID of the breakpoint to get information
  *     about.
- * @param {Debuggee} debuggee - The debuggee in which the breakpoint is set.
  * @param {!function(?Error,Breakpoint=)} callback - A function that will be
  *     called with information about the given breakpoint, or an Error object
  *     if an error occurred in obtaining its information.
  */
-Debugger.prototype.getBreakpoint = function(breakpointId, debuggee, callback) {
+Debugger.prototype.getBreakpoint = function(debuggeeId, breakpointId, callback) {
   var query = {
     clientVersion: this.clientVersion_
   };
@@ -168,22 +177,22 @@ Debugger.prototype.getBreakpoint = function(breakpointId, debuggee, callback) {
 
 /**
  * Sets a new breakpoint.
+ * @param {Debuggee} debuggeeId - The ID of the debuggee in which the breakpoint
+ *     should be set.
  * @param {Breakpoint} breakpoint - An object representing information about
  *     the breakpoint to set.
- * @param {Debuggee} debuggee - The debuggee in which the breakpoint should be
- *     set.
  * @param {!function(?Error,Breakpoint=)} callback - A function that will be
  *     called with information about the breakpoint that was just set, or an
  *     Error object if an error occurred in obtaining its information. Note
  *     that the Breakpoint object here will differ from the input object in
  *     that its id field will be set.
  */
-Debugger.prototype.setBreakpoint = function(breakpoint, debuggee, callback) {
+Debugger.prototype.setBreakpoint = function(debuggeeId, breakpoint, callback) {
   var query = {
     clientVersion: this.clientVersion_
   };
   var options = {
-    uri: API + '/debuggees/' + encodeURIComponent(debuggee.id) +
+    uri: API + '/debuggees/' + encodeURIComponent(debuggeeId) +
          '/breakpoints/set?' + qs.stringify(query),
     method: 'POST',
     json: true,
@@ -208,20 +217,22 @@ Debugger.prototype.setBreakpoint = function(breakpoint, debuggee, callback) {
 
 /**
  * Deletes a breakpoint.
- * @param {Breakpoint} breakpoint - The breakpoint to delete.
- * @param {Debuggee} debuggee - The debuggee to which the breakpoint belongs.
+ * @param {Debuggee} debuggeeId - The ID of the debuggee to which the breakpoint
+ *     belongs.
+ * @param {Breakpoint} breakpointId - The ID of the breakpoint to delete.
  * @param {!function(?Error)} callback - A function that will be
  *     called with a Error object as a parameter if an error occurred in
  *     deleting a breakpoint. If no error occurred, the first argument will be
  *     set to null.
  */
-Debugger.prototype.deleteBreakpoint = function(breakpoint, debuggee, callback) {
+Debugger.prototype.deleteBreakpoint = function(debuggeeId, breakpointId, callback) {
   var query = {
     clientVersion: this.clientVersion_
   };
   var options = {
-    uri: API + '/debuggees/' + encodeURIComponent(debuggee.id) +
-         '/breakpoints?' + qs.stringify(query),
+    uri: API + '/debuggees/' + encodeURIComponent(debuggeeId) +
+         '/breakpoints/' + encodeURIComponent(breakpointId) + '?' +
+         qs.stringify(query),
     method: 'DELETE',
     json: true
   };
