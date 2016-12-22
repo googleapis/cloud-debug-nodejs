@@ -52,6 +52,7 @@ module.exports = Debuglet;
  * @event 'started' once the startup tasks are completed
  * @event 'registered' once successfully registered to the debug api
  * @event 'stopped' if the agent stops due to a fatal error after starting
+ * @event 'remotelyDisabled' if the debuggee is disabled by the server.
  * @constructor
  */
 function Debuglet(debug, config) {
@@ -330,6 +331,7 @@ Debuglet.prototype.scheduleRegistration_ = function(seconds) {
       if (result.debuggee.isDisabled) {
         // Server has disabled this debuggee / debug agent.
         onError(new Error('Disabled by the server'));
+        that.emit('remotelyDisabled');
         return;
       }
 

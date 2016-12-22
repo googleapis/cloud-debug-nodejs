@@ -223,6 +223,31 @@ describe(__filename, function() {
           id: DEBUGGEE_ID,
           isDisabled: true
         }
+      });
+
+    debuglet.once('remotelyDisabled', function() {
+      assert.ok(!debuglet.fetcherActive_);
+      scope.done();
+      done();
+    });
+
+    debuglet.start();
+  });
+
+  it('should retry after a isDisabled request', function(done) {
+    this.timeout(4000);
+    var debug = require('../..')(
+        {projectId: 'fake-project', credentials: fakeCredentials});
+    debuglet = new Debuglet(debug, defaultConfig);
+
+    nocks.oauth2();
+    var scope = nock(API)
+      .post(REGISTER_PATH)
+      .reply(200, {
+        debuggee: {
+          id: DEBUGGEE_ID,
+          isDisabled: true
+        }
       })
       .post(REGISTER_PATH)
       .reply(200, {
@@ -231,18 +256,18 @@ describe(__filename, function() {
         }
       });
 
-    debuglet.once('registered', function(id) {
-      assert.equal(id, DEBUGGEE_ID);
-      setImmediate(function() {
-        assert.ok(debuglet.fetcherActive_);
-        scope.done();
-        done();
-      });
+    var gotDisabled = false;
+    debuglet.once('remotelyDisabled', function() {
+      assert.ok(!debuglet.fetcherActive_);
+      gotDisabled = true;
     });
 
-    setTimeout(function() {
-      assert.ok(!debuglet.fetcherActive_);
-    }, 1000);
+    debuglet.once('registered', function(id) {
+      assert.ok(gotDisabled);
+      assert.equal(id, DEBUGGEE_ID);
+      scope.done();
+      done();
+    });
 
     debuglet.start();
   });
