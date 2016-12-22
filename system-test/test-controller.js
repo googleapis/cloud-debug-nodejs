@@ -38,7 +38,8 @@ describe('Controller', function() {
     var debuggee =
         new Debuggee({
           project: process.env.GCLOUD_PROJECT, 
-          uniquifier: 'test-uid-' + Date.now()
+          uniquifier: 'test-uid-' + Date.now(),
+          description: 'this is a system test'
         });
 
     controller.register(debuggee, function(err, body) {
@@ -55,7 +56,8 @@ describe('Controller', function() {
     var debuggee =
         new Debuggee({
           project: process.env.GCLOUD_PROJECT, 
-          uniquifier: 'test-uid-' + Date.now()
+          uniquifier: 'test-uid-' + Date.now(),
+          description: 'this is a system test'
         });
     controller.register(debuggee, function(err, body) {
       assert.ifError(err, 'should be able to register successfully');
