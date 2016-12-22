@@ -29,8 +29,8 @@ var _ = require('lodash');
  *     project. Any string that identifies the application within the project
  *     can be used. Including environment and version or build IDs is
  *     recommended.
- * @param {?string} properties.description - A user specified string identifyin
- *     this debuggable instance (default: none)
+ * @param {string} properties.description - A user specified string identifying
+ *     this debuggable instance.
  * @param {?string} properties.agentVersion - version ID of the agent. (default:
  *     the version of this module)
  * @param {?object} labels - a set of custom properties about the debuggee that
@@ -55,14 +55,15 @@ function Debuggee(properties) {
   if (!_.isString(properties.uniquifier)) {
     throw new Error('properties.uniquifier must be a string');
   }
+  if (!_.isString(properties.description)) {
+    throw new Error('properties.description must be a string');
+  }
 
   this.project = properties.project;
   this.uniquifier = properties.uniquifier;
+  this.description = properties.description;
   this.agentVersion =
-      properties.agentVersion || (pjson.name + '/default/v' + pjson.version);
-  if (properties.description) {
-    this.description = properties.description;
-  }
+      properties.agentVersion || (pjson.name + '/client/v' + pjson.version);
   if (properties.labels) {
     this.labels = properties.labels;
   }

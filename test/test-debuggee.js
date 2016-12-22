@@ -21,12 +21,14 @@ var Debuggee = require('../src/debuggee.js');
 describe('Debuggee', function() {
 
   it('should create a Debuggee instance on valid input', function() {
-    var debuggee = new Debuggee({project:'project', uniquifier: 'uid'});
+    var debuggee = new Debuggee(
+        {project: 'project', uniquifier: 'uid', description: 'unit test'});
     assert.ok(debuggee instanceof Debuggee);
   });
 
   it('should create a Debuggee on a call without new', function() {
-    var debuggee = new Debuggee({project:'project', uniquifier: 'uid'});
+    var debuggee = new Debuggee(
+        {project: 'project', uniquifier: 'uid', description: 'unit test'});
     assert.ok(debuggee instanceof Debuggee);
   });
 
@@ -37,6 +39,9 @@ describe('Debuggee', function() {
     assert.throws(function() { new Debuggee({project: 'test'}); });
     assert.throws(function() {
       new Debuggee({project: 'test', uniquifier: null});
+      assert.throws(function() {
+        new Debuggee({project: 'test', uniquifier: 'uid'});
+      });
     });
   });
 
