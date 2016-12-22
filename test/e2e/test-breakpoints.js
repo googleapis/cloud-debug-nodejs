@@ -38,8 +38,8 @@ var SCOPES = [
 ];
 var CLUSTER_WORKERS = 3;
 
-var globalDebuggee;
-var globalProject;
+var debuggeeId;
+var projectId;
 var transcript = '';
 
 var FILENAME = 'test-breakpoints.js';
@@ -65,7 +65,7 @@ function runTest() {
       'deleteBreakpoint'
     ]);
 
-    return api.listDebuggees(globalProject);
+    return api.listDebuggees(projectId);
   }).then(function(debuggees) {
     // Check that the debuggee created in this test is among the list of
     // debuggees, then list its breakpoints
@@ -74,18 +74,17 @@ function runTest() {
       util.inspect(debuggees, { depth: null}));
     assert.ok(debuggees, 'should get a valid ListDebuggees response');
     var result = _.find(debuggees, function(d) {
-      return d.id === globalDebuggee;
+      return d.id === debuggeeId;
     });
     assert.ok(result, 'should find the debuggee we just registered');
-
-    return api.listBreakpoints(globalDebuggee);
+    return api.listBreakpoints(debuggeeId);
   }).then(function(breakpoints) {
     // Delete every breakpoint
 
     console.log('-- List of breakpoints\n', breakpoints);
 
     var promises = breakpoints.map(function(breakpoint) {
-      return api.deleteBreakpoint(globalDebuggee, breakpoint);
+      return api.deleteBreakpoint(debuggeeId, breakpoint.id);
     });
 
     return Promise.all(promises);
@@ -95,7 +94,7 @@ function runTest() {
     console.log('-- deleted');
 
     console.log('-- setting a logpoint');
-    return api.setBreakpoint(globalDebuggee, {
+    return api.setBreakpoint(debuggeeId, {
       id: 'breakpoint-1',
       location: {path: FILENAME, line: 5},
       condition: 'n === 10',
@@ -120,12 +119,12 @@ function runTest() {
     var breakpoint = results[0];
 
     assert(transcript.indexOf('o is: {"a":[1,"hi",true]}') !== -1);
-    return api.deleteBreakpoint(globalDebuggee, breakpoint);
+    return api.deleteBreakpoint(debuggeeId, breakpoint.id);
   }).then(function() {
     // Set another breakpoint at the same location
 
     console.log('-- setting a breakpoint');
-    return api.setBreakpoint(globalDebuggee, {
+    return api.setBreakpoint(debuggeeId, {
       id: 'breakpoint-1',
       location: {path: FILENAME, line: 5},
       expressions: ['process'], // Process for large variable
@@ -149,7 +148,7 @@ function runTest() {
     var breakpoint = results[0];
 
     console.log('-- now checking if the breakpoint was hit');
-    return api.getBreakpoint(globalDebuggee, breakpoint);
+    return api.getBreakpoint(debuggeeId, breakpoint.id);
   }).then(function(breakpoint) {
     // Check that the breakpoint was hit and contains the correct information,
     // which ends the test
@@ -186,14 +185,14 @@ function runTest() {
 if (cluster.isMaster) {
   cluster.setupMaster({ silent: true });
   var handler = function(a) {
-    if (!globalDebuggee) {
+    if (!debuggeeId) {
       // Cache the needed info from the first worker.
-      globalDebuggee = a[0];
-      globalProject = a[1];
+      debuggeeId = a[0];
+      projectId = a[1];
     } else {
       // Make sure all other workers are consistent.
-      assert.equal(globalDebuggee, a[0]);
-      assert.equal(globalProject, a[1]);
+      assert.equal(debuggeeId, a[0]);
+      assert.equal(projectId, a[1]);
     }
   };
   var stdoutHandler = function(chunk) {

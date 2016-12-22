@@ -33,12 +33,12 @@ var Debugger = require('../debugger.js');
 
 var DEBUG_API = 'https://clouddebugger.googleapis.com/v2/debugger';
 var SCOPES = [
-    'https://www.googleapis.com/auth/cloud-platform',
-    'https://www.googleapis.com/auth/cloud_debugger',
-  ];
+  'https://www.googleapis.com/auth/cloud-platform',
+  'https://www.googleapis.com/auth/cloud_debugger',
+];
 
-var globalDebuggee;
-var globalProject;
+var debuggeeId;
+var projectId;
 var transcript = '';
 
 var FILENAME = 'test-log-throttling.js';
@@ -64,7 +64,7 @@ function runTest() {
       'deleteBreakpoint'
     ]);
 
-    return api.listDebuggees(globalProject);
+    return api.listDebuggees(projectId);
   }).then(function(debuggees) {
     // Check that the debuggee created in this test is among the list of
     // debuggees, then list its breakpoints
@@ -73,18 +73,18 @@ function runTest() {
       util.inspect(debuggees, { depth: null}));
     assert.ok(debuggees, 'should get a valid ListDebuggees response');
     var result = _.find(debuggees, function(d) {
-      return d.id === globalDebuggee;
+      return d.id === debuggeeId;
     });
     assert.ok(result, 'should find the debuggee we just registered');
 
-    return api.listBreakpoints(globalDebuggee);
+    return api.listBreakpoints(debuggeeId);
   }).then(function(breakpoints) {
     // Delete every breakpoint
 
     console.log('-- List of breakpoints\n', breakpoints);
 
     var promises = breakpoints.map(function(breakpoint) {
-      return api.deleteBreakpoint(globalDebuggee, breakpoint);
+      return api.deleteBreakpoint(debuggeeId, breakpoint.id);
     });
 
     return Promise.all(promises);
@@ -94,7 +94,7 @@ function runTest() {
     console.log('-- deleted');
 
     console.log('-- setting a logpoint');
-    return api.setBreakpoint(globalDebuggee, {
+    return api.setBreakpoint(debuggeeId, {
       id: 'breakpoint-1',
       location: {path: FILENAME, line: 5},
       condition: 'n === 10',
@@ -129,7 +129,7 @@ function runTest() {
     // resume logging after `logDelaySeconds` have passed.
     assert(logCount > 2, "log count is not greater than 2: " + logCount);
 
-    return api.deleteBreakpoint(globalDebuggee, breakpoint);
+    return api.deleteBreakpoint(debuggeeId, breakpoint.id);
   }).then(function() {
     console.log('-- test passed');
     return Promise.resolve();
@@ -140,9 +140,9 @@ if (cluster.isMaster) {
   cluster.setupMaster({ silent: true });
   var handler = function(a) {
     // Cache the needed info from the first worker.
-    if (!globalDebuggee) {
-      globalDebuggee = a[0];
-      globalProject = a[1];
+    if (!debuggeeId) {
+      debuggeeId = a[0];
+      projectId = a[1];
     }
   };
   var stdoutHandler = function(chunk) {

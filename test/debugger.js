@@ -166,8 +166,8 @@ Debugger.prototype.getBreakpoint = function(debuggeeId, breakpointId, callback) 
     clientVersion: this.clientVersion_
   };
 
-  var uri = API + '/debuggees/' + encodeURIComponent(debuggee.id) +
-            '/breakpoints/' + encodeURIComponent(breakpoint.id) +
+  var uri = API + '/debuggees/' + encodeURIComponent(debuggeeId) +
+            '/breakpoints/' + encodeURIComponent(breakpointId) +
             '?' + qs.stringify(query);
   this.request({uri: uri, json: true}, function(err, body, response) {
     if (err) {
@@ -208,7 +208,7 @@ Debugger.prototype.setBreakpoint = function(debuggeeId, breakpoint, callback) {
     json: true,
     body: breakpoint
   };
-
+  
   this.request(options, function(err, body, response) {
     if (err) {
       callback(err);
