@@ -34,7 +34,7 @@ var API = 'https://clouddebugger.googleapis.com/v2/debugger';
  */
 function Debugger() {
   common.ServiceObject.call(this, {
-    parent: new Debug(),
+    parent: new Debug({}),
     baseUrl: '/debugger'
   });
 
@@ -71,13 +71,13 @@ Debugger.prototype.listDebuggees = function(projectId, includeInactive, callback
 
   var uri = API + '/debuggees?' + qs.stringify(query);
   this.request({uri: uri, json: true}, function(err, body, response) {
-    if (!response) {
-      callback(err || new Error('unknown error - request response missing'));
-      return;
+    if (err) {
+      callback(err);
+    } else if (!response) {
+      callback(new Error('unknown error - request response missing'));
     } else if (response.statusCode !== 200) {
       callback(new Error('unable to list debuggees, status code ' +
                          response.statusCode));
-      return;
     } else if (!body) {
       callback(new Error('invalid response body from server'));
     } else {
@@ -122,13 +122,13 @@ Debugger.prototype.listBreakpoints = function(debuggeeId, options, callback) {
   var uri = API + '/debuggees/' + encodeURIComponent(debuggeeId) +
             '/breakpoints?' + qs.stringify(query);
   this.request({uri: uri, json: true}, function(err, body, response) {
-    if (!response) {
+    if (err) {
+      callback(err);
+    } else if (!response) {
       callback(err || new Error('unknown error - request response missing'));
-      return;
     } else if (response.statusCode !== 200) {
       callback(new Error('unable to list breakpoints, status code ' +
                          response.statusCode));
-      return;
     } else if (!body) {
       callback(new Error('invalid response body from server'));
     } else {
@@ -160,13 +160,13 @@ Debugger.prototype.getBreakpoint = function(debuggeeId, breakpointId, callback) 
             '/breakpoints/' + encodeURIComponent(breakpoint.id) +
             '?' + qs.stringify(query);
   this.request({uri: uri, json: true}, function(err, body, response) {
-    if (!response) {
+    if (err) {
+      callback(err);
+    } else if (!response) {
       callback(err || new Error('unknown error - request response missing'));
-      return;
     } else if (response.statusCode !== 200) {
       callback(new Error('unable to get breakpoint info, status code ' +
                          response.statusCode));
-      return;
     } else if (!body || !body.breakpoint) {
       callback(new Error('invalid response body from server'));
     } else {
@@ -200,13 +200,13 @@ Debugger.prototype.setBreakpoint = function(debuggeeId, breakpoint, callback) {
   };
 
   this.request(options, function(err, body, response) {
-    if (!response) {
+    if (err) {
+      callback(err);
+    } else if (!response) {
       callback(err || new Error('unknown error - request response missing'));
-      return;
     } else if (response.statusCode !== 200) {
       callback(new Error('unable to set breakpoint, status code ' +
                          response.statusCode));
-      return;
     } else if (!body || !body.breakpoint) {
       callback(new Error('invalid response body from server'));
     } else {
@@ -238,13 +238,13 @@ Debugger.prototype.deleteBreakpoint = function(debuggeeId, breakpointId, callbac
   };
 
   this.request(options, function(err, body, response) {
-    if (!response) {
+    if (err) {
+      callback(err);
+    } else if (!response) {
       callback(err || new Error('unknown error - request response missing'));
-      return;
     } else if (response.statusCode !== 200) {
       callback(new Error('unable to delete breakpoint, status code ' +
                          response.statusCode));
-      return;
     } else if (Object.keys(body).length > 0) {
       callback(new Error('response body is non-empty'));
     } else {

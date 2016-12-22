@@ -28,12 +28,14 @@ var GoogleAuth = require('google-auth-library');
 var _ = require('lodash'); // for _.find. Can't use ES6 yet.
 var cluster = require('cluster');
 var semver = require('semver');
+var thenifyAll = require('thenify-all');
+var Debugger = require('../debugger.js');
 
 var DEBUG_API = 'https://clouddebugger.googleapis.com/v2/debugger';
 var SCOPES = [
-    'https://www.googleapis.com/auth/cloud-platform',
-    'https://www.googleapis.com/auth/cloud_debugger',
-  ];
+  'https://www.googleapis.com/auth/cloud-platform',
+  'https://www.googleapis.com/auth/cloud_debugger',
+];
 var CLUSTER_WORKERS = 3;
 
 var globalDebuggee;
@@ -42,25 +44,6 @@ var transcript = '';
 
 var FILENAME = 'test-breakpoints.js';
 
-function apiRequest(authClient, url, method, body) {
-  method = method || 'GET';
-
-  return new Promise(function (resolve, reject) {
-    authClient.request({
-      url: url,
-      method: method,
-      json: true,
-      body: body
-    }, function(err, body, response) {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(body);
-      }
-    });
-  });
-}
-
 var delay = function(delayTimeMS) {
   return new Promise(function(resolve, reject) {
     setTimeout(resolve, delayTimeMS);
@@ -68,92 +51,51 @@ var delay = function(delayTimeMS) {
 };
 
 function runTest() {
+  var api;
   return delay(10 * 1000).then(function() {
-    return new Promise(function(resolve, reject) {
-      // Get our own credentials because we need an extra scope
-      var auth = new GoogleAuth();
-      auth.getApplicationDefault(function(err, authClient) {
-        if (err) {
-          reject(err);
-        }
-        resolve(authClient);
-      });
-    });
-  }).then(function(authClient) {
     // List debuggees
 
-    // (Inject scopes if they have not been injected by the environment)
-    if (authClient.createScopedRequired &&
-        authClient.createScopedRequired()) {
-      authClient = authClient.createScoped(SCOPES);
-    }
+    // (Assign debugger API)
+    var callbackApi = new Debugger();
+    api = thenifyAll(callbackApi, callbackApi, [
+      'listDebuggees',
+      'listBreakpoints',
+      'getBreakpoint',
+      'setBreakpoint',
+      'deleteBreakpoint'
+    ]);
 
-    // (Define API endpoints)
-    var api = {
-      listDebuggees: function(project) {
-        return apiRequest(authClient, DEBUG_API + '/debuggees?project=' +
-          project);
-      },
-      listBreakpoints: function(debuggee) {
-        return apiRequest(authClient, DEBUG_API + '/debuggees/' + debuggee +
-          '/breakpoints');
-      },
-      deleteBreakpoint: function(debuggee, breakpoint) {
-        return apiRequest(authClient, DEBUG_API + '/debuggees/' + debuggee +
-          '/breakpoints/' + breakpoint.id, 'DELETE');
-      },
-      setBreakpoint: function(debuggee, body) {
-        return apiRequest(authClient, DEBUG_API + '/debuggees/' + debuggee +
-          '/breakpoints/set', 'POST', body);
-      },
-      getBreakpoint: function(debuggee, breakpoint) {
-        return apiRequest(authClient, DEBUG_API + '/debuggees/' + debuggee +
-          '/breakpoints/' + breakpoint.id);
-      }
-    };
-
-    return Promise.all([api, api.listDebuggees(globalProject)]);
-  }).then(function(results) {
+    return api.listDebuggees(globalProject);
+  }).then(function(debuggees) {
     // Check that the debuggee created in this test is among the list of
     // debuggees, then list its breakpoints
 
-    var api = results[0];
-    var body = results[1];
-
     console.log('-- List of debuggees\n',
-      util.inspect(body, { depth: null}));
-    assert.ok(body, 'should get a valid ListDebuggees response');
-    assert.ok(body.debuggees, 'should have a debuggees property');
-    var result = _.find(body.debuggees, function(d) {
+      util.inspect(debuggees, { depth: null}));
+    assert.ok(debuggees, 'should get a valid ListDebuggees response');
+    var result = _.find(debuggees, function(d) {
       return d.id === globalDebuggee;
     });
     assert.ok(result, 'should find the debuggee we just registered');
 
-    return Promise.all([api, api.listBreakpoints(globalDebuggee)]);
-  }).then(function(results) {
+    return api.listBreakpoints(globalDebuggee);
+  }).then(function(breakpoints) {
     // Delete every breakpoint
 
-    var api = results[0];
-    var body = results[1];
+    console.log('-- List of breakpoints\n', breakpoints);
 
-    console.log('-- List of breakpoints\n', body);
-    body.breakpoints = body.breakpoints || [];
-
-    var promises = body.breakpoints.map(function(breakpoint) {
+    var promises = breakpoints.map(function(breakpoint) {
       return api.deleteBreakpoint(globalDebuggee, breakpoint);
     });
 
-    return Promise.all([api, Promise.all(promises)]);
+    return Promise.all(promises);
   }).then(function(results) {
     // Set a breakpoint at which the debugger should write to a log
 
-    var api = results[0];
-    var deleteResults = results[1];
-
-    console.log('-- delete results', deleteResults);
+    console.log('-- deleted');
 
     console.log('-- setting a logpoint');
-    var promise = api.setBreakpoint(globalDebuggee, {
+    return api.setBreakpoint(globalDebuggee, {
       id: 'breakpoint-1',
       location: {path: FILENAME, line: 5},
       condition: 'n === 10',
@@ -161,82 +103,63 @@ function runTest() {
       expressions: ['o'],
       log_message_format: 'o is: $0'
     });
-    return Promise.all([api, promise]);
-  }).then(function(results) {
+  }).then(function(breakpoint) {
     // Check that the breakpoint was set, and then wait for the log to be
     // written to
 
-    var api = results[0];
-    var body = results[1];
-
-    console.log('-- resolution of setBreakpoint', body);
-    assert.ok(body.breakpoint, 'should have set a breakpoint');
-    var breakpoint = body.breakpoint;
+    assert.ok(breakpoint, 'should have set a breakpoint');
     assert.ok(breakpoint.id, 'breakpoint should have an id');
     assert.ok(breakpoint.location, 'breakpoint should have a location');
     assert.strictEqual(breakpoint.location.path, FILENAME);
 
     console.log('-- waiting before checking if the log was written');
-    return Promise.all([api, breakpoint, delay(10 * 1000)]);
+    return Promise.all([breakpoint, delay(10 * 1000)]);
   }).then(function(results) {
     // Check the contents of the log, and then delete the breakpoint
 
-    var api = results[0];
-    var breakpoint = results[1];
+    var breakpoint = results[0];
 
     assert(transcript.indexOf('o is: {"a":[1,"hi",true]}') !== -1);
-    return Promise.all([api, api.deleteBreakpoint(globalDebuggee, breakpoint)]);
-  }).then(function(results) {
+    return api.deleteBreakpoint(globalDebuggee, breakpoint);
+  }).then(function() {
     // Set another breakpoint at the same location
 
-    var api = results[0];
-
     console.log('-- setting a breakpoint');
-    var promise = api.setBreakpoint(globalDebuggee, {
+    return api.setBreakpoint(globalDebuggee, {
       id: 'breakpoint-1',
       location: {path: FILENAME, line: 5},
       expressions: ['process'], // Process for large variable
       condition: 'n === 10'
     });
-    return Promise.all([api, promise]);
-  }).then(function(results) {
+  }).then(function(breakpoint) {
     // Check that the breakpoint was set, and then wait for the breakpoint to
     // be hit
 
-    var api = results[0];
-    var body = results[1];
-
-    console.log('-- resolution of setBreakpoint', body);
-    assert.ok(body.breakpoint, 'should have set a breakpoint');
-    var breakpoint = body.breakpoint;
+    console.log('-- resolution of setBreakpoint', breakpoint);
+    assert.ok(breakpoint, 'should have set a breakpoint');
     assert.ok(breakpoint.id, 'breakpoint should have an id');
     assert.ok(breakpoint.location, 'breakpoint should have a location');
     assert.strictEqual(breakpoint.location.path, FILENAME);
 
     console.log('-- waiting before checking if breakpoint was hit');
-    return Promise.all([api, breakpoint, delay(10 * 1000)]);
+    return Promise.all([breakpoint, delay(10 * 1000)]);
   }).then(function(results) {
     // Get the breakpoint
 
-    var api = results[0];
-    var breakpoint = results[1];
+    var breakpoint = results[0];
 
     console.log('-- now checking if the breakpoint was hit');
-    return Promise.all([api,
-      api.getBreakpoint(globalDebuggee, breakpoint)]);
-  }).then(function(results) {
+    return api.getBreakpoint(globalDebuggee, breakpoint);
+  }).then(function(breakpoint) {
     // Check that the breakpoint was hit and contains the correct information,
     // which ends the test
 
-    var body = results[1];
-
     var arg;
-    console.log('-- results of get breakpoint\n', body);
-    assert.ok(body.breakpoint, 'should have a breakpoint in the response');
-    var hit = body.breakpoint;
-    assert.ok(hit.isFinalState, 'breakpoint should have been hit');
-    assert.ok(Array.isArray(hit.stackFrames), 'should have stack ');
-    var top = hit.stackFrames[0];
+    console.log('-- results of get breakpoint\n', breakpoint);
+    assert.ok(breakpoint, 'should have a breakpoint in the response');
+    assert.ok(breakpoint.isFinalState, 'breakpoint should have been hit');
+    assert.ok(Array.isArray(breakpoint.stackFrames), 'should have stack ');
+    var top = breakpoint.stackFrames[0];
     assert.ok(top, 'should have a top entry');
     assert.ok(top.function, 'frame should have a function property');
     assert.strictEqual(top.function, 'fib');
@@ -251,10 +174,8 @@ function runTest() {
     console.log('-- checking log point was hit again');
     assert.ok(
       transcript.split('LOGPOINT: o is: {"a":[1,"hi",true]}').length > 4);
-    console.log('Test passed');
+    console.log('-- test passed');
     return Promise.resolve();
-  }).catch(function(e) {
-    return Promise.reject(e);
   });
 }
 

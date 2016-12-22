@@ -54,7 +54,7 @@ function runTest() {
   return delay(10 * 1000).then(function() {
     // List debuggees
 
-    // Assign debugger API
+    // (Assign debugger API)
     var callbackApi = new Debugger();
     api = thenifyAll(callbackApi, callbackApi, [
       'listDebuggees',
@@ -91,7 +91,7 @@ function runTest() {
   }).then(function(results) {
     // Set a breakpoint at which the debugger should write to a log
 
-    console.log('-- delete results', results);
+    console.log('-- deleted');
 
     console.log('-- setting a logpoint');
     return api.setBreakpoint(globalDebuggee, {
@@ -124,19 +124,15 @@ function runTest() {
       transcript.split('LOGPOINT: o is: {"a":[1,"hi",true]}').length - 1;
     // A log count of greater than 10 indicates that we did not successfully
     // pause when the rate of `maxLogsPerSecond` was reached.
-    assert(logCount < 10);
+    assert(logCount < 10, "log count is not less than 10: " + logCount);
     // A log count of less than 3 indicates that we did not successfully
     // resume logging after `logDelaySeconds` have passed.
-    assert(logCount > 2);
+    assert(logCount > 2, "log count is not greater than 2: " + logCount);
 
     return api.deleteBreakpoint(globalDebuggee, breakpoint);
   }).then(function() {
-    console.log('Test passed');
-    process.exit(0);
-  })
-  .catch(function(e) {
-    console.error(e);
-    process.exit(1);
+    console.log('-- test passed');
+    return Promise.resolve();
   });
 }
 
