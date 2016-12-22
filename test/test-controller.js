@@ -95,28 +95,28 @@ describe('Controller API', function() {
       });
     });
 
-    it('should return error when debuggee is disabled', function(done) {
-      var scope = nock(url)
-                    .post(api + '/debuggees/register')
-                    .reply(200, {
-                      debuggee: {
-                        id: 'fake-debuggee',
-                        isDisabled: true
-                      },
-                      activePeriodSec: 600,
-                    });
-      var debuggee = new Debuggee({
-        project: 'fake-project',
-        uniquifier: 'fake-id',
-        description: 'unit test'
-      });
-      var controller = new Controller(fakeDebug);
-      controller.register(debuggee, function(err/*, result*/) {
-        assert(err, 'expected an error');
-        scope.done();
-        done();
-      });
-    });
+    it('should not return an error when the debuggee isDisabled',
+       function(done) {
+         var scope = nock(url)
+                         .post(api + '/debuggees/register')
+                         .reply(200, {
+                           debuggee: {id: 'fake-debuggee', isDisabled: true},
+                           activePeriodSec: 600,
+                         });
+         var debuggee = new Debuggee({
+           project: 'fake-project',
+           uniquifier: 'fake-id',
+           description: 'unit test'
+         });
+         var controller = new Controller(fakeDebug);
+         controller.register(debuggee, function(err, result) {
+           assert.ifError(err, 'not expected an error');
+           assert.equal(result.debuggee.id, 'fake-debuggee');
+           assert.ok(result.debuggee.isDisabled);
+           scope.done();
+           done();
+         });
+       });
 
   });
 
