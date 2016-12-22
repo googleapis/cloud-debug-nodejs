@@ -20,6 +20,7 @@
  * @module debug/debugger
  */
 
+var pjson = require('../package.json');
 var assert = require('assert');
 var common = require('@google-cloud/common');
 var qs = require('querystring');
@@ -41,7 +42,7 @@ function Debugger() {
   /** @private {string} */
   this.nextWaitToken_ = null;
 
-  this.clientVersion_ = 'google.com/cloud-debug/v1'; // TODO(kjin): Change this
+  this.clientVersion_ = pjson.name + '/default/v' + pjson.version;
 }
 
 util.inherits(Debugger, common.ServiceObject);
@@ -51,8 +52,8 @@ util.inherits(Debugger, common.ServiceObject);
  * breakpoints.
  * @param {string} projectId - The project ID for the project whose debuggees
  *     should be listed.
- * @param {bool} includeInactive - Whether or not to include inactive debuggees
- *     in the list.
+ * @param {boolean=} includeInactive - Whether or not to include inactive
+ *     debuggees in the list (default false).
  * @param {!function(?Error,Debuggee[]=)} callback - A function that will be
  *     called with a list of Debuggee objects as a parameter, or an Error object
  *     if an error occurred in obtaining it.
@@ -94,8 +95,17 @@ Debugger.prototype.listDebuggees = function(projectId, includeInactive, callback
  * Gets a list of breakpoints in a given debuggee.
  * @param {string} debuggeeId - The ID of the debuggee whose breakpoints should
  *     be listed.
- * @param {object} options - An object containing options on the list of
- *     breakpoints. TODO(kjin): How to list possible options here?
+ * @param {Object} options - An object containing options on the list of
+ *     breakpoints.
+ * @param {boolean=} options.includeAllUsers - If set to true, include
+ *     breakpoints set by all users, or just by the caller (default false).
+ * @param {boolean=} options.includeInactive - Whether or not to include
+ *     inactive breakpoints in the list (default false).
+ * @param {boolean=} options.stripResults - If set to true, breakpoints will be
+ *     stripped of the following fields: stackFrames, evaluatedExpressions,
+ *     and variableTable (default false).
+ * @param {string=} options.action - Either 'CAPTURE' or 'LOG'. If specified,
+ *     only breakpoints with a matching action will be part of the list.
  * @param {!function(?Error,Breakpoint[]=)} callback - A function that will be
  *     called with a list of Breakpoint objects as a parameter, or an Error
  *     object if an error occurred in obtaining it.
@@ -113,7 +123,7 @@ Debugger.prototype.listBreakpoints = function(debuggeeId, options, callback) {
     stripResults: !!options.stripResults
   };
   if (options.action) {
-    query.action = action;
+    query.action = { value: options.action };
   }
   if (this.nextWaitToken_) {
     query.waitToken = this.nextWaitToken_;
