@@ -64,8 +64,6 @@ Controller.prototype.register = function(debuggee, callback) {
           new Error('unable to register, statusCode ' + response.statusCode));
     } else if (!body.debuggee) {
       callback(new Error('invalid response body from server'));
-    } else if (body.debuggee.isDisabled) {
-      callback('Debuggee is disabled on server');
     } else {
       debuggee.id = body.debuggee.id;
       callback(null, body);
