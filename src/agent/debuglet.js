@@ -24,6 +24,7 @@ var extend = require('extend');
 var util = require('util');
 var semver = require('semver');
 var _ = require('lodash');
+var metadata = require('gcp-metadata');
 
 var v8debugapi = require('./v8debugapi.js');
 var Debuggee = require('../debuggee.js');
@@ -263,30 +264,31 @@ Debuglet.createDebuggee =
   return new Debuggee(properties);
 };
 
-    /**
-     * @private
-     */
-    Debuglet.prototype.getProjectId_ = function(callback) {
+/**
+ * @private
+ */
+Debuglet.prototype.getProjectId_ = function(callback) {
   var that = this;
 
   // We need to figure out whether we are running on GCP. We can use our ability
   // to access the metadata service as a test for that.
   // TODO: change this to getProjectId in the future.
-  common.utils.getProjectNumber(function(err, metadataProject) {
-    // We should get an error if we are not on GCP.
-    var onGCP = !err;
+  metadata.project(
+      'numeric-project-id', function(err, response, metadataProject) {
+        // We should get an error if we are not on GCP.
+        var onGCP = !err;
 
-    // We perfer to use the locally available projectId as that is least
-    // surprising to users.
-    var project = that.debug_.options.projectId || process.env.GCLOUD_PROJECT ||
-                  metadataProject;
+        // We perfer to use the locally available projectId as that is least
+        // surprising to users.
+        var project = that.debug_.options.projectId ||
+                      process.env.GCLOUD_PROJECT || metadataProject;
 
-    // We if don't have a projectId by now, we fail with an error.
-    if (!project) {
-      return callback(err);
-    }
-    return callback(null, project, onGCP);
-  });
+        // We if don't have a projectId by now, we fail with an error.
+        if (!project) {
+          return callback(err);
+        }
+        return callback(null, project, onGCP);
+      });
 };
 
 Debuglet.prototype.getSourceContext_ =
