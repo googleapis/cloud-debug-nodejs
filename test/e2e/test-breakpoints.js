@@ -24,18 +24,12 @@ process.env.GCLOUD_DEBUG_LOGLEVEL=2;
 
 var assert = require('assert');
 var util = require('util');
-var GoogleAuth = require('google-auth-library');
 var _ = require('lodash'); // for _.find. Can't use ES6 yet.
 var cluster = require('cluster');
 var semver = require('semver');
-var thenifyAll = require('thenify-all');
+var promisifyAll = require('@google-cloud/common').util.promisifyAll;
 var Debugger = require('../debugger.js');
 
-var DEBUG_API = 'https://clouddebugger.googleapis.com/v2/debugger';
-var SCOPES = [
-  'https://www.googleapis.com/auth/cloud-platform',
-  'https://www.googleapis.com/auth/cloud_debugger',
-];
 var CLUSTER_WORKERS = 3;
 
 var debuggeeId;
@@ -56,19 +50,15 @@ function runTest() {
     // List debuggees
 
     // (Assign debugger API)
-    var callbackApi = new Debugger();
-    api = thenifyAll(callbackApi, callbackApi, [
-      'listDebuggees',
-      'listBreakpoints',
-      'getBreakpoint',
-      'setBreakpoint',
-      'deleteBreakpoint'
-    ]);
+    var debug = require('../..')();
+    promisifyAll(Debugger);
+    api = new Debugger(debug);
 
     return api.listDebuggees(projectId);
   }).then(function(debuggees) {
     // Check that the debuggee created in this test is among the list of
     // debuggees, then list its breakpoints
+    debuggees = debuggees[0];
 
     console.log('-- List of debuggees\n',
       util.inspect(debuggees, { depth: null}));
@@ -80,6 +70,7 @@ function runTest() {
     return api.listBreakpoints(debuggeeId);
   }).then(function(breakpoints) {
     // Delete every breakpoint
+    breakpoints = breakpoints[0];
 
     console.log('-- List of breakpoints\n', breakpoints);
 
@@ -88,7 +79,7 @@ function runTest() {
     });
 
     return Promise.all(promises);
-  }).then(function(results) {
+  }).then(function() {
     // Set a breakpoint at which the debugger should write to a log
 
     console.log('-- deleted');
@@ -105,6 +96,7 @@ function runTest() {
   }).then(function(breakpoint) {
     // Check that the breakpoint was set, and then wait for the log to be
     // written to
+    breakpoint = breakpoint[0];
 
     assert.ok(breakpoint, 'should have set a breakpoint');
     assert.ok(breakpoint.id, 'breakpoint should have an id');
@@ -133,6 +125,7 @@ function runTest() {
   }).then(function(breakpoint) {
     // Check that the breakpoint was set, and then wait for the breakpoint to
     // be hit
+    breakpoint = breakpoint[0];
 
     console.log('-- resolution of setBreakpoint', breakpoint);
     assert.ok(breakpoint, 'should have set a breakpoint');
@@ -152,6 +145,7 @@ function runTest() {
   }).then(function(breakpoint) {
     // Check that the breakpoint was hit and contains the correct information,
     // which ends the test
+    breakpoint = breakpoint[0];
 
     var arg;
     console.log('-- results of get breakpoint\n', breakpoint);

@@ -21,11 +21,9 @@
  */
 
 var pjson = require('../package.json');
-var assert = require('assert');
 var common = require('@google-cloud/common');
 var qs = require('querystring');
 var util = require('util');
-var Debug = require('../src');
 
 /** @const {string} Cloud Debug API endpoint */
 var API = 'https://clouddebugger.googleapis.com/v2/debugger';
@@ -33,16 +31,16 @@ var API = 'https://clouddebugger.googleapis.com/v2/debugger';
 /**
  * @constructor
  */
-function Debugger() {
+function Debugger(debug) {
   common.ServiceObject.call(this, {
-    parent: new Debug({}),
+    parent: debug,
     baseUrl: '/debugger'
   });
 
   /** @private {string} */
   this.nextWaitToken_ = null;
 
-  this.clientVersion_ = pjson.name + '/default/v' + pjson.version;
+  this.clientVersion_ = pjson.name + '/client/v' + pjson.version;
 }
 
 util.inherits(Debugger, common.ServiceObject);
@@ -95,7 +93,7 @@ Debugger.prototype.listDebuggees = function(projectId, includeInactive, callback
  * Gets a list of breakpoints in a given debuggee.
  * @param {string} debuggeeId - The ID of the debuggee whose breakpoints should
  *     be listed.
- * @param {Object} options - An object containing options on the list of
+ * @param {object=} options - An object containing options on the list of
  *     breakpoints.
  * @param {boolean=} options.includeAllUsers - If set to true, include
  *     breakpoints set by all users, or just by the caller (default false).
@@ -135,7 +133,7 @@ Debugger.prototype.listBreakpoints = function(debuggeeId, options, callback) {
     if (err) {
       callback(err);
     } else if (!response) {
-      callback(err || new Error('unknown error - request response missing'));
+      callback(new Error('unknown error - request response missing'));
     } else if (response.statusCode !== 200) {
       callback(new Error('unable to list breakpoints, status code ' +
                          response.statusCode));
@@ -173,7 +171,7 @@ Debugger.prototype.getBreakpoint = function(debuggeeId, breakpointId, callback) 
     if (err) {
       callback(err);
     } else if (!response) {
-      callback(err || new Error('unknown error - request response missing'));
+      callback(new Error('unknown error - request response missing'));
     } else if (response.statusCode !== 200) {
       callback(new Error('unable to get breakpoint info, status code ' +
                          response.statusCode));
@@ -213,7 +211,7 @@ Debugger.prototype.setBreakpoint = function(debuggeeId, breakpoint, callback) {
     if (err) {
       callback(err);
     } else if (!response) {
-      callback(err || new Error('unknown error - request response missing'));
+      callback(new Error('unknown error - request response missing'));
     } else if (response.statusCode !== 200) {
       callback(new Error('unable to set breakpoint, status code ' +
                          response.statusCode));
@@ -251,7 +249,7 @@ Debugger.prototype.deleteBreakpoint = function(debuggeeId, breakpointId, callbac
     if (err) {
       callback(err);
     } else if (!response) {
-      callback(err || new Error('unknown error - request response missing'));
+      callback(new Error('unknown error - request response missing'));
     } else if (response.statusCode !== 200) {
       callback(new Error('unable to delete breakpoint, status code ' +
                          response.statusCode));
