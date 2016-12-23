@@ -51,12 +51,7 @@ function Debug(options) {
   var config = {
     projectIdRequired: false,
     baseUrl: 'https://clouddebugger.googleapis.com/v2',
-    scopes: [
-      // TODO: do we still need cloud-platform scope?
-      'https://www.googleapis.com/auth/cloud-platform',
-      'https://www.googleapis.com/auth/cloud_debugletcontroller'
-      // TODO: the client library probably wants cloud_debugger scope as well.
-    ],
+    scopes: ['https://www.googleapis.com/auth/cloud_debugger'],
     packageJson: require('../package.json')
   };
 
