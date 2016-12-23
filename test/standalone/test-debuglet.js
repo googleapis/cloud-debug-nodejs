@@ -48,6 +48,7 @@ describe(__filename, function() {
   });
 
   it('should not start when projectId is not available', function(done) {
+    this.timeout(8000);
     var debug = require('../..')();
     var debuglet = new Debuglet(debug, defaultConfig);
 
@@ -70,6 +71,7 @@ describe(__filename, function() {
   });
 
   it('should not crash without project num', function(done) {
+    this.timeout(8000);
     var debug = require('../..')();
     var debuglet = new Debuglet(debug, defaultConfig);
 
