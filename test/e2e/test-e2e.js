@@ -19,14 +19,10 @@ var util = require('util');
 var _ = require('lodash'); // for _.find. Can't use ES6 yet.
 var cp = require('child_process');
 var semver = require('semver');
-var thenifyAll = require('thenify-all');
+var promisifyAll = require('@google-cloud/common').util.promisifyAll;
+var Debug = require('../..');
 var Debugger = require('../debugger.js');
 
-var DEBUG_API = 'https://clouddebugger.googleapis.com/v2/debugger';
-var SCOPES = [
-  'https://www.googleapis.com/auth/cloud-platform',
-  'https://www.googleapis.com/auth/cloud_debugger',
-];
 var CLUSTER_WORKERS = 3;
 
 var FILENAME = 'test/fixtures/fib.js';
@@ -38,9 +34,16 @@ var delay = function(delayTimeMS) {
 };
 
 describe('@google-cloud/debug end-to-end behavior (allow 60s)', function () {
+  var api;
+
   var debuggeeId;
   var projectId;
   var children = [];
+
+  before(function() {
+    promisifyAll(Debugger);
+    api = new Debugger(new Debug({}));
+  });
 
   beforeEach(function() {
     this.timeout(10 * 1000);
@@ -105,24 +108,12 @@ describe('@google-cloud/debug end-to-end behavior (allow 60s)', function () {
 
   it('should set breakpoints correctly', function() {
     this.timeout(25 * 1000);
-    var api;
-    return delay(0).then(function() {
-      // List debuggees
-
-      // (Assign debugger API)
-      var callbackApi = new Debugger();
-      api = thenifyAll(callbackApi, callbackApi, [
-        'listDebuggees',
-        'listBreakpoints',
-        'getBreakpoint',
-        'setBreakpoint',
-        'deleteBreakpoint'
-      ]);
-
-      return api.listDebuggees(projectId);
-    }).then(function(debuggees) {
+    // Kick off promise chain by getting a list of debuggees
+    return api.listDebuggees(projectId).then(function(results) {
       // Check that the debuggee created in this test is among the list of
       // debuggees, then list its breakpoints
+      
+      var debuggees = results[0];
 
       console.log('-- List of debuggees\n',
         util.inspect(debuggees, { depth: null}));
@@ -132,8 +123,10 @@ describe('@google-cloud/debug end-to-end behavior (allow 60s)', function () {
       });
       assert.ok(result, 'should find the debuggee we just registered');
       return api.listBreakpoints(debuggeeId);
-    }).then(function(breakpoints) {
+    }).then(function(results) {
       // Delete every breakpoint
+
+      var breakpoints = results[0];
 
       console.log('-- List of breakpoints\n', breakpoints);
 
@@ -142,7 +135,7 @@ describe('@google-cloud/debug end-to-end behavior (allow 60s)', function () {
       });
 
       return Promise.all(promises);
-    }).then(function(results) {
+    }).then(function() {
       // Set a breakpoint at which the debugger should write to a log
 
       console.log('-- deleted');
@@ -156,9 +149,11 @@ describe('@google-cloud/debug end-to-end behavior (allow 60s)', function () {
         expressions: ['o'],
         log_message_format: 'o is: $0'
       });
-    }).then(function(breakpoint) {
+    }).then(function(results) {
       // Check that the breakpoint was set, and then wait for the log to be
       // written to
+
+      var breakpoint = results[0];
 
       assert.ok(breakpoint, 'should have set a breakpoint');
       assert.ok(breakpoint.id, 'breakpoint should have an id');
@@ -186,9 +181,11 @@ describe('@google-cloud/debug end-to-end behavior (allow 60s)', function () {
         expressions: ['process'], // Process for large variable
         condition: 'n === 10'
       });
-    }).then(function(breakpoint) {
+    }).then(function(results) {
       // Check that the breakpoint was set, and then wait for the breakpoint to
       // be hit
+
+      var breakpoint = results[0];
 
       console.log('-- resolution of setBreakpoint', breakpoint);
       assert.ok(breakpoint, 'should have set a breakpoint');
@@ -205,9 +202,11 @@ describe('@google-cloud/debug end-to-end behavior (allow 60s)', function () {
 
       console.log('-- now checking if the breakpoint was hit');
       return api.getBreakpoint(debuggeeId, breakpoint.id);
-    }).then(function(breakpoint) {
+    }).then(function(results) {
       // Check that the breakpoint was hit and contains the correct information,
       // which ends the test
+
+      var breakpoint = results[0];
 
       var arg;
       console.log('-- results of get breakpoint\n', breakpoint);
@@ -238,24 +237,12 @@ describe('@google-cloud/debug end-to-end behavior (allow 60s)', function () {
 
   it('should throttle logs correctly', function() {
     this.timeout(15 * 1000);
-    var api;
-    return delay(0).then(function() {
-      // List debuggees
-
-      // (Assign debugger API)
-      var callbackApi = new Debugger();
-      api = thenifyAll(callbackApi, callbackApi, [
-        'listDebuggees',
-        'listBreakpoints',
-        'getBreakpoint',
-        'setBreakpoint',
-        'deleteBreakpoint'
-      ]);
-
-      return api.listDebuggees(projectId);
-    }).then(function(debuggees) {
+    // Kick off promise chain by getting a list of debuggees
+    return api.listDebuggees(projectId).then(function(results) {
       // Check that the debuggee created in this test is among the list of
       // debuggees, then list its breakpoints
+
+      var debuggees = results[0];
 
       console.log('-- List of debuggees\n',
         util.inspect(debuggees, { depth: null}));
@@ -266,8 +253,10 @@ describe('@google-cloud/debug end-to-end behavior (allow 60s)', function () {
       assert.ok(result, 'should find the debuggee we just registered');
 
       return api.listBreakpoints(debuggeeId);
-    }).then(function(breakpoints) {
+    }).then(function(results) {
       // Delete every breakpoint
+
+      var breakpoints = results[0];
 
       console.log('-- List of breakpoints\n', breakpoints);
 
@@ -290,9 +279,11 @@ describe('@google-cloud/debug end-to-end behavior (allow 60s)', function () {
         expressions: ['o'],
         log_message_format: 'o is: $0'
       });
-    }).then(function(breakpoint) {
+    }).then(function(results) {
       // Check that the breakpoint was set, and then wait for the log to be
       // written to
+
+      var breakpoint = results[0];
 
       assert.ok(breakpoint, 'should have set a breakpoint');
       assert.ok(breakpoint.id, 'breakpoint should have an id');
