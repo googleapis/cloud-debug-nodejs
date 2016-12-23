@@ -1,5 +1,4 @@
 /* KEEP THIS CODE AT THE TOP SO THAT THE BREAKPOINT LINE NUMBERS DON'T CHANGE */
-
 'use strict';
 function fib(n) {
   if (n < 2) { return n; } var o = { a: [1, 'hi', true] };
@@ -22,32 +21,32 @@ function fib(n) {
  * limitations under the License.
  */
 
- var debug = require('../..')();
- debug.startAgent();
+var debug = require('../..')();
+debug.startAgent({ logLevel: 2 });
 
- // Given the debug agent some time to start and then notify the cluster
- // master.
- setTimeout(function() {
-   var ok = true;
-   function sendErrorIfNotOk(predicate, errorMessage) {
-     if (!predicate) {
-       ok = false;
-       process.send(errorMessage);
-     }
-   };
-   sendErrorIfNotOk(debug.private_, 'debuglet has initialized');
-   var debuglet = debug.private_;
-   var debuggee = debuglet.debuggee_;
-   sendErrorIfNotOk(debuggee, 'should create debuggee');
-   sendErrorIfNotOk(debuggee.project, 'debuggee should have a project');
-   sendErrorIfNotOk(debuggee.id, 'debuggee should have registered');
-   if (ok) {
-     // The parent process needs to know the debuggeeId and project.
-     process.send(['', debuggee.id, debuggee.project]);
-     setInterval(fib.bind(null, 12), 2000);
-   } else {
-     setTimeout(function() {
-       process.exit(1);
-     }, 2000);
-   }
- }, 7000);
+// Given the debug agent some time to start and then notify the cluster
+// master.
+setTimeout(function() {
+  var ok = true;
+  function sendErrorIfNotOk(predicate, errorMessage) {
+    if (!predicate) {
+      ok = false;
+      process.send([errorMessage]);
+    }
+  };
+  sendErrorIfNotOk(debug.private_, 'debuglet has initialized');
+  var debuglet = debug.private_;
+  var debuggee = debuglet.debuggee_;
+  sendErrorIfNotOk(debuggee, 'should create debuggee');
+  sendErrorIfNotOk(debuggee.project, 'debuggee should have a project');
+  sendErrorIfNotOk(debuggee.id, 'debuggee should have registered');
+  if (ok) {
+    // The parent process needs to know the debuggeeId and project.
+    process.send(['', debuggee.id, debuggee.project]);
+    setInterval(fib.bind(null, 12), 2000);
+  } else {
+    setTimeout(function() {
+      process.exit(1);
+    }, 2000);
+  }
+}, 7000);

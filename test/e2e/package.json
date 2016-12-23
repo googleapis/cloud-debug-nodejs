@@ -11,5 +11,8 @@
   "dependencies": {
     "lodash": "^3.9.3",
     "semver": "^5.3.0"
+  },
+  "devDependencies": {
+    "mocha": "^3.2.0"
   }
 }

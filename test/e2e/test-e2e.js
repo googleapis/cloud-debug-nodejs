@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-process.env.GCLOUD_DEBUG_LOGLEVEL=2;
-
 var assert = require('assert');
 var util = require('util');
-var GoogleAuth = require('google-auth-library');
 var _ = require('lodash'); // for _.find. Can't use ES6 yet.
 var cp = require('child_process');
 var semver = require('semver');
@@ -32,11 +29,7 @@ var SCOPES = [
 ];
 var CLUSTER_WORKERS = 3;
 
-var debuggeeId;
-var projectId;
-var transcript = '';
-
-var FILENAME = 'test-breakpoints.js';
+var FILENAME = 'test/fixtures/fib.js';
 
 var delay = function(delayTimeMS) {
   return new Promise(function(resolve, reject) {
@@ -44,13 +37,13 @@ var delay = function(delayTimeMS) {
   });
 };
 
-describe('e2e tests', function () {
+describe('@google-cloud/debug end-to-end behavior (allow 60s)', function () {
   var debuggeeId;
   var projectId;
-  var transcript;
   var children = [];
 
   beforeEach(function() {
+    this.timeout(10 * 1000);
     return new Promise(function(resolve, reject) {
       var numChildrenReady = 0;
       var handler = function(a) {
@@ -75,31 +68,43 @@ describe('e2e tests', function () {
           resolve();
         }
       };
-      var stdoutHandler = function(chunk) {
-        transcript += chunk;
-      };
       for (var i = 0; i < CLUSTER_WORKERS; i++) {
-        var child = cp.fork('../fixtures/fib.js');
-        child.on('message', handler);
-        child.stdout.on('data', stdoutHandler);
-        child.stderr.on('data', stdoutHandler);
-        children.push(child);
+        (function() {
+          // Fork child processes that communicate with this process with IPC.
+          var child = { transcript: '' };
+          child.process = cp.fork(FILENAME, {
+            execArgv: [],
+            cwd: '../..',
+            env: {
+              GCLOUD_PROJECT: process.env.GCLOUD_PROJECT,
+              HOME: process.env.HOME
+            },
+            stdio: ['pipe', 'pipe', 'pipe', 'ipc']
+          });
+          child.process.on('message', handler);
+          // Each child has its own transcript.
+          var stdoutHandler = function(chunk) {
+            child.transcript += chunk;
+          };
+          child.process.stdout.on('data', stdoutHandler);
+          child.process.stderr.on('data', stdoutHandler);
+          children.push(child);
+        })()
       }
     });
   });
 
   afterEach(function() {
-    console.log('child transcript: ', transcript);
     children.forEach(function (child) {
-      child.kill();
+      child.process.kill();
     });
     debuggeeId = null;
     projectId = null;
-    transcript = null;
     children = [];
   });
 
   it('should set breakpoints correctly', function() {
+    this.timeout(25 * 1000);
     var api;
     return delay(0).then(function() {
       // List debuggees
@@ -167,7 +172,9 @@ describe('e2e tests', function () {
 
       var breakpoint = results[0];
 
-      assert(transcript.indexOf('o is: {"a":[1,"hi",true]}') !== -1);
+      children.forEach(function(child) {
+        assert(child.transcript.indexOf('o is: {"a":[1,"hi",true]}') !== -1);
+      });
       return api.deleteBreakpoint(debuggeeId, breakpoint.id);
     }).then(function() {
       // Set another breakpoint at the same location
@@ -220,10 +227,102 @@ describe('e2e tests', function () {
       assert.ok(arg, 'should find the n argument');
       assert.strictEqual(arg.value, '10');
       console.log('-- checking log point was hit again');
-      assert.ok(
-        transcript.split('LOGPOINT: o is: {"a":[1,"hi",true]}').length > 4);
+      children.forEach(function(child) {
+        assert.ok(child.transcript
+          .split('LOGPOINT: o is: {"a":[1,"hi",true]}').length > 4);
+      });
       console.log('-- test passed');
       return Promise.resolve();
     });
   });
+
+  it('should throttle logs correctly', function() {
+    this.timeout(15 * 1000);
+    var api;
+    return delay(0).then(function() {
+      // List debuggees
+
+      // (Assign debugger API)
+      var callbackApi = new Debugger();
+      api = thenifyAll(callbackApi, callbackApi, [
+        'listDebuggees',
+        'listBreakpoints',
+        'getBreakpoint',
+        'setBreakpoint',
+        'deleteBreakpoint'
+      ]);
+
+      return api.listDebuggees(projectId);
+    }).then(function(debuggees) {
+      // Check that the debuggee created in this test is among the list of
+      // debuggees, then list its breakpoints
+
+      console.log('-- List of debuggees\n',
+        util.inspect(debuggees, { depth: null}));
+      assert.ok(debuggees, 'should get a valid ListDebuggees response');
+      var result = _.find(debuggees, function(d) {
+        return d.id === debuggeeId;
+      });
+      assert.ok(result, 'should find the debuggee we just registered');
+
+      return api.listBreakpoints(debuggeeId);
+    }).then(function(breakpoints) {
+      // Delete every breakpoint
+
+      console.log('-- List of breakpoints\n', breakpoints);
+
+      var promises = breakpoints.map(function(breakpoint) {
+        return api.deleteBreakpoint(debuggeeId, breakpoint.id);
+      });
+
+      return Promise.all(promises);
+    }).then(function(results) {
+      // Set a breakpoint at which the debugger should write to a log
+
+      console.log('-- deleted');
+
+      console.log('-- setting a logpoint');
+      return api.setBreakpoint(debuggeeId, {
+        id: 'breakpoint-1',
+        location: {path: FILENAME, line: 5},
+        condition: 'n === 10',
+        action: 'LOG',
+        expressions: ['o'],
+        log_message_format: 'o is: $0'
+      });
+    }).then(function(breakpoint) {
+      // Check that the breakpoint was set, and then wait for the log to be
+      // written to
+
+      assert.ok(breakpoint, 'should have set a breakpoint');
+      assert.ok(breakpoint.id, 'breakpoint should have an id');
+      assert.ok(breakpoint.location, 'breakpoint should have a location');
+      assert.strictEqual(breakpoint.location.path, FILENAME);
+
+      console.log('-- waiting before checking if the log was written');
+      return Promise.all([breakpoint, delay(10 * 1000)]);
+    }).then(function(results) {
+      // Check that the contents of the log is correct
+
+      var breakpoint = results[0];
+
+      // If no throttling occurs, we expect ~20 logs since we are logging
+      // 2x per second over a 10 second period.
+      children.forEach(function(child) {
+        var logCount = child.transcript
+          .split('LOGPOINT: o is: {"a":[1,"hi",true]}').length - 1;
+        // A log count of greater than 10 indicates that we did not successfully
+        // pause when the rate of `maxLogsPerSecond` was reached.
+        assert(logCount < 10, "log count is not less than 10: " + logCount);
+        // A log count of less than 3 indicates that we did not successfully
+        // resume logging after `logDelaySeconds` have passed.
+        assert(logCount > 2, "log count is not greater than 2: " + logCount);
+      });
+
+      return api.deleteBreakpoint(debuggeeId, breakpoint.id);
+    }).then(function() {
+      console.log('-- test passed');
+      return Promise.resolve();
+    });
+  })
 });
