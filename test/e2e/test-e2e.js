@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+'use strict';
 var assert = require('assert');
 var util = require('util');
 var _ = require('lodash'); // for _.find. Can't use ES6 yet.
@@ -71,28 +72,32 @@ describe('@google-cloud/debug end-to-end behavior (allow 60s)', function () {
           resolve();
         }
       };
+
+      var stdoutHandler = function(index) {
+        return function(chunk) {
+          children[index].transcript += chunk;
+        };
+      };
+
       for (var i = 0; i < CLUSTER_WORKERS; i++) {
-        (function() {
-          // Fork child processes that communicate with this process with IPC.
-          var child = { transcript: '' };
-          child.process = cp.fork(FILENAME, {
-            execArgv: [],
-            cwd: '../..',
-            env: {
-              GCLOUD_PROJECT: process.env.GCLOUD_PROJECT,
-              HOME: process.env.HOME
-            },
-            stdio: ['pipe', 'pipe', 'pipe', 'ipc']
-          });
-          child.process.on('message', handler);
-          // Each child has its own transcript.
-          var stdoutHandler = function(chunk) {
-            child.transcript += chunk;
-          };
-          child.process.stdout.on('data', stdoutHandler);
-          child.process.stderr.on('data', stdoutHandler);
-          children.push(child);
-        })()
+        // Fork child processes that communicate with this process with IPC.
+        var child = { transcript: '' };
+        child.process = cp.fork(FILENAME, {
+          execArgv: [],
+          cwd: '../..',
+          env: {
+            GCLOUD_PROJECT: process.env.GCLOUD_PROJECT,
+            HOME: process.env.HOME
+          },
+          stdio: ['pipe', 'pipe', 'pipe', 'ipc']
+        });
+        child.process.on('message', handler);
+
+        children.push(child);
+
+        // Each child has its own transcript.
+        child.process.stdout.on('data', stdoutHandler(i));
+        child.process.stderr.on('data', stdoutHandler(i));
       }
     });
   });
@@ -304,10 +309,10 @@ describe('@google-cloud/debug end-to-end behavior (allow 60s)', function () {
           .split('LOGPOINT: o is: {"a":[1,"hi",true]}').length - 1;
         // A log count of greater than 10 indicates that we did not successfully
         // pause when the rate of `maxLogsPerSecond` was reached.
-        assert(logCount < 10, "log count is not less than 10: " + logCount);
+        assert(logCount < 10, 'log count is not less than 10: ' + logCount);
         // A log count of less than 3 indicates that we did not successfully
         // resume logging after `logDelaySeconds` have passed.
-        assert(logCount > 2, "log count is not greater than 2: " + logCount);
+        assert(logCount > 2, 'log count is not greater than 2: ' + logCount);
       });
 
       return api.deleteBreakpoint(debuggeeId, breakpoint.id);
@@ -315,5 +320,5 @@ describe('@google-cloud/debug end-to-end behavior (allow 60s)', function () {
       console.log('-- test passed');
       return Promise.resolve();
     });
-  })
+  });
 });
