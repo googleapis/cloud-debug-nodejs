@@ -26,7 +26,7 @@ npm install --save @google-cloud/debug
 // Require and start in the startup of your application:
 var debug = require('@google-cloud/debug')();
 debug.startAgent();
-// No config necessary if your code is running on Google Cloud Platform.
+// No auth necessary if your code is running on Google Cloud Platform.
 
 // ... or, if you are running elsewhere, you can manually provide credentials:
 var debug = require('@google-cloud/debug')({
@@ -41,23 +41,7 @@ the [Google Cloud Console][dev-console]. You can start adding snapshots and log-
 
 ## Running on Google Cloud Platform
 
-There are three different services that can host Node.js application to Google Cloud Platform.
-
-### Google App Engine Flexible Environment
-
-If you are using [Google App Engine Flexible Environment ](https://cloud.google.com/appengine/docs/flexible/), you do not have to do any additional configuration.
-
-### Google Compute Engine
-
-Your VM instances need to be created with `cloud-platform` scope if created via [gcloud](https://cloud.google.com/sdk) or the 'Allow API access' checkbox selected if created via the [console](https://console.cloud.google.com) (see screenshot).
-
-![GCE API](doc/images/gce.png?raw=true)
-
-If you already have VMs that were created without API access and do not wish to recreate it, you can follow the instructions for using a service account under [running elsewhere](#running-elsewhere).
-
-### Google Container Engine
-
-Container Engine nodes need to also be created with the `cloud-platform` scope, which is configurable during cluster creation. Alternatively, you can follow the instructions for using a service account under [running elsewhere](#running-elsewhere). It's recommended that you store the service account credentials as [Kubernetes Secret](http://kubernetes.io/v1.1/docs/user-guide/secrets.html).
+Stackdriver debugger agent should work out of the box if your code is running on Google Cloud Platform, just make sure that the [Stackdriver Debugger API][debugger-api] is enabled on your project (this is the default).
 
 ## Running elsewhere
 
@@ -104,7 +88,7 @@ If your application is running outside of Google Cloud Platform, such as locally
 
         gcloud beta debug source gen-repo-info-file
 
-## Debug Agent Settings
+## Debugger Agent Settings
 
 You can customize the behaviour of the automatic debugger agent. See [the agent configuration][config-js] for a list of possible configuration options. These options can be passed to the agent through the object argument to the startAgent method as shown below:
 
@@ -160,6 +144,7 @@ As soon as that line of code is reached in any of the running instances of your 
 [david-url]: https://david-dm.org/GoogleCloudPlatform/cloud-debug-nodejs
 [david-dev-image]: https://david-dm.org/GoogleCloudPlatform/cloud-debug-nodejs/dev-status.svg
 [david-dev-url]: https://david-dm.org/GoogleCloudPlatform/cloud-debug-nodejs?type=dev
+[debugger-api]: https://console.cloud.google.com/apis/api/clouddebugger.googleapis.com/overview
 [snyk-image]: https://snyk.io/test/github/GoogleCloudPlatform/cloud-debug-nodejs/badge.svg
 [snyk-url]: https://snyk.io/test/github/GoogleCloudPlatform/cloud-debug-nodejs
 [config-js]: https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/blob/master/src/agent/config.js
