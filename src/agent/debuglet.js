@@ -48,11 +48,13 @@ module.exports = Debuglet;
 /**
  * @param {Debug} debug - A Debug instance.
  * @param {object=} config - The option parameters for the Debuglet.
- * @event 'error' on startup errors
- * @event 'started' once the startup tasks are completed
- * @event 'registered' once successfully registered to the debug api
- * @event 'stopped' if the agent stops due to a fatal error after starting
- * @event 'remotelyDisabled' if the debuggee is disabled by the server.
+ * @event 'started' once the startup tasks are completed. Only called once.
+ * @event 'stopped' if the agent stops due to a fatal error after starting. Only
+ *     called once.
+ * @event 'registered' once successfully registered to the debug api. May be
+ *     emitted multiple times.
+ * @event 'remotelyDisabled' if the debuggee is disabled by the server. May be
+ *    called multiple times.
  * @constructor
  */
 function Debuglet(debug, config) {
@@ -596,9 +598,13 @@ Debuglet.prototype.scheduleBreakpointExpiry_ = function(breakpoint) {
 };
 
 /**
- * Stops the Debuglet
+ * Stops the Debuglet. This is for testing purposes only. Stop should only be
+ * called on a agent that has started (i.e. emitted the 'started' event).
+ * Calling this while the agent is initializing may not necessarily stop all
+ * pending operations.
  */
 Debuglet.prototype.stop = function() {
+  assert.ok(this.running_, 'stop can only be called on a running agent');
   this.logger_.debug('Stopping Debuglet');
   this.running_ = false;
   this.emit('stopped');
