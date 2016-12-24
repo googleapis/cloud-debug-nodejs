@@ -53,6 +53,6 @@ then
     exit 1
   else
     npm run system-test
-    ./bin/run-e2e.sh || exit 1
+    npm run e2e-test
   fi
 fi

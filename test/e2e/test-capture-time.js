@@ -18,8 +18,8 @@
 var assert = require('assert');
 var request = require('request');
 var config = require('../../src/agent/config.js');
+var Debuglet = require('../../src/agent/debuglet.js');
 var semver = require('semver');
-var Debuglet = require('../../src/debuglet.js');
 
 var DEBUGGEE_ID = 'bar';
 var API = 'https://clouddebugger.googleapis.com';
@@ -27,6 +27,7 @@ var REGISTER_PATH = '/v2/controller/debuggees/register';
 var BPS_PATH = '/v2/controller/debuggees/' + DEBUGGEE_ID + '/breakpoints';
 
 var nock = require('nock');
+var nocks = require('../nocks.js');
 nock.disableNetConnect();
 
 var debuglet;
@@ -34,7 +35,7 @@ var debuglet;
 describe(__filename, function(){
   beforeEach(function() {
     process.env.GCLOUD_PROJECT = 0;
-    debuglet = new Debuglet(config);
+    debuglet = new Debuglet(require('../..')(), config);
     debuglet.once('started', function() {
       debuglet.debugletApi_.request_ = request; // Avoid authing.
     });
@@ -42,6 +43,7 @@ describe(__filename, function(){
 
   afterEach(function() {
     debuglet.stop();
+    delete process.env.GCLOUD_PROJECT;
   });
 
   it('should capture breakpoint quickly', function(done) {
@@ -54,6 +56,8 @@ describe(__filename, function(){
       condition: 'n===7',
       expressions: ['a', 'process']
     };
+
+    var authScope = nocks.oauth2();
 
     var scope = nock(API)
       .post(REGISTER_PATH)
@@ -84,6 +88,7 @@ describe(__filename, function(){
           } else {
             assert(reportedMillis - hitMillis < 20);
           }
+          authScope.done();
           scope.done();
           done();
         }, 10);

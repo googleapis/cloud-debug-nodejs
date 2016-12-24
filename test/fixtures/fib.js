@@ -24,6 +24,8 @@ function fib(n) {
 var debug = require('../..')();
 debug.startAgent({ logLevel: 2 });
 
+console.log(process.cwd());
+
 // Given the debug agent some time to start and then notify the cluster
 // master.
 setTimeout(function() {

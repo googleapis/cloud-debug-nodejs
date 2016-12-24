@@ -84,7 +84,6 @@ describe('@google-cloud/debug end-to-end behavior (allow 60s)', function () {
         var child = { transcript: '' };
         child.process = cp.fork(FILENAME, {
           execArgv: [],
-          cwd: '../..',
           env: {
             GCLOUD_PROJECT: process.env.GCLOUD_PROJECT,
             HOME: process.env.HOME

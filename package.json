@@ -49,6 +49,7 @@
   "scripts": {
     "test": "./bin/run-test.sh",
     "system-test": "mocha system-test/*.js --no-timeouts --bail",
+    "e2e-test": "./bin/run-e2e.sh",
     "changelog": "./bin/run-changelog.sh",
     "coverage": "./bin/run-test.sh -c",
     "bump": "./bin/run-bump.sh",
