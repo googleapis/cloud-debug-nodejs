@@ -21,8 +21,8 @@ var _ = require('lodash'); // for _.find. Can't use ES6 yet.
 var cp = require('child_process');
 var semver = require('semver');
 var promisifyAll = require('@google-cloud/common').util.promisifyAll;
-var Debug = require('../..');
-var Debugger = require('../debugger.js');
+var Debug = require('..');
+var Debugger = require('../test/debugger.js');
 
 var CLUSTER_WORKERS = 3;
 
@@ -91,11 +91,8 @@ describe('@google-cloud/debug end-to-end behavior', function () {
         var child = { transcript: '' };
         child.process = cp.fork(FILENAME, {
           execArgv: [],
-          env: {
-            GCLOUD_PROJECT: process.env.GCLOUD_PROJECT,
-            HOME: process.env.HOME
-          },
-          stdio: ['pipe', 'pipe', 'pipe', 'ipc']
+          env: process.env,
+          silent: true
         });
         child.process.on('message', handler);
 
@@ -111,6 +108,7 @@ describe('@google-cloud/debug end-to-end behavior', function () {
     this.timeout(5 * 1000);
     // Create a promise for each child that resolves when that child exits.
     var childExitPromises = children.map(function (child) {
+      console.log(child.transcript);
       child.process.kill();
       return new Promise(function(resolve, reject) {
         var timeout = setTimeout(function() {
@@ -159,9 +157,12 @@ describe('@google-cloud/debug end-to-end behavior', function () {
       });
 
       return Promise.all(promises);
-    }).then(function() {
+    }).then(function(results) {
       // Set a breakpoint at which the debugger should write to a log
 
+      results.map(function(result) {
+        assert.equal(result, '');
+      });
       console.log('-- deleted');
 
       console.log('-- setting a logpoint');
@@ -191,8 +192,10 @@ describe('@google-cloud/debug end-to-end behavior', function () {
 
       var breakpoint = results[0];
 
-      children.forEach(function(child) {
-        assert(child.transcript.indexOf('o is: {"a":[1,"hi",true]}') !== -1);
+      children.forEach(function(child, index) {
+        assert(child.transcript.indexOf('o is: {"a":[1,"hi",true]}') !== -1,
+          'transcript in child ' + index + ' should contain value of o: ' +
+          child.transcript);
       });
       return api.deleteBreakpoint(debuggeeId, breakpoint.id);
     }).then(function() {
@@ -254,6 +257,9 @@ describe('@google-cloud/debug end-to-end behavior', function () {
         assert.ok(child.transcript
           .split('LOGPOINT: o is: {"a":[1,"hi",true]}').length > 4);
       });
+
+      return api.deleteBreakpoint(debuggeeId, breakpoint.id);
+    }).then(function() {
       console.log('-- test passed');
       return Promise.resolve();
     });
@@ -292,6 +298,9 @@ describe('@google-cloud/debug end-to-end behavior', function () {
     }).then(function(results) {
       // Set a breakpoint at which the debugger should write to a log
 
+      results.map(function(result) {
+        assert.equal(result, '');
+      });
       console.log('-- deleted');
 
       console.log('-- setting a logpoint');
@@ -306,7 +315,6 @@ describe('@google-cloud/debug end-to-end behavior', function () {
     }).then(function(results) {
       // Check that the breakpoint was set, and then wait for the log to be
       // written to
-
       var breakpoint = results[0];
 
       assert.ok(breakpoint, 'should have set a breakpoint');
@@ -328,7 +336,7 @@ describe('@google-cloud/debug end-to-end behavior', function () {
           .split('LOGPOINT: o is: {"a":[1,"hi",true]}').length - 1;
         // A log count of greater than 10 indicates that we did not successfully
         // pause when the rate of `maxLogsPerSecond` was reached.
-        assert(logCount < 10, 'log count is not less than 10: ' + logCount);
+        assert(logCount <= 10, 'log count is greater than 10: ' + logCount);
         // A log count of less than 3 indicates that we did not successfully
         // resume logging after `logDelaySeconds` have passed.
         assert(logCount > 2, 'log count is not greater than 2: ' + logCount);

@@ -22,20 +22,37 @@ function fib(n) {
  */
 
 var debug = require('../..')();
-debug.startAgent({ logLevel: 2 });
+debug.startAgent({
+  logLevel: 2,
+  maxLogsPerSecond: 2,
+  logDelaySeconds: 5
+});
 
-console.log(process.cwd());
+if (!process.send) {
+  process.send = console.log;
+}
 
-setTimeout(function() {
+var timedOut = false;
+var registrationTimeout = setTimeout(function() {
+  timedOut = true;
+  process.send({ error: 'debuggee didn\'t register in time' });
+  setTimeout(function() {
+    process.exit(1);
+  }, 2000);
+}, 5000);
+
+debug.private_.once('registered', function() {
+  if (timedOut) {
+    return;
+  }
   var errorMessage;
   function setErrorIfNotOk(predicate, message) {
     if (!errorMessage && !predicate) {
       errorMessage = message;
     }
   };
-  setErrorIfNotOk(debug.private_, 'debuglet has initialized');
-  var debuglet = debug.private_;
-  var debuggee = debuglet.debuggee_;
+  clearTimeout(registrationTimeout);
+  var debuggee = debug.private_.debuggee_;
   setErrorIfNotOk(debuggee, 'should create debuggee');
   setErrorIfNotOk(debuggee.project, 'debuggee should have a project');
   setErrorIfNotOk(debuggee.id, 'debuggee should have registered');
@@ -49,4 +66,4 @@ setTimeout(function() {
       process.exit(1);
     }, 2000);
   }
-}, 7000);
+});
