@@ -18,24 +18,13 @@
 var assert = require('assert');
 var nock   = require('nock');
 var request = require('./auth-request.js');
-var proxyquire = require('proxyquire');
 var Debuggee = require('../src/debuggee.js');
 
 // the tests in this file rely on the GCLOUD_PROJECT environment variable
 // not being set
 delete process.env.GCLOUD_PROJECT;
 
-// require controller while stubbing auth to bypass authentication
-//
-var utils = {
-  getProjectNumber: function(callback) { callback(null, 'project123'); }
-};
-var Controller = proxyquire('../src/controller.js', {
-  '@google/cloud-diagnostics-common': {
-    logger: null,
-    utils: utils
-  }
-});
+var Controller = require('../src/controller.js');
 var fakeDebug = {
   request: request
 };
@@ -68,33 +57,6 @@ describe('Controller API', function() {
       });
     });
 
-    it('should have correct version without projectId', function(done) {
-      var oldProjNum = utils.getProjectNumber;
-      utils.getProjectNumber = function(callback) {
-        callback(new Error(), null);
-      };
-      process.env.GCLOUD_PROJECT = 'project123';
-      var controller = new Controller(fakeDebug);
-      var scope =
-          nock(url)
-              .post(api + '/debuggees/register')
-              .reply(200,
-                     {debuggee: {id: 'fake-debuggee'}, activePeriodSec: 600});
-      var debuggee = new Debuggee({
-        project: 'fake-project',
-        uniquifier: 'fake-id',
-        description: 'unit test'
-      });
-      controller.register(debuggee, function(err, result) {
-        assert(!err, 'not expecting an error');
-        assert.equal(result.debuggee.id, 'fake-debuggee');
-        scope.done();
-        delete process.env.GCLOUD_PROJECT;
-        utils.getProjectNumber = oldProjNum;
-        done();
-      });
-    });
-
     it('should not return an error when the debuggee isDisabled',
        function(done) {
          var scope = nock(url)
@@ -110,7 +72,7 @@ describe('Controller API', function() {
          });
          var controller = new Controller(fakeDebug);
          controller.register(debuggee, function(err, result) {
-           assert.ifError(err, 'not expected an error');
+           assert.ifError(err, 'not expecting an error');
            assert.equal(result.debuggee.id, 'fake-debuggee');
            assert.ok(result.debuggee.isDisabled);
            scope.done();
