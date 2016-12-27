@@ -26,27 +26,25 @@ debug.startAgent({ logLevel: 2 });
 
 console.log(process.cwd());
 
-// Given the debug agent some time to start and then notify the cluster
-// master.
 setTimeout(function() {
-  var ok = true;
-  function sendErrorIfNotOk(predicate, errorMessage) {
-    if (!predicate) {
-      ok = false;
-      process.send([errorMessage]);
+  var errorMessage;
+  function setErrorIfNotOk(predicate, message) {
+    if (!errorMessage && !predicate) {
+      errorMessage = message;
     }
   };
-  sendErrorIfNotOk(debug.private_, 'debuglet has initialized');
+  setErrorIfNotOk(debug.private_, 'debuglet has initialized');
   var debuglet = debug.private_;
   var debuggee = debuglet.debuggee_;
-  sendErrorIfNotOk(debuggee, 'should create debuggee');
-  sendErrorIfNotOk(debuggee.project, 'debuggee should have a project');
-  sendErrorIfNotOk(debuggee.id, 'debuggee should have registered');
-  if (ok) {
-    // The parent process needs to know the debuggeeId and project.
-    process.send(['', debuggee.id, debuggee.project]);
+  setErrorIfNotOk(debuggee, 'should create debuggee');
+  setErrorIfNotOk(debuggee.project, 'debuggee should have a project');
+  setErrorIfNotOk(debuggee.id, 'debuggee should have registered');
+  if (!errorMessage) {
+    // The parent process needs to know the debuggee and project IDs.
+    process.send({ debuggeeId: debuggee.id, projectId: debuggee.project });
     setInterval(fib.bind(null, 12), 2000);
   } else {
+    process.send({ error: errorMessage });
     setTimeout(function() {
       process.exit(1);
     }, 2000);

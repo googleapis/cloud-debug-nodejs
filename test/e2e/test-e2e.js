@@ -34,7 +34,8 @@ var delay = function(delayTimeMS) {
   });
 };
 
-describe('@google-cloud/debug end-to-end behavior (allow 60s)', function () {
+// This test could take up to 70 seconds.
+describe('@google-cloud/debug end-to-end behavior', function () {
   var api;
 
   var debuggeeId;
@@ -50,21 +51,24 @@ describe('@google-cloud/debug end-to-end behavior (allow 60s)', function () {
     this.timeout(10 * 1000);
     return new Promise(function(resolve, reject) {
       var numChildrenReady = 0;
-      var handler = function(a) {
-        if (a[0].length > 0) {
-          reject(new Error('A child reported the following error: ' + a[0]));
+
+      // Process a status message sent from a child process.
+      var handler = function(c) {
+        console.log(c);
+        if (c.error) {
+          reject(new Error('A child reported the following error: ' + c.error));
+          return;
         }
         if (!debuggeeId) {
           // Cache the needed info from the first worker.
-          debuggeeId = a[1];
-          projectId = a[2];
+          debuggeeId = c.debuggeeId;
+          projectId = c.projectId;
         } else {
           // Make sure all other workers are consistent.
-          assert.equal(debuggeeId, a[1]);
-          assert.equal(projectId, a[2]);
-          if (debuggeeId !== a[1] || projectId !== a[2]) {
+          if (debuggeeId !== c.debuggeeId || projectId !== c.projectId) {
             reject(new Error('Child debuggee ID and/or project ID' +
                              'is not consistent with previous child'));
+            return;
           }
         }
         numChildrenReady++;
@@ -73,6 +77,9 @@ describe('@google-cloud/debug end-to-end behavior (allow 60s)', function () {
         }
       };
 
+      // Handle stdout/stderr output from a child process. More specifically,
+      // write the child process's output to a transcript.
+      // Each child has its own transcript.
       var stdoutHandler = function(index) {
         return function(chunk) {
           children[index].transcript += chunk;
@@ -80,7 +87,7 @@ describe('@google-cloud/debug end-to-end behavior (allow 60s)', function () {
       };
 
       for (var i = 0; i < CLUSTER_WORKERS; i++) {
-        // Fork child processes that communicate with this process with IPC.
+        // Fork child processes that sned messages to this process with IPC.
         var child = { transcript: '' };
         child.process = cp.fork(FILENAME, {
           execArgv: [],
@@ -94,7 +101,6 @@ describe('@google-cloud/debug end-to-end behavior (allow 60s)', function () {
 
         children.push(child);
 
-        // Each child has its own transcript.
         child.process.stdout.on('data', stdoutHandler(i));
         child.process.stderr.on('data', stdoutHandler(i));
       }
@@ -102,12 +108,26 @@ describe('@google-cloud/debug end-to-end behavior (allow 60s)', function () {
   });
 
   afterEach(function() {
-    children.forEach(function (child) {
+    this.timeout(5 * 1000);
+    // Create a promise for each child that resolves when that child exits.
+    var childExitPromises = children.map(function (child) {
       child.process.kill();
+      return new Promise(function(resolve, reject) {
+        var timeout = setTimeout(function() {
+          reject(new Error('A child process failed to exit.'));
+        }, 3000);
+        child.process.on('exit', function() {
+          clearTimeout(timeout);
+          resolve();
+        });
+      });
     });
-    debuggeeId = null;
-    projectId = null;
-    children = [];
+    // Wait until all children exit, then reset test state.
+    return Promise.all(childExitPromises).then(function() {
+      debuggeeId = null;
+      projectId = null;
+      children = [];
+    });
   });
 
   it('should set breakpoints correctly', function() {
