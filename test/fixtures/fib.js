@@ -25,12 +25,9 @@ var debug = require('../..')();
 debug.startAgent({
   logLevel: 2,
   maxLogsPerSecond: 2,
-  logDelaySeconds: 5
+  logDelaySeconds: 5,
+  breakpointUpdateIntervalSec: 5
 });
-
-if (!process.send) {
-  process.send = console.log;
-}
 
 var timedOut = false;
 var registrationTimeout = setTimeout(function() {
@@ -45,13 +42,15 @@ debug.private_.once('registered', function() {
   if (timedOut) {
     return;
   }
+  clearTimeout(registrationTimeout);
+
   var errorMessage;
   function setErrorIfNotOk(predicate, message) {
     if (!errorMessage && !predicate) {
       errorMessage = message;
     }
   };
-  clearTimeout(registrationTimeout);
+
   var debuggee = debug.private_.debuggee_;
   setErrorIfNotOk(debuggee, 'should create debuggee');
   setErrorIfNotOk(debuggee.project, 'debuggee should have a project');
