@@ -26,7 +26,7 @@ debug.startAgent({
   logLevel: 2,
   maxLogsPerSecond: 2,
   logDelaySeconds: 5,
-  breakpointUpdateIntervalSec: 5
+  breakpointUpdateIntervalSec: 1
 });
 
 var timedOut = false;
