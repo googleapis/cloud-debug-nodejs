@@ -10,5 +10,3 @@ if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then
 fi
 
 mocha system-test/test-*.js
-
-cd -
