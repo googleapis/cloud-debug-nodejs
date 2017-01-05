@@ -26,7 +26,7 @@ var logModule = require('@google/cloud-diagnostics-common').logger;
 var v8debugapi = require('../../src/agent/v8debugapi.js');
 var SourceMapper = require('../../src/agent/sourcemapper.js');
 var scanner = require('../../src/agent/scanner.js');
-var config = require('../../src/agent/config.js');
+var defaultConfig = require('../../src/agent/config.js');
 var api;
 
 var breakpointInFoo = {
@@ -35,6 +35,8 @@ var breakpointInFoo = {
 };
 
 describe('maxDataSize', function() {
+  var config = Object.assign({}, defaultConfig);
+
   before(function(done) {
     if (!api) {
       var logger = logModule.create(config.logLevel);
