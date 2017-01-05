@@ -34,8 +34,9 @@ describe('repository relative paths', function() {
     setTimeout(function() {
       // Wait for v8debug api to initialize.
       api = agent.private_.v8debug_;
+      assert(api, 'v8 debug api was not initialized in time');
       done();
-    }, 300);
+    }, 1500);
   });
 
   after(function() {
