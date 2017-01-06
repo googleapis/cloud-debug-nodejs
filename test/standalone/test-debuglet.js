@@ -42,450 +42,486 @@ var errorBp = {
   location: { path: 'fixtures/foo.js', line: 2 }
 };
 
-describe(__filename, function() {
-  beforeEach(function() {
-    delete process.env.GCLOUD_PROJECT;
-  });
-
-  it('should not start when projectId is not available', function(done) {
-    this.timeout(8000);
-    var debug = require('../..')();
-    var debuglet = new Debuglet(debug, defaultConfig);
-
-    // The following mock is neccessary for the case when the test is running
-    // on GCP. In that case we will get the projectId from the metadata service.
-    var scope = nocks.numericProjectId(404); 
-
-    nocks.oauth2();
-
-    debuglet.once('initError', function(err) {
-      assert.ok(err);
-      // no need to stop the debuggee.
-      scope.done();
-      done();
+describe('Debuglet', function() {
+  describe('setup', function () {
+    beforeEach(function() {
+      delete process.env.GCLOUD_PROJECT;
+      nocks.oauth2();
     });
-    debuglet.once('started', function() {
-      assert.fail();
+
+    afterEach(function() {
+      nock.cleanAll();
     });
-    debuglet.start();
-  });
 
-  it('should not crash without project num', function(done) {
-    this.timeout(8000);
-    var debug = require('../..')();
-    var debuglet = new Debuglet(debug, defaultConfig);
-
-    // The following mock is neccessary for the case when the test is running
-    // on GCP. In that case we will get the projectId from the metadata service.
-    var scope = nocks.numericProjectId(404); 
-
-    nocks.oauth2();
-
-    debuglet.once('started', function() {
-      assert.fail();
+    after(function() {
+      delete process.env.GCLOUD_PROJECT;
     });
-    debuglet.once('initError', function() {
-      scope.done();
-      done();
-    });
-    debuglet.start();
-  });
 
-  it('should accept non-numeric GCLOUD_PROJECT', function(done) {
-    var debug = require('../..')(
-        {projectId: '11020304f2934', credentials: fakeCredentials});
-    var debuglet = new Debuglet(debug, defaultConfig);
+    it('should not start when projectId is not available', function(done) {
+      this.timeout(8000);
+      var debug = require('../..')();
+      var debuglet = new Debuglet(debug, defaultConfig);
 
-    nocks.oauth2();
-    var scope = nock(API)
-      .post(REGISTER_PATH)
-      .reply(200, {
-        debuggee: {
-          id: DEBUGGEE_ID
-        }
+      // The following mock is neccessary for the case when the test is running
+      // on GCP. In that case we will get the projectId from the metadata service.
+      var scope = nocks.numericProjectId(404); 
+
+      debuglet.once('initError', function(err) {
+        assert.ok(err);
+        // no need to stop the debuggee.
+        scope.done();
+        done();
       });
-
-    debuglet.once('registered', function(id) {
-      assert.equal(id, DEBUGGEE_ID);
-      debuglet.stop();
-      scope.done();
-      done();
-    });
-
-    debuglet.start();
-  });
-
-  it('should retry on failed registration', function(done) {
-    this.timeout(10000);
-    process.env.GCLOUD_PROJECT='11020304f2934';
-    var debug = require('../..')({credentials: fakeCredentials});
-    var debuglet = new Debuglet(debug, defaultConfig);
-
-    nocks.oauth2();
-    var scope = nock(API)
-      .post(REGISTER_PATH)
-      .reply(404)
-      .post(REGISTER_PATH)
-      .reply(509)
-      .post(REGISTER_PATH)
-      .reply(200, {
-        debuggee: {
-          id: DEBUGGEE_ID
-        }
+      debuglet.once('started', function() {
+        assert.fail();
       });
-
-    debuglet.once('registered', function(id) {
-      assert.equal(id, DEBUGGEE_ID);
-      debuglet.stop();
-      scope.done();
-      done();
+      debuglet.start();
     });
 
-    debuglet.start();
-  });
+    it('should not crash without project num', function(done) {
+      this.timeout(8000);
+      var debug = require('../..')();
+      var debuglet = new Debuglet(debug, defaultConfig);
 
-  it('should error if a package.json doesn\'t exist', function(done) {
-    var debug = require('../..')(
-        {projectId: 'fake-project', credentials: fakeCredentials});
-    var config = extend({}, defaultConfig, {workingDirectory: __dirname});
-    var debuglet = new Debuglet(debug, config);
+      // The following mock is neccessary for the case when the test is running
+      // on GCP. In that case we will get the projectId from the metadata service.
+      var scope = nocks.numericProjectId(404); 
 
-    nocks.oauth2();
-    debuglet.once('initError', function(err) {
-      assert(err);
-      done();
-    });
-
-    debuglet.start();
-  });
-
-  it('should register successfully otherwise', function(done) {
-    var debug = require('../..')(
-        {projectId: 'fake-project', credentials: fakeCredentials});
-    var debuglet = new Debuglet(debug, defaultConfig);
-
-    nocks.oauth2();
-    var scope =
-        nock(API).post(REGISTER_PATH).reply(200, {debuggee: {id: DEBUGGEE_ID}});
-
-    debuglet.once('registered', function(id) {
-      assert.equal(id, DEBUGGEE_ID);
-      debuglet.stop();
-      scope.done();
-      done();
-    });
-
-    debuglet.start();
-  });
-
-
-  it('should pass source context to api if present', function(done) {
-    process.chdir('test/fixtures');
-
-    var debug = require('../..')(
-        {projectId: 'fake-project', credentials: fakeCredentials});
-    var debuglet = new Debuglet(debug, defaultConfig);
-
-    nocks.oauth2();
-    var scope = nock(API)
-      .post(REGISTER_PATH, function(body) {
-        return body.debuggee.sourceContexts[0] &&
-          body.debuggee.sourceContexts[0].a === 5;
-      })
-      .reply(200, {
-        debuggee: {
-          id: DEBUGGEE_ID
-        }
+      debuglet.once('started', function() {
+        assert.fail();
       });
-
-    debuglet.once('registered', function(id) {
-      assert.equal(id, DEBUGGEE_ID);
-      debuglet.stop();
-      scope.done();
-      process.chdir('../..');
-      done();
-    });
-
-    debuglet.start();
-  });
-
-  it('should de-activate when the server responds with isDisabled',
-     function(done) {
-       this.timeout(4000);
-       var debug = require('../..')(
-           {projectId: 'fake-project', credentials: fakeCredentials});
-       var debuglet = new Debuglet(debug, defaultConfig);
-
-       nocks.oauth2();
-       var scope =
-           nock(API)
-               .post(REGISTER_PATH)
-               .reply(200, {debuggee: {id: DEBUGGEE_ID, isDisabled: true}});
-
-       debuglet.once('remotelyDisabled', function() {
-         assert.ok(!debuglet.fetcherActive_);
-         debuglet.stop();
-         scope.done();
-         done();
-       });
-
-       debuglet.start();
-     });
-
-  it('should retry after a isDisabled request', function(done) {
-    this.timeout(4000);
-    var debug = require('../..')(
-        {projectId: 'fake-project', credentials: fakeCredentials});
-    var debuglet = new Debuglet(debug, defaultConfig);
-
-    nocks.oauth2();
-    var scope = nock(API)
-      .post(REGISTER_PATH)
-      .reply(200, {
-        debuggee: {
-          id: DEBUGGEE_ID,
-          isDisabled: true
-        }
-      })
-      .post(REGISTER_PATH)
-      .reply(200, {
-        debuggee: {
-          id: DEBUGGEE_ID
-        }
+      debuglet.once('initError', function() {
+        scope.done();
+        done();
       });
-
-    var gotDisabled = false;
-    debuglet.once('remotelyDisabled', function() {
-      assert.ok(!debuglet.fetcherActive_);
-      gotDisabled = true;
+      debuglet.start();
     });
 
-    debuglet.once('registered', function(id) {
-      assert.ok(gotDisabled);
-      assert.equal(id, DEBUGGEE_ID);
-      debuglet.stop();
-      scope.done();
-      done();
-    });
+    it('should accept non-numeric GCLOUD_PROJECT', function(done) {
+      var debug = require('../..')(
+          {projectId: '11020304f2934', credentials: fakeCredentials});
+      var debuglet = new Debuglet(debug, defaultConfig);
 
-    debuglet.start();
-  });
+      var scope = nock(API)
+        .post(REGISTER_PATH)
+        .reply(200, {
+          debuggee: {
+            id: DEBUGGEE_ID
+          }
+        });
 
-  it('should re-register when registration expires', function(done) {
-    var debug = require('../..')(
-        {projectId: 'fake-project', credentials: fakeCredentials});
-    var debuglet = new Debuglet(debug, defaultConfig);
-
-    nocks.oauth2();
-    var scope = nock(API)
-      .post(REGISTER_PATH)
-      .reply(200, {
-        debuggee: {
-          id: DEBUGGEE_ID
-        }
-      })
-      .get(BPS_PATH + '?success_on_timeout=true')
-      .reply(404)
-      .post(REGISTER_PATH)
-      .reply(200, {
-        debuggee: {
-          id: DEBUGGEE_ID
-        }
-      });
-
-    debuglet.once('registered', function(id) {
-      assert.equal(id, DEBUGGEE_ID);
       debuglet.once('registered', function(id) {
         assert.equal(id, DEBUGGEE_ID);
         debuglet.stop();
         scope.done();
         done();
       });
+
+      debuglet.start();
     });
 
-    debuglet.start();
-  });
+    it('should respect GCLOUD_DEBUG_LOGLEVEL', function(done) {
+      process.env.GCLOUD_PROJECT='11020304f2934';
+      process.env.GCLOUD_DEBUG_LOGLEVEL = 3;
+      var debug = require('../..')({credentials: fakeCredentials});
+      var debuglet = new Debuglet(debug, defaultConfig);
 
-  it('should fetch and add breakpoints', function(done) {
-    this.timeout(2000);
-    var debug = require('../..')(
-        {projectId: 'fake-project', credentials: fakeCredentials});
-    var debuglet = new Debuglet(debug, defaultConfig);
+      var scope = nock(API)
+        .post(REGISTER_PATH)
+        .reply(200, {
+          debuggee: {
+            id: DEBUGGEE_ID
+          }
+        });
 
-    nocks.oauth2();
-    var scope = nock(API)
-      .post(REGISTER_PATH)
-      .reply(200, {
-        debuggee: {
-          id: DEBUGGEE_ID
-        }
-      })
-      .get(BPS_PATH + '?success_on_timeout=true')
-      .reply(200, {
-        breakpoints: [bp]
-      });
+      debuglet.once('registered', function() {
+        var logger = debuglet.logger_;
+        var STRING1 = 'jjjjjjjjjjjjjjjjjfjfjfjf';
+        var STRING2 = 'kkkkkkkfkfkfkfkfkkffkkkk';
 
-    debuglet.once('registered', function reg(id) {
-      assert.equal(id, DEBUGGEE_ID);
-      setTimeout(function() {
-        assert.deepEqual(debuglet.activeBreakpointMap_.test, bp);
+        var buffer = [];
+        var oldLog = console.log;
+
+        console.log = function () {
+          buffer = buffer.concat([].slice.call(arguments));
+        };
+        logger.info(STRING1);
+        logger.debug(STRING2);
+        console.log = oldLog;
+
+        assert(buffer.indexOf(STRING1) !== -1);
+        assert(buffer.indexOf(STRING2) === -1);
+
         debuglet.stop();
         scope.done();
         done();
-      }, 1000);
+      });
+
+      debuglet.start();
     });
 
-    debuglet.start();
-  });
+    it('should retry on failed registration', function(done) {
+      this.timeout(10000);
+      process.env.GCLOUD_PROJECT='11020304f2934';
+      var debug = require('../..')({credentials: fakeCredentials});
+      var debuglet = new Debuglet(debug, defaultConfig);
 
-  it('should re-fetch breakpoints on error', function(done) {
-    this.timeout(6000);
+      var scope = nock(API)
+        .post(REGISTER_PATH)
+        .reply(404)
+        .post(REGISTER_PATH)
+        .reply(509)
+        .post(REGISTER_PATH)
+        .reply(200, {
+          debuggee: {
+            id: DEBUGGEE_ID
+          }
+        });
 
-    var debug = require('../..')(
-        {projectId: 'fake-project', credentials: fakeCredentials});
-    var debuglet = new Debuglet(debug, defaultConfig);
-
-    nocks.oauth2();
-    var scope = nock(API)
-      .post(REGISTER_PATH)
-      .reply(200, {
-        debuggee: {
-          id: DEBUGGEE_ID
-        }
-      })
-      .post(REGISTER_PATH)
-      .reply(200, {
-        debuggee: {
-          id: DEBUGGEE_ID
-        }
-      })
-      .get(BPS_PATH + '?success_on_timeout=true')
-      .reply(404)
-      .get(BPS_PATH + '?success_on_timeout=true')
-      .reply(200, {
-        wait_expired: true
-      })
-      .get(BPS_PATH + '?success_on_timeout=true')
-      .reply(200, {
-        breakpoints: [bp, errorBp]
-      })
-      .put(BPS_PATH + '/' + errorBp.id, function(body) {
-        var status = body.breakpoint.status;
-        return status.isError &&
-          status.description.format.indexOf('actions are CAPTURE') !== -1;
-      })
-      .reply(200);
-
-    debuglet.once('registered', function reg(id) {
-      assert.equal(id, DEBUGGEE_ID);
-      setTimeout(function() {
-        assert.deepEqual(debuglet.activeBreakpointMap_.test, bp);
-        assert(!debuglet.activeBreakpointMap_.testLog);
+      debuglet.once('registered', function(id) {
+        assert.equal(id, DEBUGGEE_ID);
         debuglet.stop();
         scope.done();
         done();
-      }, 1000);
-    });
-
-    debuglet.start();
-  });
-
-  it('should expire stale breakpoints', function(done) {
-    var debug = require('../..')(
-        {projectId: 'fake-project', credentials: fakeCredentials});
-    var config = extend({}, defaultConfig, {breakpointExpirationSec: 1});
-    this.timeout(6000);
-
-    nocks.oauth2();
-    var scope = nock(API)
-      .post(REGISTER_PATH)
-      .reply(200, {
-        debuggee: {
-          id: DEBUGGEE_ID
-        }
-      })
-      .get(BPS_PATH + '?success_on_timeout=true')
-      .reply(200, {
-        breakpoints: [bp]
-      })
-      .put(BPS_PATH + '/test', function(body) {
-        return body.breakpoint.status.description.format ===
-          'The snapshot has expired';
-      })
-      .reply(200);
-
-    var debuglet = new Debuglet(debug, config);
-    debuglet.once('registered', function(id) {
-      assert.equal(id, DEBUGGEE_ID);
-      setTimeout(function() {
-        assert.deepEqual(debuglet.activeBreakpointMap_.test, bp);
-        setTimeout(function() {
-          assert(!debuglet.activeBreakpointMap_.test);
-          debuglet.stop();
-          scope.done();
-          done();
-        }, 1100);
-      }, 500);
-    });
-
-    debuglet.start();
-  });
-
-  // This test catches regressions in a bug where the agent would
-  // re-schedule an already expired breakpoint to expire if the
-  // server listed the breakpoint as active (which it may do depending
-  // on how quickly the expiry is processed).
-  // The test expires a breakpoint and then has the api respond with
-  // the breakpoint listed as active. It validates that the breakpoint
-  // is only expired with the server once.
-  it('should not update expired breakpoints', function(done) {
-    var debug = require('../..')(
-        {projectId: 'fake-project', credentials: fakeCredentials});
-    var config = extend({}, defaultConfig, {
-      breakpointExpirationSec: 1,
-      breakpointUpdateIntervalSec: 1
-    });
-    this.timeout(6000);
-
-    nocks.oauth2();
-    var scope = nock(API)
-      .post(REGISTER_PATH)
-      .reply(200, {
-        debuggee: {
-          id: DEBUGGEE_ID
-        }
-      })
-      .get(BPS_PATH + '?success_on_timeout=true')
-      .reply(200, {
-        breakpoints: [bp]
-      })
-      .put(BPS_PATH + '/test', function(body) {
-        return body.breakpoint.status.description.format ===
-          'The snapshot has expired';
-      })
-      .reply(200)
-      .get(BPS_PATH + '?success_on_timeout=true').times(4)
-      .reply(200, {
-        breakpoints: [bp]
       });
 
-    var debuglet = new Debuglet(debug, config);
-    debuglet.once('registered', function(id) {
-      assert.equal(id, DEBUGGEE_ID);
-      setTimeout(function() {
-        assert.deepEqual(debuglet.activeBreakpointMap_.test, bp);
-        setTimeout(function() {
-          assert(!debuglet.activeBreakpointMap_.test);
-          // Fetcher disables if we re-update since endpoint isn't mocked twice
-          assert(debuglet.fetcherActive_);
+      debuglet.start();
+    });
+
+    it('should error if a package.json doesn\'t exist', function(done) {
+      var debug = require('../..')(
+          {projectId: 'fake-project', credentials: fakeCredentials});
+      var config = extend({}, defaultConfig, {workingDirectory: __dirname});
+      var debuglet = new Debuglet(debug, config);
+
+      debuglet.once('initError', function(err) {
+        assert(err);
+        done();
+      });
+
+      debuglet.start();
+    });
+
+    it('should register successfully otherwise', function(done) {
+      var debug = require('../..')(
+          {projectId: 'fake-project', credentials: fakeCredentials});
+      var debuglet = new Debuglet(debug, defaultConfig);
+
+      nocks.oauth2();
+      var scope =
+          nock(API).post(REGISTER_PATH).reply(200, {debuggee: {id: DEBUGGEE_ID}});
+
+      debuglet.once('registered', function(id) {
+        assert.equal(id, DEBUGGEE_ID);
+        debuglet.stop();
+        scope.done();
+        done();
+      });
+
+      debuglet.start();
+    });
+
+
+    it('should pass source context to api if present', function(done) {
+      process.chdir('test/fixtures');
+
+      var debug = require('../..')(
+          {projectId: 'fake-project', credentials: fakeCredentials});
+      var debuglet = new Debuglet(debug, defaultConfig);
+
+      var scope = nock(API)
+        .post(REGISTER_PATH, function(body) {
+          return body.debuggee.sourceContexts[0] &&
+            body.debuggee.sourceContexts[0].a === 5;
+        })
+        .reply(200, {
+          debuggee: {
+            id: DEBUGGEE_ID
+          }
+        });
+
+      debuglet.once('registered', function(id) {
+        assert.equal(id, DEBUGGEE_ID);
+        debuglet.stop();
+        scope.done();
+        process.chdir('../..');
+        done();
+      });
+
+      debuglet.start();
+    });
+
+    it('should de-activate when the server responds with isDisabled',
+      function(done) {
+        this.timeout(4000);
+        var debug = require('../..')(
+            {projectId: 'fake-project', credentials: fakeCredentials});
+        var debuglet = new Debuglet(debug, defaultConfig);
+
+        var scope =
+            nock(API)
+                .post(REGISTER_PATH)
+                .reply(200, {debuggee: {id: DEBUGGEE_ID, isDisabled: true}});
+
+        debuglet.once('remotelyDisabled', function() {
+          assert.ok(!debuglet.fetcherActive_);
           debuglet.stop();
           scope.done();
           done();
-        }, 4500);
-      }, 500);
+        });
+
+        debuglet.start();
+      });
+
+    it('should retry after a isDisabled request', function(done) {
+      this.timeout(4000);
+      var debug = require('../..')(
+          {projectId: 'fake-project', credentials: fakeCredentials});
+      var debuglet = new Debuglet(debug, defaultConfig);
+
+      var scope = nock(API)
+        .post(REGISTER_PATH)
+        .reply(200, {
+          debuggee: {
+            id: DEBUGGEE_ID,
+            isDisabled: true
+          }
+        })
+        .post(REGISTER_PATH)
+        .reply(200, {
+          debuggee: {
+            id: DEBUGGEE_ID
+          }
+        });
+
+      var gotDisabled = false;
+      debuglet.once('remotelyDisabled', function() {
+        assert.ok(!debuglet.fetcherActive_);
+        gotDisabled = true;
+      });
+
+      debuglet.once('registered', function(id) {
+        assert.ok(gotDisabled);
+        assert.equal(id, DEBUGGEE_ID);
+        debuglet.stop();
+        scope.done();
+        done();
+      });
+
+      debuglet.start();
     });
 
-    debuglet.start();
+    it('should re-register when registration expires', function(done) {
+      var debug = require('../..')(
+          {projectId: 'fake-project', credentials: fakeCredentials});
+      var debuglet = new Debuglet(debug, defaultConfig);
+
+      var scope = nock(API)
+        .post(REGISTER_PATH)
+        .reply(200, {
+          debuggee: {
+            id: DEBUGGEE_ID
+          }
+        })
+        .get(BPS_PATH + '?success_on_timeout=true')
+        .reply(404)
+        .post(REGISTER_PATH)
+        .reply(200, {
+          debuggee: {
+            id: DEBUGGEE_ID
+          }
+        });
+
+      debuglet.once('registered', function(id) {
+        assert.equal(id, DEBUGGEE_ID);
+        debuglet.once('registered', function(id) {
+          assert.equal(id, DEBUGGEE_ID);
+          debuglet.stop();
+          scope.done();
+          done();
+        });
+      });
+
+      debuglet.start();
+    });
+
+    it('should fetch and add breakpoints', function(done) {
+      this.timeout(2000);
+      var debug = require('../..')(
+          {projectId: 'fake-project', credentials: fakeCredentials});
+      var debuglet = new Debuglet(debug, defaultConfig);
+
+      var scope = nock(API)
+        .post(REGISTER_PATH)
+        .reply(200, {
+          debuggee: {
+            id: DEBUGGEE_ID
+          }
+        })
+        .get(BPS_PATH + '?success_on_timeout=true')
+        .reply(200, {
+          breakpoints: [bp]
+        });
+
+      debuglet.once('registered', function reg(id) {
+        assert.equal(id, DEBUGGEE_ID);
+        setTimeout(function() {
+          assert.deepEqual(debuglet.activeBreakpointMap_.test, bp);
+          debuglet.stop();
+          scope.done();
+          done();
+        }, 1000);
+      });
+
+      debuglet.start();
+    });
+
+    it('should re-fetch breakpoints on error', function(done) {
+      this.timeout(6000);
+
+      var debug = require('../..')(
+          {projectId: 'fake-project', credentials: fakeCredentials});
+      var debuglet = new Debuglet(debug, defaultConfig);
+
+      var scope = nock(API)
+        .post(REGISTER_PATH)
+        .reply(200, {
+          debuggee: {
+            id: DEBUGGEE_ID
+          }
+        })
+        .post(REGISTER_PATH)
+        .reply(200, {
+          debuggee: {
+            id: DEBUGGEE_ID
+          }
+        })
+        .get(BPS_PATH + '?success_on_timeout=true')
+        .reply(404)
+        .get(BPS_PATH + '?success_on_timeout=true')
+        .reply(200, {
+          wait_expired: true
+        })
+        .get(BPS_PATH + '?success_on_timeout=true')
+        .reply(200, {
+          breakpoints: [bp, errorBp]
+        })
+        .put(BPS_PATH + '/' + errorBp.id, function(body) {
+          var status = body.breakpoint.status;
+          return status.isError &&
+            status.description.format.indexOf('actions are CAPTURE') !== -1;
+        })
+        .reply(200);
+
+      debuglet.once('registered', function reg(id) {
+        assert.equal(id, DEBUGGEE_ID);
+        setTimeout(function() {
+          assert.deepEqual(debuglet.activeBreakpointMap_.test, bp);
+          assert(!debuglet.activeBreakpointMap_.testLog);
+          debuglet.stop();
+          scope.done();
+          done();
+        }, 1000);
+      });
+
+      debuglet.start();
+    });
+
+    it('should expire stale breakpoints', function(done) {
+      var debug = require('../..')(
+          {projectId: 'fake-project', credentials: fakeCredentials});
+      var config = extend({}, defaultConfig, {breakpointExpirationSec: 1});
+      this.timeout(6000);
+
+      var scope = nock(API)
+        .post(REGISTER_PATH)
+        .reply(200, {
+          debuggee: {
+            id: DEBUGGEE_ID
+          }
+        })
+        .get(BPS_PATH + '?success_on_timeout=true')
+        .reply(200, {
+          breakpoints: [bp]
+        })
+        .put(BPS_PATH + '/test', function(body) {
+          return body.breakpoint.status.description.format ===
+            'The snapshot has expired';
+        })
+        .reply(200);
+
+      var debuglet = new Debuglet(debug, config);
+      debuglet.once('registered', function(id) {
+        assert.equal(id, DEBUGGEE_ID);
+        setTimeout(function() {
+          assert.deepEqual(debuglet.activeBreakpointMap_.test, bp);
+          setTimeout(function() {
+            assert(!debuglet.activeBreakpointMap_.test);
+            debuglet.stop();
+            scope.done();
+            done();
+          }, 1100);
+        }, 500);
+      });
+
+      debuglet.start();
+    });
+
+    // This test catches regressions in a bug where the agent would
+    // re-schedule an already expired breakpoint to expire if the
+    // server listed the breakpoint as active (which it may do depending
+    // on how quickly the expiry is processed).
+    // The test expires a breakpoint and then has the api respond with
+    // the breakpoint listed as active. It validates that the breakpoint
+    // is only expired with the server once.
+    it('should not update expired breakpoints', function(done) {
+      var debug = require('../..')(
+          {projectId: 'fake-project', credentials: fakeCredentials});
+      var config = extend({}, defaultConfig, {
+        breakpointExpirationSec: 1,
+        breakpointUpdateIntervalSec: 1
+      });
+      this.timeout(6000);
+
+      var scope = nock(API)
+        .post(REGISTER_PATH)
+        .reply(200, {
+          debuggee: {
+            id: DEBUGGEE_ID
+          }
+        })
+        .get(BPS_PATH + '?success_on_timeout=true')
+        .reply(200, {
+          breakpoints: [bp]
+        })
+        .put(BPS_PATH + '/test', function(body) {
+          return body.breakpoint.status.description.format ===
+            'The snapshot has expired';
+        })
+        .reply(200)
+        .get(BPS_PATH + '?success_on_timeout=true').times(4)
+        .reply(200, {
+          breakpoints: [bp]
+        });
+
+      var debuglet = new Debuglet(debug, config);
+      debuglet.once('registered', function(id) {
+        assert.equal(id, DEBUGGEE_ID);
+        setTimeout(function() {
+          assert.deepEqual(debuglet.activeBreakpointMap_.test, bp);
+          setTimeout(function() {
+            assert(!debuglet.activeBreakpointMap_.test);
+            // Fetcher disables if we re-update since endpoint isn't mocked twice
+            assert(debuglet.fetcherActive_);
+            debuglet.stop();
+            scope.done();
+            done();
+          }, 4500);
+        }, 500);
+      });
+
+      debuglet.start();
+    });
   });
 
   describe('map subtract', function() {
@@ -538,12 +574,12 @@ describe(__filename, function() {
     });
 
     it('should have an error statusMessage with the appropriate arg',
-       function() {
-         var debuggee = Debuglet.createDebuggee(
-             'a', 'b', undefined, undefined, undefined, 'Some Error Message');
-         assert.ok(debuggee);
-         assert.ok(debuggee.statusMessage);
-       });
+      function() {
+        var debuggee = Debuglet.createDebuggee(
+            'a', 'b', undefined, undefined, undefined, 'Some Error Message');
+        assert.ok(debuggee);
+        assert.ok(debuggee.statusMessage);
+      });
   });
 
 });

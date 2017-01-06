@@ -39,7 +39,7 @@ describe('Debug module', function() {
   });
 
   // Some tests depend on this private property.
-  it('should have a debuglet as the private property', function() {
+  it('should have a debuglet as the private property', function(done) {
     assert(debug.private_);
 
     // The private_ property needs to be a debuglet.
