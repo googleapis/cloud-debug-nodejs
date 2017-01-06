@@ -18,10 +18,10 @@
 var path = require('path');
 var assert = require('assert');
 var nock = require('nock');
-var nocks = require('../nocks.js');
+var nocks = require('./nocks.js');
 var extend = require('extend');
-var config = require('../../src/agent/config.js');
-var Debuglet = require('../../src/agent/debuglet.js');
+var config = require('../src/agent/config.js');
+var Debuglet = require('../src/agent/debuglet.js');
 
 var envProject = process.env.GCLOUD_PROJECT;
 
@@ -48,9 +48,9 @@ describe('test-options-credentials', function() {
 
       var options = extend({}, {
         projectId: 'project-via-options',
-        credentials: require('../fixtures/gcloud-credentials.json')
+        credentials: require('./fixtures/gcloud-credentials.json')
       });
-      var debug = require('../..')(options);
+      var debug = require('..')(options);
 
       // TODO: also make sure we don't request the project from metadata
       // service.
@@ -68,12 +68,12 @@ describe('test-options-credentials', function() {
     });
 
   it('should use the keyFilename field of the options object', function(done) {
-    var credentials = require('../fixtures/gcloud-credentials.json');
+    var credentials = require('./fixtures/gcloud-credentials.json');
     var options = extend({}, {
       projectId: 'fake-project',
       keyFilename: path.join('test', 'fixtures', 'gcloud-credentials.json')
     });
-    var debug = require('../..')(options);
+    var debug = require('..')(options);
     var scope = nocks.oauth2(function(body) {
       assert.equal(body.client_id, credentials.client_id);
       assert.equal(body.client_secret, credentials.client_secret);
@@ -93,9 +93,9 @@ describe('test-options-credentials', function() {
   it('should use the credentials field of the options object', function(done) {
     var options = extend({}, {
       projectId: 'fake-project',
-      credentials: require('../fixtures/gcloud-credentials.json')
+      credentials: require('./fixtures/gcloud-credentials.json')
     });
-    var debug = require('../..')(options);
+    var debug = require('..')(options);
     var scope = nocks.oauth2(function(body) {
       assert.equal(body.client_id, options.credentials.client_id);
       assert.equal(body.client_secret, options.credentials.client_secret);
@@ -113,7 +113,7 @@ describe('test-options-credentials', function() {
   });
 
   it('should ignore keyFilename if credentials is provided', function(done) {
-    var fileCredentials = require('../fixtures/gcloud-credentials.json');
+    var fileCredentials = require('./fixtures/gcloud-credentials.json');
     var credentials = {
       client_id: 'a',
       client_secret: 'b',
@@ -125,7 +125,7 @@ describe('test-options-credentials', function() {
       keyFilename: path.join('test', 'fixtures', 'gcloud-credentials.json'),
       credentials: credentials
     });
-    var debug = require('../..')(options);
+    var debug = require('..')(options);
     var scope = nocks.oauth2(function(body) {
       assert.equal(body.client_id, credentials.client_id);
       assert.equal(body.client_secret, credentials.client_secret);

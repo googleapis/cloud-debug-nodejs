@@ -19,7 +19,7 @@
 var assert = require('assert');
 var path = require('path');
 
-var SourceMapper = require('../../src/agent/sourcemapper.js');
+var SourceMapper = require('../src/agent/sourcemapper.js');
 
 /**
  * @param {string} tool The name of the tool that was used to generate the 

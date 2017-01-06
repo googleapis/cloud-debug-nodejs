@@ -34,7 +34,7 @@ var MAX_INT = 2147483647; // Max signed int32.
 var assert = require('assert');
 var v8debugapi = require('../src/agent/v8debugapi.js');
 var logModule = require('@google/cloud-diagnostics-common').logger;
-var config = require('../src/agent/config.js');
+var defaultConfig = require('../src/agent/config.js');
 var StatusMessage = require('../src/status-message.js');
 var scanner = require('../src/agent/scanner.js');
 var SourceMapper = require('../src/agent/sourcemapper.js');
@@ -111,7 +111,9 @@ function validateBreakpoint(breakpoint) {
 }
 
 describe('v8debugapi', function() {
-  config.workingDirectory = path.join(process.cwd(), 'test');
+  var config = Object.assign({}, defaultConfig, {
+    workingDirectory: path.join(process.cwd(), 'test')
+  });
   var logger = logModule.create(config.logLevel);
   var api = null;
 

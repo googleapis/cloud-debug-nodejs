@@ -16,8 +16,8 @@
 'use strict';
 
 var assert = require('assert');
-var defaultConfig = require('../../src/agent/config.js');
-var Debuglet = require('../../src/agent/debuglet.js');
+var defaultConfig = require('../src/agent/config.js');
+var Debuglet = require('../src/agent/debuglet.js');
 var extend = require('extend');
 
 var DEBUGGEE_ID = 'bar';
@@ -25,10 +25,10 @@ var API = 'https://clouddebugger.googleapis.com';
 var REGISTER_PATH = '/v2/controller/debuggees/register';
 var BPS_PATH = '/v2/controller/debuggees/' + DEBUGGEE_ID + '/breakpoints';
 
-var fakeCredentials = require('../fixtures/gcloud-credentials.json');
+var fakeCredentials = require('./fixtures/gcloud-credentials.json');
 
 var nock = require('nock');
-var nocks = require('../nocks.js');
+var nocks = require('./nocks.js');
 nock.disableNetConnect();
 
 var bp = {
@@ -59,7 +59,7 @@ describe('Debuglet', function() {
 
     it('should not start when projectId is not available', function(done) {
       this.timeout(8000);
-      var debug = require('../..')();
+      var debug = require('..')();
       var debuglet = new Debuglet(debug, defaultConfig);
 
       // The following mock is neccessary for the case when the test is running
@@ -80,7 +80,7 @@ describe('Debuglet', function() {
 
     it('should not crash without project num', function(done) {
       this.timeout(8000);
-      var debug = require('../..')();
+      var debug = require('..')();
       var debuglet = new Debuglet(debug, defaultConfig);
 
       // The following mock is neccessary for the case when the test is running
@@ -98,7 +98,7 @@ describe('Debuglet', function() {
     });
 
     it('should accept non-numeric GCLOUD_PROJECT', function(done) {
-      var debug = require('../..')(
+      var debug = require('..')(
           {projectId: '11020304f2934', credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
 
@@ -123,7 +123,7 @@ describe('Debuglet', function() {
     it('should respect GCLOUD_DEBUG_LOGLEVEL', function(done) {
       process.env.GCLOUD_PROJECT='11020304f2934';
       process.env.GCLOUD_DEBUG_LOGLEVEL = 3;
-      var debug = require('../..')({credentials: fakeCredentials});
+      var debug = require('..')({credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
 
       var scope = nock(API)
@@ -163,7 +163,7 @@ describe('Debuglet', function() {
     it('should retry on failed registration', function(done) {
       this.timeout(10000);
       process.env.GCLOUD_PROJECT='11020304f2934';
-      var debug = require('../..')({credentials: fakeCredentials});
+      var debug = require('..')({credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
 
       var scope = nock(API)
@@ -189,7 +189,7 @@ describe('Debuglet', function() {
     });
 
     it('should error if a package.json doesn\'t exist', function(done) {
-      var debug = require('../..')(
+      var debug = require('..')(
           {projectId: 'fake-project', credentials: fakeCredentials});
       var config = extend({}, defaultConfig, {workingDirectory: __dirname});
       var debuglet = new Debuglet(debug, config);
@@ -203,7 +203,7 @@ describe('Debuglet', function() {
     });
 
     it('should register successfully otherwise', function(done) {
-      var debug = require('../..')(
+      var debug = require('..')(
           {projectId: 'fake-project', credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
 
@@ -225,7 +225,7 @@ describe('Debuglet', function() {
     it('should pass source context to api if present', function(done) {
       process.chdir('test/fixtures');
 
-      var debug = require('../..')(
+      var debug = require('..')(
           {projectId: 'fake-project', credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
 
@@ -254,7 +254,7 @@ describe('Debuglet', function() {
     it('should de-activate when the server responds with isDisabled',
       function(done) {
         this.timeout(4000);
-        var debug = require('../..')(
+        var debug = require('..')(
             {projectId: 'fake-project', credentials: fakeCredentials});
         var debuglet = new Debuglet(debug, defaultConfig);
 
@@ -275,7 +275,7 @@ describe('Debuglet', function() {
 
     it('should retry after a isDisabled request', function(done) {
       this.timeout(4000);
-      var debug = require('../..')(
+      var debug = require('..')(
           {projectId: 'fake-project', credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
 
@@ -312,7 +312,7 @@ describe('Debuglet', function() {
     });
 
     it('should re-register when registration expires', function(done) {
-      var debug = require('../..')(
+      var debug = require('..')(
           {projectId: 'fake-project', credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
 
@@ -347,7 +347,7 @@ describe('Debuglet', function() {
 
     it('should fetch and add breakpoints', function(done) {
       this.timeout(2000);
-      var debug = require('../..')(
+      var debug = require('..')(
           {projectId: 'fake-project', credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
 
@@ -379,7 +379,7 @@ describe('Debuglet', function() {
     it('should re-fetch breakpoints on error', function(done) {
       this.timeout(6000);
 
-      var debug = require('../..')(
+      var debug = require('..')(
           {projectId: 'fake-project', credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
 
@@ -428,7 +428,7 @@ describe('Debuglet', function() {
     });
 
     it('should expire stale breakpoints', function(done) {
-      var debug = require('../..')(
+      var debug = require('..')(
           {projectId: 'fake-project', credentials: fakeCredentials});
       var config = extend({}, defaultConfig, {breakpointExpirationSec: 1});
       this.timeout(6000);
@@ -475,7 +475,7 @@ describe('Debuglet', function() {
     // the breakpoint listed as active. It validates that the breakpoint
     // is only expired with the server once.
     it('should not update expired breakpoints', function(done) {
-      var debug = require('../..')(
+      var debug = require('..')(
           {projectId: 'fake-project', credentials: fakeCredentials});
       var config = extend({}, defaultConfig, {
         breakpointExpirationSec: 1,
