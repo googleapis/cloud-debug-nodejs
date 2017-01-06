@@ -22,6 +22,7 @@
 process.env.GCLOUD_DIAGNOSTICS_CONFIG = 'test/fixtures/test-config.js';
 
 var assert = require('assert');
+var extend = require('extend');
 var logModule = require('@google/cloud-diagnostics-common').logger;
 var v8debugapi = require('../../src/agent/v8debugapi.js');
 var SourceMapper = require('../../src/agent/sourcemapper.js');
@@ -35,7 +36,7 @@ var breakpointInFoo = {
 };
 
 describe('maxDataSize', function() {
-  var config = Object.assign({}, defaultConfig);
+  var config = extend({}, defaultConfig);
 
   before(function(done) {
     if (!api) {

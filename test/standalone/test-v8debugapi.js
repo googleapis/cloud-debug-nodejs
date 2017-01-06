@@ -32,6 +32,7 @@ var breakpointInFoo = {
 var MAX_INT = 2147483647; // Max signed int32.
 
 var assert = require('assert');
+var extend = require('extend');
 var v8debugapi = require('../../src/agent/v8debugapi.js');
 var logModule = require('@google/cloud-diagnostics-common').logger;
 var defaultConfig = require('../../src/agent/config.js');
@@ -111,7 +112,7 @@ function validateBreakpoint(breakpoint) {
 }
 
 describe('v8debugapi', function() {
-  var config = Object.assign({}, defaultConfig, {
+  var config = extend({}, defaultConfig, {
     workingDirectory: path.join(process.cwd(), 'test')
   });
   var logger = logModule.create(config.logLevel);

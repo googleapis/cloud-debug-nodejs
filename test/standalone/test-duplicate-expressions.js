@@ -27,6 +27,7 @@ var breakpointInFoo = {
 };
 
 var assert = require('assert');
+var extend = require('extend');
 var v8debugapi = require('../../src/agent/v8debugapi.js');
 var logModule = require('@google/cloud-diagnostics-common').logger;
 var defaultConfig = require('../../src/agent/config.js');
@@ -43,7 +44,7 @@ function stateIsClean(api) {
 }
 
 describe('v8debugapi', function() {
-  var config = Object.assign({}, defaultConfig, {
+  var config = extend({}, defaultConfig, {
     workingDirectory: path.join(process.cwd(), 'test', 'standalone')
   });
   var logger = logModule.create(config.logLevel);
