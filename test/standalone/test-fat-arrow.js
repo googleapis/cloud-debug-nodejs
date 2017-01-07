@@ -18,7 +18,7 @@
 var assert = require('assert');
 var extend = require('extend');
 var v8debugapi = require('../../src/agent/v8debugapi.js');
-var logModule = require('@google/cloud-diagnostics-common').logger;
+var debugLogger = require('../../src/debug-logger.js');
 var defaultConfig = require('../../src/agent/config.js');
 var SourceMapper = require('../../src/agent/sourcemapper.js');
 var scanner = require('../../src/agent/scanner.js');
@@ -39,7 +39,7 @@ describe('v8debugapi', function() {
   var config = extend({}, defaultConfig, {
     workingDirectory: path.join(process.cwd(), 'test')
   });
-  var logger = logModule.create(config.logLevel);
+  var logger = debugLogger({ logLevel: config.logLevel });
   var api = null;
   var foo;
   before(function () {

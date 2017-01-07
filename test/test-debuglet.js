@@ -139,11 +139,11 @@ describe('Debuglet', function() {
         var STRING1 = 'jjjjjjjjjjjjjjjjjfjfjfjf';
         var STRING2 = 'kkkkkkkfkfkfkfkfkkffkkkk';
 
-        var buffer = [];
+        var buffer = '';
         var oldLog = console.log;
 
-        console.log = function () {
-          buffer = buffer.concat([].slice.call(arguments));
+        console.log = function (str) {
+          buffer += str;
         };
         logger.info(STRING1);
         logger.debug(STRING2);

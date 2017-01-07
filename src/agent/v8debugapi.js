@@ -22,7 +22,6 @@
 /** @const */ var semver = require('semver');
 
 /** @const */ var state = require('./state.js');
-/** @const */ var logModule = require('@google/cloud-diagnostics-common').logger;
 /** @const */ var StatusMessage = require('../status-message.js');
 
 /** @const */ var messages = {
@@ -468,7 +467,7 @@ module.exports.create = function(logger_, config_, jsFiles_, sourcemapper_) {
         messages.CAPTURE_BREAKPOINT_DATA + err);
     }
     var end = process.hrtime(start);
-    logger.interval(logModule.INFO, 'capture time', end);
+    logger.info.interval('capture time:', end);
     callback(null);
   }
 

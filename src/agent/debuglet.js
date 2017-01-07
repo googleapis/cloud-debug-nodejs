@@ -25,14 +25,14 @@ var util = require('util');
 var semver = require('semver');
 var _ = require('lodash');
 var metadata = require('gcp-metadata');
+var common = require('@google-cloud/common');
 
 var v8debugapi = require('./v8debugapi.js');
 var Debuggee = require('../debuggee.js');
 var DebugletApi = require('../controller.js');
 var defaultConfig = require('./config.js');
 var scanner = require('./scanner.js');
-var common = require('@google/cloud-diagnostics-common');
-var Logger = common.logger;
+var debugLogger = require('../debug-logger.js');
 var StatusMessage = require('../status-message.js');
 var SourceMapper = require('./sourcemapper.js');
 var pjson = require('../../package.json');
@@ -80,8 +80,11 @@ function Debuglet(debug, config) {
   /** @private {boolean} */
   this.fetcherActive_ = false;
 
-  /** @private {Logger} */
-  this.logger_ = Logger.create(this.config_.logLevel, '@google-cloud/debug');
+  /** @private {common.logger} */
+  this.logger_ = new debugLogger({
+    level: common.logger.LEVELS[this.config_.logLevel],
+    tag: '@google-cloud/debug'
+  });
 
   /** @private {DebugletApi} */
   this.debugletApi_ = new DebugletApi(this.debug_);
@@ -407,7 +410,7 @@ Debuglet.prototype.scheduleBreakpointFetch_ = function(seconds) {
           });
           that.updateActiveBreakpoints_(bps);
           if (Object.keys(that.activeBreakpointMap_).length) {
-            that.logger_.breakpoints(Logger.INFO, 'Active Breakpoints:',
+            that.logger_.info.breakpoint('Active Breakpoints:',
               that.activeBreakpointMap_);
           }
           that.scheduleBreakpointFetch_(that.config_.breakpointUpdateIntervalSec);
@@ -427,7 +430,7 @@ Debuglet.prototype.updateActiveBreakpoints_ = function(breakpoints) {
   var updatedBreakpointMap = this.convertBreakpointListToMap_(breakpoints);
 
   if (breakpoints.length) {
-    that.logger_.breakpoints(Logger.INFO, 'Server breakpoints:', updatedBreakpointMap);
+    that.logger_.info.breakpoint('Server breakpoints:', updatedBreakpointMap);
   }
 
   breakpoints.forEach(function(breakpoint) {
