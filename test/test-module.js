@@ -17,15 +17,23 @@
 'use strict';
 
 var assert = require('assert');
-var Debug = require('../..');
-var Debuglet = require('../../src/agent/debuglet.js');
+var Debug = require('..');
+var Debuglet = require('../src/agent/debuglet.js');
+var nock = require('nock');
+
+nock.disableNetConnect();
 
 describe('Debug module', function() {
   var debug;
 
-  before(function() {
-    debug = require('../..')();
+  before(function(done) {
+    debug = require('..')({ projectId: '0' });
     debug.startAgent();
+
+    debug.private_.on('started', function() {
+      debug.private_.stop();
+      done();
+    });
   });
 
   it('should return an instance on invocation', function() {
@@ -34,7 +42,7 @@ describe('Debug module', function() {
 
   it('should throw on attempt to start a new agent', function() {
     assert.throws(function() { debug.startAgent(); });
-    var debug2 = require('../..')();
+    var debug2 = require('..')();
     assert.throws(function() { debug2.startAgent(); });
   });
 
