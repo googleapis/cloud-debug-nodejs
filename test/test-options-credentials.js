@@ -42,31 +42,6 @@ describe('test-options-credentials', function() {
     process.env.GCLOUD_PROJECT = envProject;
   });
 
-  it('should use options.projectId in preference to the environment variable',
-    function(done) {
-      process.env.GCLOUD_PROJECT = 'should-not-be-used';
-
-      var options = extend({}, {
-        projectId: 'project-via-options',
-        credentials: require('./fixtures/gcloud-credentials.json')
-      });
-      var debug = require('..')(options);
-
-      // TODO: also make sure we don't request the project from metadata
-      // service.
-      var scope = nocks.oauth2();
-      nocks.register(function(body) {
-        assert.ok(body.debuggee);
-        assert.equal(body.debuggee.project, 'project-via-options');
-        scope.done();
-        setImmediate(done);
-        return true;
-      });
-
-      debuglet = new Debuglet(debug, config);
-      debuglet.start();
-    });
-
   it('should use the keyFilename field of the options object', function(done) {
     var credentials = require('./fixtures/gcloud-credentials.json');
     var options = extend({}, {

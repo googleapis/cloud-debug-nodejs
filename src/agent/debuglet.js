@@ -277,7 +277,7 @@ Debuglet.prototype.getProjectId_ = function(callback) {
   // to access the metadata service as a test for that.
   // TODO: change this to getProjectId in the future.
   metadata.project(
-      'numeric-project-id', function(err, response, metadataProject) {
+      'project-id', function(err, response, metadataProject) {
         // We should get an error if we are not on GCP.
         var onGCP = !err;
 

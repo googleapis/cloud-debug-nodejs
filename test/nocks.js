@@ -40,14 +40,14 @@ function nockRegister(validator) {
       .reply(200);
 }
 
-function nockNumericProjectId(reply) {
+function nockProjectId(reply) {
   return nock('http://metadata.google.internal')
-    .get('/computeMetadata/v1/project/numeric-project-id')
+    .get('/computeMetadata/v1/project/project-id')
     .reply(reply);
 }
 
 module.exports = {
   oauth2: nockOAuth2,
-  numericProjectId: nockNumericProjectId,
+  projectId: nockProjectId,
   register: nockRegister
 };
