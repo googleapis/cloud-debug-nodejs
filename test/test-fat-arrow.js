@@ -17,11 +17,11 @@
 
 var assert = require('assert');
 var extend = require('extend');
-var v8debugapi = require('../../src/agent/v8debugapi.js');
+var v8debugapi = require('../src/agent/v8debugapi.js');
 var common = require('@google-cloud/common');
-var defaultConfig = require('../../src/agent/config.js');
-var SourceMapper = require('../../src/agent/sourcemapper.js');
-var scanner = require('../../src/agent/scanner.js');
+var defaultConfig = require('../src/agent/config.js');
+var SourceMapper = require('../src/agent/sourcemapper.js');
+var scanner = require('../src/agent/scanner.js');
 var path = require('path');
 var semver = require('semver');
 
@@ -50,7 +50,7 @@ describe('v8debugapi', function() {
       this.skip();
       return;
     }
-    foo = require('../fixtures/fat-arrow.js');
+    foo = require('./fixtures/fat-arrow.js');
   });
   beforeEach(function(done) {
     if (!api) {
