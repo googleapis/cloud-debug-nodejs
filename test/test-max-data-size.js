@@ -36,7 +36,9 @@ var breakpointInFoo = {
 };
 
 describe('maxDataSize', function() {
-  var config = extend({}, defaultConfig);
+  var config = extend({}, defaultConfig, {
+    force_: true
+  });
 
   before(function(done) {
     if (!api) {

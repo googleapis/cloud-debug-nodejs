@@ -254,7 +254,10 @@ describe('Debuglet', function() {
     it('should error if a package.json doesn\'t exist', function(done) {
       var debug = require('..')(
           {projectId: 'fake-project', credentials: fakeCredentials});
-      var config = extend({}, defaultConfig, {workingDirectory: __dirname});
+      var config = extend({}, defaultConfig, {
+        workingDirectory: __dirname,
+        force_: true
+      });
       var debuglet = new Debuglet(debug, config);
 
       debuglet.once('initError', function(err) {
@@ -493,7 +496,10 @@ describe('Debuglet', function() {
     it('should expire stale breakpoints', function(done) {
       var debug = require('..')(
           {projectId: 'fake-project', credentials: fakeCredentials});
-      var config = extend({}, defaultConfig, {breakpointExpirationSec: 1});
+      var config = extend({}, defaultConfig, {
+        breakpointExpirationSec: 1,
+        force_: true
+      });
       this.timeout(6000);
 
       var scope = nock(API)
@@ -542,7 +548,8 @@ describe('Debuglet', function() {
           {projectId: 'fake-project', credentials: fakeCredentials});
       var config = extend({}, defaultConfig, {
         breakpointExpirationSec: 1,
-        breakpointUpdateIntervalSec: 1
+        breakpointUpdateIntervalSec: 1,
+        force_: true
       });
       this.timeout(6000);
 

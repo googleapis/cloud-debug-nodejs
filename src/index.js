@@ -83,7 +83,8 @@ var debuglet;
  * debug.startAgent();
  */
 Debug.prototype.startAgent = function(config) {
-  if (debuglet) {
+  // config.force_ is for testing purposes only.
+  if (debuglet && !config.force_) {
     throw new Error('Debug Agent has already been started');
   }
 

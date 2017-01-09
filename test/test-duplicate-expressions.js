@@ -28,11 +28,6 @@ var breakpointInFoo = {
 
 var assert = require('assert');
 var extend = require('extend');
-var v8debugapi = require('../../src/agent/v8debugapi.js');
-var common = require('@google-cloud/common');
-var defaultConfig = require('../../src/agent/config.js');
-var SourceMapper = require('../../src/agent/sourcemapper.js');
-var scanner = require('../../src/agent/scanner.js');
 var v8debugapi = require('../src/agent/v8debugapi.js');
 var common = require('@google-cloud/common');
 var defaultConfig = require('../src/agent/config.js');
@@ -50,7 +45,8 @@ function stateIsClean(api) {
 
 describe('v8debugapi', function() {
   var config = extend({}, defaultConfig, {
-    workingDirectory: path.join(process.cwd(), 'test')
+    workingDirectory: path.join(process.cwd(), 'test'),
+    force_: true
   });
   var logger = common.logger({ logLevel: config.logLevel });
   var api = null;
