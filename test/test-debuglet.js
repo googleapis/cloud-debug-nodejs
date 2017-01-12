@@ -31,6 +31,8 @@ var nock = require('nock');
 var nocks = require('./nocks.js');
 nock.disableNetConnect();
 
+var oldGP;
+
 var bp = {
   id: 'test',
   action: 'CAPTURE',
@@ -44,6 +46,14 @@ var errorBp = {
 
 describe('Debuglet', function() {
   describe('setup', function () {
+    before(function() {
+      oldGP = process.env.GCLOUD_PROJECT;
+    });
+
+    after(function() {
+      process.env.GCLOUD_PROJECT = oldGP;
+    });
+
     beforeEach(function() {
       delete process.env.GCLOUD_PROJECT;
       nocks.oauth2();
@@ -51,10 +61,6 @@ describe('Debuglet', function() {
 
     afterEach(function() {
       nock.cleanAll();
-    });
-
-    after(function() {
-      delete process.env.GCLOUD_PROJECT;
     });
 
     it('should not start when projectId is not available', function(done) {

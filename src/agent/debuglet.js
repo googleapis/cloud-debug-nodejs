@@ -32,7 +32,6 @@ var Debuggee = require('../debuggee.js');
 var DebugletApi = require('../controller.js');
 var defaultConfig = require('./config.js');
 var scanner = require('./scanner.js');
-var debugLogger = require('../debug-logger.js');
 var StatusMessage = require('../status-message.js');
 var SourceMapper = require('./sourcemapper.js');
 var pjson = require('../../package.json');
@@ -43,6 +42,43 @@ var NODE_VERSION_MESSAGE = 'Node.js version not supported. Node.js 5.2.0 and ' +
   ' versions older than 0.12 are not supported.';
 var BREAKPOINT_ACTION_MESSAGE = 'The only currently supported breakpoint actions' +
   ' are CAPTURE and LOG.';
+
+/**
+ * Formats a breakpoint object prefixed with a provided message as a string
+ * intended for logging.
+ * @param {string} msg The message that prefixes the formatted breakpoint.
+ * @param {Breakpoint} breakpoint The breakpoint to format.
+ * @return {string} A formatted string.
+ */
+var formatBreakpoint = function(msg, breakpoint) {
+  var text = msg + util.format('breakpoint id: %s,\n\tlocation: %s',
+    breakpoint.id, util.inspect(breakpoint.location));
+  if (breakpoint.createdTime) {
+    var unixTime = parseInt(breakpoint.createdTime.seconds, 10);
+    var date = new Date(unixTime * 1000); // to milliseconds.
+    text += '\n\tcreatedTime: ' + date.toString();
+  }
+  if (breakpoint.condition) {
+    text += '\n\tcondition: ' + util.inspect(breakpoint.condition);
+  }
+  if (breakpoint.expressions) {
+    text += '\n\texpressions: ' + util.inspect(breakpoint.expressions);
+  }
+  return text;
+};
+
+/**
+ * Formats a map of breakpoint objects prefixed with a provided message as a
+ * string intended for logging.
+ * @param {string} msg The message that prefixes the formatted breakpoint.
+ * @param {Object.<string, Breakpoint>} breakpoints A map of breakpoints.
+ * @return {string} A formatted string.
+ */
+var formatBreakpoints = function(msg, breakpoints) {
+  return msg + Object.keys(breakpoints).map(function (b) {
+    formatBreakpoint('', b);
+  }).join('\n');
+};
 
 module.exports = Debuglet;
 
@@ -81,7 +117,7 @@ function Debuglet(debug, config) {
   this.fetcherActive_ = false;
 
   /** @private {common.logger} */
-  this.logger_ = new debugLogger({
+  this.logger_ = new common.logger({
     level: common.logger.LEVELS[this.config_.logLevel],
     tag: '@google-cloud/debug'
   });
@@ -410,8 +446,8 @@ Debuglet.prototype.scheduleBreakpointFetch_ = function(seconds) {
           });
           that.updateActiveBreakpoints_(bps);
           if (Object.keys(that.activeBreakpointMap_).length) {
-            that.logger_.info.breakpoint('Active Breakpoints:',
-              that.activeBreakpointMap_);
+            that.logger_.info(formatBreakpoint('Active Breakpoints: ',
+              that.activeBreakpointMap_));
           }
           that.scheduleBreakpointFetch_(that.config_.breakpointUpdateIntervalSec);
           return;
@@ -430,7 +466,8 @@ Debuglet.prototype.updateActiveBreakpoints_ = function(breakpoints) {
   var updatedBreakpointMap = this.convertBreakpointListToMap_(breakpoints);
 
   if (breakpoints.length) {
-    that.logger_.info.breakpoint('Server breakpoints:', updatedBreakpointMap);
+    that.logger_.info(formatBreakpoints('Server breakpoints: ',
+      updatedBreakpointMap));
   }
 
   breakpoints.forEach(function(breakpoint) {

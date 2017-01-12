@@ -29,6 +29,11 @@ debug.startAgent({
   breakpointUpdateIntervalSec: 1
 });
 
+// Make troubleshooting easier if run by itself
+if (!process.send) {
+  process.send = console.log;
+}
+
 var timedOut = false;
 var registrationTimeout = setTimeout(function() {
   timedOut = true;

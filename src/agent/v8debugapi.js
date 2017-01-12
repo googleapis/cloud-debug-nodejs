@@ -45,6 +45,18 @@
 /** @const */ var MODULE_WRAP_PREFIX_LENGTH = require('module').wrap('☃')
                                                                .indexOf('☃');
 
+/**
+ * Formats a provided message and a high-resolution interval of the format
+ * [seconds, nanoseconds] (for example, from process.hrtime()) prefixed with a
+ * provided message as a string intended for logging.
+ * @param {string} msg The mesage that prefixes the formatted interval.
+ * @param {number[]} interval The interval to format.
+ * @return {string} A formatted string.
+ */
+var formatInterval = function(msg, interval) {
+  return msg + (interval[0] * 1000 + interval[1] / 1000000) + 'ms';
+};
+
 var singleton;
 module.exports.create = function(logger_, config_, jsFiles_, sourcemapper_) {
   if (singleton) {
@@ -467,7 +479,7 @@ module.exports.create = function(logger_, config_, jsFiles_, sourcemapper_) {
         messages.CAPTURE_BREAKPOINT_DATA + err);
     }
     var end = process.hrtime(start);
-    logger.info.interval('capture time:', end);
+    logger.info(formatInterval('capture time: ', end));
     callback(null);
   }
 
