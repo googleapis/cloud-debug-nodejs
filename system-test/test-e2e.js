@@ -24,7 +24,7 @@ var promisifyAll = require('@google-cloud/common').util.promisifyAll;
 var Debug = require('..');
 var Debugger = require('../test/debugger.js');
 
-var CLUSTER_WORKERS = 1;
+var CLUSTER_WORKERS = 3;
 
 var FILENAME = 'test/fixtures/fib.js';
 
