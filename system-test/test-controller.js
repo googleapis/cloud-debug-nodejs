@@ -71,6 +71,36 @@ describe('Controller', function() {
     });
   });
 
+  it('should pass success on timeout', function(done) {
+    this.timeout(100000);
+    var controller = new Controller(debug);
+    var debuggee =
+        new Debuggee({
+          project: process.env.GCLOUD_PROJECT,
+          uniquifier: 'test-uid-' + Date.now(),
+          description: 'this is a system test'
+        });
+    controller.register(debuggee, function(err, body) {
+      assert.ifError(err, 'should be able to register successfully');
+
+      // First list should set the wait token
+      controller.listBreakpoints(debuggee, function(err, response, body) {
+        assert.ifError(err, 'should successfully list breakpoints');
+        assert.ok(body);
+        assert.ok(body.nextWaitToken);
+        // Second list should block until the wait timeout
+        controller.listBreakpoints(debuggee, function(err, response, body) {
+          assert.ifError(err, 'should successfully list breakpoints');
+          assert.ok(body);
+          assert.ok(body.nextWaitToken);
+          // waitExpired will only be set if successOnTimeout was given correctly
+          assert.ok(body.waitExpired);
+          done();
+        });
+      });
+    });
+  });
+
   // To be able to write the following test we need a service for adding a
   // breakpoint (need the debugger API). TODO.
   it('should update an active breakpoint');
