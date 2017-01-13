@@ -31,6 +31,8 @@ var nock = require('nock');
 var nocks = require('./nocks.js');
 nock.disableNetConnect();
 
+var oldGP;
+
 var bp = {
   id: 'test',
   action: 'CAPTURE',
@@ -44,6 +46,14 @@ var errorBp = {
 
 describe('Debuglet', function() {
   describe('setup', function () {
+    before(function() {
+      oldGP = process.env.GCLOUD_PROJECT;
+    });
+
+    after(function() {
+      process.env.GCLOUD_PROJECT = oldGP;
+    });
+
     beforeEach(function() {
       delete process.env.GCLOUD_PROJECT;
       nocks.oauth2();
@@ -53,10 +63,6 @@ describe('Debuglet', function() {
       nock.cleanAll();
     });
 
-    after(function() {
-      delete process.env.GCLOUD_PROJECT;
-    });
-
     it('should not start when projectId is not available', function(done) {
       this.timeout(8000);
       var debug = require('..')();
@@ -64,7 +70,7 @@ describe('Debuglet', function() {
 
       // The following mock is neccessary for the case when the test is running
       // on GCP. In that case we will get the projectId from the metadata service.
-      var scope = nocks.numericProjectId(404); 
+      var scope = nocks.projectId(404); 
 
       debuglet.once('initError', function(err) {
         assert.ok(err);
@@ -85,7 +91,7 @@ describe('Debuglet', function() {
 
       // The following mock is neccessary for the case when the test is running
       // on GCP. In that case we will get the projectId from the metadata service.
-      var scope = nocks.numericProjectId(404); 
+      var scope = nocks.projectId(404); 
 
       debuglet.once('started', function() {
         assert.fail();
@@ -97,9 +103,10 @@ describe('Debuglet', function() {
       debuglet.start();
     });
 
-    it('should accept non-numeric GCLOUD_PROJECT', function(done) {
+    it('should use config.projectId', function(done) {
+      var projectId = '11020304f2934-a';
       var debug = require('..')(
-          {projectId: '11020304f2934', credentials: fakeCredentials});
+          {projectId: projectId, credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
 
       var scope = nock(API)
@@ -112,6 +119,7 @@ describe('Debuglet', function() {
 
       debuglet.once('registered', function(id) {
         assert.equal(id, DEBUGGEE_ID);
+        assert.equal(debuglet.debuggee_.project, projectId);
         debuglet.stop();
         scope.done();
         done();
@@ -119,6 +127,61 @@ describe('Debuglet', function() {
 
       debuglet.start();
     });
+
+    it('should use GCLOUD_PROJECT in lieu of config.projectId', function(done) {
+      process.env.GCLOUD_PROJECT = '11020304f2934-b';
+      var debug = require('..')(
+          {credentials: fakeCredentials});
+      var debuglet = new Debuglet(debug, defaultConfig);
+
+      var scope = nock(API)
+        .post(REGISTER_PATH)
+        .reply(200, {
+          debuggee: {
+            id: DEBUGGEE_ID
+          }
+        });
+
+      debuglet.once('registered', function(id) {
+        assert.equal(id, DEBUGGEE_ID);
+        assert.equal(debuglet.debuggee_.project, process.env.GCLOUD_PROJECT);
+        debuglet.stop();
+        scope.done();
+        done();
+      });
+
+      debuglet.start();
+    });
+
+    it('should use options.projectId in preference to the environment variable',
+      function(done) {
+        process.env.GCLOUD_PROJECT = 'should-not-be-used';
+        var debug = require('..')({
+          projectId: 'project-via-options',
+          credentials: fakeCredentials
+        });
+        var debuglet = new Debuglet(debug, defaultConfig);
+
+        // TODO: also make sure we don't request the project from metadata
+        // service.
+        var scope = nock(API)
+        .post(REGISTER_PATH)
+        .reply(200, {
+          debuggee: {
+            id: DEBUGGEE_ID
+          }
+        });
+
+        debuglet.once('registered', function(id) {
+          assert.equal(id, DEBUGGEE_ID);
+          assert.equal(debuglet.debuggee_.project, 'project-via-options');
+          debuglet.stop();
+          scope.done();
+          done();
+        });
+
+        debuglet.start();
+      });
 
     it('should respect GCLOUD_DEBUG_LOGLEVEL', function(done) {
       process.env.GCLOUD_PROJECT='11020304f2934';
@@ -139,11 +202,11 @@ describe('Debuglet', function() {
         var STRING1 = 'jjjjjjjjjjjjjjjjjfjfjfjf';
         var STRING2 = 'kkkkkkkfkfkfkfkfkkffkkkk';
 
-        var buffer = [];
+        var buffer = '';
         var oldLog = console.log;
 
-        console.log = function () {
-          buffer = buffer.concat([].slice.call(arguments));
+        console.log = function (str) {
+          buffer += str;
         };
         logger.info(STRING1);
         logger.debug(STRING2);

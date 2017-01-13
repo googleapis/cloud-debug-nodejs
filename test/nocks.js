@@ -26,6 +26,7 @@ function nockOAuth2(validator) {
   validator = validator || accept;
   return nock('https://accounts.google.com')
       .post('/o/oauth2/token', validator)
+      .once()
       .reply(200, {
         refresh_token: 'hello',
         access_token: 'goodbye',
@@ -37,17 +38,19 @@ function nockRegister(validator) {
   validator = validator || accept;
   return nock('https://clouddebugger.googleapis.com')
       .post('/v2/controller/debuggees/register', validator)
+      .once()
       .reply(200);
 }
 
-function nockNumericProjectId(reply) {
+function nockProjectId(reply) {
   return nock('http://metadata.google.internal')
-    .get('/computeMetadata/v1/project/numeric-project-id')
+    .get('/computeMetadata/v1/project/project-id')
+    .once()
     .reply(reply);
 }
 
 module.exports = {
   oauth2: nockOAuth2,
-  numericProjectId: nockNumericProjectId,
+  projectId: nockProjectId,
   register: nockRegister
 };
