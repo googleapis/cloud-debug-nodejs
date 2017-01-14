@@ -256,7 +256,7 @@ describe('Debuglet', function() {
           {projectId: 'fake-project', credentials: fakeCredentials});
       var config = extend({}, defaultConfig, {
         workingDirectory: __dirname,
-        force_: true
+        forceNewAgent_: true
       });
       var debuglet = new Debuglet(debug, config);
 
@@ -498,7 +498,7 @@ describe('Debuglet', function() {
           {projectId: 'fake-project', credentials: fakeCredentials});
       var config = extend({}, defaultConfig, {
         breakpointExpirationSec: 1,
-        force_: true
+        forceNewAgent_: true
       });
       this.timeout(6000);
 
@@ -549,7 +549,7 @@ describe('Debuglet', function() {
       var config = extend({}, defaultConfig, {
         breakpointExpirationSec: 1,
         breakpointUpdateIntervalSec: 1,
-        force_: true
+        forceNewAgent_: true
       });
       this.timeout(6000);
 

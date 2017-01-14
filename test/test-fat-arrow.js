@@ -38,7 +38,7 @@ function stateIsClean(api) {
 describe('v8debugapi', function() {
   var config = extend({}, defaultConfig, {
     workingDirectory: path.join(process.cwd(), 'test'),
-    force_: true
+    forceNewAgent_: true
   });
   var logger = common.logger({ logLevel: config.logLevel });
   var api = null;

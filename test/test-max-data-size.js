@@ -37,7 +37,7 @@ var breakpointInFoo = {
 
 describe('maxDataSize', function() {
   var config = extend({}, defaultConfig, {
-    force_: true
+    forceNewAgent_: true
   });
 
   before(function(done) {

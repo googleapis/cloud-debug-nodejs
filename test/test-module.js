@@ -28,7 +28,7 @@ describe('Debug module', function() {
 
   before(function(done) {
     debug = require('..')({ projectId: '0' });
-    debug.startAgent({ force_: true });
+    debug.startAgent({ forceNewAgent_: true });
 
     debug.private_.on('started', function() {
       debug.private_.stop();
