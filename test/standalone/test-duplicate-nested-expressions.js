@@ -89,11 +89,9 @@ describe('v8debugapi', function() {
               args[0],
               {name: 'a', value: '11'}
    	   	    );
-            assert.equal(locals.length, 1);
-            assert.equal(locals[0].name, 'locals_not_available');
+            assert.equal(locals.length, 0);
         } else {
-          assert.equal(args.length, 1, 'There should be one argument');
-          assert.equal(args[0].name, 'arguments_not_available');
+          assert.equal(args.length, 0, 'There should be zero arguments');
           assert.equal(locals.length, 1, 'There should be one locals');
           assert.deepEqual(
             locals[0],
@@ -125,11 +123,9 @@ describe('v8debugapi', function() {
               args[0],
               {name: 'a', value: '11'}
    	   	    );
-            assert.equal(locals.length, 1);
-            assert.equal(locals[0].name, 'locals_not_available');
+            assert.equal(locals.length, 0);
         } else {
-          assert.equal(args.length, 1, 'There should be one argument');
-          assert.equal(args[0].name, 'arguments_not_available');
+          assert.equal(args.length, 0, 'There should be zero arguments');
           assert.equal(locals.length, 1, 'There should be one local');
           assert.deepEqual(
             locals[0],
@@ -161,11 +157,9 @@ describe('v8debugapi', function() {
               args[0],
               {name: 'a', value: '11'}
    	   	    );
-            assert.equal(locals.length, 1);
-            assert.equal(locals[0].name, 'locals_not_available');
+            assert.equal(locals.length, 0);
         } else {
-          assert.equal(args.length, 1, 'There should be one argument');
-          assert.equal(args[0].name, 'arguments_not_available');
+          assert.equal(args.length, 0, 'There should be zero arguments');
           assert.equal(locals.length, 1, 'There should be one local');
           assert.deepEqual(
             locals[0],
@@ -200,8 +194,7 @@ describe('v8debugapi', function() {
         var frame = brk.stackFrames[0];
         var args = frame.arguments;
         var locals = frame.locals;
-        assert.equal(args.length, 1, 'There should be one argument');
-        assert.equal(args[0].name, 'arguments_not_available');
+        assert.equal(args.length, 0, 'There should be zero arguments');
         assert.equal(locals.length, 2, 'There should be two locals');
         assert.deepEqual(
           locals[0],

@@ -224,11 +224,12 @@ StateResolver.prototype.resolveFrames_ = function() {
   var frames = [];
   var frameCount = Math.min(this.state_.frameCount(),
     this.config_.capture.maxFrames);
+    
   for (var i = 0; i < frameCount; i++) {
     var frame = this.state_.frame(i);
     if (this.shouldFrameBeResolved_(frame)) {
-      var resolveVars = i < this.config_.capture.maxExpandFrames;
-      frames.push(this.resolveFrame_(frame, resolveVars));
+      frames.push(this.resolveFrame_(frame,
+        (i < this.config_.capture.maxExpandFrames)));
     }
   }
   return frames;
@@ -286,32 +287,36 @@ StateResolver.prototype.isPathInNodeModulesDirectory_ = function(path) {
   return path.indexOf('node_modules') === 0;
 };
 
-StateResolver.prototype.resolveFrame_ = function(frame, resolveVars) {
-  var noArgs = [{
-    name: 'arguments_not_available',
-    varTableIndex: ARG_LOCAL_LIMIT_MESSAGE_INDEX
-  }];
-  var noLocals = [{
-    name: 'locals_not_available',
-    varTableIndex: ARG_LOCAL_LIMIT_MESSAGE_INDEX
-  }];
-  var args = this.extractArgumentsList_(frame);
-  var locals = resolveVars ? this.resolveLocalsList_(frame, args) : noLocals;
-  if (isEmpty(locals)) {
-    locals = noLocals;
-  }
-  if (semver.satisfies(process.version, '<1.6')) {
-    // If the node version is over 1.6 we do not read the frame arguments since
-    // the values produced by the frame for the arguments may contain inaccurate
-    // values. If the version is lower than 1.6, though, the frame's argument
-    // list can be relied upon to produce accurate values for arguments.
-    args = resolveVars && (!isEmpty(args)) ? this.resolveArgumentList_(args) :
-      noArgs;
+StateResolver.prototype.resolveFrame_ = function(frame, underFrameCap) {
+  var args = [];
+  var locals = [];
+  if (!underFrameCap) {
+    args.push({
+      name: 'arguments_not_available',
+      varTableIndex: ARG_LOCAL_LIMIT_MESSAGE_INDEX
+    });
+    locals.push({
+      name: 'locals_not_available',
+      varTableIndex: ARG_LOCAL_LIMIT_MESSAGE_INDEX
+    });
   } else {
-    // Otherwise, if the version is 1.6 or higher than we will use the values
-    // aggregated from the ScopeMirror traversal stored in locals which will
-    // include any applicable arguments from the invocation.
-    args = noArgs;
+    args = this.extractArgumentsList_(frame);
+    locals = this.resolveLocalsList_(frame, args);
+    if (isEmpty(locals)) {
+      locals = [];
+    }
+    if (semver.satisfies(process.version, '<1.6')) {
+      // If the node version is over 1.6 we do not read the frame arguments since
+      // the values produced by the frame for the arguments may contain inaccurate
+      // values. If the version is lower than 1.6, though, the frame's argument
+      // list can be relied upon to produce accurate values for arguments.
+      args = !isEmpty(args) ? this.resolveArgumentList_(args) : [];
+    } else {
+      // Otherwise, if the version is 1.6 or higher than we will use the values
+      // aggregated from the ScopeMirror traversal stored in locals which will
+      // include any applicable arguments from the invocation.
+      args = [];
+    }
   }
   return {
     function: this.resolveFunctionName_(frame.func()),

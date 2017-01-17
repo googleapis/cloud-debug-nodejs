@@ -98,8 +98,7 @@ describe('v8debugapi', function() {
    	   	    );
             assert.deepEqual(locals[0].name, 'context');
         } else {
-          assert.equal(args.length, 1, 'There should be one argument');
-          assert.equal(args[0].name, 'arguments_not_available');
+          assert.equal(args.length, 0, 'There should be zero arguments');
           assert.equal(locals.length, 2, 'There should be two locals');
           assert.deepEqual(locals[0], {name: 'b', value: '1'});
           assert.deepEqual(locals[1].name, 'context');
@@ -124,15 +123,13 @@ describe('v8debugapi', function() {
         var locals = frame.locals;
         if (semver.satisfies(process.version, '<1.6')) {
             assert.equal(args.length, 1, 'There should be one argument');
-            assert.equal(locals.length, 1, 'There should be one local');
+            assert.equal(locals.length, 0);
              assert.deepEqual(
               args[0],
               {name: 'j', value: '1'}
    	   	    );
-            assert.equal(locals[0].name, 'locals_not_available');
         } else {
-          assert.equal(args.length, 1, 'There should be one argument');
-          assert.equal(args[0].name, 'arguments_not_available');
+          assert.equal(args.length, 0, 'There should be zero arguments');
           assert.equal(locals.length, 1, 'There should be one local');
           assert.deepEqual(locals[0], {name: 'j', value: '1'});
         }
