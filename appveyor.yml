@@ -18,7 +18,6 @@ install:
 test_script:
   # run tests
   - ps: node_modules/.bin/mocha test --timeout 4000 --R
-  - ps: ForEach ($test in Get-ChildItem test/standalone/test-*.js) { node_modules/.bin/mocha $test --timeout 4000 --R; if ($lastexitcode -ne 0) { exit 1 } }
 
 # Don't actually build using MSBuild
 build: off
