@@ -49,19 +49,19 @@ If your application is running outside of Google Cloud Platform, such as locally
 
 1. You will need to specify your project name. Your project name is visible in the [Google Cloud Console][cloud-console-projects], it may be something like `particular-future-12345`. If your application is [running on Google Cloud Platform](running-on-google-cloud-platform), you don't need to specify the project name. You can specify this either in the module options, or through an environment variable:
 
-        ```js
-        // In your app:
-        var debug = require('@google-cloud/debug')({
-          projectId: 'particular-future-12345',
-          keyFilename: '/path/to/keyfile.json'
-        });
-        debug.startAgent();
-        ```
+    ```JS
+      // In your app:
+      var debug = require('@google-cloud/debug')({
+        projectId: 'particular-future-12345',
+        keyFilename: '/path/to/keyfile.json'
+      });
+      debug.startAgent();
+    ```
 
-        ```bash
-        # Or in Bash:
-        export GCLOUD_PROJECT=<project name>
-        ```
+    ```BASH
+      # Or in Bash:
+      export GCLOUD_PROJECT=<project name>
+    ```
 
 1. You need to provide service account credentials to your application.
   * The recommended way is via [Application Default Credentials][app-default-credentials].
@@ -92,15 +92,15 @@ If your application is running outside of Google Cloud Platform, such as locally
 
 You can customize the behaviour of the automatic debugger agent. See [the agent configuration][config-js] for a list of possible configuration options. These options can be passed to the agent through the object argument to the startAgent method as shown below:
 
-        ```js
-        debug.startAgent({
-          serviceContext: {
-              service: 'my-service',
-              version: 'version-1'
-          },
-          capture: { maxFramesFrames: 20, maxProperties: 100 }
-        });
-        ```
+```JS
+  debug.startAgent({
+    serviceContext: {
+        service: 'my-service',
+        version: 'version-1'
+    },
+    capture: { maxFramesFrames: 20, maxProperties: 100 }
+  });
+ ```
 
 ## Using the Debugger
 
