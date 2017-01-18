@@ -31,10 +31,6 @@ function run {
 
 # Run test/coverage
 run test
-for test in test/standalone/test-*.js ;
-do
-  run "${test}"
-done
 
 # Conditionally publish coverage
 if [ "$cover" ]; then

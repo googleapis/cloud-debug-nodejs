@@ -59,7 +59,7 @@ var formatInterval = function(msg, interval) {
 
 var singleton;
 module.exports.create = function(logger_, config_, jsFiles_, sourcemapper_) {
-  if (singleton) {
+  if (singleton && !config_.forceNewAgent_) {
     return singleton;
   }
 

@@ -21,9 +21,9 @@ var path = require('path');
 process.env.GCLOUD_PROJECT = 0;
 
 var assert = require('assert');
-var agent = require('../..')();
+var agent = require('..')();
 var api;
-var h = require('../fixtures/a/hello.js');
+var h = require('./fixtures/a/hello.js');
 
 describe('repository relative paths', function() {
 
