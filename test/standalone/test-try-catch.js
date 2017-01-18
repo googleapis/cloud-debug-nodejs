@@ -83,7 +83,6 @@ describe('v8debugapi', function() {
         var frame = brk.stackFrames[0];
         var args = frame.arguments;
         var locals = frame.locals;
-        assert.equal(args.length, 1, 'There should be one argument');
         assert.equal(locals.length, 1, 'There should be one local');
         if (semver.satisfies(process.version, '<1.6')) {
           // Try/Catch scope-walking does not work on 0.12
@@ -92,13 +91,12 @@ describe('v8debugapi', function() {
             {name: 'e', value: 'undefined'}
           );
         } else {
+          assert.equal(args.length, 0, 'There should be zero arguments');
           var e = locals[0];
           assert(e.name === 'e');
           assert(Number.isInteger(e.varTableIndex));
         }
-        var arg0 = args[0];
-        assert(arg0.name === 'arguments_not_available');
-        assert(Number.isInteger(arg0.varTableIndex));      
+        assert.equal(args.length, 0, 'There should be zero arguments');     
         api.clear(brk);
         done();
       });
@@ -124,15 +122,13 @@ describe('v8debugapi', function() {
             {name: 'e', value: 'undefined'}
           );
         } else {
-          assert.equal(args.length, 1, 'There should be one argument');
+          assert.equal(args.length, 0, 'There should be zero arguments');
           assert.equal(locals.length, 1, 'There should be one local');
           assert.deepEqual(
             locals[0],
             {name: 'e', value: '2'}
           );
-          var arg0 = args[0];
-          assert(arg0.name === 'arguments_not_available');
-          assert(Number.isInteger(arg0.varTableIndex));
+          assert.equal(args.length, 0, 'There should be zero arguments');
         }
         api.clear(brk);
         done();
