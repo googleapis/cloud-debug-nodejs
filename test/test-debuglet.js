@@ -36,32 +36,26 @@ var oldGP;
 var bp = {
   id: 'test',
   action: 'CAPTURE',
-  location: { path: 'fixtures/foo.js', line: 2 }
+  location: {path: 'fixtures/foo.js', line: 2}
 };
 var errorBp = {
   id: 'testLog',
   action: 'FOO',
-  location: { path: 'fixtures/foo.js', line: 2 }
+  location: {path: 'fixtures/foo.js', line: 2}
 };
 
 describe('Debuglet', function() {
-  describe('setup', function () {
-    before(function() {
-      oldGP = process.env.GCLOUD_PROJECT;
-    });
+  describe('setup', function() {
+    before(function() { oldGP = process.env.GCLOUD_PROJECT; });
 
-    after(function() {
-      process.env.GCLOUD_PROJECT = oldGP;
-    });
+    after(function() { process.env.GCLOUD_PROJECT = oldGP; });
 
     beforeEach(function() {
       delete process.env.GCLOUD_PROJECT;
       nocks.oauth2();
     });
 
-    afterEach(function() {
-      nock.cleanAll();
-    });
+    afterEach(function() { nock.cleanAll(); });
 
     it('should not start when projectId is not available', function(done) {
       this.timeout(8000);
@@ -69,8 +63,9 @@ describe('Debuglet', function() {
       var debuglet = new Debuglet(debug, defaultConfig);
 
       // The following mock is neccessary for the case when the test is running
-      // on GCP. In that case we will get the projectId from the metadata service.
-      var scope = nocks.projectId(404); 
+      // on GCP. In that case we will get the projectId from the metadata
+      // service.
+      var scope = nocks.projectId(404);
 
       debuglet.once('initError', function(err) {
         assert.ok(err);
@@ -78,9 +73,7 @@ describe('Debuglet', function() {
         scope.done();
         done();
       });
-      debuglet.once('started', function() {
-        assert.fail();
-      });
+      debuglet.once('started', function() { assert.fail(); });
       debuglet.start();
     });
 
@@ -90,12 +83,11 @@ describe('Debuglet', function() {
       var debuglet = new Debuglet(debug, defaultConfig);
 
       // The following mock is neccessary for the case when the test is running
-      // on GCP. In that case we will get the projectId from the metadata service.
-      var scope = nocks.projectId(404); 
+      // on GCP. In that case we will get the projectId from the metadata
+      // service.
+      var scope = nocks.projectId(404);
 
-      debuglet.once('started', function() {
-        assert.fail();
-      });
+      debuglet.once('started', function() { assert.fail(); });
       debuglet.once('initError', function() {
         scope.done();
         done();
@@ -105,17 +97,13 @@ describe('Debuglet', function() {
 
     it('should use config.projectId', function(done) {
       var projectId = '11020304f2934-a';
-      var debug = require('..')(
-          {projectId: projectId, credentials: fakeCredentials});
+      var debug =
+          require('..')({projectId: projectId, credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
 
       var scope = nock(API)
-        .post(REGISTER_PATH)
-        .reply(200, {
-          debuggee: {
-            id: DEBUGGEE_ID
-          }
-        });
+                      .post(REGISTER_PATH)
+                      .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
       debuglet.once('registered', function(id) {
         assert.equal(id, DEBUGGEE_ID);
@@ -128,53 +116,24 @@ describe('Debuglet', function() {
       debuglet.start();
     });
 
-    it('should use GCLOUD_PROJECT in lieu of config.projectId', function(done) {
-      process.env.GCLOUD_PROJECT = '11020304f2934-b';
-      var debug = require('..')(
-          {credentials: fakeCredentials});
-      var debuglet = new Debuglet(debug, defaultConfig);
+    describe('environment variables', function() {
+      var env;
+      beforeEach(function() { env = extend({}, process.env); });
+      afterEach(function() { process.env = extend({}, env); });
 
-      var scope = nock(API)
-        .post(REGISTER_PATH)
-        .reply(200, {
-          debuggee: {
-            id: DEBUGGEE_ID
-          }
-        });
-
-      debuglet.once('registered', function(id) {
-        assert.equal(id, DEBUGGEE_ID);
-        assert.equal(debuglet.debuggee_.project, process.env.GCLOUD_PROJECT);
-        debuglet.stop();
-        scope.done();
-        done();
-      });
-
-      debuglet.start();
-    });
-
-    it('should use options.projectId in preference to the environment variable',
-      function(done) {
-        process.env.GCLOUD_PROJECT = 'should-not-be-used';
-        var debug = require('..')({
-          projectId: 'project-via-options',
-          credentials: fakeCredentials
-        });
+      it('should use GCLOUD_PROJECT in lieu of config.projectId', function(
+                                                                      done) {
+        process.env.GCLOUD_PROJECT = '11020304f2934-b';
+        var debug = require('..')({credentials: fakeCredentials});
         var debuglet = new Debuglet(debug, defaultConfig);
 
-        // TODO: also make sure we don't request the project from metadata
-        // service.
         var scope = nock(API)
-        .post(REGISTER_PATH)
-        .reply(200, {
-          debuggee: {
-            id: DEBUGGEE_ID
-          }
-        });
+                        .post(REGISTER_PATH)
+                        .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
         debuglet.once('registered', function(id) {
           assert.equal(id, DEBUGGEE_ID);
-          assert.equal(debuglet.debuggee_.project, 'project-via-options');
+          assert.equal(debuglet.debuggee_.project, process.env.GCLOUD_PROJECT);
           debuglet.stop();
           scope.done();
           done();
@@ -183,63 +142,124 @@ describe('Debuglet', function() {
         debuglet.start();
       });
 
-    it('should respect GCLOUD_DEBUG_LOGLEVEL', function(done) {
-      process.env.GCLOUD_PROJECT='11020304f2934';
-      process.env.GCLOUD_DEBUG_LOGLEVEL = 3;
-      var debug = require('..')({credentials: fakeCredentials});
-      var debuglet = new Debuglet(debug, defaultConfig);
+      it('should use options.projectId in preference to the environment variable',
+         function(done) {
+           process.env.GCLOUD_PROJECT = 'should-not-be-used';
+           var debug = require('..')({
+             projectId: 'project-via-options',
+             credentials: fakeCredentials
+           });
+           var debuglet = new Debuglet(debug, defaultConfig);
 
-      var scope = nock(API)
-        .post(REGISTER_PATH)
-        .reply(200, {
-          debuggee: {
-            id: DEBUGGEE_ID
-          }
+           // TODO: also make sure we don't request the project from metadata
+           // service.
+           var scope = nock(API)
+                           .post(REGISTER_PATH)
+                           .reply(200, {debuggee: {id: DEBUGGEE_ID}});
+
+           debuglet.once('registered', function(id) {
+             assert.equal(id, DEBUGGEE_ID);
+             assert.equal(debuglet.debuggee_.project, 'project-via-options');
+             debuglet.stop();
+             scope.done();
+             done();
+           });
+
+           debuglet.start();
+         });
+
+      it('should respect GCLOUD_DEBUG_LOGLEVEL', function(done) {
+        process.env.GCLOUD_PROJECT = '11020304f2934';
+        process.env.GCLOUD_DEBUG_LOGLEVEL = 3;
+        var debug = require('..')({credentials: fakeCredentials});
+        var debuglet = new Debuglet(debug, defaultConfig);
+
+        var scope = nock(API)
+                        .post(REGISTER_PATH)
+                        .reply(200, {debuggee: {id: DEBUGGEE_ID}});
+
+        debuglet.once('registered', function() {
+          var logger = debuglet.logger_;
+          var STRING1 = 'jjjjjjjjjjjjjjjjjfjfjfjf';
+          var STRING2 = 'kkkkkkkfkfkfkfkfkkffkkkk';
+
+          var buffer = '';
+          var oldLog = console.log;
+
+          console.log = function(str) { buffer += str; };
+          logger.info(STRING1);
+          logger.debug(STRING2);
+          console.log = oldLog;
+
+          assert(buffer.indexOf(STRING1) !== -1);
+          assert(buffer.indexOf(STRING2) === -1);
+
+          debuglet.stop();
+          scope.done();
+          done();
         });
 
-      debuglet.once('registered', function() {
-        var logger = debuglet.logger_;
-        var STRING1 = 'jjjjjjjjjjjjjjjjjfjfjfjf';
-        var STRING2 = 'kkkkkkkfkfkfkfkfkkffkkkk';
-
-        var buffer = '';
-        var oldLog = console.log;
-
-        console.log = function (str) {
-          buffer += str;
-        };
-        logger.info(STRING1);
-        logger.debug(STRING2);
-        console.log = oldLog;
-
-        assert(buffer.indexOf(STRING1) !== -1);
-        assert(buffer.indexOf(STRING2) === -1);
-
-        debuglet.stop();
-        scope.done();
-        done();
+        debuglet.start();
       });
 
-      debuglet.start();
+      it('should respect GAE_SERVICE and GAE_VERSION env. vars.', function() {
+        process.env.GAE_SERVICE = 'fake-gae-service';
+        process.env.GAE_VERSION = 'fake-gae-version';
+        var debug = require('..')();
+        var debuglet = new Debuglet(debug, defaultConfig);
+        assert.ok(debuglet.config_);
+        assert.ok(debuglet.config_.serviceContext);
+        assert.strictEqual(debuglet.config_.serviceContext.service,
+                           'fake-gae-service');
+        assert.strictEqual(debuglet.config_.serviceContext.version,
+                           'fake-gae-version');
+      });
+
+      it('should respect GAE_MODULE_NAME and GAE_MODULE_VERSION env. vars.',
+         function() {
+           process.env.GAE_MODULE_NAME = 'fake-gae-service';
+           process.env.GAE_MODULE_VERSION = 'fake-gae-version';
+           var debug = require('..')();
+           var debuglet = new Debuglet(debug, defaultConfig);
+           assert.ok(debuglet.config_);
+           assert.ok(debuglet.config_.serviceContext);
+           assert.strictEqual(debuglet.config_.serviceContext.service,
+                              'fake-gae-service');
+           assert.strictEqual(debuglet.config_.serviceContext.version,
+                              'fake-gae-version');
+         });
+
+      it('should prefer new flex vars over GAE_MODULE_*', function() {
+        process.env.GAE_MODULE_NAME = 'fake-gae-module';
+        process.env.GAE_MODULE_VERSION = 'fake-gae-module-version';
+        process.env.GAE_SERVICE = 'fake-gae-service';
+        process.env.GAE_VERSION = 'fake-gae-version';
+        var debug = require('..')();
+        var debuglet = new Debuglet(debug, defaultConfig);
+        assert.ok(debuglet.config_);
+        assert.ok(debuglet.config_.serviceContext);
+        assert.strictEqual(debuglet.config_.serviceContext.service,
+                           'fake-gae-service');
+        assert.strictEqual(debuglet.config_.serviceContext.version,
+                           'fake-gae-version');
+      });
     });
+
+
 
     it('should retry on failed registration', function(done) {
       this.timeout(10000);
-      process.env.GCLOUD_PROJECT='11020304f2934';
-      var debug = require('..')({credentials: fakeCredentials});
+      var debug = require('..')(
+          {projectId: '11020304f2934', credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
 
       var scope = nock(API)
-        .post(REGISTER_PATH)
-        .reply(404)
-        .post(REGISTER_PATH)
-        .reply(509)
-        .post(REGISTER_PATH)
-        .reply(200, {
-          debuggee: {
-            id: DEBUGGEE_ID
-          }
-        });
+                      .post(REGISTER_PATH)
+                      .reply(404)
+                      .post(REGISTER_PATH)
+                      .reply(509)
+                      .post(REGISTER_PATH)
+                      .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
       debuglet.once('registered', function(id) {
         assert.equal(id, DEBUGGEE_ID);
@@ -254,10 +274,8 @@ describe('Debuglet', function() {
     it('should error if a package.json doesn\'t exist', function(done) {
       var debug = require('..')(
           {projectId: 'fake-project', credentials: fakeCredentials});
-      var config = extend({}, defaultConfig, {
-        workingDirectory: __dirname,
-        forceNewAgent_: true
-      });
+      var config = extend({}, defaultConfig,
+                          {workingDirectory: __dirname, forceNewAgent_: true});
       var debuglet = new Debuglet(debug, config);
 
       debuglet.once('initError', function(err) {
@@ -274,8 +292,9 @@ describe('Debuglet', function() {
       var debuglet = new Debuglet(debug, defaultConfig);
 
       nocks.oauth2();
-      var scope =
-          nock(API).post(REGISTER_PATH).reply(200, {debuggee: {id: DEBUGGEE_ID}});
+      var scope = nock(API)
+                      .post(REGISTER_PATH)
+                      .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
       debuglet.once('registered', function(id) {
         assert.equal(id, DEBUGGEE_ID);
@@ -295,16 +314,10 @@ describe('Debuglet', function() {
           {projectId: 'fake-project', credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
 
-      var scope = nock(API)
-        .post(REGISTER_PATH, function(body) {
-          return body.debuggee.sourceContexts[0] &&
-            body.debuggee.sourceContexts[0].a === 5;
-        })
-        .reply(200, {
-          debuggee: {
-            id: DEBUGGEE_ID
-          }
-        });
+      var scope = nock(API).post(REGISTER_PATH, function(body) {
+                             return body.debuggee.sourceContexts[0] &&
+                                    body.debuggee.sourceContexts[0].a === 5;
+                           }).reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
       debuglet.once('registered', function(id) {
         assert.equal(id, DEBUGGEE_ID);
@@ -318,26 +331,26 @@ describe('Debuglet', function() {
     });
 
     it('should de-activate when the server responds with isDisabled',
-      function(done) {
-        this.timeout(4000);
-        var debug = require('..')(
-            {projectId: 'fake-project', credentials: fakeCredentials});
-        var debuglet = new Debuglet(debug, defaultConfig);
+       function(done) {
+         this.timeout(4000);
+         var debug = require('..')(
+             {projectId: 'fake-project', credentials: fakeCredentials});
+         var debuglet = new Debuglet(debug, defaultConfig);
 
-        var scope =
-            nock(API)
-                .post(REGISTER_PATH)
-                .reply(200, {debuggee: {id: DEBUGGEE_ID, isDisabled: true}});
+         var scope =
+             nock(API)
+                 .post(REGISTER_PATH)
+                 .reply(200, {debuggee: {id: DEBUGGEE_ID, isDisabled: true}});
 
-        debuglet.once('remotelyDisabled', function() {
-          assert.ok(!debuglet.fetcherActive_);
-          debuglet.stop();
-          scope.done();
-          done();
-        });
+         debuglet.once('remotelyDisabled', function() {
+           assert.ok(!debuglet.fetcherActive_);
+           debuglet.stop();
+           scope.done();
+           done();
+         });
 
-        debuglet.start();
-      });
+         debuglet.start();
+       });
 
     it('should retry after a isDisabled request', function(done) {
       this.timeout(4000);
@@ -345,20 +358,12 @@ describe('Debuglet', function() {
           {projectId: 'fake-project', credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
 
-      var scope = nock(API)
-        .post(REGISTER_PATH)
-        .reply(200, {
-          debuggee: {
-            id: DEBUGGEE_ID,
-            isDisabled: true
-          }
-        })
-        .post(REGISTER_PATH)
-        .reply(200, {
-          debuggee: {
-            id: DEBUGGEE_ID
-          }
-        });
+      var scope =
+          nock(API)
+              .post(REGISTER_PATH)
+              .reply(200, {debuggee: {id: DEBUGGEE_ID, isDisabled: true}})
+              .post(REGISTER_PATH)
+              .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
       var gotDisabled = false;
       debuglet.once('remotelyDisabled', function() {
@@ -383,20 +388,12 @@ describe('Debuglet', function() {
       var debuglet = new Debuglet(debug, defaultConfig);
 
       var scope = nock(API)
-        .post(REGISTER_PATH)
-        .reply(200, {
-          debuggee: {
-            id: DEBUGGEE_ID
-          }
-        })
-        .get(BPS_PATH + '?success_on_timeout=true')
-        .reply(404)
-        .post(REGISTER_PATH)
-        .reply(200, {
-          debuggee: {
-            id: DEBUGGEE_ID
-          }
-        });
+                      .post(REGISTER_PATH)
+                      .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+                      .get(BPS_PATH + '?success_on_timeout=true')
+                      .reply(404)
+                      .post(REGISTER_PATH)
+                      .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
       debuglet.once('registered', function(id) {
         assert.equal(id, DEBUGGEE_ID);
@@ -418,16 +415,10 @@ describe('Debuglet', function() {
       var debuglet = new Debuglet(debug, defaultConfig);
 
       var scope = nock(API)
-        .post(REGISTER_PATH)
-        .reply(200, {
-          debuggee: {
-            id: DEBUGGEE_ID
-          }
-        })
-        .get(BPS_PATH + '?success_on_timeout=true')
-        .reply(200, {
-          breakpoints: [bp]
-        });
+                      .post(REGISTER_PATH)
+                      .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+                      .get(BPS_PATH + '?success_on_timeout=true')
+                      .reply(200, {breakpoints: [bp]});
 
       debuglet.once('registered', function reg(id) {
         assert.equal(id, DEBUGGEE_ID);
@@ -450,34 +441,24 @@ describe('Debuglet', function() {
       var debuglet = new Debuglet(debug, defaultConfig);
 
       var scope = nock(API)
-        .post(REGISTER_PATH)
-        .reply(200, {
-          debuggee: {
-            id: DEBUGGEE_ID
-          }
-        })
-        .post(REGISTER_PATH)
-        .reply(200, {
-          debuggee: {
-            id: DEBUGGEE_ID
-          }
-        })
-        .get(BPS_PATH + '?success_on_timeout=true')
-        .reply(404)
-        .get(BPS_PATH + '?success_on_timeout=true')
-        .reply(200, {
-          wait_expired: true
-        })
-        .get(BPS_PATH + '?success_on_timeout=true')
-        .reply(200, {
-          breakpoints: [bp, errorBp]
-        })
-        .put(BPS_PATH + '/' + errorBp.id, function(body) {
-          var status = body.breakpoint.status;
-          return status.isError &&
-            status.description.format.indexOf('actions are CAPTURE') !== -1;
-        })
-        .reply(200);
+                      .post(REGISTER_PATH)
+                      .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+                      .post(REGISTER_PATH)
+                      .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+                      .get(BPS_PATH + '?success_on_timeout=true')
+                      .reply(404)
+                      .get(BPS_PATH + '?success_on_timeout=true')
+                      .reply(200, {wait_expired: true})
+                      .get(BPS_PATH + '?success_on_timeout=true')
+                      .reply(200, {breakpoints: [bp, errorBp]})
+                      .put(BPS_PATH + '/' + errorBp.id,
+                           function(body) {
+                             var status = body.breakpoint.status;
+                             return status.isError &&
+                                    status.description.format.indexOf(
+                                        'actions are CAPTURE') !== -1;
+                           })
+                      .reply(200);
 
       debuglet.once('registered', function reg(id) {
         assert.equal(id, DEBUGGEE_ID);
@@ -496,28 +477,22 @@ describe('Debuglet', function() {
     it('should expire stale breakpoints', function(done) {
       var debug = require('..')(
           {projectId: 'fake-project', credentials: fakeCredentials});
-      var config = extend({}, defaultConfig, {
-        breakpointExpirationSec: 1,
-        forceNewAgent_: true
-      });
+      var config = extend({}, defaultConfig,
+                          {breakpointExpirationSec: 1, forceNewAgent_: true});
       this.timeout(6000);
 
-      var scope = nock(API)
-        .post(REGISTER_PATH)
-        .reply(200, {
-          debuggee: {
-            id: DEBUGGEE_ID
-          }
-        })
-        .get(BPS_PATH + '?success_on_timeout=true')
-        .reply(200, {
-          breakpoints: [bp]
-        })
-        .put(BPS_PATH + '/test', function(body) {
-          return body.breakpoint.status.description.format ===
-            'The snapshot has expired';
-        })
-        .reply(200);
+      var scope =
+          nock(API)
+              .post(REGISTER_PATH)
+              .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+              .get(BPS_PATH + '?success_on_timeout=true')
+              .reply(200, {breakpoints: [bp]})
+              .put(BPS_PATH + '/test',
+                   function(body) {
+                     return body.breakpoint.status.description.format ===
+                            'The snapshot has expired';
+                   })
+              .reply(200);
 
       var debuglet = new Debuglet(debug, config);
       debuglet.once('registered', function(id) {
@@ -553,26 +528,21 @@ describe('Debuglet', function() {
       });
       this.timeout(6000);
 
-      var scope = nock(API)
-        .post(REGISTER_PATH)
-        .reply(200, {
-          debuggee: {
-            id: DEBUGGEE_ID
-          }
-        })
-        .get(BPS_PATH + '?success_on_timeout=true')
-        .reply(200, {
-          breakpoints: [bp]
-        })
-        .put(BPS_PATH + '/test', function(body) {
-          return body.breakpoint.status.description.format ===
-            'The snapshot has expired';
-        })
-        .reply(200)
-        .get(BPS_PATH + '?success_on_timeout=true').times(4)
-        .reply(200, {
-          breakpoints: [bp]
-        });
+      var scope =
+          nock(API)
+              .post(REGISTER_PATH)
+              .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+              .get(BPS_PATH + '?success_on_timeout=true')
+              .reply(200, {breakpoints: [bp]})
+              .put(BPS_PATH + '/test',
+                   function(body) {
+                     return body.breakpoint.status.description.format ===
+                            'The snapshot has expired';
+                   })
+              .reply(200)
+              .get(BPS_PATH + '?success_on_timeout=true')
+              .times(4)
+              .reply(200, {breakpoints: [bp]});
 
       var debuglet = new Debuglet(debug, config);
       debuglet.once('registered', function(id) {
@@ -581,7 +551,8 @@ describe('Debuglet', function() {
           assert.deepEqual(debuglet.activeBreakpointMap_.test, bp);
           setTimeout(function() {
             assert(!debuglet.activeBreakpointMap_.test);
-            // Fetcher disables if we re-update since endpoint isn't mocked twice
+            // Fetcher disables if we re-update since endpoint isn't mocked
+            // twice
             assert(debuglet.fetcherActive_);
             debuglet.stop();
             scope.done();
@@ -596,8 +567,8 @@ describe('Debuglet', function() {
 
   describe('map subtract', function() {
     it('should be correct', function() {
-      var a = { a: 1, b: 2 };
-      var b = { a: 1 };
+      var a = {a: 1, b: 2};
+      var b = {a: 1};
       assert.deepEqual(Debuglet.mapSubtract(a, b), [2]);
       assert.deepEqual(Debuglet.mapSubtract(b, a), []);
       assert.deepEqual(Debuglet.mapSubtract(a, {}), [1, 2]);
@@ -616,9 +587,10 @@ describe('Debuglet', function() {
       assert.deepEqual(Debuglet.format('hi $$0', [5]), 'hi $0');
       assert.deepEqual(Debuglet.format('hi $00', [5]), 'hi 50');
       assert.deepEqual(Debuglet.format('hi $0', ['$1', 5]), 'hi $1');
-      assert.deepEqual(Debuglet.format('hi $11',
-        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd']
-      ), 'hi b');
+      assert.deepEqual(
+          Debuglet.format('hi $11',
+                          [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd']),
+          'hi b');
     });
   });
 
@@ -644,12 +616,12 @@ describe('Debuglet', function() {
     });
 
     it('should have an error statusMessage with the appropriate arg',
-      function() {
-        var debuggee = Debuglet.createDebuggee(
-            'a', 'b', undefined, undefined, undefined, 'Some Error Message');
-        assert.ok(debuggee);
-        assert.ok(debuggee.statusMessage);
-      });
+       function() {
+         var debuggee = Debuglet.createDebuggee(
+             'a', 'b', undefined, undefined, undefined, 'Some Error Message');
+         assert.ok(debuggee);
+         assert.ok(debuggee.statusMessage);
+       });
   });
 
 });
