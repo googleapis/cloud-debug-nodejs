@@ -58,7 +58,7 @@ var formatInterval = function(msg, interval) {
 };
 
 var singleton;
-module.exports.create = function(logger_, config_, jsFiles_, sourcemapper_) {
+function create(logger_, config_, jsFiles_, sourcemapper_) {
   if (singleton && !config_.forceNewAgent_) {
     return singleton;
   }
@@ -377,22 +377,6 @@ module.exports.create = function(logger_, config_, jsFiles_, sourcemapper_) {
     return null;
   }
 
-  /**
-   * @param {!string} scriptPath path of a script
-   */
-  function pathToRegExp(scriptPath) {
-    // make sure the script path starts with a slash. This makes sure our
-    // regexp doesn't match monkey.js when the user asks to set a breakpoint
-    // in key.js
-    if (path.sep === '/' || scriptPath.indexOf(':') === -1) {
-      scriptPath = path.join(path.sep, scriptPath);
-    }
-    if (path.sep !== '/') {
-      scriptPath = scriptPath.replace(new RegExp('\\\\', 'g'), '\\\\');
-    }
-    return new RegExp(scriptPath + '$');
-  }
-
   function setByRegExp(scriptPath, line, column) {
     var regexp = pathToRegExp(scriptPath);
     var num = v8.setScriptBreakPointByRegExp(regexp, line - 1, column - 1);
@@ -433,17 +417,12 @@ module.exports.create = function(logger_, config_, jsFiles_, sourcemapper_) {
     var regexp = pathToRegExp(scriptPath);
     // Next try to match path.
     var matches = Object.keys(fileStats).filter(regexp.test.bind(regexp));
-    // Finally look for files with the same name regardless of path.
-    if (matches.length !== 1) {
-      matches = Object.keys(fileStats);
-      var components = scriptPath.split(path.sep);
-      for (var i = components.length - 1;
-           i >= 0 && matches.length > 1; i--) {
-        regexp = pathToRegExp(components.slice(i).join(path.sep));
-        matches = matches.filter(regexp.test.bind(regexp));
-      }
+    if (matches.length === 1) {
+      return matches;
     }
-    return matches;
+
+    // Finally look for files with the same name regardless of path.
+    return findScriptsFuzzy(scriptPath, Object.keys(fileStats));
   }
 
   function onBreakpointHit(breakpoint, callback, execState) {
@@ -585,4 +564,66 @@ module.exports.create = function(logger_, config_, jsFiles_, sourcemapper_) {
   }
 
   return singleton;
+}
+
+/**
+ * @param {!string} scriptPath path of a script
+ */
+function pathToRegExp(scriptPath) {
+  // make sure the script path starts with a slash. This makes sure our
+  // regexp doesn't match monkey.js when the user asks to set a breakpoint
+  // in key.js
+  if (path.sep === '/' || scriptPath.indexOf(':') === -1) {
+    scriptPath = path.join(path.sep, scriptPath);
+  }
+  if (path.sep !== '/') {
+    scriptPath = scriptPath.replace(new RegExp('\\\\', 'g'), '\\\\');
+  }
+  // Escape '.' characters.
+  scriptPath = scriptPath.replace('.', '\\.');
+  return new RegExp(scriptPath + '$');
+}
+
+/**
+ * Given an list of available files and a script path to match, this function
+ * tries to resolve the script to a (hopefully unique) match in the file list
+ * disregarding the full path to the script. This can be useful because repo
+ * file paths (that the UI has) may not necessarily be suffixes of the absolute 
+ * paths of the deployed files. This happens when the user deploys a
+ * subdirectory of the repo.
+ *
+ * For example consider a file named `a/b.js` in the repo. If the
+ * directory contents of `a` are deployed rather than the whole repo, we are not
+ * going to have any file named `a/b.js` in the running Node process.
+ *
+ * We incrementally consider more components of the path until we find a unique
+ * match, or return all the potential matches.
+ *
+ * @example findScriptsFuzzy('a/b.js', ['/d/b.js']) // -> ['/d/b.js']
+ * @example findScriptsFuzzy('a/b.js', ['/c/b.js', '/d/b.js']); // -> []
+ * @example findScriptsFuzzy('a/b.js', ['/x/a/b.js', '/y/a/b.js'])
+ *                 // -> ['x/a/b.js', 'y/a/b.js']
+ *
+ * @param {string} scriptPath partial path to the script.
+ * @param {array<string>} fileList an array of absolute paths of filenames
+ *     available.
+ * @return {array<string>} list of files that match.
+ */
+function findScriptsFuzzy(scriptPath, fileList) {
+  var matches = fileList;
+  var components = scriptPath.split(path.sep);
+  for (var i = components.length - 1; i >= 0; i--) {
+    var regexp = pathToRegExp(components.slice(i).join(path.sep));
+    matches = matches.filter(regexp.test.bind(regexp));
+    if (matches.length <= 1) {
+      break; // Either no matches, or we found a unique match.
+    }
+  }
+  return matches;
+}
+
+module.exports = {
+  create: create,
+  // Exposed for unit testing.
+  findScriptsFuzzy: findScriptsFuzzy
 };
