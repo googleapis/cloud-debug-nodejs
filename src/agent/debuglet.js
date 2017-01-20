@@ -140,24 +140,21 @@ function Debuglet(debug, config) {
 util.inherits(Debuglet, EventEmitter);
 
 Debuglet.prototype.normalizeConfig_ = function(config) {
-  config = extend({}, defaultConfig, config);
+  var envConfig = {
+    logLevel: process.env.GCLOUD_DEBUG_LOGLEVEL,
+    serviceContext: {
+      service: process.env.GAE_SERVICE || process.env.GAE_MODULE_NAME,
+      version: process.env.GAE_VERSION || process.env.GAE_MODULE_VERSION
+    }
+  };
+
+  config = extend({}, defaultConfig, config, envConfig);
 
   if (config.keyFilename || config.credentials || config.projectId) {
     throw new Error('keyFilename, projectId or credentials should be provided' +
                     ' to the Debug module constructor rather than startAgent');
   }
 
-  if (process.env.hasOwnProperty('GCLOUD_DEBUG_LOGLEVEL')) {
-    config.logLevel = process.env.GCLOUD_DEBUG_LOGLEVEL;
-  }
-  if (process.env.hasOwnProperty('GAE_MODULE_NAME')) {
-    config.serviceContext = config.serviceContext || {};
-    config.serviceContext.service = process.env.GAE_MODULE_NAME;
-  }
-  if (process.env.hasOwnProperty('GAE_MODULE_VERSION')) {
-    config.serviceContext = config.serviceContext || {};
-    config.serviceContext.version = process.env.GAE_MODULE_VERSION;
-  }
   return config;
 };
 
