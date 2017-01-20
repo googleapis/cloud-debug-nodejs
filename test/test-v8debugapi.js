@@ -1210,3 +1210,50 @@ describe('v8debugapi', function() {
 
   it('should be possible to set deferred breakpoints');
 });
+
+describe('v8debugapi.findScriptsFuzzy', function() {
+  var fuzzy = v8debugapi.findScriptsFuzzy;
+
+  it('should not confuse . as a regexp pattern', function() {
+    assert.deepEqual(fuzzy('foo.js', ['/fooXjs']), []);
+  });
+
+  it('should do suffix matches correctly', function() {
+
+    var TESTS = [
+      // Exact match.
+      {scriptPath: 'foo.js', fileList: ['/foo.js'], result: ['/foo.js']},
+      // Non-exact but unique matches.
+      {scriptPath: 'a/foo.js', fileList: ['/foo.js'], result: ['/foo.js']},
+      {scriptPath: 'a/foo.js', fileList: ['/b/foo.js'], result: ['/b/foo.js']},
+      {
+        scriptPath: 'a/foo.js',
+        fileList: ['/a/b/foo.js'],
+        result: ['/a/b/foo.js']
+      },
+      // Resolve to a better match.
+      {
+        scriptPath: 'a/foo.js',
+        fileList: ['/b/a/foo.js', '/a/b/foo.js'],
+        result: ['/b/a/foo.js']
+      },
+      // Empty list on no matches.
+      {scriptPath: 'st-v8debugapi.js', fileList: ['/doc.js'], result: []},
+      // Return multiple exact matches.
+      {
+        scriptPath: 'a/foo.js',
+        fileList: ['x/a/foo.js', 'y/a/foo.js'],
+        result: ['x/a/foo.js', 'y/a/foo.js']
+      },
+      // Fail on multiple fuzzy matches.
+      {scriptPath: 'a/foo.js', fileList: ['b/foo.js', 'c/foo.js'], result: []}
+    ];
+
+    TESTS.forEach(function(test) {
+      var scriptPath = path.normalize(test.scriptPath);
+      var fileList = test.fileList.map(path.normalize);
+      var result = test.result.map(path.normalize);
+      assert.deepEqual(fuzzy(scriptPath, fileList), result);
+    });
+  });
+});
