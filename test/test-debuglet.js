@@ -19,6 +19,7 @@ var assert = require('assert');
 var defaultConfig = require('../src/agent/config.js');
 var Debuglet = require('../src/agent/debuglet.js');
 var extend = require('extend');
+var path = require('path');
 
 var DEBUGGEE_ID = 'bar';
 var API = 'https://clouddebugger.googleapis.com';
@@ -308,7 +309,7 @@ describe('Debuglet', function() {
 
 
     it('should pass source context to api if present', function(done) {
-      process.chdir('test/fixtures');
+      process.chdir(path.join(__dirname, 'fixtures'));
 
       var debug = require('..')(
           {projectId: 'fake-project', credentials: fakeCredentials});
