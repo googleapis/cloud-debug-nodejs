@@ -575,11 +575,12 @@ module.exports.create = function(logger_, config_, jsFiles_, sourcemapper_) {
   }
 
   function setErrorStatusAndCallback(fn, breakpoint, refersTo, message) {
+    var error = new Error(message);
     return setImmediate(function() {
       if (breakpoint && !breakpoint.status) {
         breakpoint.status = new StatusMessage(refersTo, message, true);
       }
-      fn(new Error(message));
+      fn(error);
     });
   }
 
