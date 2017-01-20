@@ -41,7 +41,13 @@ the [Google Cloud Console][dev-console]. You can start adding snapshots and log-
 
 ## Running on Google Cloud Platform
 
-Stackdriver debugger agent should work out of the box if your code is running on Google Cloud Platform, just make sure that the [Stackdriver Debugger API][debugger-api] is enabled on your project (this is the default).
+The Stackdriver Debugger Agent should work out of the box for Google App Engine instances, as long as the [Stackdriver Debugger API][debugger-api] is enabled on your project (this is the default).
+
+For new Google Compute Engine instances, you need to create the instance with the Stackdriver Debugger API access scope. From the web UI, you can do this in one of two ways under **Identity and API access**:
+* Use the Compute Engine default service account "Allow full access to all Cloud APIs" under Access scopes.
+* Select a service account with the **Cloud Debugger Agent** role (or any role with at least the same permissions). You may need to create one if you don't have one already.
+
+You may add the Stackdriver Debugger API access scope to existing Compute instances if they are using the non-default service account by adding the Cloud Debugger Agent role to the associated service account.
 
 ## Running elsewhere
 
