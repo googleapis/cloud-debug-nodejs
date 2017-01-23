@@ -21,19 +21,23 @@ var path = require('path');
 process.env.GCLOUD_PROJECT = 0;
 
 var assert = require('assert');
-var agent = require('..')();
 var api;
+var Debuglet = require('../src/agent/debuglet.js');
+var debuglet;
 var h = require('./fixtures/a/hello.js');
 
 describe('repository relative paths', function() {
 
   before(function(done) {
-    agent.startAgent({
+    var debug = require('..')({projectId: 'fake-project'});
+    var config = {
       appPathRelativeToRepository: path.join(path.sep, 'my', 'project', 'root')
-    });
+    };
+    debuglet = new Debuglet(debug, config);
+    debuglet.start();
     setTimeout(function() {
       // Wait for v8debug api to initialize.
-      api = agent.private_.v8debug_;
+      api = debuglet.v8debug_;
       assert(api, 'v8 debug api was not initialized in time');
       done();
     }, 1500);
@@ -44,6 +48,7 @@ describe('repository relative paths', function() {
       'there should be no breakpoints active');
     assert.equal(api.numListeners_(), 0,
       'there should be no listeners active');
+    debuglet.stop();
   });
 
   it('should correctly substitute when provided', function(done) {
@@ -51,8 +56,8 @@ describe('repository relative paths', function() {
       id: 0,
       location: {
         line: 3,
-        path: path.join(path.sep, 'my', 'project', 'root', 'test',
-          'fixtures', 'a', 'hello.js')
+        path: path.join(path.sep, 'my', 'project', 'root', 'packages', 'debug',
+          'test', 'fixtures', 'a', 'hello.js')
       }
     };
     api.set(bp, function(err) {

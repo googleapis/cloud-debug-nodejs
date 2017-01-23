@@ -46,7 +46,7 @@ describe('test-options-credentials', function() {
     var credentials = require('./fixtures/gcloud-credentials.json');
     var options = extend({}, {
       projectId: 'fake-project',
-      keyFilename: path.join('test', 'fixtures', 'gcloud-credentials.json')
+      keyFilename: path.join(__dirname, 'fixtures', 'gcloud-credentials.json')
     });
     var debug = require('..')(options);
     var scope = nocks.oauth2(function(body) {

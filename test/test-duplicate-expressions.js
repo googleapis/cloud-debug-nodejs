@@ -33,7 +33,6 @@ var common = require('@google-cloud/common');
 var defaultConfig = require('../src/agent/config.js');
 var SourceMapper = require('../src/agent/sourcemapper.js');
 var scanner = require('../src/agent/scanner.js');
-var path = require('path');
 
 function stateIsClean(api) {
   assert.equal(api.numBreakpoints_(), 0,
@@ -43,9 +42,9 @@ function stateIsClean(api) {
   return true;
 }
 
-describe('v8debugapi', function() {
+describe(__filename, function() {
   var config = extend({}, defaultConfig, {
-    workingDirectory: path.join(process.cwd(), 'test'),
+    workingDirectory: __dirname,
     forceNewAgent_: true
   });
   var logger = common.logger({ logLevel: config.logLevel });

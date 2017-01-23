@@ -19,7 +19,6 @@ var assert = require('assert');
 var defaultConfig = require('../src/agent/config.js');
 var Debuglet = require('../src/agent/debuglet.js');
 var extend = require('extend');
-var path = require('path');
 
 var DEBUGGEE_ID = 'bar';
 var API = 'https://clouddebugger.googleapis.com';
@@ -309,10 +308,14 @@ describe('Debuglet', function() {
 
 
     it('should pass source context to api if present', function(done) {
-      process.chdir(path.join(__dirname, 'fixtures'));
-
       var debug = require('..')(
           {projectId: 'fake-project', credentials: fakeCredentials});
+      var old = Debuglet.prototype.getSourceContext_;
+      Debuglet.prototype.getSourceContext_ = function(cb) {
+        setImmediate(function () {
+          cb(null, {a: 5});
+        });
+      };
       var debuglet = new Debuglet(debug, defaultConfig);
 
       var scope = nock(API).post(REGISTER_PATH, function(body) {
@@ -321,10 +324,10 @@ describe('Debuglet', function() {
                            }).reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
       debuglet.once('registered', function(id) {
+        Debuglet.prototype.getSourceContext_ = old;
         assert.equal(id, DEBUGGEE_ID);
         debuglet.stop();
         scope.done();
-        process.chdir('../..');
         done();
       });
 
