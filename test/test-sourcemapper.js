@@ -90,7 +90,7 @@ function testTool(tool, mapFilePath, inputFilePath, outputFilePath, inToOutLineN
   });
 }
 
-var basePath = 'test/fixtures/sourcemapper/';
+var basePath = path.join(__dirname, 'fixtures', 'sourcemapper');
 testTool('Babel', 
   path.join(basePath, 'babel', 'out.js.map'),
   path.join(basePath, 'babel', 'in.js'),
