@@ -43,9 +43,9 @@ the [Google Cloud Console][dev-console]. You can start adding snapshots and log-
 
 The Stackdriver Debugger Agent should work without manually provided authentication credentials for instances running on Google Cloud Platform, as long as the [Stackdriver Debugger API][debugger-api] access scope is enabled on that instance. For Google App Engine instances, this is automatic if the Debugger API has been enabled for your project (which it is by default).
 
-For new Google Compute Engine instances, you need to explicitly enable the Debugger API access scope. When creating a new instance through the GCP web console, you can do this in one of two ways under **Identity and API access**:
+For Google Compute Engine, you need to explicitly enable the Debugger API access scope for each instance. When creating a new instance through the GCP web console, you can do this in one of two ways under **Identity and API access**:
 * Use the Compute Engine default service account and select "Allow full access to all Cloud APIs" under Access scopes.
-* Select a service account with the **Cloud Debugger Agent** role, which contains the necessary permissions (or any other role with at least the same permissions). You may need to create one if you don't have one already.
+* Select a service account with the [**Cloud Debugger Agent**][debugger-roles] role, which contains the necessary permissions (or any other role with at least the same permissions). You may need to create one if you don't have one already.
 
 You may add the Stackdriver Debugger API access scope to existing Compute instances if they are running as a non-default service account by adding the Cloud Debugger Agent role to the service account. For more information, see the docs for [Creating and Enabling Service Accounts for Instances][service-account-docs].
 
@@ -141,6 +141,7 @@ As soon as that line of code is reached in any of the running instances of your 
 [app-default-credentials]: https://cloud.google.com/identity/protocols/application-default-credentials
 [service-account]: https://console.cloud.google.com/apis/credentials/serviceaccountkey
 [service-account-docs]: https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances
+[debugger-roles]: https://cloud.google.com/debugger/docs/iam#roles
 [npm-image]: https://img.shields.io/npm/v/@google-cloud/debug.svg
 [npm-url]: https://npmjs.org/package/@google-cloud/debug
 [travis-image]: https://travis-ci.org/GoogleCloudPlatform/cloud-debug-nodejs.svg?branch=master
