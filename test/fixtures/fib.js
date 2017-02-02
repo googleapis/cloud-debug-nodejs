@@ -21,12 +21,14 @@ function fib(n) {
  * limitations under the License.
  */
 
-var debug = require('../..')();
-debug.startAgent({
-  logLevel: 2,
-  maxLogsPerSecond: 2,
-  logDelaySeconds: 5,
-  breakpointUpdateIntervalSec: 1
+var debuglet = require('../..').start({
+  debug: {
+    logLevel: 2,
+    maxLogsPerSecond: 2,
+    logDelaySeconds: 5,
+    breakpointUpdateIntervalSec: 1,
+    testMode_: true
+  }
 });
 
 // Make troubleshooting easier if run by itself
@@ -43,7 +45,7 @@ var registrationTimeout = setTimeout(function() {
   }, 2000);
 }, 5000);
 
-debug.private_.once('registered', function() {
+debuglet.once('registered', function() {
   if (timedOut) {
     return;
   }
@@ -56,7 +58,7 @@ debug.private_.once('registered', function() {
     }
   };
 
-  var debuggee = debug.private_.debuggee_;
+  var debuggee = debuglet.debuggee_;
   setErrorIfNotOk(debuggee, 'should create debuggee');
   setErrorIfNotOk(debuggee.project, 'debuggee should have a project');
   setErrorIfNotOk(debuggee.id, 'debuggee should have registered');
