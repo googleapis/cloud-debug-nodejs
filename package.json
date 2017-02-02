@@ -1,10 +1,10 @@
 {
-  "name": "@google-cloud/debug",
+  "name": "@google-cloud/debug-agent",
   "version": "0.10.0",
   "author": "Google Inc.",
   "description": "Stackdriver Debug Agent for Node.js",
   "main": "./src/index.js",
-  "repository": "googlecloudplatform/google-cloud-node",
+  "repository": "googlecloudplatform/cloud-debug-nodejs",
   "keywords": [
     "google",
     "debugger",
