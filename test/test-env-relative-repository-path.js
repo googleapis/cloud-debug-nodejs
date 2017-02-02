@@ -29,7 +29,7 @@ var h = require('./fixtures/a/hello.js');
 describe('repository relative paths', function() {
 
   before(function(done) {
-    var debug = require('..')({projectId: 'fake-project'});
+    var debug = require('../src/debug.js')({projectId: 'fake-project'});
     var config = {
       appPathRelativeToRepository: path.join(path.sep, 'my', 'project', 'root')
     };
@@ -56,8 +56,8 @@ describe('repository relative paths', function() {
       id: 0,
       location: {
         line: 3,
-        path: path.join(path.sep, 'my', 'project', 'root', 'packages', 'debug',
-          'test', 'fixtures', 'a', 'hello.js')
+        path: path.join(path.sep, 'my', 'project', 'root', 'test', 'fixtures',
+                        'a', 'hello.js')
       }
     };
     api.set(bp, function(err) {

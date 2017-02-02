@@ -17,45 +17,23 @@
 'use strict';
 
 var assert = require('assert');
-var Debug = require('..');
-var Debuglet = require('../src/agent/debuglet.js');
+var module = require('..');
 var nock = require('nock');
 
 nock.disableNetConnect();
 
 describe('Debug module', function() {
-  var debug;
-
   before(function(done) {
-    debug = require('..')({ projectId: '0' });
-    debug.startAgent({ forceNewAgent_: true });
-
-    debug.private_.on('started', function() {
-      debug.private_.stop();
+    var debuglet = module.start(
+        {projectId: '0', debug: {forceNewAgent_: true, testMode_: true}});
+    debuglet.on('started', function() {
+      debuglet.stop();
       done();
     });
   });
 
-  it('should return an instance on invocation', function() {
-    assert(debug instanceof Debug);
-  });
-
   it('should throw on attempt to start a new agent', function() {
-    assert.throws(function() { debug.startAgent(); });
-    var debug2 = require('..')();
-    assert.throws(function() { debug2.startAgent(); });
-  });
-
-  // Some tests depend on this private property.
-  it('should have a debuglet as the private property', function() {
-    assert(debug.private_);
-
-    // The private_ property needs to be a debuglet.
-    assert(debug.private_ instanceof Debuglet);
-
-    // Debuglet needs to be an EventEmitter.
-    assert(debug.private_ instanceof require('events'));
+    assert.throws(function() { module.start(); });
   });
 
 });
-

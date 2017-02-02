@@ -183,5 +183,21 @@ module.exports = {
   internal: {
     registerDelayOnFetcherErrorSec: 300,  // 5 minutes.
     maxRegistrationRetryDelay: 40
-  }
+  },
+
+  /**
+   * @property {boolean} Used by tests to force loading of a new agent if one
+   * exists already
+   * @memberof DebugAgentConfig
+   * @private
+   */
+  forceNewAgent_: false,
+
+  /**
+   * @property {boolean} Uses by tests to cause the start() function to return
+   * the debuglet.
+   * @memberof DebugAgentConfig
+   * @private
+   */
+  testMode_: false
 };
