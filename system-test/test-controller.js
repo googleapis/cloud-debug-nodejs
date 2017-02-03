@@ -32,12 +32,13 @@ var debug = require('../src/debug.js')();
 
 
 describe('Controller', function() {
+  this.timeout(60 * 1000);
 
   it('should register successfully', function(done) {
     var controller = new Controller(debug);
     var debuggee =
         new Debuggee({
-          project: process.env.GCLOUD_PROJECT, 
+          project: process.env.GCLOUD_PROJECT,
           uniquifier: 'test-uid-' + Date.now(),
           description: 'this is a system test'
         });
