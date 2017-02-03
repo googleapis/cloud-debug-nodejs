@@ -19,21 +19,19 @@ This module provides Stackdriver Debugger support for Node.js applications. [Sta
 ## Quick Start
 ```shell
 # Install with `npm` or add to your `package.json`.
-npm install --save @google-cloud/debug
+npm install --save @google-cloud/debug-agent
 ```
 
 ```js
 // Require and start in the startup of your application:
-var debug = require('@google-cloud/debug')();
-debug.startAgent();
+require('@google-cloud/debug-agent').start();
 // No auth necessary if your code is running on Google Cloud Platform.
 
 // ... or, if you are running elsewhere, you can manually provide credentials:
-var debug = require('@google-cloud/debug')({
+require('@google-cloud/debug-agent').start({
   projectId: 'particular-future-12345',
   keyFilename: '/path/to/keyfile.json'
 });
-debug.startAgent();
 ```
 
 This starts the automatic Debugger Agent that enables your app to be debuggable using the Stackdriver [Stackdriver Debug view][debug-tab] within
@@ -41,7 +39,7 @@ the [Google Cloud Console][dev-console]. You can start adding snapshots and log-
 
 ## Running on Google Cloud Platform
 
-The Stackdriver Debugger Agent should work without manually provided authentication credentials for instances running on Google Cloud Platform, as long as the [Stackdriver Debugger API][debugger-api] access scope is enabled on that instance. For Google App Engine instances, this is automatic if the Debugger API has been enabled for your project (which it is by default).
+The Stackdriver Debugger Agent should work without manually provided authentication credentials for instances running on Google Cloud Platform, as long as the [Stackdriver Debugger API][debugger-api] access scope is enabled on that instance. For Google App Engine instances, this is automatic if the Debugger API has been enabled for your project (which is the default).
 
 For Google Compute Engine instances, you need to explicitly enable the Debugger API access scope for each instance. When creating a new instance through the GCP web console, you can do this in one of two ways under **Identity and API access**:
 * Use the Compute Engine default service account and select "Allow full access to all Cloud APIs" under Access scopes.
@@ -57,16 +55,15 @@ If your application is running outside of Google Cloud Platform, such as locally
 
     ```JS
       // In your app:
-      var debug = require('@google-cloud/debug')({
+      var debug = require('@google-cloud/debug-agent').start({
         projectId: 'particular-future-12345',
         keyFilename: '/path/to/keyfile.json'
       });
-      debug.startAgent();
     ```
 
     ```BASH
       # Or in Bash:
-      export GCLOUD_PROJECT=<project name>
+      export GCLOUD_PROJECT='particular-future-12345'
     ```
 
 1. You need to provide service account credentials to your application.
@@ -79,7 +76,7 @@ If your application is running outside of Google Cloud Platform, such as locally
 
     ```js
     // Require and start the agent with configuration options
-    require('@google-cloud/debug').start({
+    require('@google-cloud/debug-agent').start({
       // The path to your key file:
       keyFilename: '/path/to/keyfile.json',
 
@@ -96,15 +93,20 @@ If your application is running outside of Google Cloud Platform, such as locally
 
 ## Debugger Agent Settings
 
-You can customize the behaviour of the automatic debugger agent. See [the agent configuration][config-js] for a list of possible configuration options. These options can be passed to the agent through the object argument to the startAgent method as shown below:
+You can customize the behaviour of the automatic debugger agent. See [the agent configuration][config-js] for a list of possible configuration options. These options can be passed in the `options.debug` object passed to the `start` function.
 
 ```JS
-  debug.startAgent({
-    serviceContext: {
-        service: 'my-service',
-        version: 'version-1'
-    },
-    capture: { maxFramesFrames: 20, maxProperties: 100 }
+  require('@google-cloud/debug-agent').start({
+    // .. auth settings ..
+
+    // debug agent settings:
+    debug: {
+      serviceContext: {
+          service: 'my-service',
+          version: 'version-1'
+      },
+      capture: { maxFrames: 20, maxProperties: 100 }
+    }
   });
  ```
 
@@ -142,8 +144,8 @@ As soon as that line of code is reached in any of the running instances of your 
 [service-account]: https://console.cloud.google.com/apis/credentials/serviceaccountkey
 [service-account-docs]: https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances
 [debugger-roles]: https://cloud.google.com/debugger/docs/iam#roles
-[npm-image]: https://img.shields.io/npm/v/@google-cloud/debug.svg
-[npm-url]: https://npmjs.org/package/@google-cloud/debug
+[npm-image]: https://img.shields.io/npm/v/@google-cloud/debug-agent.svg
+[npm-url]: https://npmjs.org/package/@google-cloud/debug-agent
 [travis-image]: https://travis-ci.org/GoogleCloudPlatform/cloud-debug-nodejs.svg?branch=master
 [travis-url]: https://travis-ci.org/GoogleCloudPlatform/cloud-debug-nodejs
 [coveralls-image]: https://img.shields.io/coveralls/GoogleCloudPlatform/cloud-debug-nodejs/master.svg
