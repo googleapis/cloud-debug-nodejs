@@ -1,6 +1,6 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
-## 2017-02-07, Version 0.10.0 (Experimental), @ofrobots
+## 2017-02-07, Version 0.10.1 (Experimental), @ofrobots
 
 This module has been renamed to `@google-cloud/debug-agent` with this release.
 This is a semver-major release with a few behaviour changes summarized below.
@@ -14,6 +14,9 @@ This is a semver-major release with a few behaviour changes summarized below.
 
 ### Commits
 
+* [[`91e4b50e14`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/91e4b50e14)] - upgrade to @google-cloud/common@0.12.0 to lose grpc dependency (#234) (Ali Ijaz Sheikh)
+* [[`82e0ac52f2`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/82e0ac52f2)] - undo version change to be able to publish properly (#233) (Ali Ijaz Sheikh)
+* [[`66c0cf7a4e`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/66c0cf7a4e)] - 0.10.0 Release Proposal (#232) (Ali Ijaz Sheikh)
 * [[`b88548717a`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/b88548717a)] - Increase timeout in system test (#231) (Ali Ijaz Sheikh) 
 * [[`61e21fb260`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/61e21fb260)] - Rename module to @google-cloud/debug-agent (#229) (Ali Ijaz Sheikh) 
 * [[`8d7bdf6939`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/8d7bdf6939)] - ***Revert*** "Temporarily stop building Node 7 on Windows" (#230)" (Ali Ijaz Sheikh) 
