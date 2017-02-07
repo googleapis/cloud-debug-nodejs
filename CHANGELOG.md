@@ -1,5 +1,72 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## 2017-02-07, Version 0.10.0 (Experimental), @ofrobots
+
+This module has been renamed to `@google-cloud/debug-agent` with this release.
+This is a semver-major release with a few behaviour changes summarized below.
+
+### Semver-major changes
+
+* Remove undocumented env. vars.: `GCLOUD_DIAGNOSTICS_CONFIG`, `GCLOUD_DEBUG_DISABLE` (#184) and `GCLOUD_DEBUG_REPO_APP_PATH` (#186).
+* This module now uses the same authentication code as [google-cloud-node](https://github.com/GoogleCloudPlatform/google-cloud-node) API libraries. This changes the precedence of accepting auth credentials via `config.credentials` vs. `config.keyFileName` vs. the environment variable `GOOGLE_APPLICATION_CREDENTIALS`. (#190)
+* Fix precedence of how we acquire the projectId. Previously we would prefer the projectId acquired automatically over the user-provided projectId. This has been reversed to make it less surprising to users. (#193)
+* The agent no longer requires `cloud-platform` scope in order to operate. (#211)
+
+### Commits
+
+* [[`b88548717a`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/b88548717a)] - Increase timeout in system test (#231) (Ali Ijaz Sheikh) 
+* [[`61e21fb260`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/61e21fb260)] - Rename module to @google-cloud/debug-agent (#229) (Ali Ijaz Sheikh) 
+* [[`8d7bdf6939`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/8d7bdf6939)] - ***Revert*** "Temporarily stop building Node 7 on Windows" (#230)" (Ali Ijaz Sheikh) 
+* [[`7cbee73256`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/7cbee73256)] - Get rid of module returning a constructor (#228) (Ali Ijaz Sheikh) 
+* [[`fdbbea55ed`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/fdbbea55ed)] - Describe enabling Debugging API access scopes for GCE instances in README (#224) (Kelvin Jin) [#224](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/224)
+* [[`1e8e6bc180`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/1e8e6bc180)] - **test**: reduce dependence on repo layout (#227) (Ali Ijaz Sheikh) 
+* [[`daf015f974`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/daf015f974)] - **test**: reduce dependence on repo layout (#225) (Ali Ijaz Sheikh) 
+* [[`04103e525a`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/04103e525a)] - Fix bugs in findScripts (#223) (Ali Ijaz Sheikh) 
+* [[`cc29b29a8e`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/cc29b29a8e)] - improve error stack traces in v8debugapi.js (#222) (Ali Ijaz Sheikh) 
+* [[`f1faef608f`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/f1faef608f)] - Also try to detect serviceContext from Flex environment variables (#221) (Ali Ijaz Sheikh) 
+* [[`a00ce2ae45`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/a00ce2ae45)] - Make all tests runnable together (#218) (Kelvin Jin) [#218](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/218)
+* [[`474c2dc99c`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/474c2dc99c)] - Remove misleading arguments/locals message (#220) (Cristian Cavalli) 
+* [[`944c1d582f`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/944c1d582f)] - Update README markdown (#219) (Cristian Cavalli) 
+* [[`d2d1d214e2`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/d2d1d214e2)] - Removed dependency on @google/cloud-diagnostics-common (#215) (Kelvin Jin) [#215](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/215)
+* [[`90be573b48`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/90be573b48)] - Test success_on_timeout behavior (#217) (Matthew Loring) [#217](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/217)
+* [[`b5c29105ad`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/b5c29105ad)] - Move some tests out of test/standalone (#214) (Kelvin Jin) [#214](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/214)
+* [[`a28d719325`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/a28d719325)] - Use mocha for end-to-end tests (#212) (Kelvin Jin) [#212](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/212)
+* [[`c48c7dbbfc`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/c48c7dbbfc)] - fix stale code/test from test-controller (#213) (Ali Ijaz Sheikh) 
+* [[`cebcb69b21`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/cebcb69b21)] - Add Debugger API to test/ and changed E2E tests to use them (#208) (Kelvin Jin) [#208](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/208)
+* [[`9b80c077e2`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/9b80c077e2)] - use correct auth scopes (#211) (Ali Ijaz Sheikh) 
+* [[`e5d9eb9b51`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/e5d9eb9b51)] - start using gcp-metadata for metadata queries (#210) (Ali Ijaz Sheikh) 
+* [[`5e3a0eff8a`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/5e3a0eff8a)] - **debuglet**: stop can only be called on running agents (#209) (Ali Ijaz Sheikh) 
+* [[`a680d8706e`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/a680d8706e)] - fix flakiness in test-debuglet.js (#207) (Ali Ijaz Sheikh) 
+* [[`80cd5a18b9`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/80cd5a18b9)] - Remove duplicate isDisabled logic from controller (#206) (Ali Ijaz Sheikh) 
+* [[`2ec17329fb`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/2ec17329fb)] - Change argument order in updateBreakpoint (#204) (Kelvin Jin) 
+* [[`b19b32d420`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/b19b32d420)] - controller API requires Debuggee.description (#205) (Ali Ijaz Sheikh) 
+* [[`03f4b97596`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/03f4b97596)] - Change e2e tests to use native Promises (#201) (Kelvin Jin) [#201](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/201)
+* [[`dbff4dc0ee`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/dbff4dc0ee)] - Move debuggee agent logic to agent/ (#203) (Ali Ijaz Sheikh) 
+* [[`416031f807`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/416031f807)] - Move initConfig logic to debuglet (#202) (Ali Ijaz Sheikh) 
+* [[`30bd5288f7`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/30bd5288f7)] - creds accepted in options only now (#200) (Ali Ijaz Sheikh) 
+* [[`b5b691fca0`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/b5b691fca0)] - move config to src/agent and add jsdocs (#196) (Ali Ijaz Sheikh) 
+* [[`4dc2aa0eab`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/4dc2aa0eab)] - Fill in unimplemented tests (#199) (Matthew Loring) [#199](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/199)
+* [[`c580792c10`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/c580792c10)] - Remove unimplementable test (#198) (Matthew Loring) [#198](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/198)
+* [[`5fd09465c7`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/5fd09465c7)] - Spelling (#197) (Matthew Loring) [#197](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/197)
+* [[`225e7db1d5`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/225e7db1d5)] - Refactor debuggee state out of controller and make Controller a ServiceObject (#195) (Ali Ijaz Sheikh) 
+* [[`a807998261`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/a807998261)] - move business logic from controller service to the debuglet (#194) (Ali Ijaz Sheikh) 
+* [[`f7de637af4`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/f7de637af4)] - fix precedence for where the projectId is acquired from (#193) (Ali Ijaz Sheikh) 
+* [[`638f902287`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/638f902287)] - refactorings (Ali Ijaz Sheikh) 
+* [[`c5d3d226c9`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/c5d3d226c9)] - switch to using @google-cloud/common (#190) (Ali Ijaz Sheikh) 
+* [[`75b08e90cf`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/75b08e90cf)] - Temporarily stop building Node 7 on Windows (Ali Ijaz Sheikh) 
+* [[`c5eafdd09f`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/c5eafdd09f)] - Update travis config to use trusty (#191) (Ali Ijaz Sheikh) 
+* [[`d3d648ee3f`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/d3d648ee3f)] - Move agent code into an agent/ directory (#189) (Ali Ijaz Sheikh) 
+* [[`4c37f32fc5`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/4c37f32fc5)] - listBreakpoint querystring encoding was incorrect (#188) (Ali Ijaz Sheikh) 
+* [[`85573b29c3`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/85573b29c3)] - add system test for the debuglet api (#187) (Ali Ijaz Sheikh) 
+* [[`35e303938e`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/35e303938e)] - Remove relative repository env var (#186) (Matthew Loring) [#186](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/186)
+* [[`94fd29912c`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/94fd29912c)] - AUTHORS file (#185) (Matthew Loring) [#185](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/185)
+* [[`69ca4e8ade`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/69ca4e8ade)] - Remove unncessary environment variables (#184) (Matthew Loring) [#184](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/184)
+* [[`e410c36707`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/e410c36707)] - API changes bring us closer to `google-cloud` (#180) (Ali Ijaz Sheikh) 
+* [[`d6cb2fbfae`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/d6cb2fbfae)] - Also test against Node 7 on AppVeyor (#182) (Ali Ijaz Sheikh) 
+* [[`2383d08452`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/2383d08452)] - Switch from findit to findit2 (#183) (Ali Ijaz Sheikh) 
+* [[`e5637c787b`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/e5637c787b)] - fix race condition with log points (#181) (Ali Ijaz Sheikh) 
+
+
 ## 2016-11-29, Version 0.9.1 (Experimental), @matthewloring
 
 ### Notable changes
