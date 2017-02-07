@@ -119,7 +119,7 @@ function Debuglet(debug, config) {
   /** @private {common.logger} */
   this.logger_ = new common.logger({
     level: common.logger.LEVELS[this.config_.logLevel],
-    tag: '@google-cloud/debug'
+    tag: pjson.name
   });
 
   /** @private {DebugletApi} */
