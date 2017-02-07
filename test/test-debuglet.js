@@ -15,6 +15,7 @@
  */
 'use strict';
 
+var _ = require('lodash');
 var assert = require('assert');
 var defaultConfig = require('../src/agent/config.js');
 var Debuglet = require('../src/agent/debuglet.js');
@@ -242,6 +243,80 @@ describe('Debuglet', function() {
                            'fake-gae-service');
         assert.strictEqual(debuglet.config_.serviceContext.version,
                            'fake-gae-version');
+      });
+
+      it('should respect GAE_MINOR_VERSION env. var. when available',
+         function() {
+           process.env.GAE_MINOR_VERSION = 'some minor version';
+           var debug = require('../src/debug.js')();
+           var debuglet = new Debuglet(debug, defaultConfig);
+           assert.ok(debuglet.config_);
+           assert.ok(debuglet.config_.serviceContext);
+           assert.strictEqual(debuglet.config_.serviceContext.minorVersion,
+                              'some minor version');
+         });
+
+      it('should conjure a fake minor version when running on flex',
+         function() {
+           process.env.GAE_SERVICE = 'fake-gae-service';
+           var debug = require('../src/debug.js')();
+           var debuglet = new Debuglet(debug, defaultConfig);
+           assert.ok(debuglet.config_);
+           assert.ok(debuglet.config_.serviceContext);
+           assert.ok(_.isString(debuglet.config_.serviceContext.minorVersion));
+         });
+
+      it('should not have minorVersion unless enviroment provides it',
+         function() {
+           var debug = require('../src/debug.js')();
+           var debuglet = new Debuglet(debug, defaultConfig);
+           assert.ok(debuglet.config_);
+           assert.ok(debuglet.config_.serviceContext);
+           assert.ok(
+               _.isUndefined(debuglet.config_.serviceContext.minorVersion));
+         });
+
+      it('should not provide minorversion upon registration on non flex',
+         function(done) {
+           var debug = require('../src/debug.js')(
+               {projectId: 'fake-project', credentials: fakeCredentials});
+           var debuglet = new Debuglet(debug, defaultConfig);
+
+           var scope =
+               nock(API).post(REGISTER_PATH, function(body) {
+                          assert.ok(
+                              _.isUndefined(body.debuggee.labels.minorversion));
+                          return true;
+                        }).once().reply(200, {debuggee: {id: DEBUGGEE_ID}});
+
+           debuglet.once('registered', function(id) {
+             debuglet.stop();
+             scope.done();
+             done();
+           });
+           debuglet.start();
+         });
+
+      it('should provide minorversion upon registration if on flex', function(
+                                                                         done) {
+        process.env.GAE_SERVICE = 'fake-service';
+        var debug = require('../src/debug.js')(
+            {projectId: 'fake-project', credentials: fakeCredentials});
+        var debuglet = new Debuglet(debug, defaultConfig);
+
+        nocks.oauth2();
+        var scope =
+            nock(API).post(REGISTER_PATH, function(body) {
+                       assert.ok(_.isString(body.debuggee.labels.minorversion));
+                       return true;
+                     }).once().reply(200, {debuggee: {id: DEBUGGEE_ID}});
+
+        debuglet.once('registered', function(id) {
+          debuglet.stop();
+          scope.done();
+          done();
+        });
+        debuglet.start();
       });
     });
 
