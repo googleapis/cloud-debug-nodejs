@@ -144,7 +144,14 @@ Debuglet.prototype.normalizeConfig_ = function(config) {
     logLevel: process.env.GCLOUD_DEBUG_LOGLEVEL,
     serviceContext: {
       service: process.env.GAE_SERVICE || process.env.GAE_MODULE_NAME,
-      version: process.env.GAE_VERSION || process.env.GAE_MODULE_VERSION
+      version: process.env.GAE_VERSION || process.env.GAE_MODULE_VERSION,
+      // Debug UI expects GAE_MINOR_VERSION to be available for AppEngine, but
+      // AppEngine Flex doesn't have this environment variable. We provide a
+      // fake value as a work-around, but only on Flex (GAE_SERVICE will be
+      // defined on Flex).
+      minorVersion:
+          process.env.GAE_MINOR_VERSION ||
+              (process.env.GAE_SERVICE ? 'fake-minor-version' : undefined)
     }
   };
 
@@ -272,6 +279,11 @@ Debuglet.createDebuggee =
     if (_.isString(serviceContext.version)) {
       labels.version = serviceContext.version;
       desc += ' version:' + serviceContext.version;
+    }
+
+    if (_.isString(serviceContext.minorVersion)) {
+      //          v--- intentional lowercase
+      labels.minorversion = serviceContext.minorVersion;
     }
   }
 
