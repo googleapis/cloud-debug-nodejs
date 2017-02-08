@@ -1,5 +1,15 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## 2017-02-08, Version 0.10.2 (Experimental), @ofrobots
+
+This release fixes an issue with being able to debug applications on AppEngine
+Flexible.
+
+### Commits
+
+* [[`f651b8e776`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/f651b8e776)] - provide minorversion label on AppEngine (#237) (Ali Ijaz Sheikh)
+* [[`683448ceb4`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/683448ceb4)] - update the logger tag (#236) (Ali Ijaz Sheikh)
+
 ## 2017-02-07, Version 0.10.1 (Experimental), @ofrobots
 
 This module has been renamed to `@google-cloud/debug-agent` with this release.
