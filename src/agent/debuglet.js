@@ -149,7 +149,7 @@ Debuglet.prototype.normalizeConfig_ = function(config) {
       // AppEngine Flex doesn't have this environment variable. We provide a
       // fake value as a work-around, but only on Flex (GAE_SERVICE will be
       // defined on Flex).
-      minorVersion:
+      minorVersion_:
           process.env.GAE_MINOR_VERSION ||
               (process.env.GAE_SERVICE ? 'fake-minor-version' : undefined)
     }
@@ -281,9 +281,9 @@ Debuglet.createDebuggee =
       desc += ' version:' + serviceContext.version;
     }
 
-    if (_.isString(serviceContext.minorVersion)) {
+    if (_.isString(serviceContext.minorVersion_)) {
       //          v--- intentional lowercase
-      labels.minorversion = serviceContext.minorVersion;
+      labels.minorversion = serviceContext.minorVersion_;
     }
   }
 
