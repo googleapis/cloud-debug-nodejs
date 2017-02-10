@@ -155,7 +155,7 @@ Debuglet.prototype.normalizeConfig_ = function(config) {
     }
   };
 
-  config = extend({}, defaultConfig, config, envConfig);
+  config = extend(true, {}, defaultConfig, config, envConfig);
 
   if (config.keyFilename || config.credentials || config.projectId) {
     throw new Error('keyFilename, projectId or credentials should be provided' +
