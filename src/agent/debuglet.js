@@ -342,14 +342,15 @@ Debuglet.prototype.getProjectId_ = function(callback) {
 Debuglet.prototype.getSourceContext_ =
     function(callback) {
   fs.readFile('source-context.json', 'utf8', function(err, data) {
-    // TODO: deal with err here
     var sourceContext;
-    try {
-      sourceContext = JSON.parse(data);
-    } catch (e) {
-      err = 'Malformed source-context.json file:' + e;
-      // But we keep on going.
+    if (!err) {
+      try {
+        sourceContext = JSON.parse(data);
+      } catch (e) {
+        err = 'Malformed source-context.json file: ' + e;
+      }
     }
+    // We keep on going even if there are errors.
     return callback(err, sourceContext);
   });
 };
