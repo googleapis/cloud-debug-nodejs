@@ -17,7 +17,7 @@
 
 var _ = require('lodash');
 var assert = require('assert');
-var defaultConfig = require('../src/agent/config.js');
+var DEFAULT_CONFIG = require('../src/agent/config.js');
 var Debuglet = require('../src/agent/debuglet.js');
 var extend = require('extend');
 
@@ -31,6 +31,8 @@ var fakeCredentials = require('./fixtures/gcloud-credentials.json');
 var nock = require('nock');
 var nocks = require('./nocks.js');
 nock.disableNetConnect();
+
+var defaultConfig = extend(true, {}, DEFAULT_CONFIG, {logLevel: 0});
 
 var oldGP;
 
