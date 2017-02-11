@@ -59,17 +59,15 @@ describe('Debuglet', function() {
     afterEach(function() { nock.cleanAll(); });
 
     it('should merge config correctly', function() {
-      var debug = require('../src/debug.js')();
-
       var testValue = 2 * defaultConfig.capture.maxExpandFrames;
       var config = {capture: {maxExpandFrames: testValue}};
-      var debuglet = new Debuglet(debug, config);
 
+      var mergedConfig = Debuglet.normalizeConfig_(config);
+      var compareConfig = Debuglet.normalizeConfig_();
       // The actual config should be exactly defaultConfig with only
       // maxExpandFrames adjusted.
-      var compareConfig = extend(true, {}, defaultConfig);
       compareConfig.capture.maxExpandFrames = testValue;
-      assert.deepEqual(debuglet.config_, compareConfig);
+      assert.deepEqual(mergedConfig, compareConfig);
     });
 
     it('should not start when projectId is not available', function(done) {
