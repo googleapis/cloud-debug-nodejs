@@ -252,7 +252,7 @@ describe('Debuglet', function() {
            var debuglet = new Debuglet(debug, defaultConfig);
            assert.ok(debuglet.config_);
            assert.ok(debuglet.config_.serviceContext);
-           assert.strictEqual(debuglet.config_.serviceContext.minorVersion,
+           assert.strictEqual(debuglet.config_.serviceContext.minorVersion_,
                               'some minor version');
          });
 
@@ -263,7 +263,7 @@ describe('Debuglet', function() {
            var debuglet = new Debuglet(debug, defaultConfig);
            assert.ok(debuglet.config_);
            assert.ok(debuglet.config_.serviceContext);
-           assert.ok(_.isString(debuglet.config_.serviceContext.minorVersion));
+           assert.ok(_.isString(debuglet.config_.serviceContext.minorVersion_));
          });
 
       it('should not have minorVersion unless enviroment provides it',

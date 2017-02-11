@@ -61,7 +61,14 @@ module.exports = {
      * @property {?string} the service version
      * @default
      */
-    version: null
+    version: null,
+
+    /**
+     * @property {?string} a unique deployment identifier. This is used
+     * internally only.
+     * @private
+     */
+    minorVersion_: null
   },
 
   /**
