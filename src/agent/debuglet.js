@@ -96,7 +96,7 @@ module.exports = Debuglet;
  */
 function Debuglet(debug, config) {
   /** @private {object} */
-  this.config_ = this.normalizeConfig_(config);
+  this.config_ = Debuglet.normalizeConfig_(config);
 
   /** @private {Debug} */
   this.debug_ = debug;
@@ -139,7 +139,7 @@ function Debuglet(debug, config) {
 
 util.inherits(Debuglet, EventEmitter);
 
-Debuglet.prototype.normalizeConfig_ = function(config) {
+Debuglet.normalizeConfig_ = function(config) {
   var envConfig = {
     logLevel: process.env.GCLOUD_DEBUG_LOGLEVEL,
     serviceContext: {
