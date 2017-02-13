@@ -1211,6 +1211,25 @@ describe('v8debugapi', function() {
   it('should be possible to set deferred breakpoints');
 });
 
+describe('v8debugapi.findScripts', function() {
+  it('should properly handle appPathRelativeToRepository', function() {
+    var config = extend(true, {}, config, {
+      workingDirectory: '/some/strange/directory',
+      appPathRelativeToRepository: '/my/project/root'
+    });
+
+    var fakeFileStats = {
+      '/some/strange/directory/test/fixtures/a/hello.js':
+          {hash: 'fake', lines: 5},
+      '/my/project/root/test/fixtures/a/hello.js': {hash: 'fake', lines: 50}
+    };
+    var scriptPath = '/my/project/root/test/fixtures/a/hello.js';
+    var result = v8debugapi.findScripts(scriptPath, config, fakeFileStats);
+    assert.deepStrictEqual(
+        result, ['/some/strange/directory/test/fixtures/a/hello.js']);
+  });
+});
+
 describe('v8debugapi.findScriptsFuzzy', function() {
   var fuzzy = v8debugapi.findScriptsFuzzy;
 
