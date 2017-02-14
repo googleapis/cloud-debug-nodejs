@@ -1225,7 +1225,7 @@ describe('v8debugapi.findScripts', function() {
     };
     var scriptPath = '/my/project/root/test/fixtures/a/hello.js';
     var result = v8debugapi.findScripts(scriptPath, config, fakeFileStats);
-    assert.deepStrictEqual(
+    assert.deepEqual(
         result, ['/some/strange/directory/test/fixtures/a/hello.js']);
   });
 });
