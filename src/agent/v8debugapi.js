@@ -287,8 +287,8 @@ function create(logger_, config_, jsFiles_, sourcemapper_) {
     // we are going to assume that repository root === the starting working
     // directory.
     var matchingScript;
-    var scripts = findScripts(mapInfo ? mapInfo.file : 
-      path.normalize(breakpoint.location.path));
+    var scripts = findScripts(mapInfo ? mapInfo.file :
+      path.normalize(breakpoint.location.path), config, fileStats);
     if (scripts.length === 0) {
       return setErrorStatusAndCallback(cb, breakpoint,
         StatusMessage.BREAKPOINT_SOURCE_LOCATION,
@@ -405,25 +405,6 @@ function create(logger_, config_, jsFiles_, sourcemapper_) {
 
   //   return v8bp;
   // }
-
-  function findScripts(scriptPath) {
-    // Use repository relative mapping if present.
-    if (config.appPathRelativeToRepository) {
-      var candidate = scriptPath.replace(config.appPathRelativeToRepository,
-        config.workingDirectory);
-      // There should be no ambiguity resolution if project root is provided.
-      return fileStats[candidate] ? [ candidate ] : [];
-    }
-    var regexp = pathToRegExp(scriptPath);
-    // Next try to match path.
-    var matches = Object.keys(fileStats).filter(regexp.test.bind(regexp));
-    if (matches.length === 1) {
-      return matches;
-    }
-
-    // Finally look for files with the same name regardless of path.
-    return findScriptsFuzzy(scriptPath, Object.keys(fileStats));
-  }
 
   function onBreakpointHit(breakpoint, callback, execState) {
     var v8bp = breakpoints[breakpoint.id].v8Breakpoint;
@@ -584,6 +565,25 @@ function pathToRegExp(scriptPath) {
   return new RegExp(scriptPath + '$');
 }
 
+function findScripts(scriptPath, config, fileStats) {
+  // Use repository relative mapping if present.
+  if (config.appPathRelativeToRepository) {
+    var candidate = scriptPath.replace(config.appPathRelativeToRepository,
+                                       config.workingDirectory);
+    // There should be no ambiguity resolution if project root is provided.
+    return fileStats[candidate] ? [candidate] : [];
+  }
+  var regexp = pathToRegExp(scriptPath);
+  // Next try to match path.
+  var matches = Object.keys(fileStats).filter(regexp.test.bind(regexp));
+  if (matches.length === 1) {
+    return matches;
+  }
+
+  // Finally look for files with the same name regardless of path.
+  return findScriptsFuzzy(scriptPath, Object.keys(fileStats));
+}
+
 /**
  * Given an list of available files and a script path to match, this function
  * tries to resolve the script to a (hopefully unique) match in the file list
@@ -625,5 +625,6 @@ function findScriptsFuzzy(scriptPath, fileList) {
 module.exports = {
   create: create,
   // Exposed for unit testing.
+  findScripts: findScripts,
   findScriptsFuzzy: findScriptsFuzzy
 };
