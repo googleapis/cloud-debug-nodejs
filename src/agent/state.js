@@ -290,6 +290,8 @@ StateResolver.prototype.isPathInNodeModulesDirectory_ = function(path) {
 StateResolver.prototype.resolveFrame_ = function(frame, underFrameCap) {
   var args = [];
   var locals = [];
+  // Locals and arguments are safe to collect even when `config.allowExpressions=false`
+  // since we properly avoid inspecting interceptors and getters by default.
   if (!underFrameCap) {
     args.push({
       name: 'arguments_not_available',

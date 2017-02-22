@@ -18,6 +18,7 @@
 var _ = require('lodash');
 var assert = require('assert');
 var DEFAULT_CONFIG = require('../src/agent/config.js');
+DEFAULT_CONFIG.allowExpressions = true;
 var Debuglet = require('../src/agent/debuglet.js');
 var extend = require('extend');
 
@@ -518,6 +519,88 @@ describe('Debuglet', function() {
         setTimeout(function() {
           assert.deepEqual(debuglet.activeBreakpointMap_.test, bp);
           debuglet.stop();
+          scope.done();
+          done();
+        }, 1000);
+      });
+
+      debuglet.start();
+    });
+
+    it('should reject breakpoints with conditions when allowExpressions=false',
+        function(done) {
+      this.timeout(2000);
+      var debug = require('../src/debug.js')(
+          {projectId: 'fake-project', credentials: fakeCredentials});
+      var debuglet = new Debuglet(debug, defaultConfig);
+      debuglet.config_.allowExpressions = false;
+
+      var scope = nock(API)
+                      .post(REGISTER_PATH)
+                      .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+                      .get(BPS_PATH + '?success_on_timeout=true')
+                      .reply(200, {breakpoints: [{
+                        id: 'test',
+                        action: 'CAPTURE',
+                        condition: 'x === 5',
+                        location: {path: 'fixtures/foo.js', line: 2}
+                      }]})
+                      .put(BPS_PATH + '/test',
+                           function(body) {
+                             var status = body.breakpoint.status;
+                             var hasCorrectDescription = status.description.format.indexOf(
+                                'Expressions and conditions are not allowed by default.') === 0;
+                             return status.isError && hasCorrectDescription;
+                           })
+                      .reply(200);
+
+      debuglet.once('registered', function reg(id) {
+        assert.equal(id, DEBUGGEE_ID);
+        setTimeout(function() {
+          assert.ok(!debuglet.activeBreakpointMap_.test);
+          debuglet.stop();
+          debuglet.config_.allowExpressions = true;
+          scope.done();
+          done();
+        }, 1000);
+      });
+
+      debuglet.start();
+    });
+
+    it('should reject breakpoints with expressions when allowExpressions=false',
+        function(done) {
+      this.timeout(2000);
+      var debug = require('../src/debug.js')(
+          {projectId: 'fake-project', credentials: fakeCredentials});
+      var debuglet = new Debuglet(debug, defaultConfig);
+      debuglet.config_.allowExpressions = false;
+
+      var scope = nock(API)
+                      .post(REGISTER_PATH)
+                      .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+                      .get(BPS_PATH + '?success_on_timeout=true')
+                      .reply(200, {breakpoints: [{
+                        id: 'test',
+                        action: 'CAPTURE',
+                        expressions: ['x'],
+                        location: {path: 'fixtures/foo.js', line: 2}
+                      }]})
+                      .put(BPS_PATH + '/test',
+                           function(body) {
+                             var status = body.breakpoint.status;
+                             var hasCorrectDescription = status.description.format.indexOf(
+                                'Expressions and conditions are not allowed by default.') === 0;
+                             return status.isError && hasCorrectDescription;
+                           })
+                      .reply(200);
+
+      debuglet.once('registered', function reg(id) {
+        assert.equal(id, DEBUGGEE_ID);
+        setTimeout(function() {
+          assert.ok(!debuglet.activeBreakpointMap_.test);
+          debuglet.stop();
+          debuglet.config_.allowExpressions = true;
           scope.done();
           done();
         }, 1000);
