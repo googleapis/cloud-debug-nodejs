@@ -38,11 +38,11 @@ var debuglet;
  */
 function start(options) {
   options = options || {};
-  var agentConfig = options.debug || {};
+  var agentConfig = options.debug || options;
 
   // forceNewAgent_ is for testing purposes only.
   if (debuglet && !agentConfig.forceNewAgent_) {
-    throw new Error('Debug Agent has already been starterd');
+    throw new Error('Debug Agent has already been started');
   }
 
   var debug = new Debug(options);

@@ -155,14 +155,7 @@ Debuglet.normalizeConfig_ = function(config) {
     }
   };
 
-  config = extend(true, {}, defaultConfig, config, envConfig);
-
-  if (config.keyFilename || config.credentials || config.projectId) {
-    throw new Error('keyFilename, projectId or credentials should be provided' +
-                    ' to the Debug module constructor rather than startAgent');
-  }
-
-  return config;
+  return extend(true, {}, defaultConfig, config, envConfig);
 };
 
 /**
