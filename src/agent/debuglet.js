@@ -280,6 +280,10 @@ Debuglet.createDebuggee =
     }
   }
 
+  if (!description && process.env.FUNCTION_NAME) {
+    description = 'Function: ' + process.env.FUNCTION_NAME;
+  }
+  
   if (description) {
     desc += ' description:' + description;
   }
