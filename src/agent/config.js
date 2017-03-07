@@ -37,6 +37,15 @@ module.exports = {
    */
   description: null,
 
+  /**
+   * @property {boolean} Whether or not it is permitted to evaluate expressions.
+   * Locals and arguments are not displayed and watch expressions and conditions
+   * are dissallowed when this is `false`.
+   * @memberof DebugAgentConfig
+   * @default
+   */
+  allowExpressions: false,
+
   // FIXME(ofrobots): today we prioritize GAE_MODULE_NAME/GAE_MODULE_VERSION
   // over the user specified config. We should reverse that.
   /**

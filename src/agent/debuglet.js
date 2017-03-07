@@ -38,6 +38,8 @@ var pjson = require('../../package.json');
 
 var assert = require('assert');
 
+var ALLOW_EXPRESSIONS_MESSAGE = 'Expressions and conditions are not allowed' +
+  ' by default. Please set the allowExpressions configuration option to true';
 var NODE_VERSION_MESSAGE = 'Node.js version not supported. Node.js 5.2.0 and ' +
   ' versions older than 0.12 are not supported.';
 var BREAKPOINT_ACTION_MESSAGE = 'The only currently supported breakpoint actions' +
@@ -538,6 +540,15 @@ Debuglet.prototype.removeBreakpoint_ = function(breakpoint) {
  */
 Debuglet.prototype.addBreakpoint_ = function(breakpoint, cb) {
   var that = this;
+
+  if (!that.config_.allowExpressions &&
+      (breakpoint.condition || breakpoint.expressions)) {
+    that.logger_.error(ALLOW_EXPRESSIONS_MESSAGE);
+    breakpoint.status = new StatusMessage(StatusMessage.UNSPECIFIED,
+      ALLOW_EXPRESSIONS_MESSAGE, true);
+    setImmediate(function() { cb(ALLOW_EXPRESSIONS_MESSAGE); });
+    return;
+  }
 
   if (semver.satisfies(process.version, '5.2 || <0.12')) {
     var message = NODE_VERSION_MESSAGE;
