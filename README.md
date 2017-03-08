@@ -24,11 +24,12 @@ npm install --save @google-cloud/debug-agent
 
 ```js
 // Require and start in the startup of your application:
-require('@google-cloud/debug-agent').start();
+require('@google-cloud/debug-agent').start({ allowExpressions: true });
 // No auth necessary if your code is running on Google Cloud Platform.
 
 // ... or, if you are running elsewhere, you can manually provide credentials:
 require('@google-cloud/debug-agent').start({
+  allowExpressions: true,
   projectId: 'particular-future-12345',
   keyFilename: '/path/to/keyfile.json'
 });
@@ -56,6 +57,7 @@ If your application is running outside of Google Cloud Platform, such as locally
     ```JS
       // In your app:
       var debug = require('@google-cloud/debug-agent').start({
+        allowExpressions: true,
         projectId: 'particular-future-12345',
         keyFilename: '/path/to/keyfile.json'
       });
@@ -77,6 +79,9 @@ If your application is running outside of Google Cloud Platform, such as locally
     ```js
     // Require and start the agent with configuration options
     require('@google-cloud/debug-agent').start({
+      // Allow the evaluation of watch expressions and snapshot conditions:
+      allowExpressions: true,
+
       // The path to your key file:
       keyFilename: '/path/to/keyfile.json',
 
@@ -93,20 +98,19 @@ If your application is running outside of Google Cloud Platform, such as locally
 
 ## Debugger Agent Settings
 
-You can customize the behaviour of the automatic debugger agent. See [the agent configuration][config-js] for a list of possible configuration options. These options can be passed in the `options.debug` object passed to the `start` function.
+You can customize the behaviour of the automatic debugger agent. See [the agent configuration][config-js] for a list of possible configuration options. These options can be passed in the `options` object passed to the `start` function.
 
 ```JS
   require('@google-cloud/debug-agent').start({
     // .. auth settings ..
 
     // debug agent settings:
-    debug: {
-      serviceContext: {
-          service: 'my-service',
-          version: 'version-1'
-      },
-      capture: { maxFrames: 20, maxProperties: 100 }
-    }
+    allowExpressions: true,
+    serviceContext: {
+        service: 'my-service',
+        version: 'version-1'
+    },
+    capture: { maxFrames: 20, maxProperties: 100 }
   });
  ```
 
