@@ -1,5 +1,23 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## 2017-03-14, Version 1.0.0, @dominicdkramer
+
+This release marks the first beta release of the Stackdriver Debugger agent for Node.js.
+
+### Commits
+
+* [[`3256eed494`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/3256eed494)] - Update options in README (#249) (Matthew Loring) [#249](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/249)
+* [[`36a0c2c012`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/36a0c2c012)] - Add allowExpressions option (#244) (Matthew Loring) [#244](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/244)
+* [[`48a9952ec0`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/48a9952ec0)] - Report FUNCTION_NAME as the description (#247) (Ali Ijaz Sheikh) 
+* [[`cfc4f3fedf`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/cfc4f3fedf)] - Relax configuration rules for agent (#245) (Matthew Loring) [#245](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/245)
+* [[`8358f670e2`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/8358f670e2)] - Remove unused dependencies (#246) (Matthew Loring) [#246](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/246)
+* [[`6615823884`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/6615823884)] - Reduce test loudness (#243) (Ali Ijaz Sheikh) 
+* [[`52b5bd3f52`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/52b5bd3f52)] - deal with source-context read errors (#242) (Ali Ijaz Sheikh) 
+* [[`ce7ce0bbe9`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/ce7ce0bbe9)] - improve normalizeConfig test (#241) (Ali Ijaz Sheikh) 
+* [[`21a8f5accf`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/21a8f5accf)] - merge configs using a deep copy (#240) (Ali Ijaz Sheikh) 
+* [[`75974f56d5`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/75974f56d5)] - Document minorVersion_ as an internal property (#239) (Ali Ijaz Sheikh) 
+
+
 ## 2017-02-08, Version 0.10.2 (Experimental), @ofrobots
 
 This release fixes an issue with being able to debug applications on AppEngine
