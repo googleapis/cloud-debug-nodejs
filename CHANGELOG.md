@@ -5,9 +5,6 @@
 ### Semver-major changes
 
 * Evaluation of expressions is no longer allowed by default.  It can be enabled using the `allowExpressions` configuration option.
-* When the agent is used with a Google Cloud Functions function, the function name is used as part of the debugger's description.
-* Configuration options can now be specified directly in the `options` object passed to the agent's `start` method.  Previously, the configuration options needed to be specified within `options.debug` in the `options` object passed to the `start` method.
-* An issue has been fixed where it was possible that some configuration options would not correctly use their default values.
 
 ### Commits
 
