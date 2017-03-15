@@ -1,6 +1,6 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
-## 2017-03-14, Version 1.0.0, @dominicdkramer
+## 2017-03-14, Version 1.0.0 (Experimental), @dominicdkramer
 
 ### Semver-major changes
 
