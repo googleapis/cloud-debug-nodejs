@@ -1,5 +1,10 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## 2017-03-15, Version 0.9.2 (Deprecated), @ofrobots
+
+This module has been renamed to [@google-cloud/debug-agent](https://www.npmjs.com/package/@google-cloud/debug-agent). No more releases will be made with the old
+module name.
+
 ## 2016-11-29, Version 0.9.1 (Experimental), @matthewloring
 
 ### Notable changes
