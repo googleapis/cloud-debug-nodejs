@@ -27,7 +27,8 @@ var debuglet = require('../..').start({
     maxLogsPerSecond: 2,
     logDelaySeconds: 5,
     breakpointUpdateIntervalSec: 1,
-    testMode_: true
+    testMode_: true,
+    allowExpressions: true
   }
 });
 
