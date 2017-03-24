@@ -78,7 +78,7 @@ var formatBreakpoint = function(msg, breakpoint) {
  */
 var formatBreakpoints = function(msg, breakpoints) {
   return msg + Object.keys(breakpoints).map(function (b) {
-    formatBreakpoint('', b);
+    return formatBreakpoint('', breakpoints[b]);
   }).join('\n');
 };
 
@@ -455,7 +455,7 @@ Debuglet.prototype.scheduleBreakpointFetch_ = function(seconds) {
           });
           that.updateActiveBreakpoints_(bps);
           if (Object.keys(that.activeBreakpointMap_).length) {
-            that.logger_.info(formatBreakpoint('Active Breakpoints: ',
+            that.logger_.info(formatBreakpoints('Active Breakpoints: ',
               that.activeBreakpointMap_));
           }
           that.scheduleBreakpointFetch_(that.config_.breakpointUpdateIntervalSec);
