@@ -35,7 +35,6 @@
     "acorn": "^4.0.3",
     "async": "^2.1.2",
     "coffee-script": "^1.9.3",
-    "counter_google-cloud_debug-agent": "^0.1.0",
     "findit2": "^2.2.3",
     "gcp-metadata": "^0.1.0",
     "lodash": "^4.12.0",
