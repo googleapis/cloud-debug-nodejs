@@ -290,8 +290,8 @@ Debuglet.createDebuggee =
     desc += ' description:' + description;
   }
 
-  var uniquifier =
-      desc + version + uid + sourceContext + JSON.stringify(labels);
+  var uniquifier = desc + version + uid + JSON.stringify(sourceContext) + 
+      JSON.stringify(labels);
   uniquifier = crypto.createHash('sha1').update(uniquifier).digest('hex');
 
   var statusMessage =
