@@ -793,4 +793,43 @@ describe('Debuglet', function() {
        });
   });
 
+  describe('_createUniquifier', function () {
+    it('should create a unique string', function () {
+      var fn = Debuglet._createUniquifier;
+
+      var desc = 'description';
+      var version = 'version';
+      var uid = 'uid';
+      var sourceContext = {
+        git: 'something'
+      };
+      var labels = {
+        key: 'value'
+      };
+
+      var u1 = fn(desc, version, uid, sourceContext, labels);
+
+      assert.strictEqual(fn(desc, version, uid, sourceContext, labels), u1);
+
+      assert.notStrictEqual(
+        fn('foo', version, uid, sourceContext, labels),
+        u1,
+        'changing the description should change the result');
+      assert.notStrictEqual(
+        fn(desc, '1.2', uid, sourceContext, labels),
+        u1,
+        'changing the version should change the result');
+      assert.notStrictEqual(
+        fn(desc, version, '5', sourceContext, labels), u1,
+        'changing the description should change the result');
+      assert.notStrictEqual(
+        fn(desc, version, uid, { git: 'blah' }, labels),
+        u1,
+        'changing the sourceContext should change the result');
+      assert.notStrictEqual(
+        fn(desc, version, uid, sourceContext, { key1: 'value2' }),
+        u1,
+        'changing the labels should change the result');
+    });
+  });
 });

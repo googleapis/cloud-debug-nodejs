@@ -290,9 +290,8 @@ Debuglet.createDebuggee =
     desc += ' description:' + description;
   }
 
-  var uniquifier = desc + version + uid + JSON.stringify(sourceContext) + 
-      JSON.stringify(labels);
-  uniquifier = crypto.createHash('sha1').update(uniquifier).digest('hex');
+  var uniquifier = Debuglet._createUniquifier(desc, version, uid, sourceContext,
+      labels);
 
   var statusMessage =
       errorMessage ?
@@ -735,4 +734,12 @@ Debuglet._delimit = function(source, delim) {
     dest.push({ v: delim }, pieces[i]);
   }
   return dest;
+};
+
+Debuglet._createUniquifier = function (desc, version, uid, sourceContext,
+  labels) {
+  var uniquifier = desc + version + uid + JSON.stringify(sourceContext) +
+    JSON.stringify(labels);
+  uniquifier = crypto.createHash('sha1').update(uniquifier).digest('hex');
+  return uniquifier;
 };
