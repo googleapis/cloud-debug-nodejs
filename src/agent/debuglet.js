@@ -740,6 +740,5 @@ Debuglet._createUniquifier = function (desc, version, uid, sourceContext,
   labels) {
   var uniquifier = desc + version + uid + JSON.stringify(sourceContext) +
     JSON.stringify(labels);
-  uniquifier = crypto.createHash('sha1').update(uniquifier).digest('hex');
-  return uniquifier;
+  return crypto.createHash('sha1').update(uniquifier).digest('hex');
 };
