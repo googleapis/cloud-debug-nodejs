@@ -18,7 +18,7 @@
   ],
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=0.12"
+    "node": ">=4"
   },
   "devDependencies": {
     "changelog-maker": "^2.2.2",
@@ -28,17 +28,18 @@
     "istanbul": "^0.4.1",
     "jshint": "^2.7.0",
     "mocha": "^3.0.0",
-    "nock": "^9.0.0"
+    "nock": "^9.0.0",
+    "proxyquire": "^1.7.11",
+    "request": "^2.81.0"
   },
   "dependencies": {
-    "@google-cloud/common": "^0.12.0",
-    "acorn": "^4.0.3",
+    "@google-cloud/common": "^0.13.3",
+    "acorn": "^5.0.3",
     "async": "^2.1.2",
     "coffee-script": "^1.9.3",
     "findit2": "^2.2.3",
-    "gcp-metadata": "^0.1.0",
+    "gcp-metadata": "^0.2.0",
     "lodash": "^4.12.0",
-    "request": "^2.61.0",
     "semver": "^5.1.0",
     "source-map": "^0.5.1",
     "split": "^1.0.0"

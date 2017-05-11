@@ -215,7 +215,7 @@ Debuglet.prototype.start = function() {
               // This is ignorable.
             }
 
-            if (semver.satisfies(process.version, '5.2 || <0.12')) {
+            if (semver.satisfies(process.version, '5.2 || <4')) {
               // Using an unsupported version. We report an error message about the
               // Node.js version, but we keep on running. The idea is that the user
               // may miss the error message on the console. This way we can report the
@@ -550,7 +550,7 @@ Debuglet.prototype.addBreakpoint_ = function(breakpoint, cb) {
     return;
   }
 
-  if (semver.satisfies(process.version, '5.2 || <0.12')) {
+  if (semver.satisfies(process.version, '5.2 || <4')) {
     var message = NODE_VERSION_MESSAGE;
     that.logger_.error(message);
     breakpoint.status = new StatusMessage(StatusMessage.UNSPECIFIED,

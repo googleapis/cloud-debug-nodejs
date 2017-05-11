@@ -14,7 +14,7 @@ This module provides Stackdriver Debugger support for Node.js applications. [Sta
 [![Cloud Debugger Intro](http://img.youtube.com/vi/tyHcK_kAOpw/0.jpg)](https://www.youtube.com/watch?v=tyHcK_kAOpw)
 
 ## Prerequisites
-* Stackdriver Debugger is comptible with Node.js version 0.12 or greater. Node.js v5+ is recommended.
+* Stackdriver Debugger is comptible with Node.js version 4 or greater. Node.js v5+ is recommended.
 
 ## Quick Start
 ```shell

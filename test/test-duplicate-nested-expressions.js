@@ -31,7 +31,6 @@ var common = require('@google-cloud/common');
 var defaultConfig = require('../src/agent/config.js');
 var SourceMapper = require('../src/agent/sourcemapper.js');
 var scanner = require('../src/agent/scanner.js');
-var semver = require('semver');
 
 function stateIsClean(api) {
   assert.equal(api.numBreakpoints_(), 0,
@@ -83,21 +82,12 @@ describe(__filename, function() {
         var frame = brk.stackFrames[0];
         var args = frame.arguments;
         var locals = frame.locals;
-        if (semver.satisfies(process.version, '<1.6')) {
-            assert.equal(args.length, 1, 'There should be one argument');
-            assert.deepEqual(
-              args[0],
-              {name: 'a', value: '11'}
-   	   	    );
-            assert.equal(locals.length, 0);
-        } else {
-          assert.equal(args.length, 0, 'There should be zero arguments');
-          assert.equal(locals.length, 1, 'There should be one locals');
-          assert.deepEqual(
-            locals[0],
-            {name: 'a', value: 'test'}
-   	      );
-        }
+        assert.equal(args.length, 0, 'There should be zero arguments');
+        assert.equal(locals.length, 1, 'There should be one locals');
+        assert.deepEqual(
+          locals[0],
+          {name: 'a', value: 'test'}
+ 	      );
         api.clear(brk);
         done();
       });
@@ -117,21 +107,12 @@ describe(__filename, function() {
         var frame = brk.stackFrames[0];
         var args = frame.arguments;
         var locals = frame.locals;
-        if (semver.satisfies(process.version, '<1.6')) {
-            assert.equal(args.length, 1, 'There should be one argument');
-            assert.deepEqual(
-              args[0],
-              {name: 'a', value: '11'}
-   	   	    );
-            assert.equal(locals.length, 0);
-        } else {
-          assert.equal(args.length, 0, 'There should be zero arguments');
-          assert.equal(locals.length, 1, 'There should be one local');
-          assert.deepEqual(
-            locals[0],
-            {name: 'a', value: '10'}
-          );
-        }
+        assert.equal(args.length, 0, 'There should be zero arguments');
+        assert.equal(locals.length, 1, 'There should be one local');
+        assert.deepEqual(
+          locals[0],
+          {name: 'a', value: '10'}
+        );
         api.clear(brk);
         done();
       });
@@ -151,21 +132,12 @@ describe(__filename, function() {
         var frame = brk.stackFrames[0];
         var args = frame.arguments;
         var locals = frame.locals;
-        if (semver.satisfies(process.version, '<1.6')) {
-            assert.equal(args.length, 1, 'There should be one argument');
-            assert.deepEqual(
-              args[0],
-              {name: 'a', value: '11'}
-   	   	    );
-            assert.equal(locals.length, 0);
-        } else {
-          assert.equal(args.length, 0, 'There should be zero arguments');
-          assert.equal(locals.length, 1, 'There should be one local');
-          assert.deepEqual(
-            locals[0],
-            {name: 'a', value: '11'}
-          );
-        }
+        assert.equal(args.length, 0, 'There should be zero arguments');
+        assert.equal(locals.length, 1, 'There should be one local');
+        assert.deepEqual(
+          locals[0],
+          {name: 'a', value: '11'}
+        );
         api.clear(brk);
         done();
       });
@@ -178,15 +150,6 @@ describe(__filename, function() {
       id: 'fake-id-1234',
       location: { path: 'test-duplicate-nested-expressions.js', line: 8 }
     };
-    if (semver.satisfies(process.version, '<1.6')) {
-      // this IIFE test does not work on 0.12. Specifically the IIFE never
-      // executes and, therefore, the breakpoint is never hit. This will require
-      // further investigation as to what is causing the IIFE not to execute.a
-      // @TODO cristiancavalli - investigate why this IIFE does not execute
-      console.log('Skipping IIFE test due to Node.JS version requirements');
-      this.skip();
-      return;
-    }
     api.set(brk, function(err) {
       assert.ifError(err);
       api.wait(brk, function(err) {

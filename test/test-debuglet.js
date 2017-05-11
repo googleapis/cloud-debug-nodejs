@@ -15,6 +15,11 @@
  */
 'use strict';
 
+var proxyquire = require('proxyquire');
+proxyquire('gcp-metadata', {
+  'retry-request': require('request')
+});
+
 var _ = require('lodash');
 var assert = require('assert');
 var DEFAULT_CONFIG = require('../src/agent/config.js');
@@ -78,15 +83,9 @@ describe('Debuglet', function() {
       var debug = require('../src/debug.js')();
       var debuglet = new Debuglet(debug, defaultConfig);
 
-      // The following mock is neccessary for the case when the test is running
-      // on GCP. In that case we will get the projectId from the metadata
-      // service.
-      var scope = nocks.projectId(404);
-
       debuglet.once('initError', function(err) {
         assert.ok(err);
         // no need to stop the debuggee.
-        scope.done();
         done();
       });
       debuglet.once('started', function() { assert.fail(); });
@@ -98,14 +97,8 @@ describe('Debuglet', function() {
       var debug = require('../src/debug.js')();
       var debuglet = new Debuglet(debug, defaultConfig);
 
-      // The following mock is neccessary for the case when the test is running
-      // on GCP. In that case we will get the projectId from the metadata
-      // service.
-      var scope = nocks.projectId(404);
-
       debuglet.once('started', function() { assert.fail(); });
       debuglet.once('initError', function() {
-        scope.done();
         done();
       });
       debuglet.start();

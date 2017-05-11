@@ -23,12 +23,9 @@ module.exports = {
 
 var ScopeType = require('vm').runInDebugContext('ScopeType');
 var assert = require('assert');
-var semver = require('semver');
 var util = require('util');
 var lodash = require('lodash');
-var find = lodash.find;
 var transform = lodash.transform;
-var remove = lodash.remove;
 var flatten = lodash.flatten;
 var isEmpty = lodash.isEmpty;
 
@@ -302,22 +299,12 @@ StateResolver.prototype.resolveFrame_ = function(frame, underFrameCap) {
       varTableIndex: ARG_LOCAL_LIMIT_MESSAGE_INDEX
     });
   } else {
-    args = this.extractArgumentsList_(frame);
+    // We will use the values aggregated from the ScopeMirror traversal stored
+    // in locals which will include any applicable arguments from the invocation.
+    args = [];
     locals = this.resolveLocalsList_(frame, args);
     if (isEmpty(locals)) {
       locals = [];
-    }
-    if (semver.satisfies(process.version, '<1.6')) {
-      // If the node version is over 1.6 we do not read the frame arguments since
-      // the values produced by the frame for the arguments may contain inaccurate
-      // values. If the version is lower than 1.6, though, the frame's argument
-      // list can be relied upon to produce accurate values for arguments.
-      args = !isEmpty(args) ? this.resolveArgumentList_(args) : [];
-    } else {
-      // Otherwise, if the version is 1.6 or higher than we will use the values
-      // aggregated from the ScopeMirror traversal stored in locals which will
-      // include any applicable arguments from the invocation.
-      args = [];
     }
   }
   return {
@@ -355,13 +342,6 @@ StateResolver.prototype.extractArgumentsList_ = function (frame) {
   return args;
 };
 
-StateResolver.prototype.resolveArgumentList_ = function(args) {
-  var resolveVariable = this.resolveVariable_.bind(this);
-  return args.map(function (arg){
-    return resolveVariable(arg.name, arg.value);
-  });
-};
-
 /**
  * Iterates and returns variable information for all scopes (excluding global)
  * in a given frame. FrameMirrors should return their scope object list with 
@@ -396,34 +376,7 @@ StateResolver.prototype.resolveLocalsList_ = function (frame, args) {
         scope.details().object(),
         function (locals, value, name) {
           var trg = makeMirror(value);
-          var argMatch = find(args, {name: name});
-          if (argMatch && (semver.satisfies(process.version, '<1.6'))) {
-            // If the version is lower than 1.6 we will use the frame's argument
-            // list to source argument values, yet the ScopeMirror traversal for
-            // these Node versions will also return the arguments. Therefore, on
-            // these versions, compare the value sourced as the argument from 
-            // the FrameMirror to the argument found in the ScopeMirror locals 
-            // list with the same name and attempt to determine whether or not 
-            // they have the same value. If each of these items has the same
-            // name and value we may assume that the ScopeMirror variable 
-            // representation is merely a duplicate of the FrameMirror's 
-            // variable representation. Otherwise, the variable may have been
-            // redeclared or reassigned in the function and is therefore a local
-            // triggering removal from the arguments list and insertion into the
-            // locals list.
-            if (argMatch.value.value() === trg.value()) {
-              // Argument ref is the same ref as the local ref - this is an
-              // argument do not push this into the locals list
-              return locals;
-            }
-            // There is another local/scope var with the same name and it is not 
-            // the argument so this will take precedence. Remove the same-named 
-            // entry from the arguments list and push the local value onto the
-            // locals list.
-            remove(args, {name: name});
-            usedNames[name] = true;
-            locals.push(self.resolveVariable_(name, trg));
-          } else if (!usedNames[name]) {
+          if (!usedNames[name]) {
             // It's a valid variable that belongs in the locals list and wasn't
             // discovered at a lower-scope
             usedNames[name] = true;
@@ -507,55 +460,9 @@ StateResolver.prototype.storeObjectToVariableTable_ = function(obj) {
 
 /**
  * Responsible for recursively resolving the properties on a
- * provided object mirror. Due to a bug in early node versions,
- * we maintain two implementations using the fast approach
- * for supported node versions.
- *
- * See https://github.com/iojs/io.js/issues/1190.
+ * provided object mirror.
  */
 StateResolver.prototype.resolveMirror_ = function(mirror) {
-  if (semver.satisfies(process.version, '<1.6')) {
-    return this.resolveMirrorSlow_(mirror);
-  } else {
-    return this.resolveMirrorFast_(mirror);
-  }
-};
-
-// A slower implementation of resolveMirror_ which is safe for all node versions
-StateResolver.prototype.resolveMirrorSlow_ = function(mirror) {
-  // Instead, let's use Object.keys. This will only get the enumerable
-  // properties. The other alternative would be Object.getOwnPropertyNames, but
-  // I'm going with the former as that's what util.inspect does.
-  var that = this;
-
-  var keys = Object.keys(mirror.value());
-  var maxProps = that.config_.capture.maxProperties;
-  var truncate = maxProps && keys.length > maxProps;
-  if (truncate) {
-    keys = keys.slice(0, maxProps);
-  }
-  var members = keys.map(function(prop) {
-    return that.resolveMirrorProperty_(mirror.property(prop));
-  });
-  if (truncate) {
-    members.push({name: 'Only first `config.capture.maxProperties=' +
-                        this.config_.capture.maxProperties +
-                        '` properties were captured'});
-  }
-
-  var mirrorVal = mirror.value();
-  var len = mirrorVal && mirrorVal.length;
-  return {
-    value: mirror.toText() +
-      ((typeof len === 'undefined') ? '' : ' of length ' + len),
-    members: members
-  };
-};
-
-// A faster implementation of resolveMirror_ which segfaults in node <1.6
-//
-// See https://github.com/iojs/io.js/issues/1190.
-StateResolver.prototype.resolveMirrorFast_ = function(mirror) {
   var properties = mirror.properties();
   var maxProps = this.config_.capture.maxProperties;
   var truncate = maxProps && properties.length > maxProps;
