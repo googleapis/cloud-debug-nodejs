@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-'use strict';
-
 /** @const */ var _ = require('lodash');
 /** @const */ var async = require('async');
 /** @const */ var fs = require('fs');
@@ -25,7 +23,7 @@
 
 /** @define {string} */ var MAP_EXT = '.map';
 
-function create(sourcemapPaths, callback) {
+export function create(sourcemapPaths, callback) {
   var mapper = new SourceMapper();
   var callList = Array.prototype.slice.call(sourcemapPaths)
                  .map(function(path) {
@@ -89,14 +87,14 @@ function processSourcemap(infoMap, mapPath, callback) {
                                      : path.basename(mapPath, '.map');
       var parentDir = path.dirname(mapPath);
       var outputPath = path.normalize(path.join(parentDir, outputBase));
-      
+
       var sources = Array.prototype.slice.call(consumer.sources)
         .filter(function(value) {
           // filter out any empty string, null, or undefined sources
           return !!value;
         })
         .map(function(relPath) {
-          // resolve the paths relative to the map file so that they 
+          // resolve the paths relative to the map file so that they
           // are relative to the process's current working directory
           return path.normalize(path.join(parentDir, relPath));
         });
@@ -118,94 +116,94 @@ function processSourcemap(infoMap, mapPath, callback) {
   });
 }
 
-/**
- * @param {Array.<string>} sourcemapPaths An array of paths to .map sourcemap
- *  files that should be processed.  The paths should be relative to the 
- *  current process's current working directory
- * @param {Logger} logger A logger that reports errors that occurred while
- *  processing the given sourcemap files
- * @constructor
- */
-function SourceMapper() {
-  this.infoMap_ = new Map();
-}
+class SourceMapper {
+  infoMap_;
 
-/**
- * Used to determine if the source file specified by the given path has
- * a .map file and an output file associated with it.
- * 
- * If there is no such mapping, it could be because the input file is not
- * the input to a transpilation process or it is the input to a transpilation
- * process but its corresponding .map file was not given to the constructor
- * of this mapper.
- * 
- * @param {string} inputPath The path to an input file that could
- *  possibly be the input to a transpilation process.  The path should be 
- *  relative to the process's current working directory.
- */
-SourceMapper.prototype.hasMappingInfo = function(inputPath) {
-  return this.infoMap_.has(path.normalize(inputPath));
-};
-
-/**
- * @param {string} inputPath The path to an input file that could possibly 
- *  be the input to a transpilation process.  The path should be relative to 
- *  the process's current working directory
- * @param {number} The line number in the input file where the line number is
- *   zero-based.
- * @param {number} (Optional) The column number in the line of the file
- *   specified where the column number is zero-based.
- * @return {Object} The object returned has a "file" attribute for the
- *   path of the output file associated with the given input file (where the 
- *   path is relative to the process's current working directory),
- *   a "line" attribute of the line number in the output file associated with
- *   the given line number for the input file, and an optional "column" number
- *   of the column number of the output file associated with the given file
- *   and line information.
- * 
- *   If the given input file does not have mapping information associated
- *   with it then null is returned.
- */
-SourceMapper.prototype.mappingInfo = function(inputPath, lineNumber, colNumber) {
-  inputPath = path.normalize(inputPath);
-  if (!this.hasMappingInfo(inputPath)) {
-    return null;
+  /**
+   * @param {Array.<string>} sourcemapPaths An array of paths to .map sourcemap
+   *  files that should be processed.  The paths should be relative to the
+   *  current process's current working directory
+   * @param {Logger} logger A logger that reports errors that occurred while
+   *  processing the given sourcemap files
+   * @constructor
+   */
+  constructor() {
+    this.infoMap_ = new Map();
   }
 
-  var entry = this.infoMap_.get(inputPath);
-  var sourcePos = {
-    source: path.relative(path.dirname(entry.mapFile), inputPath),
-    line: lineNumber + 1, // the SourceMapConsumer expects the line number 
-                          // to be one-based but expects the column number 
-    column: colNumber     // to be zero-based
-  };
+  /**
+   * Used to determine if the source file specified by the given path has
+   * a .map file and an output file associated with it.
+   *
+   * If there is no such mapping, it could be because the input file is not
+   * the input to a transpilation process or it is the input to a transpilation
+   * process but its corresponding .map file was not given to the constructor
+   * of this mapper.
+   *
+   * @param {string} inputPath The path to an input file that could
+   *  possibly be the input to a transpilation process.  The path should be
+   *  relative to the process's current working directory.
+   */
+  hasMappingInfo(inputPath) {
+    return this.infoMap_.has(path.normalize(inputPath));
+  }
 
-  var consumer = entry.mapConsumer;
-  var allPos = consumer.allGeneratedPositionsFor(sourcePos);
-  /*
-  * Based on testing, it appears that the following code is needed to 
-  * properly get the correct mapping information.
-  * 
-  * In particular, the generatedPositionFor() alone doesn't appear to 
-  * give the correct mapping information.
-  */
-  var mappedPos = allPos && allPos.length > 0 ?
-    Array.prototype.reduce.call(allPos,
-      function(accumulator, value, index, arr) {
-          return value.line < accumulator.line ? value : accumulator;
-      }) : consumer.generatedPositionFor(sourcePos);
+  /**
+   * @param {string} inputPath The path to an input file that could possibly
+   *  be the input to a transpilation process.  The path should be relative to
+   *  the process's current working directory
+   * @param {number} The line number in the input file where the line number is
+   *   zero-based.
+   * @param {number} (Optional) The column number in the line of the file
+   *   specified where the column number is zero-based.
+   * @return {Object} The object returned has a "file" attribute for the
+   *   path of the output file associated with the given input file (where the
+   *   path is relative to the process's current working directory),
+   *   a "line" attribute of the line number in the output file associated with
+   *   the given line number for the input file, and an optional "column" number
+   *   of the column number of the output file associated with the given file
+   *   and line information.
+   *
+   *   If the given input file does not have mapping information associated
+   *   with it then null is returned.
+   */
+  mappingInfo(inputPath, lineNumber, colNumber) {
+    inputPath = path.normalize(inputPath);
+    if (!this.hasMappingInfo(inputPath)) {
+      return null;
+    }
 
-  return {
-    file: entry.outputFile,
-    line: mappedPos.line - 1, // convert the one-based line numbers returned 
-                              // by the SourceMapConsumer to the expected 
-                              // zero-based output.
-    column: mappedPos.col     // SourceMapConsumer uses zero-based column 
-                              // numbers which is the same as the expected 
-                              // output
-  };
-};
+    var entry = this.infoMap_.get(inputPath);
+    var sourcePos = {
+      source: path.relative(path.dirname(entry.mapFile), inputPath),
+      line: lineNumber + 1, // the SourceMapConsumer expects the line number
+                            // to be one-based but expects the column number
+      column: colNumber     // to be zero-based
+    };
 
-module.exports = {
-  create: create
-};
+    var consumer = entry.mapConsumer;
+    var allPos = consumer.allGeneratedPositionsFor(sourcePos);
+    /*
+    * Based on testing, it appears that the following code is needed to
+    * properly get the correct mapping information.
+    *
+    * In particular, the generatedPositionFor() alone doesn't appear to
+    * give the correct mapping information.
+    */
+    var mappedPos = allPos && allPos.length > 0 ?
+      Array.prototype.reduce.call(allPos,
+        function(accumulator, value/*, index, arr*/) {
+            return value.line < accumulator.line ? value : accumulator;
+        }) : consumer.generatedPositionFor(sourcePos);
+
+    return {
+      file: entry.outputFile,
+      line: mappedPos.line - 1, // convert the one-based line numbers returned
+                                // by the SourceMapConsumer to the expected
+                                // zero-based output.
+      column: mappedPos.col     // SourceMapConsumer uses zero-based column
+                                // numbers which is the same as the expected
+                                // output
+    };
+  }
+}
