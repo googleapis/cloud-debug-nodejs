@@ -27,7 +27,7 @@ var common = require('@google-cloud/common');
 var v8debugapi = require('../src/agent/v8debugapi.js');
 var SourceMapper = require('../src/agent/sourcemapper.js');
 var scanner = require('../src/agent/scanner.js');
-var defaultConfig = require('../src/agent/config.js');
+var defaultConfig = require('../src/agent/config.js').default;
 var api;
 
 var breakpointInFoo = {

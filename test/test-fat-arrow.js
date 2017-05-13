@@ -19,7 +19,7 @@ var assert = require('assert');
 var extend = require('extend');
 var v8debugapi = require('../src/agent/v8debugapi.js');
 var common = require('@google-cloud/common');
-var defaultConfig = require('../src/agent/config.js');
+var defaultConfig = require('../src/agent/config.js').default;
 var SourceMapper = require('../src/agent/sourcemapper.js');
 var scanner = require('../src/agent/scanner.js');
 

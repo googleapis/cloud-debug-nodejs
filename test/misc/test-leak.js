@@ -2,7 +2,7 @@
 
 var v8debugapi = require('../src/v8debugapi.js');
 var Logger = require('../src/logger.js');
-var config = require('../config.js');
+var config = require('../config.js').default;
 var assert = require('assert');
 var util = require('util');
 var logger = new Logger(config.logLevel);

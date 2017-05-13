@@ -22,7 +22,7 @@ proxyquire('gcp-metadata', {
 
 var _ = require('lodash');
 var assert = require('assert');
-var DEFAULT_CONFIG = require('../src/agent/config.js');
+var DEFAULT_CONFIG = require('../src/agent/config.js').default;
 DEFAULT_CONFIG.allowExpressions = true;
 var Debuglet = require('../src/agent/debuglet.js');
 var extend = require('extend');
