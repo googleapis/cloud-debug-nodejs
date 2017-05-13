@@ -10,7 +10,7 @@
     "lib": ["es6"],
     "noFallthroughCasesInSwitch": true,
     "noEmitOnError": true,
-    "noImplicitAny": true,
+//    "noImplicitAny": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "noUnusedLocals": true,
