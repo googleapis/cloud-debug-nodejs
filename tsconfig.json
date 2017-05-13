@@ -16,7 +16,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "pretty": true,
-    "strictNullChecks": true,
+//    "strictNullChecks": true,
     "module": "commonjs",
     "target": "es5",
     "sourceMap": true
