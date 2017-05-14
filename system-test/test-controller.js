@@ -27,7 +27,7 @@ assert.ok(
     'this test');
 
 var Controller = require('../src/controller.js');
-var Debuggee = require('../src/debuggee.js');
+var Debuggee = require('../src/debuggee.js').Debuggee;
 var debug = require('../src/debug.js')();
 
 
