@@ -16,8 +16,8 @@
 
 'use strict';
 
-var Debug = require('./debug.js');
-var Debuglet = require('./agent/debuglet.js');
+var Debug = require('./debug.js').Debug;
+var Debuglet = require('./agent/debuglet.js').Debuglet;
 
 // Singleton.
 var debuglet;
