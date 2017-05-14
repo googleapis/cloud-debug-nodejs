@@ -24,7 +24,7 @@ var Debuggee = require('../src/debuggee.js').Debuggee;
 // not being set
 delete process.env.GCLOUD_PROJECT;
 
-var Controller = require('../src/controller.js');
+var Controller = require('../src/controller.js').Controller;
 var fakeDebug = {
   request: request
 };
