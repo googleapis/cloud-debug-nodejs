@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-'use strict';
-
 var Debug = require('./debug.js').Debug;
 var Debuglet = require('./agent/debuglet.js').Debuglet;
 
@@ -36,7 +34,7 @@ var debuglet;
  * @example
  * debug.startAgent();
  */
-function start(options) {
+export function start(options) {
   options = options || {};
   var agentConfig = options.debug || options;
 
@@ -52,7 +50,3 @@ function start(options) {
   // We return the debuglet to facilitate testing.
   return agentConfig.testMode_ ? debuglet : undefined;
 }
-
-module.exports = {
-  start: start
-};
