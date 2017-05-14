@@ -14,27 +14,28 @@
  * limitations under the License.
  */
 
-'use strict';
+export class StatusMessage {
+  private refersTo;
+  private description;
+  private isError;
 
-/**
- * Status Message to be sent to the server
- * @constructor
- */
-function StatusMessage(refersTo, description, isError) {
-  this.refersTo = refersTo;
-  this.description = { format: description };
-  this.isError = isError;
+  /**
+   * Status Message to be sent to the server
+   * @constructor
+   */
+  constructor(refersTo, description, isError) {
+    this.refersTo = refersTo;
+    this.description = { format: description };
+    this.isError = isError;
+  }
+
+  // These status messages come from a proto definition.
+  // New status messages cannot be added here.
+  static readonly UNSPECIFIED = 'UNSPECIFIED';
+  static readonly BREAKPOINT_SOURCE_LOCATION =
+                  'BREAKPOINT_SOURCE_LOCATION';
+  static readonly BREAKPOINT_CONDITION = 'BREAKPOINT_CONDITION';
+  static readonly BREAKPOINT_EXPRESSION = 'BREAKPOINT_EXPRESSION';
+  static readonly VARIABLE_NAME = 'VARIABLE_NAME';
+  static readonly VARIABLE_VALUE = 'VARIABLE_VALUE';
 }
-
-// These status messages come from a proto definition.
-// New status messages cannot be added here.
-/** @const */ StatusMessage.UNSPECIFIED = 'UNSPECIFIED';
-/** @const */ StatusMessage.BREAKPOINT_SOURCE_LOCATION =
-                'BREAKPOINT_SOURCE_LOCATION';
-/** @const */ StatusMessage.BREAKPOINT_CONDITION = 'BREAKPOINT_CONDITION';
-/** @const */ StatusMessage.BREAKPOINT_EXPRESSION = 'BREAKPOINT_EXPRESSION';
-/** @const */ StatusMessage.VARIABLE_NAME = 'VARIABLE_NAME';
-/** @const */ StatusMessage.VARIABLE_VALUE = 'VARIABLE_VALUE';
-/** @const */ StatusMessage.BREAKPOINT_AGE = 'BREAKPOINT_AGE';
-
-module.exports = StatusMessage;

@@ -22,7 +22,7 @@
 /** @const */ var semver = require('semver');
 
 /** @const */ var state = require('./state.js');
-/** @const */ var StatusMessage = require('../status-message.js');
+/** @const */ var StatusMessage = require('../status-message.js').StatusMessage;
 
 /** @const */ var messages = {
   INVALID_BREAKPOINT: 'invalid snapshot - id or location missing',
