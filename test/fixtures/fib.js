@@ -21,6 +21,11 @@ function fib(n) {
  * limitations under the License.
  */
 
+var proxyquire = require('proxyquire');
+proxyquire('gcp-metadata', {
+  'retry-request': require('request')
+});
+
 var debuglet = require('../..').start({
   debug: {
     logLevel: 2,
