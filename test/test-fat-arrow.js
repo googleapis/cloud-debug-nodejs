@@ -22,7 +22,6 @@ var common = require('@google-cloud/common');
 var defaultConfig = require('../src/agent/config.js');
 var SourceMapper = require('../src/agent/sourcemapper.js');
 var scanner = require('../src/agent/scanner.js');
-var semver = require('semver');
 
 process.env.GCLOUD_PROJECT = 0;
 
@@ -43,13 +42,6 @@ describe(__filename, function() {
   var api = null;
   var foo;
   before(function () {
-    if (semver.satisfies(process.version, '<4.0')) {
-      // Fat arrow syntax is not recognized by these node versions - skip tests.
-      console.log('Skipping fat-arrow syntax due to Node.JS version being ' +
-        'lower than requirements');
-      this.skip();
-      return;
-    }
     foo = require('./fixtures/fat-arrow.js');
   });
   beforeEach(function(done) {

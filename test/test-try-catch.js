@@ -31,7 +31,6 @@ var common = require('@google-cloud/common');
 var defaultConfig = require('../src/agent/config.js');
 var SourceMapper = require('../src/agent/sourcemapper.js');
 var scanner = require('../src/agent/scanner.js');
-var semver = require('semver');
 
 function stateIsClean(api) {
   assert.equal(api.numBreakpoints_(), 0,
@@ -84,18 +83,10 @@ describe(__filename, function() {
         var args = frame.arguments;
         var locals = frame.locals;
         assert.equal(locals.length, 1, 'There should be one local');
-        if (semver.satisfies(process.version, '<1.6')) {
-          // Try/Catch scope-walking does not work on 0.12
-          assert.deepEqual(
-            locals[0],
-            {name: 'e', value: 'undefined'}
-          );
-        } else {
-          assert.equal(args.length, 0, 'There should be zero arguments');
-          var e = locals[0];
-          assert(e.name === 'e');
-          assert(Number.isInteger(e.varTableIndex));
-        }
+        assert.equal(args.length, 0, 'There should be zero arguments');
+        var e = locals[0];
+        assert(e.name === 'e');
+        assert(Number.isInteger(e.varTableIndex));
         assert.equal(args.length, 0, 'There should be zero arguments');     
         api.clear(brk);
         done();
@@ -115,21 +106,13 @@ describe(__filename, function() {
         var frame = brk.stackFrames[0];
         var args = frame.arguments;
         var locals = frame.locals;
-        if (semver.satisfies(process.version, '<1.6')) {
-          // Try/Catch scope-walking does not work on 0.12
-          assert.deepEqual(
-            locals[0],
-            {name: 'e', value: 'undefined'}
-          );
-        } else {
-          assert.equal(args.length, 0, 'There should be zero arguments');
-          assert.equal(locals.length, 1, 'There should be one local');
-          assert.deepEqual(
-            locals[0],
-            {name: 'e', value: '2'}
-          );
-          assert.equal(args.length, 0, 'There should be zero arguments');
-        }
+        assert.equal(args.length, 0, 'There should be zero arguments');
+        assert.equal(locals.length, 1, 'There should be one local');
+        assert.deepEqual(
+          locals[0],
+          {name: 'e', value: '2'}
+        );
+        assert.equal(args.length, 0, 'There should be zero arguments');
         api.clear(brk);
         done();
       });
