@@ -6,3 +6,6 @@ node_js:
 - '7'
 script:
 - ./bin/run-test.sh -c
+notifications:
+  email:
+    - nodejs-build-notifications+travis@googlegroups.com
