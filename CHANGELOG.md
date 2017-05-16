@@ -1,5 +1,23 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+# 2017-05-15, Version 2.0.0 (Experimental), @matthewloring
+
+### Notable changes
+
+This release drops support for versions of Node.js <4.
+
+**Semver Major**
+
+  * [[`8a119de64f`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/8a119de64f)] - Update deps, drop support for 0.12 (#258) (Matthew Loring) [#258](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/258)
+
+### Commits
+
+* [[`0045ad5702`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/0045ad5702)] - Add test notifications to travis (#261) (Matthew Loring) [#261](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/261)
+* [[`5f45dbf2c6`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/5f45dbf2c6)] - Avoid retries in e2e tests (#260) (Matthew Loring) [#260](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/260)
+* [[`8a119de64f`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/8a119de64f)] - Update deps, drop support for 0.12 (#258) (Matthew Loring) [#258](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/258)
+* [[`022d1ba5cb`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/022d1ba5cb)] - Add yarn.lock (#257) (Matthew Loring) [#257](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/257)
+* [[`4360f88e6a`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/4360f88e6a)] - drop dependency on dummy counter module (#256) (Ali Ijaz Sheikh)
+
 ## 2017-03-14, Version 1.0.0 (Experimental), @dominicdkramer
 
 ### Semver-major changes
