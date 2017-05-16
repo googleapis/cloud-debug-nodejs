@@ -40,7 +40,7 @@ function Debugger(debug) {
   /** @private {string} */
   this.nextWaitToken_ = null;
 
-  this.clientVersion_ = pjson.name + '/client/v' + pjson.version;
+  this.clientVersion_ = pjson.name + '/client-for-testing/v' + pjson.version;
 }
 
 util.inherits(Debugger, common.ServiceObject);
