@@ -40,9 +40,17 @@ the [Google Cloud Console][dev-console]. You can start adding snapshots and log-
 
 ## Running on Google Cloud Platform
 
-The Stackdriver Debugger Agent should work without manually provided authentication credentials for instances running on Google Cloud Platform, as long as the [Stackdriver Debugger API][debugger-api] access scope is enabled on that instance. For Google App Engine instances, this is automatic if the Debugger API has been enabled for your project (which is the default).
+The Stackdriver Debugger Agent should work without manually provided authentication credentials for instances running on Google Cloud Platform, as long as the [Stackdriver Debugger API][debugger-api] access scope is enabled on that instance.
 
-For Google Compute Engine instances, you need to explicitly enable the Debugger API access scope for each instance. When creating a new instance through the GCP web console, you can do this in one of two ways under **Identity and API access**:
+For **Google App Engine** instances, this is the enabled by default.
+
+On **Google Container Engine (GKE)**, you need to explicitly add the `cloud_debugger` OAuth scope when creating the cluster:
+
+```
+$ gcloud container clusters create example-cluster-name --scopes https://www.googleapis.com/auth/cloud_debugger
+```
+
+For **Google Compute Engine instances**, you need to explicitly enable the Debugger API access scope for each instance. When creating a new instance through the GCP web console, you can do this in one of two ways under **Identity and API access**:
 * Use the Compute Engine default service account and select "Allow full access to all Cloud APIs" under Access scopes.
 * Select a service account with the [**Cloud Debugger Agent**][debugger-roles] role, which contains the necessary permissions (or any other role with at least the same permissions). You may need to create one if you don't have one already.
 
