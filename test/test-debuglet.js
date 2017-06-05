@@ -658,8 +658,9 @@ describe('Debuglet', function() {
               .reply(200, {breakpoints: [bp]})
               .put(BPS_PATH + '/test',
                    function(body) {
-                     return body.breakpoint.status.description.format ===
-                            'The snapshot has expired';
+                     var status = body.breakpoint.status;
+                     return status.description.format === 'The snapshot has expired' &&
+                            status.refersTo === 'BREAKPOINT_AGE';
                    })
               .reply(200);
 

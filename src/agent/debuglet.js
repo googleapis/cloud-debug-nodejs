@@ -650,7 +650,7 @@ Debuglet.prototype.scheduleBreakpointExpiry_ = function(breakpoint) {
         format: 'The snapshot has expired'
       },
       isError: true,
-      refersTo: 'unspecified'
+      refersTo: StatusMessage.BREAKPOINT_AGE
     };
     that.completeBreakpoint_(breakpoint);
   }, (expiryTime - now) * 1000).unref();
