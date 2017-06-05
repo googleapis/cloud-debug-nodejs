@@ -473,7 +473,8 @@ StateResolver.prototype.resolveMirror_ = function(mirror) {
   if (truncate) {
     members.push({name: 'Only first `config.capture.maxProperties=' +
                         this.config_.capture.maxProperties +
-                        '` properties were captured'});
+                        '` properties were captured. Use in an expression' +
+                        ' to see all properties.'});
   }
   return {
     value: mirror.toText(),
