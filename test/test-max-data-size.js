@@ -88,7 +88,9 @@ describe('maxDataSize', function() {
       api.wait(bp, function(err) {
         assert.ifError(err);
         assert(bp.variableTable.reduce(function(acc, elem) {
-          return acc && elem.status.description.format !== 'Max data size reached';
+          return acc &&
+                 (!elem.status ||
+                   elem.status.description.format !== 'Max data size reached');
         }), true);
         api.clear(bp);
         done();
