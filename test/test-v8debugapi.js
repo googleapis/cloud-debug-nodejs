@@ -733,6 +733,7 @@ describe('v8debugapi', function() {
           assert(item.status.description.format.indexOf('Only first') !== -1);
           assert(item.status.description.format.indexOf(
             'config.capture.maxStringLength=3') !== -1);
+          assert(item.status.description.format.indexOf('of length 11.') !== -1);
 
           api.clear(bp);
           config.capture.maxDataSize = oldMaxData;

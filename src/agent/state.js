@@ -36,7 +36,6 @@ var BUFFER_FULL_MESSAGE_INDEX = 0;
 var NATIVE_PROPERTY_MESSAGE_INDEX = 1;
 var GETTER_MESSAGE_INDEX = 2;
 var ARG_LOCAL_LIMIT_MESSAGE_INDEX = 3;
-var STRING_LIMIT_MESSAGE_INDEX = 4;
 
 /**
  * Captures the stack and current execution state.
@@ -115,12 +114,6 @@ function StateResolver(execState, expressions, config, v8) {
                                 config.capture.maxExpandFrames +
                                 '` stack frames.',
                                   true) };
-  this.messageTable_[STRING_LIMIT_MESSAGE_INDEX] =
-    { status: new StatusMessage(StatusMessage.VARIABLE_VALUE,
-                                'Only first `config.capture.maxStringLength=' +
-                                config.capture.maxStringLength +
-                                '` chars were captured.',
-                                  false) };
 
   this.resolvedVariableTable_ = util._extend([], this.messageTable_);
   this.rawVariableTable_ = this.messageTable_.map(function() { return null; });
@@ -428,8 +421,12 @@ StateResolver.prototype.resolveVariable_ = function(name, value, isEvaluated) {
     data.value = value.toText();
     var maxLength = this.config_.capture.maxStringLength;
     if (!isEvaluated && maxLength && maxLength < data.value.length) {
+      data.status = new StatusMessage(StatusMessage.VARIABLE_VALUE,
+        'Only first `config.capture.maxStringLength=' +
+        this.config_.capture.maxStringLength +
+        '` chars were captured for string of length ' + data.value.length +
+        '. Use in an expression to see the full string.', false);
       data.value = data.value.substring(0, maxLength) + '...';
-      data.status = this.messageTable_[STRING_LIMIT_MESSAGE_INDEX].status;
     }
 
   } else if (value.isFunction()) {
