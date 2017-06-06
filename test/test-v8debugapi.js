@@ -710,8 +710,7 @@ describe('v8debugapi', function() {
     it('should limit string length', function(done) {
       var bp = {
         id: 'fake-id-124',
-        location: { path: 'test-v8debugapi.js', line: 9 },
-        expressions: ['hasGetter']
+        location: { path: 'test-v8debugapi.js', line: 9 }
       };
       var oldMaxLength = config.capture.maxStringLength;
       var oldMaxData = config.capture.maxDataSize;
@@ -721,8 +720,10 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          var hasGetter = bp.evaluatedExpressions[0];
-          var getterVal = bp.variableTable[hasGetter.varTableIndex];
+          var hasGetter = bp.stackFrames[0].locals.filter(function(value) {
+            return value.name === 'hasGetter';
+          });
+          var getterVal = bp.variableTable[hasGetter[0].varTableIndex];
           var stringItems = getterVal.members.filter(function(m) {
             return m.value === 'hel...';
           });
@@ -745,8 +746,7 @@ describe('v8debugapi', function() {
     it('should limit array length', function(done) {
       var bp = {
         id: 'fake-id-124',
-        location: { path: 'test-v8debugapi.js', line: 5 },
-        expressions: ['A']
+        location: { path: 'test-v8debugapi.js', line: 5 }
       };
       var oldMax = config.capture.maxProperties;
       config.capture.maxProperties = 1;
@@ -754,12 +754,14 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          var foo = bp.evaluatedExpressions[0];
-          var fooVal = bp.variableTable[foo.varTableIndex];
+          var aResults = bp.stackFrames[0].locals.filter(function(value) {
+            return value.name === 'A';
+          });
+          var aVal = bp.variableTable[aResults[0].varTableIndex];
           // should have 1 element + truncation message.
-          assert.equal(fooVal.members.length, 2);
-          assert(fooVal.members[1].name.indexOf('Only first') !== -1);
-          assert(fooVal.members[1].name.indexOf(
+          assert.equal(aVal.members.length, 2);
+          assert(aVal.members[1].name.indexOf('Only first') !== -1);
+          assert(aVal.members[1].name.indexOf(
             'config.capture.maxProperties=1') !== -1);
 
           api.clear(bp);
@@ -773,8 +775,7 @@ describe('v8debugapi', function() {
     it('should limit object length', function(done) {
       var bp = {
         id: 'fake-id-124',
-        location: { path: 'test-v8debugapi.js', line: 5 },
-        expressions: ['B']
+        location: { path: 'test-v8debugapi.js', line: 5 }
       };
       var oldMax = config.capture.maxProperties;
       config.capture.maxProperties = 1;
@@ -782,12 +783,14 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          var foo = bp.evaluatedExpressions[0];
-          var fooVal = bp.variableTable[foo.varTableIndex];
+          var bResults = bp.stackFrames[0].locals.filter(function(value) {
+            return value.name === 'B';
+          });
+          var bVal = bp.variableTable[bResults[0].varTableIndex];
           // should have 1 element + truncation message
-          assert.equal(fooVal.members.length, 2);
-          assert(fooVal.members[1].name.indexOf('Only first') !== -1);
-          assert(fooVal.members[1].name.indexOf(
+          assert.equal(bVal.members.length, 2);
+          assert(bVal.members[1].name.indexOf('Only first') !== -1);
+          assert(bVal.members[1].name.indexOf(
             'config.capture.maxProperties=1') !== -1);
 
           api.clear(bp);
@@ -796,6 +799,98 @@ describe('v8debugapi', function() {
         });
         process.nextTick(function() {foo(2);});
       });
+    });
+
+    it('should not limit the length of an evaluated string based on maxStringLength',
+        function(done) {
+      var bp = {
+        id: 'fake-id-124',
+        location: { path: 'test-v8debugapi.js', line: 9 },
+        expressions: ['hasGetter']
+      };
+      var oldMaxLength = config.capture.maxStringLength;
+      var oldMaxData = config.capture.maxDataSize;
+      config.capture.maxStringLength = 3;
+      config.capture.maxDataSize = 20000;
+      api.set(bp, function(err) {
+        assert.ifError(err);
+        api.wait(bp, function(err) {
+          assert.ifError(err);
+          var hasGetter = bp.evaluatedExpressions[0];
+          var getterVal = bp.variableTable[hasGetter.varTableIndex];
+          var stringItems = getterVal.members.filter(function(m) {
+            return m.value === 'hello world';
+          });
+          // The property would have value 'hel...' if truncation occured
+          // resulting in stringItems.length being 0.
+          assert(stringItems.length === 1);
+
+          api.clear(bp);
+          config.capture.maxDataSize = oldMaxData;
+          config.capture.maxStringLength = oldMaxLength;
+          done();
+        });
+        process.nextTick(function() {getterObject();});
+      });
+    });
+
+    it('should not limit the length of an evaluated array based on maxProperties',
+      function(done) {
+        var bp = {
+          id: 'fake-id-124',
+          location: { path: 'test-v8debugapi.js', line: 5 },
+          expressions: ['A']
+        };
+        var oldMaxProps = config.capture.maxProperties;
+        var oldMaxData = config.capture.maxDataSize;
+        config.capture.maxProperties = 1;
+        config.capture.maxDataSize = 20000;
+        api.set(bp, function(err) {
+          assert.ifError(err);
+          api.wait(bp, function(err) {
+            assert.ifError(err);
+            var foo = bp.evaluatedExpressions[0];
+            var fooVal = bp.variableTable[foo.varTableIndex];
+            // '1', '2', '3', and 'length'
+            assert.equal(fooVal.members.length, 4);
+            assert.strictEqual(foo.status, undefined);
+
+            api.clear(bp);
+            config.capture.maxDataSize = oldMaxData;
+            config.capture.maxProperties = oldMaxProps;
+            done();
+          });
+          process.nextTick(function() {foo(2);});
+        });
+    });
+
+    it('should not limit the length of an evaluated object based on maxProperties',
+      function(done) {
+        var bp = {
+          id: 'fake-id-124',
+          location: { path: 'test-v8debugapi.js', line: 5 },
+          expressions: ['B']
+        };
+        var oldMaxProps = config.capture.maxProperties;
+        var oldMaxData = config.capture.maxDataSize;
+        config.capture.maxProperties = 1;
+        config.capture.maxDataSize = 20000;
+        api.set(bp, function(err) {
+          assert.ifError(err);
+          api.wait(bp, function(err) {
+            assert.ifError(err);
+            var foo = bp.evaluatedExpressions[0];
+            var fooVal = bp.variableTable[foo.varTableIndex];
+            assert.equal(fooVal.members.length, 3);
+            assert.strictEqual(foo.status, undefined);
+
+            api.clear(bp);
+            config.capture.maxDataSize = oldMaxData;
+            config.capture.maxProperties = oldMaxProps;
+            done();
+          });
+          process.nextTick(function() {foo(2);});
+        });
     });
 
     it('should display an error for an evaluated array beyond maxDataSize',
