@@ -64,7 +64,7 @@ module.exports = {
      * @property {?string} the service name
      * @default
      */
-    service: null,
+    service: null, 
 
     /**
      * @property {?string} the service version
