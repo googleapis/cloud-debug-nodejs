@@ -1184,7 +1184,6 @@ describe('v8debugapi', function() {
       const run = require('./fixtures/ts/async.js');
       api.set(bp, (err) => {
         assert.ifError(err);
-        process.nextTick(run);
         api.wait(bp, (err) => {
           assert.ifError(err);
           assert.ok(bp.stackFrames);
@@ -1196,6 +1195,7 @@ describe('v8debugapi', function() {
           done();
         });
       });
+      process.nextTick(run);
     });
   });
 
