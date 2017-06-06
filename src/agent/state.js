@@ -36,7 +36,6 @@ var BUFFER_FULL_MESSAGE_INDEX = 0;
 var NATIVE_PROPERTY_MESSAGE_INDEX = 1;
 var GETTER_MESSAGE_INDEX = 2;
 var ARG_LOCAL_LIMIT_MESSAGE_INDEX = 3;
-var STRING_LIMIT_MESSAGE_INDEX = 4;
 
 /**
  * Captures the stack and current execution state.
@@ -115,12 +114,6 @@ function StateResolver(execState, expressions, config, v8) {
                                 config.capture.maxExpandFrames +
                                 '` stack frames.',
                                   true) };
-  this.messageTable_[STRING_LIMIT_MESSAGE_INDEX] =
-    { status: new StatusMessage(StatusMessage.VARIABLE_VALUE,
-                                'Only first `config.capture.maxStringLength=' +
-                                config.capture.maxStringLength +
-                                '` chars were captured.',
-                                  false) };
 
   this.resolvedVariableTable_ = util._extend([], this.messageTable_);
   this.rawVariableTable_ = this.messageTable_.map(function() { return null; });
@@ -137,6 +130,7 @@ StateResolver.prototype.capture_ = function() {
   var that = this;
 
   // Evaluate the watch expressions
+  var evalIndexSet = new Set();
   if (that.expressions_) {
     that.expressions_.forEach(function(expression, index) {
       var result = evaluate(expression, that.state_.frame(0));
@@ -149,7 +143,11 @@ StateResolver.prototype.capture_ = function() {
                                     result.error, true)
         };
       } else {
-        evaluated = that.resolveVariable_(expression, result.mirror);
+        evaluated = that.resolveVariable_(expression, result.mirror, true);
+        var varTableIdx = evaluated.varTableIndex;
+        if (typeof varTableIdx !== 'undefined') {
+          evalIndexSet.add(varTableIdx);
+        }
       }
       that.evaluatedExpressions_[index] = evaluated;
     });
@@ -166,8 +164,9 @@ StateResolver.prototype.capture_ = function() {
   while (index < that.rawVariableTable_.length && // NOTE: length changes in loop
          (that.totalSize_ < that.config_.capture.maxDataSize || noLimit)) {
     assert(!that.resolvedVariableTable_[index]); // shouldn't have it resolved yet
+    var isEvaluated = evalIndexSet.has(index);
     that.resolvedVariableTable_[index] =
-      that.resolveMirror_(that.rawVariableTable_[index]);
+      that.resolveMirror_(that.rawVariableTable_[index], isEvaluated);
     index++;
   }
 
@@ -380,7 +379,7 @@ StateResolver.prototype.resolveLocalsList_ = function (frame, args) {
             // It's a valid variable that belongs in the locals list and wasn't
             // discovered at a lower-scope
             usedNames[name] = true;
-            locals.push(self.resolveVariable_(name, trg));
+            locals.push(self.resolveVariable_(name, trg, false));
           } // otherwise another same-named variable occured at a lower scope
           return locals;
         },
@@ -394,7 +393,7 @@ StateResolver.prototype.resolveLocalsList_ = function (frame, args) {
     // under the name 'context' which is used by the Chrome DevTools.
     var ctx = frame.details().receiver();
     if (ctx) {
-      return [self.resolveVariable_('context', makeMirror(ctx))];
+      return [self.resolveVariable_('context', makeMirror(ctx), false)];
     }
     return [];
   }()));
@@ -407,8 +406,10 @@ StateResolver.prototype.resolveLocalsList_ = function (frame, args) {
  *
  * @param {String} name The name of the variable.
  * @param {Object} value A v8 debugger representation of a variable value.
+ * @param {boolean} isEvaluated Specifies if the variable is from a watched
+ *                              expression.
  */
-StateResolver.prototype.resolveVariable_ = function(name, value) {
+StateResolver.prototype.resolveVariable_ = function(name, value, isEvaluated) {
   var size = name.length;
 
   var data = {
@@ -419,9 +420,13 @@ StateResolver.prototype.resolveVariable_ = function(name, value) {
     // primitives: undefined, null, boolean, number, string, symbol
     data.value = value.toText();
     var maxLength = this.config_.capture.maxStringLength;
-    if (maxLength && maxLength < data.value.length) {
+    if (!isEvaluated && maxLength && maxLength < data.value.length) {
+      data.status = new StatusMessage(StatusMessage.VARIABLE_VALUE,
+        'Only first `config.capture.maxStringLength=' +
+        this.config_.capture.maxStringLength +
+        '` chars were captured for string of length ' + data.value.length +
+        '. Use in an expression to see the full string.', false);
       data.value = data.value.substring(0, maxLength) + '...';
-      data.status = this.messageTable_[STRING_LIMIT_MESSAGE_INDEX].status;
     }
 
   } else if (value.isFunction()) {
@@ -462,18 +467,19 @@ StateResolver.prototype.storeObjectToVariableTable_ = function(obj) {
  * Responsible for recursively resolving the properties on a
  * provided object mirror.
  */
-StateResolver.prototype.resolveMirror_ = function(mirror) {
+StateResolver.prototype.resolveMirror_ = function(mirror, isEvaluated) {
   var properties = mirror.properties();
   var maxProps = this.config_.capture.maxProperties;
   var truncate = maxProps && properties.length > maxProps;
-  if (truncate) {
+  if (!isEvaluated && truncate) {
     properties = properties.slice(0, maxProps);
   }
-  var members = properties.map(this.resolveMirrorProperty_.bind(this));
-  if (truncate) {
+  var members = properties.map(this.resolveMirrorProperty_.bind(this, isEvaluated));
+  if (!isEvaluated && truncate) {
     members.push({name: 'Only first `config.capture.maxProperties=' +
                         this.config_.capture.maxProperties +
-                        '` properties were captured'});
+                        '` properties were captured. Use in an expression' +
+                        ' to see all properties.'});
   }
   return {
     value: mirror.toText(),
@@ -481,7 +487,7 @@ StateResolver.prototype.resolveMirror_ = function(mirror) {
   };
 };
 
-StateResolver.prototype.resolveMirrorProperty_ = function(property) {
+StateResolver.prototype.resolveMirrorProperty_ = function(isEvaluated, property) {
   var name = String(property.name());
   // Array length must be special cased as it is a native property that
   // we know to be safe to evaluate which is not generally true.
@@ -498,5 +504,5 @@ StateResolver.prototype.resolveMirrorProperty_ = function(property) {
       varTableIndex: GETTER_MESSAGE_INDEX
     };
   }
-  return this.resolveVariable_(name, property.value());
+  return this.resolveVariable_(name, property.value(), isEvaluated);
 };
