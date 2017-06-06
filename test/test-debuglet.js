@@ -31,6 +31,8 @@ var DEBUGGEE_ID = 'bar';
 var API = 'https://clouddebugger.googleapis.com';
 var REGISTER_PATH = '/v2/controller/debuggees/register';
 var BPS_PATH = '/v2/controller/debuggees/' + DEBUGGEE_ID + '/breakpoints';
+var EXPRESSIONS_REGEX =
+    /Expressions and conditions are not allowed.*https:\/\/goo\.gl\/ShSm6r/;
 
 var fakeCredentials = require('./fixtures/gcloud-credentials.json');
 
@@ -52,6 +54,12 @@ var errorBp = {
   action: 'FOO',
   location: {path: 'fixtures/foo.js', line: 2}
 };
+
+function verifyBreakpointRejection(re, body) {
+  var status = body.breakpoint.status;
+  var hasCorrectDescription = status.description.format.match(re);
+  return status.isError && hasCorrectDescription;
+}
 
 describe('Debuglet', function() {
   describe('setup', function() {
@@ -529,23 +537,20 @@ describe('Debuglet', function() {
       debuglet.config_.allowExpressions = false;
 
       var scope = nock(API)
-                      .post(REGISTER_PATH)
-                      .reply(200, {debuggee: {id: DEBUGGEE_ID}})
-                      .get(BPS_PATH + '?success_on_timeout=true')
-                      .reply(200, {breakpoints: [{
-                        id: 'test',
-                        action: 'CAPTURE',
-                        condition: 'x === 5',
-                        location: {path: 'fixtures/foo.js', line: 2}
-                      }]})
-                      .put(BPS_PATH + '/test',
-                           function(body) {
-                             var status = body.breakpoint.status;
-                             var hasCorrectDescription = status.description.format.indexOf(
-                                'Expressions and conditions are not allowed by default.') === 0;
-                             return status.isError && hasCorrectDescription;
-                           })
-                      .reply(200);
+        .post(REGISTER_PATH)
+        .reply(200, { debuggee: { id: DEBUGGEE_ID } })
+        .get(BPS_PATH + '?success_on_timeout=true')
+        .reply(200, {
+          breakpoints: [{
+            id: 'test',
+            action: 'CAPTURE',
+            condition: 'x === 5',
+            location: { path: 'fixtures/foo.js', line: 2 }
+          }]
+        })
+        .put(BPS_PATH + '/test',
+             verifyBreakpointRejection.bind(null, EXPRESSIONS_REGEX))
+        .reply(200);
 
       debuglet.once('registered', function reg(id) {
         assert.equal(id, DEBUGGEE_ID);
@@ -570,23 +575,20 @@ describe('Debuglet', function() {
       debuglet.config_.allowExpressions = false;
 
       var scope = nock(API)
-                      .post(REGISTER_PATH)
-                      .reply(200, {debuggee: {id: DEBUGGEE_ID}})
-                      .get(BPS_PATH + '?success_on_timeout=true')
-                      .reply(200, {breakpoints: [{
-                        id: 'test',
-                        action: 'CAPTURE',
-                        expressions: ['x'],
-                        location: {path: 'fixtures/foo.js', line: 2}
-                      }]})
-                      .put(BPS_PATH + '/test',
-                           function(body) {
-                             var status = body.breakpoint.status;
-                             var hasCorrectDescription = status.description.format.indexOf(
-                                'Expressions and conditions are not allowed by default.') === 0;
-                             return status.isError && hasCorrectDescription;
-                           })
-                      .reply(200);
+        .post(REGISTER_PATH)
+        .reply(200, { debuggee: { id: DEBUGGEE_ID } })
+        .get(BPS_PATH + '?success_on_timeout=true')
+        .reply(200, {
+          breakpoints: [{
+            id: 'test',
+            action: 'CAPTURE',
+            expressions: ['x'],
+            location: { path: 'fixtures/foo.js', line: 2 }
+          }]
+        })
+        .put(BPS_PATH + '/test',
+             verifyBreakpointRejection.bind(null, EXPRESSIONS_REGEX))
+        .reply(200);
 
       debuglet.once('registered', function reg(id) {
         assert.equal(id, DEBUGGEE_ID);
