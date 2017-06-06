@@ -35,5 +35,6 @@ function StatusMessage(refersTo, description, isError) {
 /** @const */ StatusMessage.BREAKPOINT_EXPRESSION = 'BREAKPOINT_EXPRESSION';
 /** @const */ StatusMessage.VARIABLE_NAME = 'VARIABLE_NAME';
 /** @const */ StatusMessage.VARIABLE_VALUE = 'VARIABLE_VALUE';
+/** @const */ StatusMessage.BREAKPOINT_AGE = 'BREAKPOINT_AGE';
 
 module.exports = StatusMessage;
