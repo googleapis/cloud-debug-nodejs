@@ -261,10 +261,8 @@ describe('v8debugapi', function() {
         assert.ok(bp.status);
         assert.ok(bp.status instanceof StatusMessage);
         assert.ok(bp.status.isError);
-        assert(bp.status.description.format.indexOf(
-          api.messages.INVALID_LINE_NUMBER) !== -1);
-        assert(bp.status.description.format.indexOf(
-          'foo.js:500') !== -1);
+        assert(bp.status.description.format.match(
+          `${api.messages.INVALID_LINE_NUMBER}.*foo.js:500`));
         done();
       });
     });
@@ -547,17 +545,15 @@ describe('v8debugapi', function() {
           assert.equal(topFrame.arguments.length, 1);
           var argsVal = bp.variableTable[topFrame.arguments[0].varTableIndex];
           assert(argsVal.status.isError);
-          assert(argsVal.status.description.format.indexOf(
-            'Locals and arguments are only displayed') !== -1);
-          assert(argsVal.status.description.format.indexOf(
-            'config.capture.maxExpandFrames=0') !== -1);
+          assert(argsVal.status.description.format.match(
+            'Locals and arguments are only displayed.*config.capture.maxExpandFrames=0'
+            ));
           assert.equal(topFrame.locals.length, 1);
           var localsVal = bp.variableTable[topFrame.locals[0].varTableIndex];
           assert(localsVal.status.isError);
-          assert(localsVal.status.description.format.indexOf(
-            'Locals and arguments are only displayed') !== -1);
-          assert(localsVal.status.description.format.indexOf(
-            'config.capture.maxExpandFrames=0') !== -1);
+          assert(localsVal.status.description.format.match(
+            'Locals and arguments are only displayed.*config.capture.maxExpandFrames=0'
+            ));
           api.clear(bp);
           config.capture.maxExpandFrames = oldCount;
           done();
@@ -622,7 +618,7 @@ describe('v8debugapi', function() {
           var processVal = bp.variableTable[watch.varTableIndex];
           assert.ok(processVal);
           assert.ok(processVal.members.some(function(m) {
-            return m.name === 'nextTick' && m.value.indexOf('function') === 0;
+            return m.name === 'nextTick' && m.value.match('function.*');
           }));
           assert.ok(processVal.members.some(function(m) {
             return m.name === 'versions' && m.varTableIndex;
@@ -730,11 +726,8 @@ describe('v8debugapi', function() {
           assert(stringItems.length === 1);
 
           var item = stringItems[0];
-          assert(item.status.description.format.indexOf('Only first') !== -1);
-          assert(item.status.description.format.indexOf(
-            'config.capture.maxStringLength=3') !== -1);
-          assert(item.status.description.format.indexOf('of length 11.') !== -1);
-
+          assert(item.status.description.format.match(
+            'Only first.*config.capture.maxStringLength=3.*of length 11.'));
           api.clear(bp);
           config.capture.maxDataSize = oldMaxData;
           config.capture.maxStringLength = oldMaxLength;
@@ -761,9 +754,8 @@ describe('v8debugapi', function() {
           var aVal = bp.variableTable[aResults[0].varTableIndex];
           // should have 1 element + truncation message.
           assert.equal(aVal.members.length, 2);
-          assert(aVal.members[1].name.indexOf('Only first') !== -1);
-          assert(aVal.members[1].name.indexOf(
-            'config.capture.maxProperties=1') !== -1);
+          assert(aVal.members[1].name.match(
+            'Only first.*config.capture.maxProperties=1'));
 
           api.clear(bp);
           config.capture.maxProperties = oldMax;
@@ -790,9 +782,8 @@ describe('v8debugapi', function() {
           var bVal = bp.variableTable[bResults[0].varTableIndex];
           // should have 1 element + truncation message
           assert.equal(bVal.members.length, 2);
-          assert(bVal.members[1].name.indexOf('Only first') !== -1);
-          assert(bVal.members[1].name.indexOf(
-            'config.capture.maxProperties=1') !== -1);
+          assert(bVal.members[1].name.match(
+            'Only first.*config.capture.maxProperties=1'));
 
           api.clear(bp);
           config.capture.maxProperties = oldMax;
@@ -911,8 +902,8 @@ describe('v8debugapi', function() {
             assert.ifError(err);
             var foo = bp.evaluatedExpressions[0];
             var fooVal = bp.variableTable[foo.varTableIndex];
-            assert(fooVal.status.description.format.indexOf(
-              'Max data size reached') !== -1);
+            assert(fooVal.status.description.format.match(
+              'Max data size reached'));
             assert(fooVal.status.isError);
 
             api.clear(bp);
@@ -941,8 +932,8 @@ describe('v8debugapi', function() {
             assert.ifError(err);
             var foo = bp.evaluatedExpressions[0];
             var fooVal = bp.variableTable[foo.varTableIndex];
-            assert(fooVal.status.description.format.indexOf(
-              'Max data size reached') !== -1);
+            assert(fooVal.status.description.format.match(
+              'Max data size reached'));
             assert(fooVal.status.isError);
 
             api.clear(bp);
@@ -978,8 +969,8 @@ describe('v8debugapi', function() {
 
             var bArray = bResults[0];
             assert(bArray);
-            assert(bArray.status.description.format.indexOf(
-              'Max data size reached') !== -1);
+            assert(bArray.status.description.format.match(
+              'Max data size reached'));
             assert(bArray.status.isError);
 
             api.clear(bp);
@@ -1166,9 +1157,8 @@ describe('v8debugapi', function() {
                 assert.equal(expr.status.description.format,
                   'Error Compiling Expression');
               } else {
-                assert.notEqual(
-                  expr.status.description.format.indexOf('Unexpected token'),
-                  -1);
+                assert(
+                  expr.status.description.format.match('Unexpected token'));
               }
             }
 
