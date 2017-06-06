@@ -39,7 +39,8 @@ var pjson = require('../../package.json');
 var assert = require('assert');
 
 var ALLOW_EXPRESSIONS_MESSAGE = 'Expressions and conditions are not allowed' +
-  ' by default. Please set the allowExpressions configuration option to true';
+  ' by default. Please set the allowExpressions configuration option to true.' +
+  ' See the debug agent documentation at https://goo.gl/ShSm6r.';
 var NODE_VERSION_MESSAGE = 'Node.js version not supported. Node.js 5.2.0 and ' +
   ' versions older than 0.12 are not supported.';
 var BREAKPOINT_ACTION_MESSAGE = 'The only currently supported breakpoint actions' +
@@ -285,7 +286,7 @@ Debuglet.createDebuggee =
   if (!description && process.env.FUNCTION_NAME) {
     description = 'Function: ' + process.env.FUNCTION_NAME;
   }
-  
+
   if (description) {
     desc += ' description:' + description;
   }
