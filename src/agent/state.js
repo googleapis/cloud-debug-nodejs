@@ -153,8 +153,8 @@ StateResolver.prototype.capture_ = function() {
     });
   }
 
-  // The frames are resolved after the evaluated expressions so that 
-  // evaluated expressions can be evaluated as much as possible within 
+  // The frames are resolved after the evaluated expressions so that
+  // evaluated expressions can be evaluated as much as possible within
   // the max data size limits
   var frames = that.resolveFrames_();
 
@@ -220,7 +220,7 @@ StateResolver.prototype.resolveFrames_ = function() {
   var frames = [];
   var frameCount = Math.min(this.state_.frameCount(),
     this.config_.capture.maxFrames);
-    
+
   for (var i = 0; i < frameCount; i++) {
     var frame = this.state_.frame(i);
     if (this.shouldFrameBeResolved_(frame)) {
@@ -343,7 +343,7 @@ StateResolver.prototype.extractArgumentsList_ = function (frame) {
 
 /**
  * Iterates and returns variable information for all scopes (excluding global)
- * in a given frame. FrameMirrors should return their scope object list with 
+ * in a given frame. FrameMirrors should return their scope object list with
  * most deeply nested scope first so variables initially encountered will take
  * precedence over subsequent instance with the same name - this is tracked in
  * the usedNames map. The argument list given to this function may be
@@ -360,17 +360,29 @@ StateResolver.prototype.resolveLocalsList_ = function (frame, args) {
   var self = this;
   var usedNames = {};
   var makeMirror = this.ctx_.MakeMirror;
-  return flatten(frame.allScopes().map(
+  const allScopes = frame.allScopes();
+  const count = allScopes.length;
+
+  // There will always be at least 3 scopes.
+  // For top-level breakpoints: [local, script, global]
+  // Other: [..., closure (module IIFE), script, global]
+  assert(count >= 3);
+  assert.strictEqual(allScopes[count - 1].scopeType(), ScopeType.Global);
+  assert.strictEqual(allScopes[count - 2].scopeType(), ScopeType.Script);
+
+  // We find the top-level (module global) variable pollute the local variables
+  // we omit them by default, unless the breakpoint itself is top-level. The
+  // last two scopes are always omitted.
+  let scopes;
+  if (allScopes[count - 3].scopeType() === ScopeType.Closure) {
+    scopes = allScopes.slice(0, -3);
+  } else {
+    assert(allScopes[count - 3].scopeType() === ScopeType.Local);
+    scopes = allScopes.slice(0, -2);
+  }
+
+  return flatten(scopes.map(
     function (scope) {
-      switch (scope.scopeType()) {
-        case ScopeType.Global:
-          // We do not capture globals in the debug client.
-        case ScopeType.Closure:
-          // The closure scope is contaminated by Node.JS's require IIFE pattern
-          // and, if traversed, will cause local variable pools to include what
-          // are considered node 'globals'. Therefore, avoid traversal.
-          return [];
-      }
       return transform(
         scope.details().object(),
         function (locals, value, name) {
@@ -387,7 +399,7 @@ StateResolver.prototype.resolveLocalsList_ = function (frame, args) {
       );
     }
   )).concat((function () {
-    // The frame receiver is the 'this' context that is present during 
+    // The frame receiver is the 'this' context that is present during
     // invocation. Check to see whether a receiver context is substantive,
     // (invocations may be bound to null) if so: store in the locals list
     // under the name 'context' which is used by the Chrome DevTools.

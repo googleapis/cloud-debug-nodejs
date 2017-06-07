@@ -1257,6 +1257,32 @@ describe('v8debugapi', function() {
         process.nextTick(function() {foo(1);});
       });
     });
+
+    it('should capture state in transpiled TS async functions', (done) => {
+      const bp = {
+        id: 'async-id-1',
+        location: {
+          path: path.join('.', 'test', 'fixtures', 'ts', 'async.js'),
+          line: 71
+        }
+      };
+
+      const run = require('./fixtures/ts/async.js');
+      api.set(bp, (err) => {
+        assert.ifError(err);
+        api.wait(bp, (err) => {
+          assert.ifError(err);
+          assert.ok(bp.stackFrames);
+
+          const topFrame = bp.stackFrames[0];
+          assert.ok(topFrame.locals.some((local) => (local.name === '_a')));
+          assert.ok(topFrame.locals.some((local) => (local.name === 'res')));
+          api.clear(bp);
+          done();
+        });
+      });
+      process.nextTick(run);
+    });
   });
 
   it('should be possible to set deferred breakpoints');
