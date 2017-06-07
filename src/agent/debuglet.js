@@ -158,6 +158,11 @@ Debuglet.normalizeConfig_ = function(config) {
     }
   };
 
+  if (process.env.FUNCTION_NAME) {
+    envConfig.serviceContext.service = process.env.FUNCTION_NAME;
+    envConfig.serviceContext.version = 'unversioned';
+  }
+
   return extend(true, {}, defaultConfig, config, envConfig);
 };
 
