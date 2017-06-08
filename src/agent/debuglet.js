@@ -146,6 +146,8 @@ Debuglet.normalizeConfig_ = function(config) {
   var envConfig = {
     logLevel: process.env.GCLOUD_DEBUG_LOGLEVEL,
     serviceContext: {
+      // If running on GKE, we will set service context later once
+      // the cluster name can be retrieved from the metadata service.
       service: process.env.GAE_SERVICE || process.env.GAE_MODULE_NAME,
       version: process.env.GAE_VERSION || process.env.GAE_MODULE_VERSION,
       // Debug UI expects GAE_MINOR_VERSION to be available for AppEngine, but
@@ -206,13 +208,22 @@ Debuglet.prototype.start = function() {
 
         that.logger_.info('Unique ID for this Application: ' + id);
 
-        that.getProjectId_(function(err, project, onGCP) {
+        that.getMetadataValues_(function(err, values) {
           if (err) {
             that.logger_.error('Unable to discover projectId. Please provide ' +
                                'the projectId to be able to use the Debuglet',
                                err);
             that.emit('initError', err);
             return;
+          }
+          var project = values.project;
+          var clusterName = values.clusterName;
+          var onGCP = values.onGCP;
+
+          if (clusterName) {
+            // If we succeeded to get a cluster name, we must be running on gke.
+            that.config_.serviceContext.service = clusterName;
+            that.config_.serviceContext.version = 'unversioned';
           }
 
           that.getSourceContext_(function(err, sourceContext) {
@@ -319,7 +330,7 @@ Debuglet.createDebuggee =
 /**
  * @private
  */
-Debuglet.prototype.getProjectId_ = function(callback) {
+Debuglet.prototype.getMetadataValues_ = function(callback) {
   var that = this;
 
   // We need to figure out whether we are running on GCP. We can use our ability
@@ -339,7 +350,11 @@ Debuglet.prototype.getProjectId_ = function(callback) {
         if (!project) {
           return callback(err);
         }
-        return callback(null, project, onGCP);
+        metadata.instance(
+          'attributes/cluster-name', function(err, response, metadataCluster) {
+            return callback(null,
+              { project: project, clusterName: metadataCluster, onGCP: onGCP});
+        });
       });
 };
 

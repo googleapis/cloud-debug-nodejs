@@ -295,6 +295,28 @@ describe('Debuglet', function() {
            assert.ok(_.isString(debuglet.config_.serviceContext.minorVersion_));
          });
 
+      it('should use GKE cluster name if available', function(done) {
+        var scope = nock('http://metadata.google.internal')
+          .get('/computeMetadata/v1/instance/attributes/cluster-name')
+            .once()
+            .reply(200, 'my-cool-cluster');
+        var debug = require('../src/debug.js')(
+          {projectId: 'fake-project', credentials: fakeCredentials});
+        var debuglet = new Debuglet(debug, defaultConfig);
+        debuglet.once('started', function(id) {
+          debuglet.stop();
+          assert.ok(debuglet.config_);
+          assert.ok(debuglet.config_.serviceContext);
+          assert.strictEqual(debuglet.config_.serviceContext.service,
+                           'my-cool-cluster');
+          assert.strictEqual(debuglet.config_.serviceContext.version,
+                           'unversioned');
+          scope.done();
+          done();
+        });
+        debuglet.start();
+      });
+
       it('should not have minorVersion unless enviroment provides it',
          function() {
            var debug = require('../src/debug.js')();
