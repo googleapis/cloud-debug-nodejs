@@ -246,6 +246,19 @@ describe('Debuglet', function() {
                               'fake-gae-version');
          });
 
+      it('should respect FUNCTION_NAME env. var.',
+         function() {
+           process.env.FUNCTION_NAME = 'fake-fn-name';
+           var debug = require('../src/debug.js')();
+           var debuglet = new Debuglet(debug, defaultConfig);
+           assert.ok(debuglet.config_);
+           assert.ok(debuglet.config_.serviceContext);
+           assert.strictEqual(debuglet.config_.serviceContext.service,
+                              'fake-fn-name');
+           assert.strictEqual(debuglet.config_.serviceContext.version,
+                              'unversioned');
+         });
+
       it('should prefer new flex vars over GAE_MODULE_*', function() {
         process.env.GAE_MODULE_NAME = 'fake-gae-module';
         process.env.GAE_MODULE_VERSION = 'fake-gae-module-version';
