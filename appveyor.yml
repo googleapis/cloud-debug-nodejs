@@ -12,8 +12,8 @@ install:
   - ps: Install-Product node $env:nodejs_version
   # install modules
   - npm install
-  # set GCLOUD_PROJECT
   - SET GCLOUD_PROJECT=0
+  - SET CLOUD_DEBUG_ASSERTIONS=1
 
 # Post-install test scripts.
 test_script:

@@ -3,7 +3,7 @@
 # Usage: -c to report coverage
 
 # Enable assertions
-export CLOUD_TRACE_ASSERTIONS=1
+export CLOUD_DEBUG_ASSERTIONS=1
 
 while true; do
   case $1 in
