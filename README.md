@@ -138,6 +138,33 @@ As soon as that line of code is reached in any of the running instances of your 
 
 ![Breakpoint Hit](doc/images/breakpoint-hit.png?raw=true)
 
+Note that the directory layout of the code that is being debugged does not have to exactly match the source code specified in the Debug UI.  In particular, if a snapshot is specified in a file in the Debug UI, a breakpoint is set in the corresponding file in the code of the running instance that matches the most path components of the file specified in the Debug UI starting from the rightmost path component and working left.
+
+An example will help illustrate this.  That is, suppose that the code on the running instance is structured as follows:
+```
+/running/instance/main.js
+/running/instance/a/index.js
+/running/instance/b/a/index.js
+```
+Now suppose on your device you have a copy of the code as follows, and you have selected the local `/your/device` directory in the Debug UI as the directory containing the code to debug.
+```
+/your/device/main.js
+/your/device/a/index.js
+/your/device/b/a/index.js
+```
+
+In this case, if you specify a snapshot in file `/your/device/b/a/index.js` in the Debug UI, the debugger will identify that that file corresponds to the file `/running/instance/b/a/index.js` of the code on the running instance, and the breakpoint will hit when the specified line of `/running/instance/b/a/index.js` is reached.
+
+Note, however, if a snapshot is specified for the file `/your/device/a/index.js` in the Debug UI, then the debugger would not know whether this file corresponds to the file `/running/instance/a/index.js` or `/running/instance/b/a/index.js`.  If such an ambiguity occurs, a message will be displayed in the Debug UI.
+
+## Support for Transpiled Code
+
+The debugger supports the use of transpiled code, whether it be Javascript to Javascript transpilation or transpilation from another language (such as Typescript) to Javascript.  In order to use transpiled code with the debugger, sourcemaps need to be generated with the transpiled code.  The sourcemaps can either be included inline in the transpiled code or provided in separate `.js.map` files.
+
+To use the debugger, the only files that are needed at runtime are the transpiled files as well as the generated sourcemap files (if the sourcemaps are not inlined).  In particular, the original source does not need to be available to the debugger at runtime.
+
+Instead, the original source code is provided to the Debug UI to specify snapshots.  When specifying a snapshot in an original source file in the Debug UI, the corresponding file and line in the transpiled code is automatically determined based on the sourcemap files provided with the transpiled code at runtime.  See the [Using the Debugger](#using-the-debugger) section for more information about using the Debug UI.  In addition, the exact directory layout of the original source is somewhat flexible, just as it is with the use of non-transpiled code as described in the [Using the Debugger](#using-the-debugger) section.
+
 ## Limitations and Requirements
 * The root directory of your application needs to contain a `package.json` file.
 * You can set snapshot conditions and watch expressions to be evaluated in the context of your application. This leads to some issues you should be aware of
