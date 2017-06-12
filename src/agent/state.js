@@ -18,11 +18,12 @@
 
 module.exports = {
   capture: capture,
-  evaluate: evaluate
+  evaluate: evaluate,
+  testAssert: testAssert
 };
 
 var ScopeType = require('vm').runInDebugContext('ScopeType');
-var assert = require('assert');
+var assert = require('./debug-assert')(process.env.CLOUD_DEBUG_ASSERTIONS);
 var util = require('util');
 var lodash = require('lodash');
 var transform = lodash.transform;
@@ -518,3 +519,8 @@ StateResolver.prototype.resolveMirrorProperty_ = function(isEvaluated, property)
   }
   return this.resolveVariable_(name, property.value(), isEvaluated);
 };
+
+// This function is used by unit tests to make sure assertions are enabled.
+function testAssert() {
+  assert.equal(0, 1);
+}
