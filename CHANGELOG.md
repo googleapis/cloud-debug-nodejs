@@ -1,5 +1,30 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+# 2017-06-12, Version 2.1.0 (Experimental), @matthewloring
+
+### Notable changes
+
+**UI**
+
+  * [[`53562ccc89`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/53562ccc89)] - Update truncated object message (#269) (Matthew Loring) [#269](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/269)
+  * [[`a87007a4b6`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/a87007a4b6)] - Use FUNCTION_NAME as service id on GCF (#274) (Matthew Loring) [#274](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/274)
+  * [[`d3994f8959`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/d3994f8959)] - Use service name as debuggee id on gke (#275) (Matthew Loring) [#275](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/275)
+
+### Commits
+
+* [[`9377a112df`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/9377a112df)] - disableable assertions (#272) (Ali Ijaz Sheikh) [#272](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/272)
+* [[`d3994f8959`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/d3994f8959)] - Use service name as debuggee id on gke (#275) (Matthew Loring) [#275](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/275)
+* [[`a87007a4b6`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/a87007a4b6)] - Use FUNCTION_NAME as service id on GCF (#274) (Matthew Loring) [#274](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/274)
+* [[`37d7745a67`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/37d7745a67)] - include variables from outer scopes (#271) (Ali Ijaz Sheikh) 
+* [[`adcf3aec84`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/adcf3aec84)] - Avoid repeated indexOf checks in tests (#273) (Matthew Loring) [#273](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/273)
+* [[`53562ccc89`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/53562ccc89)] - Update truncated object message (#269) (Matthew Loring) [#269](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/269)
+* [[`7e2bc4fec7`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/7e2bc4fec7)] - Indicate breakpoint expiration using the refers_to field (#268) (Matthew Loring) [#268](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/268)
+* [[`14fee8277e`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/14fee8277e)] - improve message for allowExpressions=false (#270) (Ali Ijaz Sheikh) 
+* [[`e2af53533b`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/e2af53533b)] - start testing against Node 8 (#267) (Ali Ijaz Sheikh) 
+* [[`6956da821b`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/6956da821b)] - stringify sourceContext before concat (#265) (Ali Ijaz Sheikh) 
+* [[`e7f15f5f56`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/e7f15f5f56)] - add note about scopes on GKE (#264) (Ali Ijaz Sheikh) 
+* [[`8571d8544f`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/8571d8544f)] - Specify test-only client version in test debugger (#262) (Matthew Loring) [#262](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/262)
+
 # 2017-05-15, Version 2.0.0 (Experimental), @matthewloring
 
 ### Notable changes
