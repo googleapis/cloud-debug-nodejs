@@ -147,19 +147,17 @@ An example will help illustrate this.  That is, suppose that the code on the run
 /running/instance/a/index.js
 /running/instance/b/a/index.js
 ```
-Now suppose on your local machine you have a copy of the code as follows, and you have selected the `/local/machine` directory in the Debug UI as the directory containing the code to debug.
+Further, suppose the source code repository or local directory you have provided to the Debug UI is structured as follows.
 ```
-/local/machine/package.json
-/local/machine/main.js
-/local/machine/a/index.js
-/local/machine/b/a/index.js
+package.json
+main.js
+a/index.js
+b/a/index.js
 ```
 
-In this case, if you specify a snapshot in file `/local/machine/b/a/index.js` in the Debug UI, the debugger will identify that that file corresponds to the file `/running/instance/b/a/index.js` of the code on the running instance, and the breakpoint will hit when the specified line of `/running/instance/b/a/index.js` is reached.
+In this case, if you specify a snapshot in file `b/a/index.js` in the Debug UI, the debugger will identify that that file corresponds to the file `/running/instance/b/a/index.js` of the code on the running instance, and the breakpoint will hit when the specified line of `/running/instance/b/a/index.js` is reached.
 
-Note, however, if a snapshot is specified for the file `/local/machine/a/index.js` in the Debug UI, then the debugger would not know whether this file corresponds to the file `/running/instance/a/index.js` or `/running/instance/b/a/index.js`.  If such an ambiguity occurs, a message will be displayed in the Debug UI.
-
-In this case, the `appPathRelativeToRepository` configuration option can be used to specify the directory containing the application's `package.json` file to help resolve the ambiguity.  In the example above, if the `appPathRelativeToRepository` configuration option is set to `/local/machine`, the debugger would be able to identify `/running/instance/a/index.js` as the file where the breakpoint should be set.  See the [Debugger Agent Settings](#debugger-agent-settings) section for more information on configuring the debugger.
+Note, however, if a snapshot is specified for the file `a/index.js` in the Debug UI, then the debugger would not know whether this file corresponds to the file `/running/instance/a/index.js` or `/running/instance/b/a/index.js`.  If such an ambiguity occurs, a message will be displayed in the Debug UI.
 
 ## Support for Transpiled Code
 
