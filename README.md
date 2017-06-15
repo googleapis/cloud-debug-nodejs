@@ -138,7 +138,7 @@ As soon as that line of code is reached in any of the running instances of your 
 
 ![Breakpoint Hit](doc/images/breakpoint-hit.png?raw=true)
 
-Note that the directory layout of the code that is being debugged does not have to exactly match the source code specified in the Debug UI.  In particular, if a snapshot is specified in a file in the Debug UI, a breakpoint is set in the deployed file with the longest matching path suffix.
+**Note:** The directory layout of the code that is being debugged does not have to exactly match the source code specified in the Debug UI.  This is because the debug agent resolves a snapshot filename by searching for a file with the longest matching path suffix. If a unique match is found, that file will be used to set the snapshot.
 
 An example will help illustrate this.  That is, suppose that the code on the running instance is structured as follows:
 ```
@@ -157,15 +157,15 @@ b/a/index.js
 
 In this case, if you specify a snapshot in file `b/a/index.js` in the Debug UI, the debugger will identify that that file corresponds to the file `/running/instance/b/a/index.js` of the code on the running instance, and the breakpoint will hit when the specified line of `/running/instance/b/a/index.js` is reached.
 
-Note, however, if a snapshot is specified for the file `a/index.js` in the Debug UI, then the debugger would not know whether this file corresponds to the file `/running/instance/a/index.js` or `/running/instance/b/a/index.js`.  If such an ambiguity occurs, a message will be displayed in the Debug UI.
+Note, however, if a snapshot is specified for the file `a/index.js` in the Debug UI, then the debugger would not know whether this file corresponds to the file `/running/instance/a/index.js` or `/running/instance/b/a/index.js`.  If such an ambiguity occurs, the snapshot cannot be set and a message will be displayed in the Debug UI with additional information.
 
 ## Support for Transpiled Code
 
 The debugger supports the use of transpiled code, whether it be Javascript to Javascript transpilation or transpilation from another language (such as Typescript) to Javascript.  In order to use transpiled code with the debugger, sourcemaps need to be generated with the transpiled code.  The sourcemaps need to be provided in `.js.map` files.
 
-To use the debugger, the only files that are needed in the deployment environment are the transpiled files as well as the generated sourcemap files.  In particular, the original source does not need to be available to the debugger in the deployment environment.
+Further, you do not need to deploy the original source files to the deployment environment as long as the sourcemap files are available at runtime.
 
-Instead, the original source code is provided to the Debug UI to specify snapshots.  When specifying a snapshot in an original source file in the Debug UI, the corresponding file and line in the transpiled code is automatically determined based on the sourcemap files provided with the transpiled code at runtime.  See the [Using the Debugger](#using-the-debugger) section for more information about using the Debug UI.  In addition, the exact directory layout of the original source is somewhat flexible, just as it is with the use of non-transpiled code as described in the [Using the Debugger](#using-the-debugger) section.
+In the Debug UI, you only need to provide the original source code -- you don't need the transpiled output files or the sourcemaps. When you set a snapshot in an original source file in the Debug UI, the corresponding file and line in the transpiled code is automatically determined based on the sourcemap files provided with the transpiled code at runtime.  See the [Using the Debugger](#using-the-debugger) section for more information about using the Debug UI.  In addition, the exact directory layout of the original source is somewhat flexible, just as it is with the use of non-transpiled code as described in the [Using the Debugger](#using-the-debugger) section.
 
 ## Limitations and Requirements
 * The root directory of your application needs to contain a `package.json` file.
