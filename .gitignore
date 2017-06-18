@@ -3,3 +3,4 @@ coverage
 npm-debug.log
 .DS_Store
 .vscode
+src
