@@ -1,5 +1,12 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+# 2017-06-18, Version 2.1.1 (Experimental), @ofrobots
+
+This release reverts #275 which was regressing debuggee identification on GAE and GCE.
+
+* [[`66d67f8b1b`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/66d67f8b1b)] - ***Revert*** "Use service name as debuggee id on gke (#275)" (#278)" (Ali Ijaz Sheikh)
+* [[`e3c4853fdb`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/e3c4853fdb)] - Document the support of transpiled code (#277) (Dominic Kramer) [#277](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/277)
+
 # 2017-06-12, Version 2.1.0 (Experimental), @matthewloring
 
 ### Notable changes
