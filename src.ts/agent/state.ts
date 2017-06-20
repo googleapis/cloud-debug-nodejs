@@ -27,10 +27,10 @@ const ScopeType = vm.runInDebugContext('ScopeType');
 const assert = debugAssert(process.env.CLOUD_DEBUG_ASSERTIONS);
 
 // Error message indices into the resolved variable table.
-var BUFFER_FULL_MESSAGE_INDEX = 0;
-var NATIVE_PROPERTY_MESSAGE_INDEX = 1;
-var GETTER_MESSAGE_INDEX = 2;
-var ARG_LOCAL_LIMIT_MESSAGE_INDEX = 3;
+const BUFFER_FULL_MESSAGE_INDEX = 0;
+const NATIVE_PROPERTY_MESSAGE_INDEX = 1;
+const GETTER_MESSAGE_INDEX = 2;
+const ARG_LOCAL_LIMIT_MESSAGE_INDEX = 3;
 
 /**
  * Captures the stack and current execution state.
@@ -51,10 +51,10 @@ export function capture(execState, expressions, config, v8) {
  */
 export function evaluate(expression, frame): any {
   // First validate the expression to make sure it doesn't mutate state
-  var acorn = require('acorn');
+  const acorn = require('acorn');
   try {
-    var ast = acorn.parse(expression, { sourceType: 'script' });
-    var validator = require('./validator');
+    const ast = acorn.parse(expression, { sourceType: 'script' });
+    const validator = require('./validator');
     if (!validator.isValid(ast)) {
       return { error: 'expression not allowed'};
     }
@@ -64,7 +64,7 @@ export function evaluate(expression, frame): any {
 
   // Now actually ask V8 to evaluate the expression
   try {
-    var mirror = frame.evaluate(expression);
+    const mirror = frame.evaluate(expression);
     return {
       error: null,
       mirror: mirror
@@ -133,14 +133,14 @@ class StateResolver {
    *         evaluatedExpressions fields
    */
   capture_() {
-    var that = this;
+    const that = this;
 
     // Evaluate the watch expressions
-    var evalIndexSet = new Set();
+    const evalIndexSet = new Set();
     if (that.expressions_) {
       that.expressions_.forEach(function(expression, index) {
-        var result = evaluate(expression, that.state_.frame(0));
-        var evaluated;
+        const result = evaluate(expression, that.state_.frame(0));
+        let evaluated;
 
         if (result.error) {
           evaluated = {
@@ -150,7 +150,7 @@ class StateResolver {
           };
         } else {
           evaluated = that.resolveVariable_(expression, result.mirror, true);
-          var varTableIdx = evaluated.varTableIndex;
+          const varTableIdx = evaluated.varTableIndex;
           if (typeof varTableIdx !== 'undefined') {
             evalIndexSet.add(varTableIdx);
           }
@@ -162,15 +162,15 @@ class StateResolver {
     // The frames are resolved after the evaluated expressions so that
     // evaluated expressions can be evaluated as much as possible within
     // the max data size limits
-    var frames = that.resolveFrames_();
+    const frames = that.resolveFrames_();
 
     // Now resolve the variables
-    var index = this.messageTable_.length; // skip the sentinel values
-    var noLimit = that.config_.capture.maxDataSize === 0;
+    let index = this.messageTable_.length; // skip the sentinel values
+    const noLimit = that.config_.capture.maxDataSize === 0;
     while (index < that.rawVariableTable_.length && // NOTE: length changes in loop
            (that.totalSize_ < that.config_.capture.maxDataSize || noLimit)) {
       assert(!that.resolvedVariableTable_[index]); // shouldn't have it resolved yet
-      var isEvaluated = evalIndexSet.has(index);
+      const isEvaluated = evalIndexSet.has(index);
       that.resolvedVariableTable_[index] =
         that.resolveMirror_(that.rawVariableTable_[index], isEvaluated);
       index++;
@@ -200,8 +200,8 @@ class StateResolver {
   trimVariableTable_(fromIndex, frames) {
     this.resolvedVariableTable_.splice(fromIndex); // remove the remaining entries
 
-    var that = this;
-    var processBufferFull = function(variables) {
+    const that = this;
+    const processBufferFull = function(variables) {
       variables.forEach(function (variable) {
         if (variable.varTableIndex && variable.varTableIndex >= fromIndex) {
           // make it point to the sentinel 'buffer full' value
@@ -223,12 +223,12 @@ class StateResolver {
   }
 
   resolveFrames_() {
-    var frames: any[] = [];
-    var frameCount = Math.min(this.state_.frameCount(),
+    const frames: any[] = [];
+    const frameCount = Math.min(this.state_.frameCount(),
       this.config_.capture.maxFrames);
 
-    for (var i = 0; i < frameCount; i++) {
-      var frame = this.state_.frame(i);
+    for (let i = 0; i < frameCount; i++) {
+      const frame = this.state_.frame(i);
       if (this.shouldFrameBeResolved_(frame)) {
         frames.push(this.resolveFrame_(frame,
           (i < this.config_.capture.maxExpandFrames)));
@@ -241,13 +241,13 @@ class StateResolver {
     // Only capture data from the frames for which we can link the data back
     // to the source files.
 
-    var fullPath = this.resolveFullPath_(frame);
+    const fullPath = this.resolveFullPath_(frame);
 
     if (!this.isPathInCurrentWorkingDirectory_(fullPath)) {
       return false;
     }
 
-    var relativePath = this.resolveRelativePath_(frame);
+    const relativePath = this.resolveRelativePath_(frame);
     if (!this.config_.capture.includeNodeModules &&
         this.isPathInNodeModulesDirectory_(relativePath)) {
       return false;
@@ -257,12 +257,12 @@ class StateResolver {
   }
 
   resolveFullPath_(frame) {
-    var func = frame.func();
+    const func = frame.func();
     if (!func.resolved()) {
       return '';
     }
 
-    var script = func.script();
+    const script = func.script();
     if (!script) {
       return '';
     }
@@ -271,7 +271,7 @@ class StateResolver {
   }
 
   resolveRelativePath_(frame) {
-    var fullPath = this.resolveFullPath_(frame);
+    const fullPath = this.resolveFullPath_(frame);
     return this.stripCurrentWorkingDirectory_(fullPath);
   }
 
@@ -290,8 +290,8 @@ class StateResolver {
   }
 
   resolveFrame_(frame, underFrameCap) {
-    var args: Array<{ name: string, varTableIndex: number }> = [];
-    var locals: Array<{ name: string, varTableIndex: number }> = [];
+    let args: Array<{ name: string, varTableIndex: number }> = [];
+    let locals: Array<{ name: string, varTableIndex: number }> = [];
     // Locals and arguments are safe to collect even when `config.allowExpressions=false`
     // since we properly avoid inspecting interceptors and getters by default.
     if (!underFrameCap) {
@@ -336,8 +336,8 @@ class StateResolver {
   }
 
   extractArgumentsList_(frame) {
-    var args: any[] = [];
-    for (var i = 0; i < frame.argumentCount(); i++) {
+    const args: any[] = [];
+    for (let i = 0; i < frame.argumentCount(); i++) {
       // Don't resolve unnamed arguments.
       if (!frame.argumentName(i)) {
         continue;
@@ -366,9 +366,9 @@ class StateResolver {
     // TODO: Determine why `args` is never used in this function
     args;
 
-    var self = this;
-    var usedNames = {};
-    var makeMirror = this.ctx_.MakeMirror;
+    const self = this;
+    const usedNames = {};
+    const makeMirror = this.ctx_.MakeMirror;
     const allScopes = frame.allScopes();
     const count = allScopes.length;
 
@@ -395,7 +395,7 @@ class StateResolver {
         return transform(
           scope.details().object(),
           function (locals, value, name) {
-            var trg = makeMirror(value);
+            const trg = makeMirror(value);
             if (!usedNames[name]) {
               // It's a valid variable that belongs in the locals list and wasn't
               // discovered at a lower-scope
@@ -412,7 +412,7 @@ class StateResolver {
       // invocation. Check to see whether a receiver context is substantive,
       // (invocations may be bound to null) if so: store in the locals list
       // under the name 'context' which is used by the Chrome DevTools.
-      var ctx = frame.details().receiver();
+      const ctx = frame.details().receiver();
       if (ctx) {
         return [self.resolveVariable_('context', makeMirror(ctx), false)];
       }
@@ -431,16 +431,16 @@ class StateResolver {
    *                              expression.
    */
   resolveVariable_(name, value, isEvaluated) {
-    var size = name.length;
+    let size = name.length;
 
-    var data: any = {
+    const data: any = {
       name: name
     };
 
     if (value.isPrimitive() || value.isRegExp()) {
       // primitives: undefined, null, boolean, number, string, symbol
       data.value = value.toText();
-      var maxLength = this.config_.capture.maxStringLength;
+      const maxLength = this.config_.capture.maxStringLength;
       if (!isEvaluated && maxLength && maxLength < data.value.length) {
         data.status = new StatusMessage(StatusMessage.VARIABLE_VALUE,
           'Only first `config.capture.maxStringLength=' +
@@ -471,7 +471,7 @@ class StateResolver {
   }
 
   getVariableIndex_(value) {
-    var idx = this.rawVariableTable_.indexOf(value);
+    let idx = this.rawVariableTable_.indexOf(value);
     if (idx === -1) {
       idx = this.storeObjectToVariableTable_(value);
     }
@@ -479,7 +479,7 @@ class StateResolver {
   }
 
   storeObjectToVariableTable_(obj) {
-    var idx = this.rawVariableTable_.length;
+    let idx = this.rawVariableTable_.length;
     this.rawVariableTable_[idx] = obj;
     return idx;
   }
@@ -489,13 +489,13 @@ class StateResolver {
    * provided object mirror.
    */
   resolveMirror_(mirror, isEvaluated) {
-    var properties = mirror.properties();
-    var maxProps = this.config_.capture.maxProperties;
-    var truncate = maxProps && properties.length > maxProps;
+    let properties = mirror.properties();
+    const maxProps = this.config_.capture.maxProperties;
+    const truncate = maxProps && properties.length > maxProps;
     if (!isEvaluated && truncate) {
       properties = properties.slice(0, maxProps);
     }
-    var members = properties.map(this.resolveMirrorProperty_.bind(this, isEvaluated));
+    const members = properties.map(this.resolveMirrorProperty_.bind(this, isEvaluated));
     if (!isEvaluated && truncate) {
       members.push({name: 'Only first `config.capture.maxProperties=' +
                           this.config_.capture.maxProperties +
@@ -509,10 +509,10 @@ class StateResolver {
   }
 
   resolveMirrorProperty_(isEvaluated, property) {
-    var name = String(property.name());
+    const name = String(property.name());
     // Array length must be special cased as it is a native property that
     // we know to be safe to evaluate which is not generally true.
-    var isArrayLen = property.mirror_.isArray() && name === 'length';
+    const isArrayLen = property.mirror_.isArray() && name === 'length';
     if (property.isNative() && !isArrayLen) {
       return {
         name: name,

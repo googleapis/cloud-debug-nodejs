@@ -21,11 +21,11 @@ import * as path from 'path';
 
 import * as sourceMap from 'source-map';
 
-/** @define {string} */ var MAP_EXT = '.map';
+/** @define {string} */ const MAP_EXT = '.map';
 
 export function create(sourcemapPaths, callback) {
-  var mapper = new SourceMapper();
-  var callList = Array.prototype.slice.call(sourcemapPaths)
+  const mapper = new SourceMapper();
+  const callList = Array.prototype.slice.call(sourcemapPaths)
                  .map(function(path) {
                    return function(callback) {
                      processSourcemap(mapper.infoMap_, path, callback);
@@ -68,7 +68,7 @@ function processSourcemap(infoMap, mapPath, callback) {
           ': ' + err));
       }
 
-      var consumer;
+      let consumer;
       try {
         consumer = new sourceMap.SourceMapConsumer(data);
       }
@@ -83,12 +83,12 @@ function processSourcemap(infoMap, mapPath, callback) {
         * containing the map file.  Otherwise, use the name of the output
         * file (with the .map extension removed) as the output file.
         */
-      var outputBase = consumer.file ? consumer.file
-                                     : path.basename(mapPath, '.map');
-      var parentDir = path.dirname(mapPath);
-      var outputPath = path.normalize(path.join(parentDir, outputBase));
+      const outputBase = consumer.file ? consumer.file
+                                       : path.basename(mapPath, '.map');
+      const parentDir = path.dirname(mapPath);
+      const outputPath = path.normalize(path.join(parentDir, outputBase));
 
-      var sources = Array.prototype.slice.call(consumer.sources)
+      const sources = Array.prototype.slice.call(consumer.sources)
         .filter(function(value) {
           // filter out any empty string, null, or undefined sources
           return !!value;
@@ -173,16 +173,16 @@ class SourceMapper {
       return null;
     }
 
-    var entry = this.infoMap_.get(inputPath);
-    var sourcePos = {
+    const entry = this.infoMap_.get(inputPath);
+    const sourcePos = {
       source: path.relative(path.dirname(entry.mapFile), inputPath),
       line: lineNumber + 1, // the SourceMapConsumer expects the line number
                             // to be one-based but expects the column number
       column: colNumber     // to be zero-based
     };
 
-    var consumer = entry.mapConsumer;
-    var allPos = consumer.allGeneratedPositionsFor(sourcePos);
+    const consumer = entry.mapConsumer;
+    const allPos = consumer.allGeneratedPositionsFor(sourcePos);
     /*
     * Based on testing, it appears that the following code is needed to
     * properly get the correct mapping information.
@@ -190,7 +190,7 @@ class SourceMapper {
     * In particular, the generatedPositionFor() alone doesn't appear to
     * give the correct mapping information.
     */
-    var mappedPos = allPos && allPos.length > 0 ?
+    const mappedPos = allPos && allPos.length > 0 ?
       Array.prototype.reduce.call(allPos,
         function(accumulator, value/*, index, arr*/) {
             return value.line < accumulator.line ? value : accumulator;

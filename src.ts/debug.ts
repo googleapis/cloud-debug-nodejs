@@ -49,7 +49,7 @@ export class Debug {
       return new Debug(options);
     }
 
-    var config = {
+    const config = {
       projectIdRequired: false,
       baseUrl: 'https://clouddebugger.googleapis.com/v2',
       scopes: ['https://www.googleapis.com/auth/cloud_debugger'],

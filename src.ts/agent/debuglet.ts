@@ -35,14 +35,14 @@ import { StatusMessage } from '../status-message';
 import * as SourceMapper from './sourcemapper';
 const pjson = require('../../package.json');
 
-var assert = require('assert');
+import * as assert from 'assert';
 
-var ALLOW_EXPRESSIONS_MESSAGE = 'Expressions and conditions are not allowed' +
+const ALLOW_EXPRESSIONS_MESSAGE = 'Expressions and conditions are not allowed' +
   ' by default. Please set the allowExpressions configuration option to true.' +
   ' See the debug agent documentation at https://goo.gl/ShSm6r.';
-var NODE_VERSION_MESSAGE = 'Node.js version not supported. Node.js 5.2.0 and ' +
+const NODE_VERSION_MESSAGE = 'Node.js version not supported. Node.js 5.2.0 and ' +
   ' versions older than 0.12 are not supported.';
-var BREAKPOINT_ACTION_MESSAGE = 'The only currently supported breakpoint actions' +
+const BREAKPOINT_ACTION_MESSAGE = 'The only currently supported breakpoint actions' +
   ' are CAPTURE and LOG.';
 
 /**
@@ -52,12 +52,12 @@ var BREAKPOINT_ACTION_MESSAGE = 'The only currently supported breakpoint actions
  * @param {Breakpoint} breakpoint The breakpoint to format.
  * @return {string} A formatted string.
  */
-var formatBreakpoint = function(msg, breakpoint) {
-  var text = msg + util.format('breakpoint id: %s,\n\tlocation: %s',
+const formatBreakpoint = function(msg, breakpoint) {
+  let text = msg + util.format('breakpoint id: %s,\n\tlocation: %s',
     breakpoint.id, util.inspect(breakpoint.location));
   if (breakpoint.createdTime) {
-    var unixTime = parseInt(breakpoint.createdTime.seconds, 10);
-    var date = new Date(unixTime * 1000); // to milliseconds.
+    const unixTime = parseInt(breakpoint.createdTime.seconds, 10);
+    const date = new Date(unixTime * 1000); // to milliseconds.
     text += '\n\tcreatedTime: ' + date.toString();
   }
   if (breakpoint.condition) {
@@ -76,7 +76,7 @@ var formatBreakpoint = function(msg, breakpoint) {
  * @param {Object.<string, Breakpoint>} breakpoints A map of breakpoints.
  * @return {string} A formatted string.
  */
-var formatBreakpoints = function(msg, breakpoints) {
+const formatBreakpoints = function(msg, breakpoints) {
   return msg + Object.keys(breakpoints).map(function (b) {
     return formatBreakpoint('', breakpoints[b]);
   }).join('\n');
@@ -151,7 +151,7 @@ export class Debuglet extends EventEmitter {
   }
 
   static normalizeConfig_(config) {
-    var envConfig = {
+    const envConfig = {
       logLevel: process.env.GCLOUD_DEBUG_LOGLEVEL,
       serviceContext: {
         service: process.env.GAE_SERVICE || process.env.GAE_MODULE_NAME,
@@ -180,14 +180,14 @@ export class Debuglet extends EventEmitter {
    * @private
    */
   start() {
-    var that = this;
+    const that = this;
     fs.stat(path.join(that.config_.workingDirectory, 'package.json'), function(err) {
       if (err && err.code === 'ENOENT') {
         that.logger_.error('No package.json located in working directory.');
         that.emit('initError', new Error('No package.json found.'));
         return;
       }
-      var id;
+      let id;
       if (process.env.GAE_MINOR_VERSION) {
         id = 'GAE-' + process.env.GAE_MINOR_VERSION;
       }
@@ -199,8 +199,8 @@ export class Debuglet extends EventEmitter {
           return;
         }
 
-        var jsStats = fileStats.selectStats(/.js$/);
-        var mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
+        const jsStats = fileStats.selectStats(/.js$/);
+        const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
         SourceMapper.create(mapFiles, function(err, mapper) {
           if (err) {
             that.logger_.error('Error processing the sourcemaps.', err);
@@ -257,15 +257,15 @@ export class Debuglet extends EventEmitter {
    * @private
    */
   static createDebuggee(projectId, uid, serviceContext, sourceContext, description,
-               errorMessage, onGCP) {
-    var cwd = process.cwd();
-    var mainScript = path.relative(cwd, process.argv[1]);
+                        errorMessage, onGCP) {
+    const cwd = process.cwd();
+    const mainScript = path.relative(cwd, process.argv[1]);
 
-    var version = 'google.com/node-' + (onGCP ? 'gcp' : 'standalone') + '/v' +
+    const version = 'google.com/node-' + (onGCP ? 'gcp' : 'standalone') + '/v' +
                   pjson.version;
-    var desc = process.title + ' ' + mainScript;
+    let desc = process.title + ' ' + mainScript;
 
-    var labels: any = {
+    const labels: any = {
       'main script': mainScript,
       'process.title': process.title,
       'node version': process.versions.node,
@@ -303,15 +303,15 @@ export class Debuglet extends EventEmitter {
       desc += ' description:' + description;
     }
 
-    var uniquifier = Debuglet._createUniquifier(desc, version, uid, sourceContext,
+    const uniquifier = Debuglet._createUniquifier(desc, version, uid, sourceContext,
         labels);
 
-    var statusMessage =
+    const statusMessage =
         errorMessage ?
             new StatusMessage(StatusMessage.UNSPECIFIED, errorMessage, true) :
             null;
 
-    var properties = {
+    const properties = {
       project: projectId,
       uniquifier: uniquifier,
       description: desc,
@@ -327,7 +327,7 @@ export class Debuglet extends EventEmitter {
    * @private
    */
   getProjectId_(callback) {
-    var that = this;
+    const that = this;
 
     // We need to figure out whether we are running on GCP. We can use our ability
     // to access the metadata service as a test for that.
@@ -337,11 +337,11 @@ export class Debuglet extends EventEmitter {
     metadata.project(
         'project-id', function(err, _, metadataProject) {
           // We should get an error if we are not on GCP.
-          var onGCP = !err;
+          const onGCP = !err;
 
           // We perfer to use the locally available projectId as that is least
           // surprising to users.
-          var project = that.debug_.options.projectId ||
+          const project = that.debug_.options.projectId ||
                         process.env.GCLOUD_PROJECT || metadataProject;
 
           // We if don't have a projectId by now, we fail with an error.
@@ -354,7 +354,7 @@ export class Debuglet extends EventEmitter {
 
   getSourceContext_(callback) {
     fs.readFile('source-context.json', 'utf8', function(err: any, data) {
-      var sourceContext;
+      let sourceContext;
       if (!err) {
         try {
           sourceContext = JSON.parse(data);
@@ -373,7 +373,7 @@ export class Debuglet extends EventEmitter {
    * @private
    */
   scheduleRegistration_(seconds) {
-    var that = this;
+    const that = this;
 
     function onError(err) {
       that.logger_.error('Failed to re-register debuggee ' +
@@ -416,7 +416,7 @@ export class Debuglet extends EventEmitter {
    * @private
    */
   scheduleBreakpointFetch_(seconds) {
-    var that = this;
+    const that = this;
 
     that.fetcherActive_ = true;
     setTimeout(function() {
@@ -456,8 +456,8 @@ export class Debuglet extends EventEmitter {
               that.scheduleBreakpointFetch_(0/*immediately*/);
               return;
             }
-            var bps = (body.breakpoints || []).filter(function(bp) {
-              var action = bp.action || 'CAPTURE';
+            const bps = (body.breakpoints || []).filter(function(bp) {
+              const action = bp.action || 'CAPTURE';
               if (action !== 'CAPTURE' && action !== 'LOG') {
                 that.logger_.warn('Found breakpoint with invalid action:', action);
                 bp.status = new StatusMessage(StatusMessage.UNSPECIFIED,
@@ -485,8 +485,8 @@ export class Debuglet extends EventEmitter {
    * @private
    */
   updateActiveBreakpoints_(breakpoints) {
-    var that = this;
-    var updatedBreakpointMap = this.convertBreakpointListToMap_(breakpoints);
+    const that = this;
+    const updatedBreakpointMap = this.convertBreakpointListToMap_(breakpoints);
 
     if (breakpoints.length) {
       that.logger_.info(formatBreakpoints('Server breakpoints: ',
@@ -528,7 +528,7 @@ export class Debuglet extends EventEmitter {
    * @private
    */
   convertBreakpointListToMap_(breakpointList) {
-    var map = {};
+    const map = {};
     breakpointList.forEach(function(breakpoint) {
       map[breakpoint.id] = breakpoint;
     });
@@ -553,7 +553,7 @@ export class Debuglet extends EventEmitter {
    * @private
    */
   addBreakpoint_(breakpoint, cb) {
-    var that = this;
+    const that = this;
 
     if (!that.config_.allowExpressions &&
         (breakpoint.condition || breakpoint.expressions)) {
@@ -565,7 +565,7 @@ export class Debuglet extends EventEmitter {
     }
 
     if (semver.satisfies(process.version, '5.2 || <4')) {
-      var message = NODE_VERSION_MESSAGE;
+      const message = NODE_VERSION_MESSAGE;
       that.logger_.error(message);
       breakpoint.status = new StatusMessage(StatusMessage.UNSPECIFIED,
         message, true);
@@ -612,7 +612,7 @@ export class Debuglet extends EventEmitter {
    * @private
    */
   completeBreakpoint_(breakpoint) {
-    var that = this;
+    const that = this;
 
     that.logger_.info('\tupdating breakpoint data on server', breakpoint.id);
     that.debugletApi_.updateBreakpoint(
@@ -632,7 +632,7 @@ export class Debuglet extends EventEmitter {
    * @private
    */
   rejectBreakpoint_(breakpoint) {
-    var that = this;
+    const that = this;
 
     that.debugletApi_.updateBreakpoint(
         that.debuggee_, breakpoint, function(err /*, body*/) {
@@ -651,12 +651,12 @@ export class Debuglet extends EventEmitter {
    * @private
    */
   scheduleBreakpointExpiry_(breakpoint) {
-    var that = this;
+    const that = this;
 
-    var now = Date.now() / 1000;
-    var createdTime = breakpoint.createdTime ?
+    const now = Date.now() / 1000;
+    const createdTime = breakpoint.createdTime ?
       parseInt(breakpoint.createdTime.seconds) : now;
-    var expiryTime = createdTime + that.config_.breakpointExpirationSec;
+    const expiryTime = createdTime + that.config_.breakpointExpirationSec;
 
     setTimeout(function() {
       that.logger_.info('Expiring breakpoint ' + breakpoint.id);
@@ -690,8 +690,8 @@ export class Debuglet extends EventEmitter {
    *     in B.
    */
   static mapSubtract(A, B) {
-    var removed = [];
-    for (var key in A) {
+    const removed = [];
+    for (let key in A) {
       if (!B[key]) {
         removed.push(A[key]);
       }
@@ -705,8 +705,8 @@ export class Debuglet extends EventEmitter {
    * are given than placeholders extra expressions are dropped.
    */
   static format(base, exprs) {
-    var tokens = Debuglet._tokenize(base, exprs.length);
-    for (var i = 0; i < tokens.length; i++) {
+    const tokens = Debuglet._tokenize(base, exprs.length);
+    for (let i = 0; i < tokens.length; i++) {
       if (!tokens[i].v) {
         continue;
       }
@@ -714,7 +714,7 @@ export class Debuglet extends EventEmitter {
         tokens[i] = '$';
         continue;
       }
-      for (var j = 0; j < exprs.length; j++) {
+      for (let j = 0; j < exprs.length; j++) {
         if (tokens[i].v === '$' + j) {
           tokens[i] = exprs[j];
           break;
@@ -725,10 +725,10 @@ export class Debuglet extends EventEmitter {
   }
 
   static _tokenize(base, exprLength) {
-    var acc = Debuglet._delimit(base, '$$');
-    for (var i = exprLength - 1; i >= 0; i--) {
-      var newAcc = [];
-      for (var j = 0; j < acc.length; j++) {
+    let acc = Debuglet._delimit(base, '$$');
+    for (let i = exprLength - 1; i >= 0; i--) {
+      const newAcc = [];
+      for (let j = 0; j < acc.length; j++) {
         if (acc[j].v) {
           newAcc.push(acc[j]);
         } else {
@@ -741,10 +741,10 @@ export class Debuglet extends EventEmitter {
   }
 
   static _delimit(source, delim) {
-    var pieces = source.split(delim);
-    var dest = [];
+    const pieces = source.split(delim);
+    const dest = [];
     dest.push(pieces[0]);
-    for (var i = 1; i < pieces.length; i++) {
+    for (let i = 1; i < pieces.length; i++) {
       dest.push({ v: delim }, pieces[i]);
     }
     return dest;
@@ -752,7 +752,7 @@ export class Debuglet extends EventEmitter {
 
   static _createUniquifier(desc, version, uid, sourceContext,
     labels) {
-    var uniquifier = desc + version + uid + JSON.stringify(sourceContext) +
+    const uniquifier = desc + version + uid + JSON.stringify(sourceContext) +
       JSON.stringify(labels);
     return crypto.createHash('sha1').update(uniquifier).digest('hex');
   }
