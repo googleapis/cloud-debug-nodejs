@@ -13,19 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
 const realAssert = require('assert');
 
 const nop = _=>_;
-const fakeAssert = nop;
+const fakeAssert: any = nop;
 fakeAssert.deepEqual = fakeAssert.deepStrictEqual = fakeAssert.doesNotThrow =
     fakeAssert.equal = fakeAssert.fail = fakeAssert.ifError =
     fakeAssert.notDeepEqual = fakeAssert.notDeepStrictEqual =
     fakeAssert.notEqual = fakeAssert.notStrictEqual = fakeAssert.ok =
-    fakeAssert.strictEqual = fakeAssert.throws = 
+    fakeAssert.strictEqual = fakeAssert.throws =
     fakeAssert.AssertionError = nop;
 
-module.exports = function debugAssert(enableAssertions) {
+export function debugAssert(enableAssertions) {
   return enableAssertions ? realAssert : fakeAssert;
 };

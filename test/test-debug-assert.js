@@ -18,7 +18,7 @@
 const realAssert = require('assert');
 
 describe('debug-assert', () => {
-  const debugAssert = require('../src/agent/debug-assert.js');
+  const debugAssert = require('../src/agent/debug-assert.js').debugAssert;
 
   it('should fire assertions when enabled', () => {
     realAssert.throws(() => {

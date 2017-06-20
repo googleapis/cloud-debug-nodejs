@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 var ScopeType = require('vm').runInDebugContext('ScopeType');
-var assert = require('./debug-assert')(process.env.CLOUD_DEBUG_ASSERTIONS);
+var assert = require('./debug-assert').debugAssert(process.env.CLOUD_DEBUG_ASSERTIONS);
 var util = require('util');
 var lodash = require('lodash');
 var transform = lodash.transform;
