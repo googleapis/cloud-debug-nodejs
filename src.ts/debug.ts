@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-var common: { Service: new (any) => any,
-              util: any } = require('@google-cloud/common');
-var util = require('util');
+import * as _common from '@google-cloud/common';
+const common: { Service: new (any) => any, util: any } = _common;
+import * as util from 'util';
 
 export class Debug {
   private options;

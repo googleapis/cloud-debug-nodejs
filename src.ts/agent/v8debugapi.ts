@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-'use strict';
+import * as _ from 'lodash';
+import * as vm from 'vm';
+import * as path from 'path';
+import * as semver from 'semver';
 
-/** @const */ var _ = require('lodash');
-/** @const */ var vm = require('vm');
-/** @const */ var path = require('path');
-/** @const */ var semver = require('semver');
-
-/** @const */ var state = require('./state.js');
-/** @const */ var StatusMessage = require('../status-message.js').StatusMessage;
+import * as state from './state';
+import { StatusMessage } from '../status-message';
 
 /** @const */ var messages = {
   INVALID_BREAKPOINT: 'invalid snapshot - id or location missing',
@@ -38,7 +36,7 @@
   V8_BREAKPOINT_DISABLED: 'Internal error: V8 breakpoint externally disabled',
   CAPTURE_BREAKPOINT_DATA: 'Error trying to capture snapshot data: ',
   INVALID_LINE_NUMBER: 'Invalid snapshot position: ',
-  COULD_NOT_FIND_OUTPUT_FILE: 
+  COULD_NOT_FIND_OUTPUT_FILE:
     'Could not determine the output file associated with the transpiled input file'
 };
 
@@ -58,7 +56,7 @@ var formatInterval = function(msg, interval) {
 };
 
 var singleton;
-function create(logger_, config_, jsFiles_, sourcemapper_) {
+export function create(logger_, config_, jsFiles_, sourcemapper_) {
   if (singleton && !config_.forceNewAgent_) {
     return singleton;
   }
@@ -314,7 +312,7 @@ function create(logger_, config_, jsFiles_, sourcemapper_) {
 
     // The breakpoint protobuf message presently doesn't have a column property
     // but it may have one in the future.
-    var column = mapInfo && mapInfo.column ? mapInfo.column : 
+    var column = mapInfo && mapInfo.column ? mapInfo.column :
       (breakpoint.location.column || 1);
     var line = mapInfo ? mapInfo.line : breakpoint.location.line;
 
@@ -566,7 +564,8 @@ function pathToRegExp(scriptPath) {
   return new RegExp(scriptPath + '$');
 }
 
-function findScripts(scriptPath, config, fileStats) {
+// Exposed for unit testing.
+export function findScripts(scriptPath, config, fileStats) {
   // Use repository relative mapping if present.
   if (config.appPathRelativeToRepository) {
     var candidate = scriptPath.replace(config.appPathRelativeToRepository,
@@ -589,7 +588,7 @@ function findScripts(scriptPath, config, fileStats) {
  * Given an list of available files and a script path to match, this function
  * tries to resolve the script to a (hopefully unique) match in the file list
  * disregarding the full path to the script. This can be useful because repo
- * file paths (that the UI has) may not necessarily be suffixes of the absolute 
+ * file paths (that the UI has) may not necessarily be suffixes of the absolute
  * paths of the deployed files. This happens when the user deploys a
  * subdirectory of the repo.
  *
@@ -610,7 +609,8 @@ function findScripts(scriptPath, config, fileStats) {
  *     available.
  * @return {array<string>} list of files that match.
  */
-function findScriptsFuzzy(scriptPath, fileList) {
+// Exposed for unit testing.
+export function findScriptsFuzzy(scriptPath, fileList) {
   var matches = fileList;
   var components = scriptPath.split(path.sep);
   for (var i = components.length - 1; i >= 0; i--) {
@@ -622,10 +622,3 @@ function findScriptsFuzzy(scriptPath, fileList) {
   }
   return matches;
 }
-
-module.exports = {
-  create: create,
-  // Exposed for unit testing.
-  findScripts: findScripts,
-  findScriptsFuzzy: findScriptsFuzzy
-};

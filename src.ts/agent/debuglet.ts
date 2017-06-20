@@ -14,25 +14,26 @@
  * limitations under the License.
  */
 
-var crypto = require('crypto');
-var fs = require('fs');
-var path = require('path');
+import * as crypto from 'crypto';
+import * as fs from 'fs';
+import * as path from 'path';
 import { EventEmitter } from 'events';
-var extend = require('extend');
-var util = require('util');
-var semver = require('semver');
-var _ = require('lodash');
-var metadata = require('gcp-metadata');
-var common = require('@google-cloud/common');
+import * as extend from 'extend';
+import * as util from 'util';
+import * as semver from 'semver';
+import * as _ from 'lodash';
+import * as metadata from 'gcp-metadata';
+import * as common from '@google-cloud/common';
 
-var v8debugapi = require('./v8debugapi.js');
-var Debuggee = require('../debuggee.js').Debuggee;
-var DebugletApi = require('../controller.js').Controller;
-var defaultConfig = require('./config.js').default;
-var scanner = require('./scanner.js');
-var StatusMessage = require('../status-message.js').StatusMessage;
-var SourceMapper = require('./sourcemapper.js');
-var pjson = require('../../package.json');
+import * as v8debugapi from './v8debugapi';
+import { Debuggee } from '../debuggee';
+import { Controller } from '../controller';
+// The following import syntax is used because './config' has a default export
+import defaultConfig from './config';
+import * as scanner from './scanner';
+import { StatusMessage } from '../status-message';
+import * as SourceMapper from './sourcemapper';
+const pjson = require('../../package.json');
 
 var assert = require('assert');
 
@@ -137,7 +138,7 @@ export class Debuglet extends EventEmitter {
     });
 
     /** @private {DebugletApi} */
-    this.debugletApi_ = new DebugletApi(this.debug_);
+    this.debugletApi_ = new Controller(this.debug_);
 
     /** @private {Debuggee} */
     this.debuggee_ = null;
@@ -352,12 +353,13 @@ export class Debuglet extends EventEmitter {
   }
 
   getSourceContext_(callback) {
-    fs.readFile('source-context.json', 'utf8', function(err, data) {
+    fs.readFile('source-context.json', 'utf8', function(err: any, data) {
       var sourceContext;
       if (!err) {
         try {
           sourceContext = JSON.parse(data);
         } catch (e) {
+          // TODO: Fix casting `err` from an ErrnoException to a string
           err = 'Malformed source-context.json file: ' + e;
         }
       }

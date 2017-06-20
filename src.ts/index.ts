@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-var Debug = require('./debug.js').Debug;
-var Debuglet = require('./agent/debuglet.js').Debuglet;
+import { Debug } from './debug';
+import { Debuglet } from './agent/debuglet';
 
 // Singleton.
 var debuglet;

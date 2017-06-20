@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-'use strict';
-
 /*!
  * @module debug/controller
  */
 
-var assert = require('assert');
-var common: { ServiceObject: new (any) => any } = require('@google-cloud/common');
-var qs = require('querystring');
+import * as _common from '@google-cloud/common';
+import * as assert from 'assert';
+import * as qs from 'querystring';
+
+const common: { ServiceObject: new (any) => any } = _common;
 
 /** @const {string} Cloud Debug API endpoint */
 var API = 'https://clouddebugger.googleapis.com/v2/controller';

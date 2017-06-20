@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-const realAssert = require('assert');
+import * as realAssert from 'assert';
 
 const nop = _=>_;
 const fakeAssert: any = nop;
