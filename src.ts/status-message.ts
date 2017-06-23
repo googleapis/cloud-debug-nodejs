@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-export class StatusMessage {
-  private refersTo;
-  private description;
-  private isError;
+import * as apiTypes from './types/api-types';
+
+export class StatusMessage implements apiTypes.StatusMessage {
+  refersTo: apiTypes.Reference;
+  description: apiTypes.FormatMessage;
+  isError: boolean;
 
   /**
    * Status Message to be sent to the server
    * @constructor
    */
-  constructor(refersTo, description, isError) {
+  constructor(refersTo: apiTypes.Reference, description: string, isError: boolean) {
     this.refersTo = refersTo;
     this.description = { format: description };
     this.isError = isError;
@@ -31,12 +33,12 @@ export class StatusMessage {
 
   // These status messages come from a proto definition.
   // New status messages cannot be added here.
-  static readonly UNSPECIFIED = 'UNSPECIFIED';
-  static readonly BREAKPOINT_SOURCE_LOCATION =
+  static readonly UNSPECIFIED: apiTypes.Reference = 'UNSPECIFIED';
+  static readonly BREAKPOINT_SOURCE_LOCATION: apiTypes.Reference =
                   'BREAKPOINT_SOURCE_LOCATION';
-  static readonly BREAKPOINT_CONDITION = 'BREAKPOINT_CONDITION';
-  static readonly BREAKPOINT_EXPRESSION = 'BREAKPOINT_EXPRESSION';
-  static readonly VARIABLE_NAME = 'VARIABLE_NAME';
-  static readonly VARIABLE_VALUE = 'VARIABLE_VALUE';
-  static readonly BREAKPOINT_AGE = 'BREAKPOINT_AGE';
+  static readonly BREAKPOINT_CONDITION: apiTypes.Reference = 'BREAKPOINT_CONDITION';
+  static readonly BREAKPOINT_EXPRESSION: apiTypes.Reference = 'BREAKPOINT_EXPRESSION';
+  static readonly VARIABLE_NAME: apiTypes.Reference = 'VARIABLE_NAME';
+  static readonly VARIABLE_VALUE: apiTypes.Reference = 'VARIABLE_VALUE';
+  static readonly BREAKPOINT_AGE: apiTypes.Reference = 'BREAKPOINT_AGE';
 }

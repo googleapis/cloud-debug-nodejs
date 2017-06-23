@@ -37,6 +37,12 @@ const pjson = require('../../package.json');
 
 import * as assert from 'assert';
 
+import { Breakpoint } from '../types/api-types';
+import { DebugAgentConfig } from './config';
+import { Debug } from '../debug';
+import { Logger } from '../types/common-types';
+import { V8DebugApi } from './v8debugapi';
+
 const ALLOW_EXPRESSIONS_MESSAGE = 'Expressions and conditions are not allowed' +
   ' by default. Please set the allowExpressions configuration option to true.' +
   ' See the debug agent documentation at https://goo.gl/ShSm6r.';
@@ -52,7 +58,7 @@ const BREAKPOINT_ACTION_MESSAGE = 'The only currently supported breakpoint actio
  * @param {Breakpoint} breakpoint The breakpoint to format.
  * @return {string} A formatted string.
  */
-const formatBreakpoint = function(msg, breakpoint) {
+const formatBreakpoint = function(msg: string, breakpoint: Breakpoint): string {
   let text = msg + util.format('breakpoint id: %s,\n\tlocation: %s',
     breakpoint.id, util.inspect(breakpoint.location));
   if (breakpoint.createdTime) {
@@ -76,24 +82,24 @@ const formatBreakpoint = function(msg, breakpoint) {
  * @param {Object.<string, Breakpoint>} breakpoints A map of breakpoints.
  * @return {string} A formatted string.
  */
-const formatBreakpoints = function(msg, breakpoints) {
+const formatBreakpoints = function(msg: string, breakpoints: { [key: string]: Breakpoint }): string {
   return msg + Object.keys(breakpoints).map(function (b) {
     return formatBreakpoint('', breakpoints[b]);
   }).join('\n');
 };
 
 export class Debuglet extends EventEmitter {
-  private config_;
-  private debug_;
-  private v8debug_;
-  private running_;
-  private project_;
-  private fetcherActive_;
-  private logger_;
-  private debugletApi_;
-  private debuggee_;
-  private activeBreakpointMap_;
-  private completedBreakpointMap_;
+  private config_: DebugAgentConfig;
+  private debug_: Debug;
+  private v8debug_: V8DebugApi | null;
+  private running_: boolean;
+  private project_: string;
+  private fetcherActive_: boolean;
+  private logger_: Logger;
+  private debugletApi_: Controller;
+  private debuggee_: Debuggee;
+  private activeBreakpointMap_: { [key: string]: Breakpoint };
+  private completedBreakpointMap_: { [key: string]: boolean };
 
   /**
    * @param {Debug} debug - A Debug instance.
@@ -107,7 +113,7 @@ export class Debuglet extends EventEmitter {
    *    called multiple times.
    * @constructor
    */
-  constructor(debug, config) {
+  constructor(debug: Debug, config: DebugAgentConfig) {
     super();
 
     /** @private {object} */
@@ -150,7 +156,7 @@ export class Debuglet extends EventEmitter {
     this.completedBreakpointMap_ = {};
   }
 
-  static normalizeConfig_(config) {
+  static normalizeConfig_(config: DebugAgentConfig): DebugAgentConfig {
     const envConfig = {
       logLevel: process.env.GCLOUD_DEBUG_LOGLEVEL,
       serviceContext: {
@@ -179,7 +185,7 @@ export class Debuglet extends EventEmitter {
    * as it is on the critical path of application startup.
    * @private
    */
-  start() {
+  start(): void {
     const that = this;
     fs.stat(path.join(that.config_.workingDirectory, 'package.json'), function(err) {
       if (err && err.code === 'ENOENT') {
@@ -256,8 +262,9 @@ export class Debuglet extends EventEmitter {
   /**
    * @private
    */
-  static createDebuggee(projectId, uid, serviceContext, sourceContext, description,
-                        errorMessage, onGCP) {
+  // TODO: Determine the type of sourceContext
+  static createDebuggee(projectId: string, uid: string, serviceContext: { service?: string, version?: string, minorVersion_?: string }, sourceContext: { [key: string]: string }, description: string,
+                        errorMessage: string, onGCP: boolean): Debuggee {
     const cwd = process.cwd();
     const mainScript = path.relative(cwd, process.argv[1]);
 
@@ -265,7 +272,7 @@ export class Debuglet extends EventEmitter {
                   pjson.version;
     let desc = process.title + ' ' + mainScript;
 
-    const labels: any = {
+    const labels: { [key: string]: string } = {
       'main script': mainScript,
       'process.title': process.title,
       'node version': process.versions.node,
@@ -326,7 +333,7 @@ export class Debuglet extends EventEmitter {
   /**
    * @private
    */
-  getProjectId_(callback) {
+  getProjectId_(callback: (err?: Error, project?: string, onGCP?: boolean) => void): void {
     const that = this;
 
     // We need to figure out whether we are running on GCP. We can use our ability
@@ -352,8 +359,8 @@ export class Debuglet extends EventEmitter {
         });
   }
 
-  getSourceContext_(callback) {
-    fs.readFile('source-context.json', 'utf8', function(err: any, data) {
+  getSourceContext_(callback: (err: Error | string, sourceContext: { [key: string]: string }) => void): void {
+    fs.readFile('source-context.json', 'utf8', function(err: string | Error, data) {
       let sourceContext;
       if (!err) {
         try {
@@ -372,7 +379,7 @@ export class Debuglet extends EventEmitter {
    * @param {number} seconds
    * @private
    */
-  scheduleRegistration_(seconds) {
+  scheduleRegistration_(seconds: number): void {
     const that = this;
 
     function onError(err) {
@@ -394,6 +401,9 @@ export class Debuglet extends EventEmitter {
           return;
         }
 
+        // TODO: It appears that the Debuggee class never has an `isDisabled`
+        //       field set.  Determine if this is a bug or if the following
+        //       code is not needed.
         if (result.debuggee.isDisabled) {
           // Server has disabled this debuggee / debug agent.
           onError(new Error('Disabled by the server'));
@@ -415,7 +425,7 @@ export class Debuglet extends EventEmitter {
    * @param {number} seconds
    * @private
    */
-  scheduleBreakpointFetch_(seconds) {
+  scheduleBreakpointFetch_(seconds: number): void {
     const that = this;
 
     that.fetcherActive_ = true;
@@ -484,7 +494,7 @@ export class Debuglet extends EventEmitter {
    * @param {Array.<Breakpoint>} breakpoints
    * @private
    */
-  updateActiveBreakpoints_(breakpoints) {
+  updateActiveBreakpoints_(breakpoints: Breakpoint[]): void {
     const that = this;
     const updatedBreakpointMap = this.convertBreakpointListToMap_(breakpoints);
 
@@ -493,7 +503,7 @@ export class Debuglet extends EventEmitter {
         updatedBreakpointMap));
     }
 
-    breakpoints.forEach(function(breakpoint) {
+    breakpoints.forEach(function(breakpoint: Breakpoint) {
 
       if (!that.completedBreakpointMap_[breakpoint.id] &&
           !that.activeBreakpointMap_[breakpoint.id]) {
@@ -513,7 +523,10 @@ export class Debuglet extends EventEmitter {
     // Remove completed breakpoints that the server no longer cares about.
     Debuglet.mapSubtract(this.completedBreakpointMap_, updatedBreakpointMap)
       .forEach(function(breakpoint){
-        delete this.completedBreakpointMap_[breakpoint.id];
+        // TODO: FIXME: breakpoint is a boolean here that doesn't have an id
+        //              field.  It is possible that breakpoint.id is always
+        //              undefined!
+        delete this.completedBreakpointMap_[(breakpoint as any).id];
       }, this);
 
     // Remove active breakpoints that the server no longer care about.
@@ -527,7 +540,7 @@ export class Debuglet extends EventEmitter {
    * @return {Object.<string, Breakpoint>} A map of breakpoint IDs to breakpoints.
    * @private
    */
-  convertBreakpointListToMap_(breakpointList) {
+  convertBreakpointListToMap_(breakpointList: Breakpoint[]): { [key: string]: Breakpoint } {
     const map = {};
     breakpointList.forEach(function(breakpoint) {
       map[breakpoint.id] = breakpoint;
@@ -539,7 +552,7 @@ export class Debuglet extends EventEmitter {
    * @param {Breakpoint} breakpoint
    * @private
    */
-  removeBreakpoint_(breakpoint) {
+  removeBreakpoint_(breakpoint: Breakpoint): void {
     this.logger_.info('\tdeleted breakpoint', breakpoint.id);
     delete this.activeBreakpointMap_[breakpoint.id];
     if (this.v8debug_) {
@@ -552,7 +565,7 @@ export class Debuglet extends EventEmitter {
    * @return {boolean} false on error
    * @private
    */
-  addBreakpoint_(breakpoint, cb) {
+  addBreakpoint_(breakpoint: Breakpoint, cb: (ob: Error | string) => void): void {
     const that = this;
 
     if (!that.config_.allowExpressions &&
@@ -584,7 +597,7 @@ export class Debuglet extends EventEmitter {
 
       if (breakpoint.action === 'LOG') {
         that.v8debug_.log(breakpoint,
-          function(fmt, exprs) {
+          function(fmt: string, exprs: string[]) {
             console.log('LOGPOINT:', Debuglet.format(fmt, exprs));
           },
           function() {
@@ -611,7 +624,7 @@ export class Debuglet extends EventEmitter {
    * @param {Breakpoint} breakpoint
    * @private
    */
-  completeBreakpoint_(breakpoint) {
+  completeBreakpoint_(breakpoint: Breakpoint): void {
     const that = this;
 
     that.logger_.info('\tupdating breakpoint data on server', breakpoint.id);
@@ -631,7 +644,7 @@ export class Debuglet extends EventEmitter {
    * @param {Breakpoint} breakpoint
    * @private
    */
-  rejectBreakpoint_(breakpoint) {
+  rejectBreakpoint_(breakpoint: Breakpoint): void {
     const that = this;
 
     that.debugletApi_.updateBreakpoint(
@@ -650,7 +663,7 @@ export class Debuglet extends EventEmitter {
    * @param {Breakpoint} breakpoint Server breakpoint object
    * @private
    */
-  scheduleBreakpointExpiry_(breakpoint) {
+  scheduleBreakpointExpiry_(breakpoint: Breakpoint): void {
     const that = this;
 
     const now = Date.now() / 1000;
@@ -677,7 +690,7 @@ export class Debuglet extends EventEmitter {
    * Calling this while the agent is initializing may not necessarily stop all
    * pending operations.
    */
-  stop() {
+  stop(): void {
     assert.ok(this.running_, 'stop can only be called on a running agent');
     this.logger_.debug('Stopping Debuglet');
     this.running_ = false;
@@ -689,7 +702,14 @@ export class Debuglet extends EventEmitter {
    * @return {Array.<Breakpoint>} A array containing elements from A that are not
    *     in B.
    */
-  static mapSubtract(A, B) {
+  // TODO: Determine if this can be generic
+  // TODO: The code that uses this actually assumes the supplied arguments
+  //       are objects and used as an associative array.  Determine what is
+  //       correct (the code or the docs).
+  // TODO: Fix the docs because the code actually assumes that the values
+  //       of the keys in the supplied arguments have boolean values or
+  //       Breakpoint values.
+  static mapSubtract<T, U>(A: { [key: string]: T}, B: { [key: string]: U}): T[] {
     const removed = [];
     for (let key in A) {
       if (!B[key]) {
@@ -704,18 +724,21 @@ export class Debuglet extends EventEmitter {
    * by substituting the provided expressions. If more expressions
    * are given than placeholders extra expressions are dropped.
    */
-  static format(base, exprs) {
+  static format(base: string, exprs: string[]): string {
     const tokens = Debuglet._tokenize(base, exprs.length);
     for (let i = 0; i < tokens.length; i++) {
-      if (!tokens[i].v) {
+      // TODO: Determine how to remove this explicit cast
+      if (!(tokens[i] as { v: string }).v) {
         continue;
       }
-      if (tokens[i].v === '$$') {
+      // TODO: Determine how to not have an explicit cast here
+      if ((tokens[i] as { v: string }).v === '$$') {
         tokens[i] = '$';
         continue;
       }
       for (let j = 0; j < exprs.length; j++) {
-        if (tokens[i].v === '$' + j) {
+        // TODO: Determine how to not have an explicit cast here
+        if ((tokens[i] as { v: string }).v === '$' + j) {
           tokens[i] = exprs[j];
           break;
         }
@@ -724,15 +747,17 @@ export class Debuglet extends EventEmitter {
     return tokens.join('');
   }
 
-  static _tokenize(base, exprLength) {
+  static _tokenize(base: string, exprLength: number): Array<{ v: string } | string> {
     let acc = Debuglet._delimit(base, '$$');
     for (let i = exprLength - 1; i >= 0; i--) {
       const newAcc = [];
       for (let j = 0; j < acc.length; j++) {
-        if (acc[j].v) {
+        // TODO: Determine how to remove this explicit cast
+        if ((acc[j] as { v: string }).v) {
           newAcc.push(acc[j]);
         } else {
-          newAcc.push.apply(newAcc, Debuglet._delimit(acc[j], '$' + i));
+          // TODO: Determine how to not have an explicit cast to string here
+          newAcc.push.apply(newAcc, Debuglet._delimit(acc[j] as string, '$' + i));
         }
       }
       acc = newAcc;
@@ -740,7 +765,7 @@ export class Debuglet extends EventEmitter {
     return acc;
   }
 
-  static _delimit(source, delim) {
+  static _delimit(source: string, delim: string): Array<{ v: string } | string> {
     const pieces = source.split(delim);
     const dest = [];
     dest.push(pieces[0]);
@@ -750,8 +775,8 @@ export class Debuglet extends EventEmitter {
     return dest;
   }
 
-  static _createUniquifier(desc, version, uid, sourceContext,
-    labels) {
+  static _createUniquifier(desc: string, version: string, uid: string, sourceContext: { [key: string]: any },
+    labels: { [key: string]: string }): string {
     const uniquifier = desc + version + uid + JSON.stringify(sourceContext) +
       JSON.stringify(labels);
     return crypto.createHash('sha1').update(uniquifier).digest('hex');

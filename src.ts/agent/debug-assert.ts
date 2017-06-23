@@ -25,6 +25,6 @@ fakeAssert.deepEqual = fakeAssert.deepStrictEqual = fakeAssert.doesNotThrow =
     fakeAssert.strictEqual = fakeAssert.throws =
     fakeAssert.AssertionError = nop;
 
-export function debugAssert(enableAssertions) {
+export function debugAssert(enableAssertions: boolean) {
   return enableAssertions ? realAssert : fakeAssert;
 };

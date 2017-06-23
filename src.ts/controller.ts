@@ -21,19 +21,24 @@
 import * as _common from '@google-cloud/common';
 import * as assert from 'assert';
 import * as qs from 'querystring';
+import * as http from 'http';
+import { Debug } from './debug';
+import { Debuggee } from './debuggee';
+import { Breakpoint } from './types/api-types';
+import { Common } from './types/common-types';
 
-const common: { ServiceObject: new (any) => any } = _common;
+const common: Common = _common;
 
 /** @const {string} Cloud Debug API endpoint */
 const API = 'https://clouddebugger.googleapis.com/v2/controller';
 
 export class Controller extends common.ServiceObject {
-  private nextWaitToken_;
+  private nextWaitToken_?: string;
 
   /**
    * @constructor
    */
-  constructor(debug) {
+  constructor(debug: Debug) {
     super({
       parent: debug,
       baseUrl: '/controller'
@@ -49,14 +54,14 @@ export class Controller extends common.ServiceObject {
    * @param {!function(?Error,Object=)} callback
    * @private
    */
-  register(debuggee, callback) {
+  register(debuggee: Debuggee, callback: (err?: Error, result?: { debuggee: Debuggee }) => void): void {
     const options = {
       uri: API + '/debuggees/register',
       method: 'POST',
       json: true,
       body: {debuggee: debuggee}
     };
-    this.request(options, function(err, body, response) {
+    this.request(options, function(err: Error, body: any, response: http.ServerResponse) {
       if (err) {
         callback(err);
       } else if (response.statusCode !== 200) {
@@ -77,7 +82,7 @@ export class Controller extends common.ServiceObject {
    * @param {!function(?Error,Object=,Object=)} callback accepting (err, response,
    * body)
    */
-  listBreakpoints(debuggee, callback) {
+  listBreakpoints(debuggee: Debuggee, callback: (err?: Error, response?: http.ServerResponse, body?: any) => void): void {
     const that = this;
     assert(debuggee.id, 'should have a registered debuggee');
     const query: any = {success_on_timeout: true};
@@ -87,7 +92,7 @@ export class Controller extends common.ServiceObject {
 
     const uri = API + '/debuggees/' + encodeURIComponent(debuggee.id) +
               '/breakpoints?' + qs.stringify(query);
-    that.request({uri: uri, json: true}, function(err, body, response) {
+    that.request({uri: uri, json: true}, function(err: Error, body: any, response: http.ServerResponse) {
       if (!response) {
         callback(err || new Error('unknown error - request response missing'));
         return;
@@ -114,10 +119,10 @@ export class Controller extends common.ServiceObject {
    * @param {!Breakpoint} breakpoint
    * @param {!Function} callback accepting (err, body)
    */
-  updateBreakpoint(debuggee, breakpoint, callback) {
+  updateBreakpoint(debuggee: Debuggee, breakpoint: Breakpoint, callback: (err?: Error, body?: any) => void): void {
     assert(debuggee.id, 'should have a registered debuggee');
 
-    breakpoint.action = 'capture';
+    breakpoint.action = 'CAPTURE';
     breakpoint.isFinalState = true;
     const options = {
       uri: API + '/debuggees/' + encodeURIComponent(debuggee.id) +
@@ -133,7 +138,7 @@ export class Controller extends common.ServiceObject {
     // user's app.
     try {
       this.request(options,
-                          function(err, body/*, response */) { callback(err, body); });
+                          function(err: Error, body: any/*, response */) { callback(err, body); });
     } catch (error) {
       callback(error);
     }

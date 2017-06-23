@@ -25,8 +25,12 @@ const spawn = require('child_process').spawn;
 const ts = require('gulp-typescript');
 const path = require('path');
 const process = require('process');
+const tslint = require('gulp-tslint');
+const clangFormat = require('clang-format');
+const format = require('gulp-clang-format');
 
 const tsconfigPath = path.join(__dirname, 'tsconfig.json');
+const tslintPath = path.join(__dirname, 'tslint.json');
 const outDir = '.';
 const sources = ['src.ts/**/*.ts', 'src.ts/**/*.js'];
 
@@ -36,6 +40,26 @@ function onError() {
     process.exit(1);
   }
 }
+
+gulp.task('test.check-format', () => {
+  return gulp.src(sources)
+      .pipe(format.checkFormat('file', clangFormat))
+      .on('warning', onError);
+});
+
+gulp.task('format', () => {
+  return gulp.src(sources, {base: '.'})
+      .pipe(format.format('file', clangFormat))
+      .pipe(gulp.dest('.'));
+});
+
+gulp.task('test.check-lint', () => {
+  return gulp.src(sources)
+      .pipe(tslint(
+          {configuration: tslintPath, formatter: 'verbose'}))
+      .pipe(tslint.report())
+      .on('warning', onError);
+});
 
 gulp.task('clean', () => {
   return del(['src']);
@@ -56,11 +80,25 @@ gulp.task('compile', () => {
   ]);
 });
 
+gulp.task('test.compile', ['compile'], () => {
+  // TODO: Complete this when the test files have been converted
+  //       to Typescript.
+});
+
 gulp.task('test.unit', ['compile'], cb => {
   spawn('bash', ['./bin/run-test.sh'], {
     stdio : 'inherit'
   }).on('close', cb);
 });
 
-gulp.task('test', ['test.unit']);
+gulp.task('watch', () => {
+  exitOnError = false;
+  gulp.start(['test.compile']);
+  // TODO: also run unit tests in a non-fatal way
+  return gulp.watch(sources, ['test.compile']);
+});
+
+// TODO: Add the test.check-format and test.check-lint tests when the code
+//       is in a state that is ready to be formatted.
+gulp.task('test', ['test.unit']);//, 'test.check-format', 'test.check-lint']);
 gulp.task('default', ['compile']);

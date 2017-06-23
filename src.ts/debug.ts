@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
+import { Common, AuthOptions } from './types/common-types';
+
 import * as _common from '@google-cloud/common';
-const common: { Service: new (any) => any, util: any } = _common;
+const common: Common = _common;
 import * as util from 'util';
 
 export class Debug {
-  private options;
+  options: AuthOptions;
 
   /**
    * <p class="notice">
@@ -43,7 +45,7 @@ export class Debug {
    *
    * @param {object} options - [Configuration object](#/docs)
    */
-  constructor(options) {
+  constructor(options: AuthOptions) {
     if (!(this instanceof Debug)) {
       options = common.util.normalizeArguments(this, options);
       return new Debug(options);
@@ -56,6 +58,7 @@ export class Debug {
       packageJson: require('../package.json')
     };
 
+    // TODO: Update Service to provide types
     common.Service.call(this, config, options);
 
     // FIXME(ofrobots): We need our own copy of options because Service may
@@ -66,4 +69,6 @@ export class Debug {
     this.options = options;
   }
 }
+// TODO: Determine how to use class syntax directly so that this line is not
+//       needed.
 util.inherits(Debug, common.Service);
