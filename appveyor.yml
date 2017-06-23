@@ -18,7 +18,7 @@ install:
 # Post-install test scripts.
 test_script:
   # run tests
-  - ps: gulp && node_modules/.bin/mocha test --timeout 4000 --R
+  - ps: gulp ; node_modules/.bin/mocha test --timeout 4000 --R
 
 # Don't actually build using MSBuild
 build: off
