@@ -54,6 +54,7 @@
     "split": "^1.0.0"
   },
   "scripts": {
+    "build": "gulp",
     "test": "gulp test",
     "system-test": "gulp && ./bin/run-system-test.sh",
     "changelog": "gulp && ./bin/run-changelog.sh",
