@@ -20,12 +20,13 @@
 
 import * as _common from '@google-cloud/common';
 import * as assert from 'assert';
-import * as qs from 'querystring';
 import * as http from 'http';
-import { Debug } from './debug';
-import { Debuggee } from './debuggee';
-import { Breakpoint } from './types/api-types';
-import { Common } from './types/common-types';
+import * as qs from 'querystring';
+
+import {Debug} from './debug';
+import {Debuggee} from './debuggee';
+import {Breakpoint} from './types/api-types';
+import {Common} from './types/common-types';
 
 const common: Common = _common;
 
@@ -39,10 +40,7 @@ export class Controller extends common.ServiceObject {
    * @constructor
    */
   constructor(debug: Debug) {
-    super({
-      parent: debug,
-      baseUrl: '/controller'
-    });
+    super({parent: debug, baseUrl: '/controller'});
 
     /** @private {string} */
     this.nextWaitToken_ = null;
@@ -54,26 +52,30 @@ export class Controller extends common.ServiceObject {
    * @param {!function(?Error,Object=)} callback
    * @private
    */
-  register(debuggee: Debuggee, callback: (err?: Error, result?: { debuggee: Debuggee }) => void): void {
+  register(debuggee: Debuggee, callback: (err?: Error, result?: {
+                                 debuggee: Debuggee
+                               }) => void): void {
     const options = {
       uri: API + '/debuggees/register',
       method: 'POST',
       json: true,
       body: {debuggee: debuggee}
     };
-    this.request(options, function(err: Error, body: any, response: http.ServerResponse) {
-      if (err) {
-        callback(err);
-      } else if (response.statusCode !== 200) {
-        callback(
-            new Error('unable to register, statusCode ' + response.statusCode));
-      } else if (!body.debuggee) {
-        callback(new Error('invalid response body from server'));
-      } else {
-        debuggee.id = body.debuggee.id;
-        callback(null, body);
-      }
-    });
+    this.request(
+        options,
+        function(err: Error, body: any, response: http.ServerResponse) {
+          if (err) {
+            callback(err);
+          } else if (response.statusCode !== 200) {
+            callback(new Error(
+                'unable to register, statusCode ' + response.statusCode));
+          } else if (!body.debuggee) {
+            callback(new Error('invalid response body from server'));
+          } else {
+            debuggee.id = body.debuggee.id;
+            callback(null, body);
+          }
+        });
   }
 
 
@@ -82,7 +84,11 @@ export class Controller extends common.ServiceObject {
    * @param {!function(?Error,Object=,Object=)} callback accepting (err, response,
    * body)
    */
-  listBreakpoints(debuggee: Debuggee, callback: (err?: Error, response?: http.ServerResponse, body?: any) => void): void {
+  listBreakpoints(
+      debuggee: Debuggee,
+      callback:
+          (err?: Error, response?: http.ServerResponse, body?: any) => void):
+      void {
     const that = this;
     assert(debuggee.id, 'should have a registered debuggee');
     const query: any = {success_on_timeout: true};
@@ -91,26 +97,30 @@ export class Controller extends common.ServiceObject {
     }
 
     const uri = API + '/debuggees/' + encodeURIComponent(debuggee.id) +
-              '/breakpoints?' + qs.stringify(query);
-    that.request({uri: uri, json: true}, function(err: Error, body: any, response: http.ServerResponse) {
-      if (!response) {
-        callback(err || new Error('unknown error - request response missing'));
-        return;
-      } else if (response.statusCode === 404) {
-        // The v2 API returns 404 (google.rpc.Code.NOT_FOUND) when the agent
-        // registration expires. We should re-register.
-        callback(null, response);
-        return;
-      } else if (response.statusCode !== 200) {
-        callback(new Error('unable to list breakpoints, status code ' +
-                           response.statusCode));
-        return;
-      } else {
-        body = body || {};
-        that.nextWaitToken_ = body.nextWaitToken;
-        callback(null, response, body);
-      }
-    });
+        '/breakpoints?' + qs.stringify(query);
+    that.request(
+        {uri: uri, json: true},
+        function(err: Error, body: any, response: http.ServerResponse) {
+          if (!response) {
+            callback(
+                err || new Error('unknown error - request response missing'));
+            return;
+          } else if (response.statusCode === 404) {
+            // The v2 API returns 404 (google.rpc.Code.NOT_FOUND) when the agent
+            // registration expires. We should re-register.
+            callback(null, response);
+            return;
+          } else if (response.statusCode !== 200) {
+            callback(new Error(
+                'unable to list breakpoints, status code ' +
+                response.statusCode));
+            return;
+          } else {
+            body = body || {};
+            that.nextWaitToken_ = body.nextWaitToken;
+            callback(null, response, body);
+          }
+        });
   }
 
   /**
@@ -119,14 +129,16 @@ export class Controller extends common.ServiceObject {
    * @param {!Breakpoint} breakpoint
    * @param {!Function} callback accepting (err, body)
    */
-  updateBreakpoint(debuggee: Debuggee, breakpoint: Breakpoint, callback: (err?: Error, body?: any) => void): void {
+  updateBreakpoint(
+      debuggee: Debuggee, breakpoint: Breakpoint,
+      callback: (err?: Error, body?: any) => void): void {
     assert(debuggee.id, 'should have a registered debuggee');
 
     breakpoint.action = 'CAPTURE';
     breakpoint.isFinalState = true;
     const options = {
       uri: API + '/debuggees/' + encodeURIComponent(debuggee.id) +
-               '/breakpoints/' + encodeURIComponent(breakpoint.id),
+          '/breakpoints/' + encodeURIComponent(breakpoint.id),
       json: true,
       method: 'PUT',
       body: {debuggeeId: debuggee.id, breakpoint: breakpoint}
@@ -137,8 +149,9 @@ export class Controller extends common.ServiceObject {
     // stringify them. The try-catch keeps it resilient and avoids crashing the
     // user's app.
     try {
-      this.request(options,
-                          function(err: Error, body: any/*, response */) { callback(err, body); });
+      this.request(options, function(err: Error, body: any /*, response */) {
+        callback(err, body);
+      });
     } catch (error) {
       callback(error);
     }

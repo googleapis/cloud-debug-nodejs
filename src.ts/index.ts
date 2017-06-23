@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { Debug } from './debug';
-import { Debuglet } from './agent/debuglet';
-import { DebugAgentConfig } from './agent/config';
-import { AuthOptions } from './types/common-types';
+import {DebugAgentConfig} from './agent/config';
+import {Debuglet} from './agent/debuglet';
+import {Debug} from './debug';
+import {AuthOptions} from './types/common-types';
 
 // Singleton.
 let debuglet;
@@ -36,7 +36,8 @@ let debuglet;
  * @example
  * debug.startAgent();
  */
-export function start(options: DebugAgentConfig | { debug?: DebugAgentConfig }): Debuglet | undefined {
+export function start(options: DebugAgentConfig|
+                      {debug?: DebugAgentConfig}): Debuglet|undefined {
   options = options || {};
   // TODO: Update the documentation to specify that the options object
   //       contains a `debug` attribute and not a `debugAgent` object.

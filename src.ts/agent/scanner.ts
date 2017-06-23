@@ -14,21 +14,19 @@
  * limitations under the License.
  */
 
-import * as _ from 'lodash';
-import * as fs from 'fs';
-import * as path from 'path';
 import * as crypto from 'crypto';
 import * as findit from 'findit2';
+import * as fs from 'fs';
+import * as _ from 'lodash';
+import * as path from 'path';
 import * as split from 'split';
 
 export interface FileStats {
-  hash: string,
-  lines: number
+  hash: string;
+  lines: number;
 }
 
-export interface ScanStats {
-  [filename: string]: FileStats
-}
+export interface ScanStats { [filename: string]: FileStats; }
 
 class ScanResults {
   private stats_: ScanStats;
@@ -87,19 +85,20 @@ class ScanResults {
   selectFiles(regex: RegExp, baseDir: string): string[] {
     // ensure the base directory has only a single trailing path separator
     baseDir = path.normalize(baseDir + path.sep);
-    return Object.keys(this.stats_).filter(function(file) {
-        return file && regex.test(file);
-      })
-      .map(function(file) {
-        return path.normalize(file).replace(baseDir, '');
-      });
+    return Object.keys(this.stats_)
+        .filter(function(file) {
+          return file && regex.test(file);
+        })
+        .map(function(file) {
+          return path.normalize(file).replace(baseDir, '');
+        });
   }
 }
 
-export function scan(shouldHash: boolean, baseDir: string, regex: RegExp,
-                     callback: (err?: Error,
-                                results?: ScanResults,
-                                hash?: string) => void): void {
+export function scan(
+    shouldHash: boolean, baseDir: string, regex: RegExp,
+    callback: (err?: Error, results?: ScanResults, hash?: string) =>
+        void): void {
   findFiles(baseDir, regex, function(err, fileList) {
     if (err) {
       callback(err);
@@ -118,12 +117,12 @@ export function scan(shouldHash: boolean, baseDir: string, regex: RegExp,
  * @param {!function(?Error, ?string, Object)} callback error-back style callback
  *    returning the hash-code and an object containing file statistics.
  */
-// TODO: Typescript: Fix the docs associated with this function to match the call signature
-function computeStats(fileList: string[],
-                      shouldHash: boolean,
-                      callback: (err?: Error,
-                                 results?: ScanResults,
-                                 hash?: string) => void): void {
+// TODO: Typescript: Fix the docs associated with this function to match the
+// call signature
+function computeStats(
+    fileList: string[], shouldHash: boolean,
+    callback: (err?: Error, results?: ScanResults, hash?: string) =>
+        void): void {
   let pending = fileList.length;
   // return a valid, if fake, result when there are no js files to hash.
   if (pending === 0) {
@@ -170,8 +169,9 @@ function computeStats(fileList: string[],
  *  files to find based on their filename
  * @param {!function(?Error, Array<string>)} callback error-back callback
  */
-function findFiles(baseDir: string, regex: RegExp,
-                   callback: (err?: Error, fileList?: string[]) => void): void {
+function findFiles(
+    baseDir: string, regex: RegExp,
+    callback: (err?: Error, fileList?: string[]) => void): void {
   let errored = false;
 
   if (!baseDir) {
@@ -191,7 +191,7 @@ function findFiles(baseDir: string, regex: RegExp,
   find.on('directory', function(dir, _, stop) {
     const base = path.basename(dir);
     if (base === '.git' || base === 'node_modules') {
-      stop(); // do not descend
+      stop();  // do not descend
     }
   });
 
@@ -218,8 +218,9 @@ function findFiles(baseDir: string, regex: RegExp,
  * @param {function} cb errorback style callback which returns the sha string
  * @private
  */
-function stats(filename: string, shouldHash: boolean,
-               cb: (err, stats?: FileStats) => void): void {
+function stats(
+    filename: string, shouldHash: boolean,
+    cb: (err, stats?: FileStats) => void): void {
   let shasum;
   if (shouldHash) {
     shasum = crypto.createHash('sha1');
@@ -242,6 +243,6 @@ function stats(filename: string, shouldHash: boolean,
     if (shouldHash) {
       d = shasum.digest('hex');
     }
-    cb(null, { hash: d, lines: lines});
+    cb(null, {hash: d, lines: lines});
   });
 }

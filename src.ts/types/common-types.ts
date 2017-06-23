@@ -15,10 +15,7 @@
  */
 
 export interface AuthOptions {
-  credentials?: {
-    client_email: string;
-    private_key: string;
-  };
+  credentials?: {client_email: string; private_key: string;};
   keyFilename?: string;
   projectId?: string;
 }
@@ -38,12 +35,13 @@ export interface ServiceObjectConfig {
 }
 
 export interface Common {
-  Service: new (config: ServiceConfig, options: AuthOptions) => any;
-  ServiceObject: new (config: ServiceObjectConfig) => any,
+  Service: new(config: ServiceConfig, options: AuthOptions) => any;
+  ServiceObject: new(config: ServiceObjectConfig) => any;
   util: {
     // TODO: Make this more precise.
-    normalizeArguments: (globalContext: any, localConfig: any, options?: any) => any;
-  }
+    normalizeArguments: (globalContext: any, localConfig: any, options?: any) =>
+        any;
+  };
 }
 
 export interface Logger {

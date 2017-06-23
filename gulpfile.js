@@ -98,7 +98,5 @@ gulp.task('watch', () => {
   return gulp.watch(sources, ['test.compile']);
 });
 
-// TODO: Add the test.check-format and test.check-lint tests when the code
-//       is in a state that is ready to be formatted.
-gulp.task('test', ['test.unit']);//, 'test.check-format', 'test.check-lint']);
+gulp.task('test', ['test.unit', 'test.check-format', 'test.check-lint']);
 gulp.task('default', ['compile']);

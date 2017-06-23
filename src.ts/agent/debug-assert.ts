@@ -16,15 +16,15 @@
 
 import * as realAssert from 'assert';
 
-const nop = _=>_;
+const nop = _ => _;
 const fakeAssert: any = nop;
 fakeAssert.deepEqual = fakeAssert.deepStrictEqual = fakeAssert.doesNotThrow =
     fakeAssert.equal = fakeAssert.fail = fakeAssert.ifError =
-    fakeAssert.notDeepEqual = fakeAssert.notDeepStrictEqual =
-    fakeAssert.notEqual = fakeAssert.notStrictEqual = fakeAssert.ok =
-    fakeAssert.strictEqual = fakeAssert.throws =
-    fakeAssert.AssertionError = nop;
+        fakeAssert.notDeepEqual = fakeAssert.notDeepStrictEqual =
+            fakeAssert.notEqual = fakeAssert.notStrictEqual = fakeAssert.ok =
+                fakeAssert.strictEqual =
+                    fakeAssert.throws = fakeAssert.AssertionError = nop;
 
 export function debugAssert(enableAssertions: boolean) {
   return enableAssertions ? realAssert : fakeAssert;
-};
+}
