@@ -13,6 +13,8 @@ This module provides Stackdriver Debugger support for Node.js applications. [Sta
 
 [![Cloud Debugger Intro](http://img.youtube.com/vi/tyHcK_kAOpw/0.jpg)](https://www.youtube.com/watch?v=tyHcK_kAOpw)
 
+See also, [Setting up Stackdriver Debugger for Node.js][setting-up-nodejs].
+
 ## Prerequisites
 * Stackdriver Debugger is comptible with Node.js version 4 or greater. Node.js v5+ is recommended.
 
@@ -40,87 +42,92 @@ the [Google Cloud Console][dev-console]. You can start adding snapshots and log-
 
 ## Running on Google Cloud Platform
 
-The Stackdriver Debugger Agent should work without manually provided authentication credentials for instances running on Google Cloud Platform, as long as the [Stackdriver Debugger API][debugger-api] access scope is enabled on that instance.
+The Stackdriver Debugger agent should work without the need to manually provide authentication credentials for instances running on Google Cloud Platform, as long as the [Stackdriver Debugger API][debugger-api] access scope is enabled on that instance.
 
-For **Google App Engine** instances, this is the enabled by default.
+### App Engine
 
-On **Google Container Engine (GKE)**, you need to explicitly add the `cloud_debugger` OAuth scope when creating the cluster:
+On **Google App Engine**, the Stackdriver Debugger API access scope is enabled by default, and the Stackdriver Debugger agent can be used without needing to provide credentials or a project ID.
+
+### Container Engine
+
+On **Google Container Engine**, you need to explicitly add the `cloud_debugger` OAuth scope when creating the cluster:
 
 ```
 $ gcloud container clusters create example-cluster-name --scopes https://www.googleapis.com/auth/cloud_debugger
 ```
 
-For **Google Compute Engine instances**, you need to explicitly enable the Debugger API access scope for each instance. When creating a new instance through the GCP web console, you can do this in one of two ways under **Identity and API access**:
-* Use the Compute Engine default service account and select "Allow full access to all Cloud APIs" under Access scopes.
-* Select a service account with the [**Cloud Debugger Agent**][debugger-roles] role, which contains the necessary permissions (or any other role with at least the same permissions). You may need to create one if you don't have one already.
+### Compute Engine
 
-You may add the Stackdriver Debugger API access scope to existing Compute instances if they are running as a non-default service account by adding the Cloud Debugger Agent role to the service account. For more information, see the docs for [Creating and Enabling Service Accounts for Instances][service-account-docs].
+For **Google Compute Engine instances**, you need to explicitly enable the `cloud_debugger` Stackdriver Debugger API access scope for each instance. When creating a new instance through the Google Cloud Platform Console, you can do this under **Identity and API access**: Use the Compute Engine default service account and select "Allow full access to all Cloud APIs" under Access scopes.
 
-## Running elsewhere
+To use something other than the Compute Engine default service account see the docs for [Creating and Enabling Service Accounts for Instances][service-account-docs] and the [Running elsewhere](#running-locally-and-elsewhere) section below. The important thing is that the service account you use has the [**Cloud Debugger Agent**][debugger-roles] role.
 
-If your application is running outside of Google Cloud Platform, such as locally, on-premise, or on another cloud provider, you can still use Stackdriver Debugger.
+## Running locally and elsewhere
 
-1. You will need to specify your project name. Your project name is visible in the [Google Cloud Console][cloud-console-projects], it may be something like `particular-future-12345`. If your application is [running on Google Cloud Platform](running-on-google-cloud-platform), you don't need to specify the project name. You can specify this either in the module options, or through an environment variable:
+If your application is running outside of Google Cloud Platform, such as locally, on-premise, or on another cloud provider, you can still use Stackdriver Debugger, provided that you supply a project ID and credentials to the Stackdriver Debugger agent.
 
-    ```JS
-      // In your app:
-      var debug = require('@google-cloud/debug-agent').start({
-        allowExpressions: true,
-        projectId: 'particular-future-12345',
-        keyFilename: '/path/to/keyfile.json'
-      });
-    ```
+### Project ID
 
-    ```BASH
-      # Or in Bash:
-      export GCLOUD_PROJECT='particular-future-12345'
-    ```
+Provide a project ID to the Stackdriver Debugger agent by setting the projectId value in the options object passed to the agent's `start` method, or set the `GCLOUD_PROJECT` environment variable:
 
-1. You need to provide service account credentials to your application.
-  * The recommended way is via [Application Default Credentials][app-default-credentials].
-    1. [Create a new JSON service account key][service-account].
-    1. Copy the key somewhere your application can access it. Be sure not to expose the key publicly.
-    1. Set the environment variable `GOOGLE_APPLICATION_CREDENTIALS` to the full path to the key. The debug agent will automatically look for this environment variable.
-  * If you are running your application on a machine where your are using the [`gcloud` command line tools][gcloud-sdk], and are logged using `gcloud auth login`, you already have sufficient credentials, and a service account key is not required.
-  * Alternatively, you may set the keyFilename or credentials configuration field to the full path or contents to the key file, respectively. Setting either of these fields will override either setting GOOGLE_APPLICATION_CREDENTIALS or logging in using gcloud. For example:
+On Linux or Mac OS X:
 
-    ```js
-    // Require and start the agent with configuration options
-    require('@google-cloud/debug-agent').start({
-      // Allow the evaluation of watch expressions and snapshot conditions:
-      allowExpressions: true,
+```bash
+export GCLOUD_PROJECT=your-project-id
+```
 
-      // The path to your key file:
-      keyFilename: '/path/to/keyfile.json',
+On Windows:
 
-      // Or the contents of the key file:
-      credentials: require('./path/to/keyfile.json')
-    });
-    ```
+```
+set GCLOUD_PROJECT=your-project-id
+```
 
-   See the [configuration object][configuration-object] for more details.
+And on Windows Powershell:
 
-1. Generate a `source-context.json` file which contains information about the version of the source code used to build the application. This file should be located in the root directory of your application. When you open the Stackdriver Debugger in the Cloud Platform Console, it uses the information in this file to display the correct version of the source.
+```
+$env:GCLOUD_PROJECT="your-project-id"
+```
 
-        gcloud beta debug source gen-repo-info-file
+### Credentials
+
+Google Cloud Platform client libraries use a strategy called [Application Default Credentials (ADC)][app-default-credentials] to find your application's credentials. You can provide credentials to the Stackdriver Debugger agent by setting the `keyFilename` value in the `options` object passed to the agent's `start` method, or you can set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable. For more information, see [Providing credentials to your application][providing-credentials].
+
+### Example
+
+```js
+require('@google-cloud/debug-agent').start({
+  projectId: 'your-project-id',
+  keyFilename: '/path/to/key.json'
+});
+```
+
+### Source version
+
+Generate a `source-context.json` file which contains information about the version of the source code used to build the application. This file should be located in the root directory of your application. When you open the Stackdriver Debugger in the Cloud Platform Console, it uses the information in this file to display the correct version of the source.
+
+```
+gcloud beta debug source gen-repo-info-file
+```
+
+For more information see [Selecting Source Code Manually][selecting-source].
 
 ## Debugger Agent Settings
 
 You can customize the behaviour of the automatic debugger agent. See [the agent configuration][config-js] for a list of possible configuration options. These options can be passed in the `options` object passed to the `start` function.
 
-```JS
-  require('@google-cloud/debug-agent').start({
-    // .. auth settings ..
+```js
+require('@google-cloud/debug-agent').start({
+  // .. auth settings ..
 
-    // debug agent settings:
-    allowExpressions: true,
-    serviceContext: {
-        service: 'my-service',
-        version: 'version-1'
-    },
-    capture: { maxFrames: 20, maxProperties: 100 }
-  });
- ```
+  // debug agent settings:
+  allowExpressions: true,
+  serviceContext: {
+    service: 'my-service',
+    version: 'version-1'
+  },
+  capture: { maxFrames: 20, maxProperties: 100 }
+});
+```
 
 ## Using the Debugger
 
@@ -177,12 +184,14 @@ In the Debug UI, you only need to provide the original source code -- you don't 
 
 
 [cloud-debugger]: https://cloud.google.com/tools/cloud-debugger/
+[setting-up-nodejs]: https://cloud.google.com/debugger/docs/setup/nodejs
 [dev-console]: https://console.cloud.google.com/
 [debug-tab]: https://console.cloud.google.com/debug
 [gcloud-sdk]: https://cloud.google.com/sdk/gcloud/
 [cloud-console-projects]: https://console.cloud.google.com/iam-admin/projects
-[app-default-credentials]: https://cloud.google.com/identity/protocols/application-default-credentials
-[service-account]: https://console.cloud.google.com/apis/credentials/serviceaccountkey
+[app-default-credentials]: https://developers.google.com/identity/protocols/application-default-credentials
+[providing-credentials]: https://cloud.google.com/docs/authentication/production#providing_credentials_to_your_application
+[selecting-source]: https://cloud.google.com/debugger/docs/source-options
 [service-account-docs]: https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances
 [debugger-roles]: https://cloud.google.com/debugger/docs/iam#roles
 [npm-image]: https://img.shields.io/npm/v/@google-cloud/debug-agent.svg
