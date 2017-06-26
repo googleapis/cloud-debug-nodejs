@@ -15,11 +15,9 @@
  */
 
 import {AuthOptions, Common} from './types/common-types';
-const common: Common = require('@google-cloud/common');
+export const common: Common = require('@google-cloud/common');
 
-import * as util from 'util';
-
-export class Debug {
+export class Debug extends common.Service {
   options: AuthOptions;
 
   /**
@@ -46,11 +44,6 @@ export class Debug {
    * @param {object} options - [Configuration object](#/docs)
    */
   constructor(options: AuthOptions) {
-    if (!(this instanceof Debug)) {
-      options = common.util.normalizeArguments(this, options);
-      return new Debug(options);
-    }
-
     const config = {
       projectIdRequired: false,
       baseUrl: 'https://clouddebugger.googleapis.com/v2',
@@ -59,7 +52,12 @@ export class Debug {
     };
 
     // TODO: Update Service to provide types
-    common.Service.call(this, config, options);
+    super(config, options || {});
+
+    if (!(this instanceof Debug)) {
+      options = common.util.normalizeArguments(this, options);
+      return new Debug(options);
+    }
 
     // FIXME(ofrobots): We need our own copy of options because Service may
     // default to '{{projectId}}' when options doesn't contain the `projectId`.
@@ -69,6 +67,3 @@ export class Debug {
     this.options = options;
   }
 }
-// TODO: Determine how to use class syntax directly so that this line is not
-//       needed.
-util.inherits(Debug, common.Service);
