@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-import * as realAssert from 'assert';
+import * as http from 'http';
 
-const nop = (_: any) => _;
-const fakeAssert: any = nop;
-fakeAssert.deepEqual = fakeAssert.deepStrictEqual = fakeAssert.doesNotThrow =
-    fakeAssert.equal = fakeAssert.fail = fakeAssert.ifError =
-        fakeAssert.notDeepEqual = fakeAssert.notDeepStrictEqual =
-            fakeAssert.notEqual = fakeAssert.notStrictEqual = fakeAssert.ok =
-                fakeAssert.strictEqual =
-                    fakeAssert.throws = fakeAssert.AssertionError = nop;
-
-export function debugAssert(enableAssertions: boolean) {
-  return enableAssertions ? realAssert : fakeAssert;
+export interface GcpMetadata {
+  // TODO: Determine if the signature of the callback on these methods are
+  //       correct.
+  instance: (options: string | { property: string}, callback: (err: Error, response: http.ServerResponse, metadataProject: string) => void) => http.ServerResponse;
+  project: (options: string | { property: string}, callback: (err: Error, response: http.ServerResponse, metadataProject: string) => void) => http.ServerResponse;
 }

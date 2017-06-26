@@ -22,8 +22,12 @@
   },
   "devDependencies": {
     "@types/acorn": "^4.0.2",
+    "@types/async": "^2.0.40",
     "@types/estree": "0.0.35",
+    "@types/extend": "^2.0.30",
+    "@types/lodash": "^4.14.66",
     "@types/node": "^7.0.18",
+    "@types/semver": "^5.3.31",
     "@types/source-map": "^0.5.0",
     "changelog-maker": "^2.2.2",
     "clang-format": "^1.0.53",

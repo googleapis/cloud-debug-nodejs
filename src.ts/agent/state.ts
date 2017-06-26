@@ -27,6 +27,7 @@ import {StatusMessage} from '../status-message';
 
 import * as v8Types from '../types/v8-types';
 import * as apiTypes from '../types/api-types';
+import { DebugAgentConfig } from './config';
 
 // TODO: Determine if `ScopeType` should be named `scopeType`.
 // tslint:disable-next-line:variable-name
@@ -46,7 +47,7 @@ const ARG_LOCAL_LIMIT_MESSAGE_INDEX = 3;
  *         evaluatedExpressions fields
  */
 export function capture(
-    execState: v8Types.ExecutionState, expressions: string[], config,
+    execState: v8Types.ExecutionState, expressions: string[], config: DebugAgentConfig,
     v8: v8Types.Debug): apiTypes.Breakpoint {
   return (new StateResolver(execState, expressions, config, v8)).capture_();
 }
@@ -58,8 +59,8 @@ export function capture(
  *
  * @return an object with error and mirror fields.
  */
-export function evaluate(expression, frame: v8Types.FrameMirror):
-    {error?: string, mirror?: v8Types.ValueMirror} {
+export function evaluate(expression: string, frame: v8Types.FrameMirror):
+    {error: string|null, mirror?: v8Types.ValueMirror} {
   // First validate the expression to make sure it doesn't mutate state
   const acorn = require('acorn');
   try {
@@ -84,13 +85,13 @@ export function evaluate(expression, frame: v8Types.FrameMirror):
 class StateResolver {
   private state_: v8Types.ExecutionState;
   private expressions_: string[];
-  private config_;
+  private config_: DebugAgentConfig;
   private ctx_: v8Types.Debug;
   private evaluatedExpressions_: apiTypes.Variable[];
   private totalSize_: number;
   private messageTable_: apiTypes.Variable[];
   private resolvedVariableTable_: apiTypes.Variable[];
-  private rawVariableTable_: Array<v8Types.ValueMirror>;
+  private rawVariableTable_: Array<v8Types.ValueMirror|null>;
 
   /**
    * @param {!Object} execState
@@ -99,7 +100,7 @@ class StateResolver {
    * @constructor
    */
   constructor(
-      execState: v8Types.ExecutionState, expressions: string[], config,
+      execState: v8Types.ExecutionState, expressions: string[], config: DebugAgentConfig,
       v8: v8Types.Debug) {
     this.state_ = execState;
     this.expressions_ = expressions;
@@ -165,7 +166,8 @@ class StateResolver {
           };
         } else {
           // TODO: Determine how to not downcast this to v8Types.ValueMirror
-          evaluated = that.resolveVariable_(expression, result.mirror, true);
+          // TODO: Handle the case where `result.mirror` is `undefined`.
+          evaluated = that.resolveVariable_(expression, result.mirror as v8Types.ValueMirror, true);
           const varTableIdx = evaluated.varTableIndex;
           if (typeof varTableIdx !== 'undefined') {
             evalIndexSet.add(varTableIdx);
@@ -299,12 +301,14 @@ class StateResolver {
 
   stripCurrentWorkingDirectory_(path: string): string {
     // Strip 1 extra character to remove the slash.
-    return path.substr(this.config_.workingDirectory.length + 1);
+    // TODO: Handle the case where `this.config_.workingDirectory` is `null`.
+    return path.substr((this.config_.workingDirectory as string).length + 1);
   }
 
   isPathInCurrentWorkingDirectory_(path: string): boolean {
     // return true;
-    return path.indexOf(this.config_.workingDirectory) === 0;
+    // TODO: Handle the case where `this.config_.workingDirectory` is `null`.
+    return path.indexOf(this.config_.workingDirectory as string) === 0;
   }
 
   isPathInNodeModulesDirectory_(path: string): boolean {
@@ -398,7 +402,7 @@ class StateResolver {
     args = args;
 
     const self = this;
-    const usedNames = {};
+    const usedNames: { [name: string]: boolean } = {};
     const makeMirror = this.ctx_.MakeMirror;
     const allScopes = frame.allScopes();
     const count = allScopes.length;
@@ -413,7 +417,7 @@ class StateResolver {
     // We find the top-level (module global) variable pollute the local
     // variables we omit them by default, unless the breakpoint itself is
     // top-level. The last two scopes are always omitted.
-    let scopes;
+    let scopes: v8Types.ScopeMirror[];
     if (allScopes[count - 3].scopeType() === ScopeType.Closure) {
       scopes = allScopes.slice(0, -3);
     } else {
@@ -421,9 +425,10 @@ class StateResolver {
       scopes = allScopes.slice(0, -2);
     }
 
-    return flatten(scopes.map(function(scope) {
+    return flatten(scopes.map(function(scope: v8Types.ScopeMirror) {
              return transform(
-                 scope.details().object(), function(locals, value, name) {
+                 // TODO: Update this so that `locals` is not of type `any[]`.
+                 scope.details().object(), function(locals: any[], value, name: string) {
                    const trg = makeMirror(value);
                    if (!usedNames[name]) {
                      // It's a valid variable that belongs in the locals list

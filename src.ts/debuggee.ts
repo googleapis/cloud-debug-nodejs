@@ -22,7 +22,7 @@ import {StatusMessage} from './status-message';
 // docs
 //       In particular, the comments below state some of the properties are
 //       required but the default properties in the code is {}
-interface DebuggeeProperties {
+export interface DebuggeeProperties {
   project?: string;
   uniquifier?: string;
   description?: string;
@@ -32,7 +32,7 @@ interface DebuggeeProperties {
     [key: string]: string,
   };
   sourceContexts?: Array<{[key: string]: any}>;
-  statusMessage?: StatusMessage;
+  statusMessage: StatusMessage|null;
 }
 
 export class Debuggee {
@@ -45,7 +45,7 @@ export class Debuggee {
   };
   private sourceContexts?: Array<{[key: string]: any}>;
   private statusMessage?: StatusMessage;
-  id?: string;
+  id: string;
   // TODO: This doesn't seem to ever be set but is referenced in the
   //       debuglet.ts file.
   isDisabled?: boolean;
