@@ -22,7 +22,7 @@
 /** @const */ var semver = require('semver');
 
 /** @const */ var state = require('./state.js');
-/** @const */ var StatusMessage = require('../status-message.js');
+/** @const */ var StatusMessage = require('../status-message.js').StatusMessage;
 
 /** @const */ var messages = {
   INVALID_BREAKPOINT: 'invalid snapshot - id or location missing',
@@ -202,7 +202,7 @@ function create(logger_, config_, jsFiles_, sourcemapper_) {
       var logsThisSecond = 0;
       var timesliceEnd = Date.now() + 1000;
       var listener = onBreakpointHit.bind(
-          null, breakpoint, function(err) {
+          null, breakpoint, function(_) {
         var currTime = Date.now();
         if (currTime > timesliceEnd) {
           logsThisSecond = 0;
@@ -418,7 +418,8 @@ function create(logger_, config_, jsFiles_, sourcemapper_) {
         messages.V8_BREAKPOINT_DISABLED);
     }
 
-    var result = checkCondition(breakpoint, execState);
+    // TODO: Fix this cast to 'any'
+    var result = checkCondition(breakpoint, execState) as any;
     if (result.error) {
       return setErrorStatusAndCallback(callback, breakpoint,
         StatusMessage.BREAKPOINT_CONDITION,

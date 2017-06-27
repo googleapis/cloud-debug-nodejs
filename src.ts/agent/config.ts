@@ -13,21 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
 /**
  * @typedef {object} DebugAgentConfig
  */
-
-module.exports = {
-  // FIXME(ofrobots): presently this is dependent what cwd() is at the time this
-  // file is first required. We should make the default config static.
+export interface DebugAgentConfig {
   /**
    * @property {?string}
    * @memberof DebugAgentConfig
    * @default
    */
-  workingDirectory: process.cwd(),
+  workingDirectory: string | null,
 
   /**
    * @property {?string} A user specified way of identifying the service
@@ -35,7 +31,7 @@ module.exports = {
    * @memberof DebugAgentConfig
    * @default
    */
-  description: null,
+  description: string | null,
 
   /**
    * @property {boolean} Whether or not it is permitted to evaluate expressions.
@@ -44,10 +40,8 @@ module.exports = {
    * @memberof DebugAgentConfig
    * @default
    */
-  allowExpressions: false,
+  allowExpressions: boolean,
 
-  // FIXME(ofrobots): today we prioritize GAE_MODULE_NAME/GAE_MODULE_VERSION
-  // over the user specified config. We should reverse that.
   /**
    * @property {object} Identifies the context of the running service -
    * [ServiceContext](https://cloud.google.com/error-reporting/reference/rest/v1beta1/ServiceContext?authuser=2).
@@ -64,20 +58,20 @@ module.exports = {
      * @property {?string} the service name
      * @default
      */
-    service: null,
+    service: string | null,
 
     /**
      * @property {?string} the service version
      * @default
      */
-    version: null,
+    version: string | null,
 
     /**
      * @property {?string} a unique deployment identifier. This is used
      * internally only.
      * @private
      */
-    minorVersion_: null
+    minorVersion_: string | null
   },
 
   /**
@@ -89,7 +83,7 @@ module.exports = {
    * @memberof DebugAgentConfig
    * @default
    */
-  appPathRelativeToRepository: null,
+  appPathRelativeToRepository: string | null,
 
   /**
    * @property {number} agent log level 0-disabled, 1-error, 2-warn, 3-info,
@@ -97,7 +91,7 @@ module.exports = {
    * @memberof DebugAgentConfig
    * @default
    */
-  logLevel: 1,
+  logLevel: number,
 
   /**
    * @property {number} How frequently should the list of breakpoints be
@@ -105,7 +99,7 @@ module.exports = {
    * @memberof DebugAgentConfig
    * @default
    */
-  breakpointUpdateIntervalSec: 10,
+  breakpointUpdateIntervalSec: number,
 
   /**
    * @property {number} breakpoints and logpoints older than this number of
@@ -113,7 +107,7 @@ module.exports = {
    * @memberof DebugAgentConfig
    * @default
    */
-  breakpointExpirationSec: 60 * 60 * 24,  // 24 hours
+  breakpointExpirationSec: number,
 
   /**
    * @property {object} configuration options on what is captured on a
@@ -126,7 +120,7 @@ module.exports = {
      * belonging to node-core.
      * @default
      */
-    includeNodeModules: false,
+    includeNodeModules: boolean,
 
 
     /**
@@ -134,21 +128,21 @@ module.exports = {
      * The limit is aimed to reduce overall capture time.
      * @default
      */
-    maxFrames: 20,
+    maxFrames: number,
 
     /**
      * @property {number} We collect locals and arguments on a few top frames.
      * For the rest only collect the source location
      * @default
      */
-    maxExpandFrames: 5,
+    maxExpandFrames: number,
 
     /**
      * @property {number} To reduce the overall capture time, limit the number
      * of properties gathered on large objects. A value of 0 disables the limit.
      * @default
      */
-    maxProperties: 10,
+    maxProperties: number,
 
     /**
      * @property {number} Total 'size' of data to gather. This is NOT the
@@ -159,14 +153,14 @@ module.exports = {
      * traffic. A value of 0 disables the limit.
      * @default
      */
-    maxDataSize: 20000,
+    maxDataSize: number,
 
     /**
      * @property {number} To limit the size of the buffer, we truncate long
      * strings. A value of 0 disables truncation.
      * @default
      */
-    maxStringLength: 100
+    maxStringLength: number
   },
 
   /**
@@ -180,14 +174,14 @@ module.exports = {
      * @memberof DebugAgentConfig
      * @default
      */
-    maxLogsPerSecond: 50,
+    maxLogsPerSecond: number,
 
     /**
      * @property {number} Number of seconds to wait after the
      * `maxLogsPerSecond` rate is hit before logging resumes per logpoint.
      * @default
      */
-    logDelaySeconds: 1
+    logDelaySeconds: number
   },
 
   /**
@@ -197,8 +191,8 @@ module.exports = {
    * @private
    */
   internal: {
-    registerDelayOnFetcherErrorSec: 300,  // 5 minutes.
-    maxRegistrationRetryDelay: 40
+    registerDelayOnFetcherErrorSec: number,
+    maxRegistrationRetryDelay: number
   },
 
   /**
@@ -207,7 +201,7 @@ module.exports = {
    * @memberof DebugAgentConfig
    * @private
    */
-  forceNewAgent_: false,
+  forceNewAgent_: boolean,
 
   /**
    * @property {boolean} Uses by tests to cause the start() function to return
@@ -215,5 +209,50 @@ module.exports = {
    * @memberof DebugAgentConfig
    * @private
    */
+  testMode_: boolean
+}
+
+const defaultConfig: DebugAgentConfig = {
+  // FIXME(ofrobots): presently this is dependent what cwd() is at the time this
+  // file is first required. We should make the default config static.
+  workingDirectory: process.cwd(),
+  description: null,
+  allowExpressions: false,
+
+  // FIXME(ofrobots): today we prioritize GAE_MODULE_NAME/GAE_MODULE_VERSION
+  // over the user specified config. We should reverse that.
+  serviceContext: {
+    service: null,
+    version: null,
+    minorVersion_: null
+  },
+
+  appPathRelativeToRepository: null,
+  logLevel: 1,
+  breakpointUpdateIntervalSec: 10,
+  breakpointExpirationSec: 60 * 60 * 24,  // 24 hours
+
+  capture: {
+    includeNodeModules: false,
+    maxFrames: 20,
+    maxExpandFrames: 5,
+    maxProperties: 10,
+    maxDataSize: 20000,
+    maxStringLength: 100
+  },
+
+  log: {
+    maxLogsPerSecond: 50,
+    logDelaySeconds: 1
+  },
+
+  internal: {
+    registerDelayOnFetcherErrorSec: 300,  // 5 minutes.
+    maxRegistrationRetryDelay: 40
+  },
+
+  forceNewAgent_: false,
   testMode_: false
 };
+
+export default defaultConfig;

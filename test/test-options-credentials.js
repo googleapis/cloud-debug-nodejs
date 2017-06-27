@@ -20,8 +20,8 @@ var assert = require('assert');
 var nock = require('nock');
 var nocks = require('./nocks.js');
 var extend = require('extend');
-var config = require('../src/agent/config.js');
-var Debuglet = require('../src/agent/debuglet.js');
+var config = require('../src/agent/config.js').default;
+var Debuglet = require('../src/agent/debuglet.js').Debuglet;
 
 var envProject = process.env.GCLOUD_PROJECT;
 
@@ -48,7 +48,7 @@ describe('test-options-credentials', function() {
       projectId: 'fake-project',
       keyFilename: path.join(__dirname, 'fixtures', 'gcloud-credentials.json')
     });
-    var debug = require('../src/debug.js')(options);
+    var debug = require('../src/debug.js').Debug(options);
     var scope = nocks.oauth2(function(body) {
       assert.equal(body.client_id, credentials.client_id);
       assert.equal(body.client_secret, credentials.client_secret);
@@ -70,7 +70,7 @@ describe('test-options-credentials', function() {
       projectId: 'fake-project',
       credentials: require('./fixtures/gcloud-credentials.json')
     });
-    var debug = require('../src/debug.js')(options);
+    var debug = require('../src/debug.js').Debug(options);
     var scope = nocks.oauth2(function(body) {
       assert.equal(body.client_id, options.credentials.client_id);
       assert.equal(body.client_secret, options.credentials.client_secret);
@@ -100,7 +100,7 @@ describe('test-options-credentials', function() {
       keyFilename: path.join('test', 'fixtures', 'gcloud-credentials.json'),
       credentials: credentials
     });
-    var debug = require('../src/debug.js')(options);
+    var debug = require('../src/debug.js').Debug(options);
     var scope = nocks.oauth2(function(body) {
       assert.equal(body.client_id, credentials.client_id);
       assert.equal(body.client_secret, credentials.client_secret);

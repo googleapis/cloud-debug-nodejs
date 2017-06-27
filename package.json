@@ -21,6 +21,7 @@
     "node": ">=4"
   },
   "devDependencies": {
+    "@types/node": "^7.0.18",
     "changelog-maker": "^2.2.2",
     "closure-npc": "*",
     "coveralls": "^2.11.2",

@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
-
-module.exports.isValid = isValid;
 
 /**
  * Validates if the AST represented by the node has obvious side-effects.
@@ -26,7 +23,7 @@ module.exports.isValid = isValid;
  * @param {Object} node AST Node (as per the Mozilla Parser API)
  * @return {boolean} if the exper
  */
-function isValid(node) {
+export function isValid(node: any): boolean {
   // Empty expression is allowed
   if (node === null) { return true; }
 

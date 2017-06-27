@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 'use strict';
 
 var _ = require('lodash');
 var fs = require('fs');
@@ -26,68 +25,72 @@ module.exports = {
   scan: scan
 };
 
-/**
- * Encapsulates the results of a filesystem scan with methods 
- * to easily select scan information or filenames for a 
- * specific subset of the files listed in the scan results.
- * 
- * @param {Object} stats An object that contains filenames
- *  as keys where each key maps to an object containing the
- *  hash and number of lines for the specified file.  This
- *  information is accessed via the `hash` and `lines`
- *  attributes respectively
- * @constructor
- */
-function ScanResults(stats) {
-  this.stats_ = stats;
-}
+class ScanResults {
+  private stats_;
 
-/**
- * Used to get all of the file scan results.
- */
-ScanResults.prototype.all = function() {
-  return this.stats_;
-};
+  /**
+   * Encapsulates the results of a filesystem scan with methods
+   * to easily select scan information or filenames for a
+   * specific subset of the files listed in the scan results.
+   *
+   * @param {Object} stats An object that contains filenames
+   *  as keys where each key maps to an object containing the
+   *  hash and number of lines for the specified file.  This
+   *  information is accessed via the `hash` and `lines`
+   *  attributes respectively
+   * @constructor
+   */
+  constructor(stats) {
+    this.stats_ = stats;
+  }
 
-/**
- * Used to get the file scan results for only the files 
- * whose filenames match the specified regex.
- * 
- * @param {regex} regex The regex that tests a filename 
- *  to determine if the scan results for that filename 
- *  should be included in the returned results.
- */
-ScanResults.prototype.selectStats = function(regex) {
-  return _.pickBy(this.stats_, function(value, key) {
+  /**
+   * Used to get all of the file scan results.
+   */
+  all() {
+    return this.stats_;
+  }
+
+  /**
+   * Used to get the file scan results for only the files
+   * whose filenames match the specified regex.
+   *
+   * @param {regex} regex The regex that tests a filename
+   *  to determine if the scan results for that filename
+   *  should be included in the returned results.
+   */
+  selectStats(regex) {
+    return _.pickBy(this.stats_, function(_, key) {
       return regex.test(key);
     });
-};
+  }
 
-/**
- * Used to get the only the file paths in the scan results 
- * where the filenames match the specified regex and are 
- * returned with the each relative to the specified base 
- * directory.
- * 
- * @param {regex} regex The regex that tests a filename to 
- *  determine if the scan results for that filename should 
- *  be included in the returned results.
- * @param {string} baseDir The absolute path to the directory 
- *  from which all of the returned paths should be relative 
- *  to.
- */
-ScanResults.prototype.selectFiles = function(regex, baseDir) {
-  // ensure the base directory has only a single trailing path separator
-  baseDir = path.normalize(baseDir + path.sep);
-  return Object.keys(this.stats_).filter(function(file) {
-      return file && regex.test(file);
-    })
-    .map(function(file) {
-      return path.normalize(file).replace(baseDir, '');
-    });
-};
+  /**
+   * Used to get the only the file paths in the scan results
+   * where the filenames match the specified regex and are
+   * returned with the each relative to the specified base
+   * directory.
+   *
+   * @param {regex} regex The regex that tests a filename to
+   *  determine if the scan results for that filename should
+   *  be included in the returned results.
+   * @param {string} baseDir The absolute path to the directory
+   *  from which all of the returned paths should be relative
+   *  to.
+   */
+  selectFiles(regex, baseDir) {
+    // ensure the base directory has only a single trailing path separator
+    baseDir = path.normalize(baseDir + path.sep);
+    return Object.keys(this.stats_).filter(function(file) {
+        return file && regex.test(file);
+      })
+      .map(function(file) {
+        return path.normalize(file).replace(baseDir, '');
+      });
+  }
+}
 
-function scan(shouldHash, baseDir, regex, callback) {
+export function scan(shouldHash, baseDir, regex, callback) {
   findFiles(baseDir, regex, function(err, fileList) {
     if (err) {
       callback(err);
@@ -114,7 +117,7 @@ function computeStats(fileList, shouldHash, callback) {
     return;
   }
 
-  var hashes = [];
+  var hashes: string[] = [];
   var statistics = {};
   fileList.forEach(function(filename) {
     stats(filename, shouldHash, function(err, fileStats) {
@@ -149,7 +152,7 @@ function computeStats(fileList, shouldHash, callback) {
  * Given a base-directory, this function scans the subtree and finds all the js
  * files. .git and node_module subdirectories are ignored.
  * @param {!string} baseDir top-level directory to scan
- * @param {!regex} regex the regular expression that specifies the types of 
+ * @param {!regex} regex the regular expression that specifies the types of
  *  files to find based on their filename
  * @param {!function(?Error, Array<string>)} callback error-back callback
  */
@@ -162,7 +165,7 @@ function findFiles(baseDir, regex, callback) {
   }
 
   var find = findit(baseDir);
-  var fileList = [];
+  var fileList: string[] = [];
 
   find.on('error', function(err) {
     errored = true;
@@ -170,7 +173,7 @@ function findFiles(baseDir, regex, callback) {
     return;
   });
 
-  find.on('directory', function(dir, stat, stop) {
+  find.on('directory', function(dir, _, stop) {
     var base = path.basename(dir);
     if (base === '.git' || base === 'node_modules') {
       stop(); // do not descend
@@ -193,6 +196,10 @@ function findFiles(baseDir, regex, callback) {
   });
 }
 
+interface FileStats {
+  hash: string,
+  lines: number
+}
 
 /**
  * Compute a sha hash for the given file and record line counts along the way.
@@ -201,7 +208,7 @@ function findFiles(baseDir, regex, callback) {
  * @param {function} cb errorback style callback which returns the sha string
  * @private
  */
-function stats(filename, shouldHash, cb) {
+function stats(filename, shouldHash, cb: (err, stats?: FileStats) => void) {
   var shasum;
   if (shouldHash) {
     shasum = crypto.createHash('sha1');
