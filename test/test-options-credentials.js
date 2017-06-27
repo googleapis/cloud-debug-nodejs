@@ -21,7 +21,7 @@ var nock = require('nock');
 var nocks = require('./nocks.js');
 var extend = require('extend');
 var config = require('../src/agent/config.js').default;
-var Debuglet = require('../src/agent/debuglet.js');
+var Debuglet = require('../src/agent/debuglet.js').Debuglet;
 
 var envProject = process.env.GCLOUD_PROJECT;
 

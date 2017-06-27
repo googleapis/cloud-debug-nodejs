@@ -24,7 +24,7 @@ var _ = require('lodash');
 var assert = require('assert');
 var DEFAULT_CONFIG = require('../src/agent/config.js').default;
 DEFAULT_CONFIG.allowExpressions = true;
-var Debuglet = require('../src/agent/debuglet.js');
+var Debuglet = require('../src/agent/debuglet.js').Debuglet;
 var extend = require('extend');
 
 var DEBUGGEE_ID = 'bar';
@@ -249,7 +249,7 @@ describe('Debuglet', function() {
       it('should respect FUNCTION_NAME env. var.',
          function() {
            process.env.FUNCTION_NAME = 'fake-fn-name';
-           var debug = require('../src/debug.js')();
+           var debug = require('../src/debug.js').Debug();
            var debuglet = new Debuglet(debug, defaultConfig);
            assert.ok(debuglet.config_);
            assert.ok(debuglet.config_.serviceContext);

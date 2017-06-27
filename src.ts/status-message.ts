@@ -38,4 +38,5 @@ export class StatusMessage {
   static readonly BREAKPOINT_EXPRESSION = 'BREAKPOINT_EXPRESSION';
   static readonly VARIABLE_NAME = 'VARIABLE_NAME';
   static readonly VARIABLE_VALUE = 'VARIABLE_VALUE';
+  static readonly BREAKPOINT_AGE = 'BREAKPOINT_AGE';
 }
