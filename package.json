@@ -24,13 +24,22 @@
     "changelog-maker": "^2.2.2",
     "closure-npc": "*",
     "coveralls": "^2.11.2",
+    "del": "^2.2.2",
     "extend": "^3.0.0",
+    "gulp": "^3.9.1",
+    "gulp-clang-format": "^1.0.23",
+    "gulp-sourcemaps": "^2.6.0",
+    "gulp-tslint": "^8.0.0",
+    "gulp-typescript": "^3.1.6",
     "istanbul": "^0.4.1",
     "jshint": "^2.7.0",
+    "merge2": "^1.0.3",
     "mocha": "^3.0.0",
     "nock": "^9.0.0",
     "proxyquire": "^1.7.11",
-    "request": "^2.81.0"
+    "request": "^2.81.0",
+    "source-map-support": "^0.4.15",
+    "typescript": "^2.3.2"
   },
   "dependencies": {
     "@google-cloud/common": "^0.13.3",
@@ -45,11 +54,12 @@
     "split": "^1.0.0"
   },
   "scripts": {
-    "test": "./bin/run-test.sh",
-    "system-test": "./bin/run-system-test.sh",
-    "changelog": "./bin/run-changelog.sh",
-    "coverage": "./bin/run-test.sh -c",
-    "bump": "./bin/run-bump.sh",
-    "closure": "./node_modules/.bin/closure-npc"
+    "build": "gulp",
+    "test": "gulp test",
+    "system-test": "gulp && ./bin/run-system-test.sh",
+    "changelog": "gulp && ./bin/run-changelog.sh",
+    "coverage": "gulp && ./bin/run-test.sh -c",
+    "bump": "gulp && ./bin/run-bump.sh",
+    "closure": "gulp && ./node_modules/.bin/closure-npc"
   }
 }
