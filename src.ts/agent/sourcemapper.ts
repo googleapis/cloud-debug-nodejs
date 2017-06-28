@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-/** @const */ var _ = require('lodash');
-/** @const */ var async = require('async');
-/** @const */ var fs = require('fs');
-/** @const */ var path = require('path');
+import * as _ from 'lodash';
+import * as async from 'async';
+import * as fs from 'fs';
+import * as path from 'path';
 
-/** @const */ var sourceMap = require('source-map');
+import * as sourceMap from 'source-map';
 
 /** @define {string} */ var MAP_EXT = '.map';
 

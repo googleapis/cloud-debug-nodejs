@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
-var pjson = require('../package.json');
-var _ = require('lodash');
+const pjson = require('../package.json');
+import * as _ from 'lodash';
 
 export class Debuggee {
   private project;

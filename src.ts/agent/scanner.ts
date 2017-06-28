@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
-var _ = require('lodash');
-var fs = require('fs');
-var path = require('path');
-var crypto = require('crypto');
-var findit = require('findit2');
-var split = require('split');
-
-module.exports = {
-  scan: scan
-};
+import * as _ from 'lodash';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as crypto from 'crypto';
+import * as findit from 'findit2';
+import * as split from 'split';
 
 class ScanResults {
   private stats_;
@@ -213,7 +209,8 @@ function stats(filename, shouldHash, cb: (err, stats?: FileStats) => void) {
   if (shouldHash) {
     shasum = crypto.createHash('sha1');
   }
-  var s = fs.ReadStream(filename);
+  // TODO: Determine why property 'ReadStream' does not exist on type 'fs'
+  var s = (fs as any).ReadStream(filename);
   var lines = 0;
   var byLine = s.pipe(split());
   byLine.on('error', function(e) {

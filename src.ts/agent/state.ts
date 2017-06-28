@@ -13,15 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var ScopeType = require('vm').runInDebugContext('ScopeType');
-var assert = require('./debug-assert').debugAssert(process.env.CLOUD_DEBUG_ASSERTIONS);
-var util = require('util');
-var lodash = require('lodash');
-var transform = lodash.transform;
-var flatten = lodash.flatten;
-var isEmpty = lodash.isEmpty;
+import * as vm from 'vm';
+import { debugAssert } from './debug-assert';
+import * as util from 'util';
+import * as lodash from 'lodash';
+const transform = lodash.transform;
+const flatten = lodash.flatten;
+const isEmpty = lodash.isEmpty;
 
-var StatusMessage = require('../status-message.js').StatusMessage;
+import { StatusMessage } from '../status-message';
+
+const ScopeType = vm.runInDebugContext('ScopeType');
+const assert = debugAssert(process.env.CLOUD_DEBUG_ASSERTIONS);
 
 // Error message indices into the resolved variable table.
 var BUFFER_FULL_MESSAGE_INDEX = 0;
@@ -117,7 +120,8 @@ class StateResolver {
                                   '` stack frames.',
                                     true) };
 
-    this.resolvedVariableTable_ = util._extend([], this.messageTable_);
+    // TODO: Determine why _extend is used here
+    this.resolvedVariableTable_ = (util as any)._extend([], this.messageTable_);
     this.rawVariableTable_ = this.messageTable_.map(function() { return null; });
   }
 
