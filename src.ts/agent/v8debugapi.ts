@@ -19,7 +19,7 @@ import * as vm from 'vm';
 import * as path from 'path';
 import * as semver from 'semver';
 import * as acorn from 'acorn';
-import * as estreeTypes from '@types/estree';
+import * as estree from 'estree';
 
 import * as state from './state';
 import { StatusMessage } from '../status-message';
@@ -552,13 +552,13 @@ export function create(logger_: Logger, config_: DebugAgentConfig, jsFiles_: Fil
   class BreakpointData {
     apiBreakpoint: apiTypes.Breakpoint;
     v8Breakpoint: v8Types.BreakPoint;
-    parsedCondition: estreeTypes.Node;
+    parsedCondition: estree.Node;
     compile: (src: string) => string;
 
     /**
      * @constructor
      */
-    constructor(apiBreakpoint: apiTypes.Breakpoint, v8Breakpoint: v8Types.BreakPoint, parsedCondition: estreeTypes.Node, compile: (src: string) => string) {
+    constructor(apiBreakpoint: apiTypes.Breakpoint, v8Breakpoint: v8Types.BreakPoint, parsedCondition: estree.Node, compile: (src: string) => string) {
       this.apiBreakpoint = apiBreakpoint;
       this.v8Breakpoint = v8Breakpoint;
       this.parsedCondition = parsedCondition;
