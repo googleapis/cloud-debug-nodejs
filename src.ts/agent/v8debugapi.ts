@@ -22,7 +22,7 @@ import * as semver from 'semver';
 import * as state from './state';
 import { StatusMessage } from '../status-message';
 
-/** @const */ var messages = {
+const messages = {
   INVALID_BREAKPOINT: 'invalid snapshot - id or location missing',
   SOURCE_FILE_NOT_FOUND:
     'A script matching the source file was not found loaded on the debuggee',
@@ -40,8 +40,8 @@ import { StatusMessage } from '../status-message';
     'Could not determine the output file associated with the transpiled input file'
 };
 
-/** @const */ var MODULE_WRAP_PREFIX_LENGTH = require('module').wrap('☃')
-                                                               .indexOf('☃');
+const MODULE_WRAP_PREFIX_LENGTH = require('module').wrap('☃')
+                                                   .indexOf('☃');
 
 /**
  * Formats a provided message and a high-resolution interval of the format
@@ -51,35 +51,35 @@ import { StatusMessage } from '../status-message';
  * @param {number[]} interval The interval to format.
  * @return {string} A formatted string.
  */
-var formatInterval = function(msg, interval) {
+const formatInterval = function(msg, interval) {
   return msg + (interval[0] * 1000 + interval[1] / 1000000) + 'ms';
 };
 
-var singleton;
+let singleton;
 export function create(logger_, config_, jsFiles_, sourcemapper_) {
   if (singleton && !config_.forceNewAgent_) {
     return singleton;
   }
 
-  var v8 = null;
-  var logger = null;
-  var config = null;
-  var fileStats = null;
-  var breakpoints = {};
-  var sourcemapper = null;
+  let v8 = null;
+  let logger = null;
+  let config = null;
+  let fileStats = null;
+  let breakpoints = {};
+  let sourcemapper = null;
   // Entries map breakpoint id to { enabled: <bool>, listener: <function> }
-  var listeners = {};
-  var numBreakpoints = 0;
+  const listeners = {};
+  let numBreakpoints = 0;
   // Before V8 4.5, having a debug listener active disables optimization. To
   // deal with this we only activate the listener when there is a breakpoint
   // active, and remote it as soon as the snapshot is taken. Furthermore, 4.5
   // changes the API such that Debug.scripts() crashes unless a listener is
   // active. We use a permanent listener on V8 4.5+.
-  var v8_version = /(\d+\.\d+\.\d+)\.\d+/.exec(process.versions.v8);
+  const v8_version = /(\d+\.\d+\.\d+)\.\d+/.exec(process.versions.v8);
   if (!v8_version || v8_version.length < 2) {
     return null;
   }
-  var usePermanentListener = semver.satisfies(v8_version[1], '>=4.5');
+  const usePermanentListener = semver.satisfies(v8_version[1], '>=4.5');
 
   // Node.js v0.11+ have the runInDebugContext method that can be used to fetch
   // the API object.
@@ -117,7 +117,7 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
           StatusMessage.UNSPECIFIED, messages.INVALID_BREAKPOINT);
       }
 
-      var baseScriptPath = path.normalize(breakpoint.location.path);
+      const baseScriptPath = path.normalize(breakpoint.location.path);
       if (!sourcemapper.hasMappingInfo(baseScriptPath)) {
         if (!_.endsWith(baseScriptPath, '.js')) {
           return setErrorStatusAndCallback(cb, breakpoint,
@@ -128,11 +128,11 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
         setInternal(breakpoint, null /* mapInfo */, null /* compile */, cb);
       }
       else {
-        var line = breakpoint.location.line;
-        var column = 0;
-        var mapInfo = sourcemapper.mappingInfo(baseScriptPath, line, column);
+        const line = breakpoint.location.line;
+        const column = 0;
+        const mapInfo = sourcemapper.mappingInfo(baseScriptPath, line, column);
 
-        var compile = getBreakpointCompiler(breakpoint);
+        const compile = getBreakpointCompiler(breakpoint);
         if (breakpoint.condition && compile) {
           try {
             breakpoint.condition = compile(breakpoint.condition);
@@ -153,11 +153,11 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
       if (typeof breakpoint.id === 'undefined') {
         return false;
       }
-      var breakpointData = breakpoints[breakpoint.id];
+      const breakpointData = breakpoints[breakpoint.id];
       if (!breakpointData) {
         return false;
       }
-      var v8bp = breakpointData.v8Breakpoint;
+      const v8bp = breakpointData.v8Breakpoint;
 
       v8.clearBreakPoint(v8bp.number());
       delete breakpoints[breakpoint.id];
@@ -176,8 +176,8 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
      * @param {Function} callback
      */
     wait: function(breakpoint, callback) {
-      var num = breakpoints[breakpoint.id].v8Breakpoint.number();
-      var listener = onBreakpointHit.bind(
+      const num = breakpoints[breakpoint.id].v8Breakpoint.number();
+      const listener = onBreakpointHit.bind(
           null, breakpoint, function(err) {
             listeners[num].enabled = false;
             // This method is called from the debug event listener, which
@@ -196,12 +196,12 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
      * @param {Function} callback
      */
     log: function(breakpoint, print, shouldStop) {
-      var num = breakpoints[breakpoint.id].v8Breakpoint.number();
-      var logsThisSecond = 0;
-      var timesliceEnd = Date.now() + 1000;
-      var listener = onBreakpointHit.bind(
+      const num = breakpoints[breakpoint.id].v8Breakpoint.number();
+      let logsThisSecond = 0;
+      let timesliceEnd = Date.now() + 1000;
+      const listener = onBreakpointHit.bind(
           null, breakpoint, function(_) {
-        var currTime = Date.now();
+        const currTime = Date.now();
         if (currTime > timesliceEnd) {
           logsThisSecond = 0;
           timesliceEnd = currTime + 1000;
@@ -249,9 +249,9 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
   function setInternal(breakpoint, mapInfo, compile, cb) {
     // Parse and validate conditions and watch expressions for correctness and
     // immutability
-    var ast = null;
+    let ast = null;
     if (breakpoint.condition) {
-      var acorn = require('acorn');
+      const acorn = require('acorn');
       try {
         // We parse as ES6; even though the underlying V8 version may only
         // support a subset. This should be fine as the objective of the parse
@@ -262,14 +262,14 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
           sourceType: 'script',
           ecmaVersion: 6
         });
-        var validator = require('./validator.js');
+        const validator = require('./validator.js');
         if (!validator.isValid(ast)) {
           return setErrorStatusAndCallback(cb, breakpoint,
             StatusMessage.BREAKPOINT_CONDITION,
             messages.DISALLOWED_EXPRESSION);
         }
       } catch (err) {
-        var message = messages.SYNTAX_ERROR_IN_CONDITION + err.message;
+        const message = messages.SYNTAX_ERROR_IN_CONDITION + err.message;
         return setErrorStatusAndCallback(cb, breakpoint,
           StatusMessage.BREAKPOINT_CONDITION, message);
       }
@@ -284,8 +284,8 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
     // directory. Until this is addressed between the server and the debuglet,
     // we are going to assume that repository root === the starting working
     // directory.
-    var matchingScript;
-    var scripts = findScripts(mapInfo ? mapInfo.file :
+    let matchingScript;
+    const scripts = findScripts(mapInfo ? mapInfo.file :
       path.normalize(breakpoint.location.path), config, fileStats);
     if (scripts.length === 0) {
       return setErrorStatusAndCallback(cb, breakpoint,
@@ -312,9 +312,9 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
 
     // The breakpoint protobuf message presently doesn't have a column property
     // but it may have one in the future.
-    var column = mapInfo && mapInfo.column ? mapInfo.column :
+    let column = mapInfo && mapInfo.column ? mapInfo.column :
       (breakpoint.location.column || 1);
-    var line = mapInfo ? mapInfo.line : breakpoint.location.line;
+    const line = mapInfo ? mapInfo.line : breakpoint.location.line;
 
     // We need to special case breakpoints on the first line. Since Node.js
     // wraps modules with a function expression, we adjust
@@ -323,7 +323,7 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
       column += MODULE_WRAP_PREFIX_LENGTH - 1;
     }
 
-    var v8bp = setByRegExp(matchingScript, line, column);
+    const v8bp = setByRegExp(matchingScript, line, column);
     if (!v8bp) {
       return setErrorStatusAndCallback(cb, breakpoint,
         StatusMessage.BREAKPOINT_SOURCE_LOCATION,
@@ -352,11 +352,11 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
     switch(path.normalize(breakpoint.location.path).split('.').pop()) {
       case 'coffee':
         return function(uncompiled) {
-          var comp = require('coffee-script');
-          var compiled = comp.compile('0 || (' + uncompiled + ')');
+          const comp = require('coffee-script');
+          const compiled = comp.compile('0 || (' + uncompiled + ')');
           // Strip out coffeescript scoping wrapper to get translated condition
-          var re = /\(function\(\) {\s*0 \|\| \((.*)\);\n\n\}\)\.call\(this\);/;
-          var match = re.exec(compiled);
+          const re = /\(function\(\) {\s*0 \|\| \((.*)\);\n\n\}\)\.call\(this\);/;
+          const match = re.exec(compiled);
           if (match && match.length > 1) {
             return match[1].trim();
           } else {
@@ -376,25 +376,25 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
   }
 
   function setByRegExp(scriptPath, line, column) {
-    var regexp = pathToRegExp(scriptPath);
-    var num = v8.setScriptBreakPointByRegExp(regexp, line - 1, column - 1);
-    var v8bp = v8.findBreakPoint(num);
+    const regexp = pathToRegExp(scriptPath);
+    const num = v8.setScriptBreakPointByRegExp(regexp, line - 1, column - 1);
+    const v8bp = v8.findBreakPoint(num);
     return v8bp;
   }
 
   // function setById(scriptPath, line) {
-  //   var script = findScript(scriptPath);
+  //   const script = findScript(scriptPath);
   //   if (!script) {
   //     return null;
   //   }
 
   //   // v8 uses 0-based line numbers                     ----v
-  //   var position = v8.findScriptSourcePosition(script, line - 1, 0);
+  //   const position = v8.findScriptSourcePosition(script, line - 1, 0);
   //   if (!position) {
   //     return null;
   //   }
 
-  //   var v8bp = v8.setBreakPointByScriptIdAndPosition(
+  //   const v8bp = v8.setBreakPointByScriptIdAndPosition(
   //     script.id, position, null /* condition */, true /*enabled*/
   //   );
   //   if (!v8bp) {
@@ -405,7 +405,7 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
   // }
 
   function onBreakpointHit(breakpoint, callback, execState) {
-    var v8bp = breakpoints[breakpoint.id].v8Breakpoint;
+    const v8bp = breakpoints[breakpoint.id].v8Breakpoint;
 
     if (!v8bp.active()) {
       // Breakpoint exists, but not active. We never disable breakpoints, so
@@ -417,7 +417,7 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
     }
 
     // TODO: Fix this cast to 'any'
-    var result = checkCondition(breakpoint, execState) as any;
+    const result = checkCondition(breakpoint, execState) as any;
     if (result.error) {
       return setErrorStatusAndCallback(callback, breakpoint,
         StatusMessage.BREAKPOINT_CONDITION,
@@ -429,7 +429,7 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
     }
 
     // Breakpoint Hit
-    var start = process.hrtime();
+    const start = process.hrtime();
     try {
       captureBreakpointData(breakpoint, execState);
     } catch (err) {
@@ -437,7 +437,7 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
         StatusMessage.BREAKPOINT_SOURCE_LOCATION,
         messages.CAPTURE_BREAKPOINT_DATA + err);
     }
-    var end = process.hrtime(start);
+    const end = process.hrtime(start);
     logger.info(formatInterval('capture time: ', end));
     callback(null);
   }
@@ -452,7 +452,7 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
       switch (evt) {
         case v8.DebugEvent.Break:
           eventData.breakPointsHit().forEach(function(hit) {
-            var num = hit.script_break_point().number();
+            const num = hit.script_break_point().number();
             if (listeners[num].enabled) {
               logger.info('>>>V8 breakpoint hit<<< number: ' + num);
               listeners[num].listener(execState, eventData);
@@ -466,9 +466,9 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
   }
 
   function captureBreakpointData(breakpoint, execState) {
-    var expressionErrors = [];
+    const expressionErrors = [];
     if (breakpoint.expressions && breakpoints[breakpoint.id].compile) {
-      for (var i = 0; i < breakpoint.expressions.length; i++) {
+      for (let i = 0; i < breakpoint.expressions.length; i++) {
         try {
           breakpoint.expressions[i] =
             breakpoints[breakpoint.id].compile(breakpoint.expressions[i]);
@@ -490,15 +490,15 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
       if (!breakpoint.expressions) {
         breakpoint.evaluatedExpressions = [];
       } else {
-        var frame = execState.frame(0);
-        var evaluatedExpressions = breakpoint.expressions.map(function(exp) {
-          var result = state.evaluate(exp, frame);
+        const frame = execState.frame(0);
+        const evaluatedExpressions = breakpoint.expressions.map(function(exp) {
+          const result = state.evaluate(exp, frame);
           return result.error ? result.error : result.mirror.value();
         });
         breakpoint.evaluatedExpressions = evaluatedExpressions;
       }
     } else {
-      var captured = state.capture(execState, breakpoint.expressions, config, v8);
+      const captured = state.capture(execState, breakpoint.expressions, config, v8);
       breakpoint.stackFrames = captured.stackFrames;
       breakpoint.variableTable = captured.variableTable;
       breakpoint.evaluatedExpressions =
@@ -515,7 +515,7 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
       return { value: true };
     }
 
-    var result = state.evaluate(breakpoint.condition, execState.frame(0));
+    const result = state.evaluate(breakpoint.condition, execState.frame(0));
 
     if (result.error) {
       return { error: result.error };
@@ -534,7 +534,7 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
   }
 
   function setErrorStatusAndCallback(fn, breakpoint, refersTo, message) {
-    var error = new Error(message);
+    const error = new Error(message);
     return setImmediate(function() {
       if (breakpoint && !breakpoint.status) {
         breakpoint.status = new StatusMessage(refersTo, message, true);
@@ -568,14 +568,14 @@ function pathToRegExp(scriptPath) {
 export function findScripts(scriptPath, config, fileStats) {
   // Use repository relative mapping if present.
   if (config.appPathRelativeToRepository) {
-    var candidate = scriptPath.replace(config.appPathRelativeToRepository,
-                                       config.workingDirectory);
+    const candidate = scriptPath.replace(config.appPathRelativeToRepository,
+                                         config.workingDirectory);
     // There should be no ambiguity resolution if project root is provided.
     return fileStats[candidate] ? [candidate] : [];
   }
-  var regexp = pathToRegExp(scriptPath);
+  const regexp = pathToRegExp(scriptPath);
   // Next try to match path.
-  var matches = Object.keys(fileStats).filter(regexp.test.bind(regexp));
+  const matches = Object.keys(fileStats).filter(regexp.test.bind(regexp));
   if (matches.length === 1) {
     return matches;
   }
@@ -611,10 +611,10 @@ export function findScripts(scriptPath, config, fileStats) {
  */
 // Exposed for unit testing.
 export function findScriptsFuzzy(scriptPath, fileList) {
-  var matches = fileList;
-  var components = scriptPath.split(path.sep);
-  for (var i = components.length - 1; i >= 0; i--) {
-    var regexp = pathToRegExp(components.slice(i).join(path.sep));
+  let matches = fileList;
+  const components = scriptPath.split(path.sep);
+  for (let i = components.length - 1; i >= 0; i--) {
+    const regexp = pathToRegExp(components.slice(i).join(path.sep));
     matches = matches.filter(regexp.test.bind(regexp));
     if (matches.length <= 1) {
       break; // Either no matches, or we found a unique match.

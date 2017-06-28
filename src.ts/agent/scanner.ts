@@ -106,15 +106,15 @@ export function scan(shouldHash, baseDir, regex, callback) {
  *    returning the hash-code and an object containing file statistics.
  */
 function computeStats(fileList, shouldHash, callback) {
-  var pending = fileList.length;
+  let pending = fileList.length;
   // return a valid, if fake, result when there are no js files to hash.
   if (pending === 0) {
     callback(null, new ScanResults({}), 'EMPTY-no-js-files');
     return;
   }
 
-  var hashes: string[] = [];
-  var statistics = {};
+  const hashes: string[] = [];
+  const statistics = {};
   fileList.forEach(function(filename) {
     stats(filename, shouldHash, function(err, fileStats) {
       if (err) {
@@ -129,12 +129,12 @@ function computeStats(fileList, shouldHash, callback) {
       statistics[filename] = fileStats;
 
       if (pending === 0) {
-        var hash;
+        let hash;
         if (shouldHash) {
           // Sort the hashes to get a deterministic order as the files may not
           // be in the same order each time we scan the disk.
-          var buffer = hashes.sort().join();
-          var sha1 = crypto.createHash('sha1').update(buffer).digest('hex');
+          const buffer = hashes.sort().join();
+          const sha1 = crypto.createHash('sha1').update(buffer).digest('hex');
           hash = 'SHA1-' + sha1;
         }
         callback(null, new ScanResults(statistics), hash);
@@ -153,15 +153,15 @@ function computeStats(fileList, shouldHash, callback) {
  * @param {!function(?Error, Array<string>)} callback error-back callback
  */
 function findFiles(baseDir, regex, callback) {
-  var errored = false;
+  let errored = false;
 
   if (!baseDir) {
     callback(new Error('hasher.findJSFiles requires a baseDir argument'));
     return;
   }
 
-  var find = findit(baseDir);
-  var fileList: string[] = [];
+  const find = findit(baseDir);
+  const fileList: string[] = [];
 
   find.on('error', function(err) {
     errored = true;
@@ -170,7 +170,7 @@ function findFiles(baseDir, regex, callback) {
   });
 
   find.on('directory', function(dir, _, stop) {
-    var base = path.basename(dir);
+    const base = path.basename(dir);
     if (base === '.git' || base === 'node_modules') {
       stop(); // do not descend
     }
@@ -205,14 +205,14 @@ interface FileStats {
  * @private
  */
 function stats(filename, shouldHash, cb: (err, stats?: FileStats) => void) {
-  var shasum;
+  let shasum;
   if (shouldHash) {
     shasum = crypto.createHash('sha1');
   }
   // TODO: Determine why property 'ReadStream' does not exist on type 'fs'
-  var s = (fs as any).ReadStream(filename);
-  var lines = 0;
-  var byLine = s.pipe(split());
+  const s = (fs as any).ReadStream(filename);
+  let lines = 0;
+  const byLine = s.pipe(split());
   byLine.on('error', function(e) {
     cb(e);
   });
@@ -223,7 +223,7 @@ function stats(filename, shouldHash, cb: (err, stats?: FileStats) => void) {
     lines++;
   });
   byLine.on('end', function() {
-    var d;
+    let d;
     if (shouldHash) {
       d = shasum.digest('hex');
     }

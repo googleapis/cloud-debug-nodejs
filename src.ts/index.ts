@@ -18,7 +18,7 @@ import { Debug } from './debug';
 import { Debuglet } from './agent/debuglet';
 
 // Singleton.
-var debuglet;
+let debuglet;
 
 /**
  * Start the Debug agent that will make your application available for debugging
@@ -36,14 +36,14 @@ var debuglet;
  */
 export function start(options) {
   options = options || {};
-  var agentConfig = options.debug || options;
+  const agentConfig = options.debug || options;
 
   // forceNewAgent_ is for testing purposes only.
   if (debuglet && !agentConfig.forceNewAgent_) {
     throw new Error('Debug Agent has already been started');
   }
 
-  var debug = new Debug(options);
+  const debug = new Debug(options);
   debuglet = new Debuglet(debug, agentConfig);
   debuglet.start();
 

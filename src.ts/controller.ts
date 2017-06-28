@@ -25,7 +25,7 @@ import * as qs from 'querystring';
 const common: { ServiceObject: new (any) => any } = _common;
 
 /** @const {string} Cloud Debug API endpoint */
-var API = 'https://clouddebugger.googleapis.com/v2/controller';
+const API = 'https://clouddebugger.googleapis.com/v2/controller';
 
 export class Controller extends common.ServiceObject {
   private nextWaitToken_;
@@ -50,7 +50,7 @@ export class Controller extends common.ServiceObject {
    * @private
    */
   register(debuggee, callback) {
-    var options = {
+    const options = {
       uri: API + '/debuggees/register',
       method: 'POST',
       json: true,
@@ -78,14 +78,14 @@ export class Controller extends common.ServiceObject {
    * body)
    */
   listBreakpoints(debuggee, callback) {
-    var that = this;
+    const that = this;
     assert(debuggee.id, 'should have a registered debuggee');
-    var query: any = {success_on_timeout: true};
+    const query: any = {success_on_timeout: true};
     if (that.nextWaitToken_) {
       query.waitToken = that.nextWaitToken_;
     }
 
-    var uri = API + '/debuggees/' + encodeURIComponent(debuggee.id) +
+    const uri = API + '/debuggees/' + encodeURIComponent(debuggee.id) +
               '/breakpoints?' + qs.stringify(query);
     that.request({uri: uri, json: true}, function(err, body, response) {
       if (!response) {
@@ -119,7 +119,7 @@ export class Controller extends common.ServiceObject {
 
     breakpoint.action = 'capture';
     breakpoint.isFinalState = true;
-    var options = {
+    const options = {
       uri: API + '/debuggees/' + encodeURIComponent(debuggee.id) +
                '/breakpoints/' + encodeURIComponent(breakpoint.id),
       json: true,
