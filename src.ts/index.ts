@@ -17,6 +17,7 @@
 import { Debug } from './debug';
 import { Debuglet } from './agent/debuglet';
 import { DebugAgentConfig } from './agent/config';
+import { AuthOptions } from './types/common-types';
 
 // Singleton.
 let debuglet;
@@ -47,7 +48,8 @@ export function start(options: DebugAgentConfig | { debug?: DebugAgentConfig }):
     throw new Error('Debug Agent has already been started');
   }
 
-  const debug = new Debug(options);
+  // TODO: Determine how to remove this cast to `AuthOptions`.
+  const debug = new Debug(options as AuthOptions);
   debuglet = new Debuglet(debug, agentConfig);
   debuglet.start();
 
