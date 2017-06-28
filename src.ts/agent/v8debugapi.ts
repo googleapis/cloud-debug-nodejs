@@ -22,7 +22,7 @@ import * as semver from 'semver';
 import * as state from './state';
 import { StatusMessage } from '../status-message';
 
-/** @const */ const messages = {
+const messages = {
   INVALID_BREAKPOINT: 'invalid snapshot - id or location missing',
   SOURCE_FILE_NOT_FOUND:
     'A script matching the source file was not found loaded on the debuggee',
@@ -40,8 +40,8 @@ import { StatusMessage } from '../status-message';
     'Could not determine the output file associated with the transpiled input file'
 };
 
-/** @const */ const MODULE_WRAP_PREFIX_LENGTH = require('module').wrap('☃')
-                                                                 .indexOf('☃');
+const MODULE_WRAP_PREFIX_LENGTH = require('module').wrap('☃')
+                                                   .indexOf('☃');
 
 /**
  * Formats a provided message and a high-resolution interval of the format
