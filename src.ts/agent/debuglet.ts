@@ -15,8 +15,7 @@
  */
 
 import { Common } from '../types/common-types';
-const _common = require('@google-cloud/common');
-const common: Common = _common;
+const common: Common = require('@google-cloud/common');
 
 import * as crypto from 'crypto';
 import {EventEmitter} from 'events';
@@ -24,8 +23,7 @@ import * as extend from 'extend';
 import * as fs from 'fs';
 
 import { GcpMetadata } from '../types/gcp-metadata-types';
-const _metadata = require('gcp-metadata');
-const metadata: GcpMetadata = _metadata;
+const metadata: GcpMetadata = require('gcp-metadata');
 
 import * as _ from 'lodash';
 import * as path from 'path';

@@ -17,17 +17,15 @@
 import * as crypto from 'crypto';
 
 import * as events from 'events';
-const _findit = require('findit2');
 // TODO: Make this more precise.
-const findit: (dir: string) => events.EventEmitter = _findit;
+const findit: (dir: string) => events.EventEmitter = require('findit2');
 
 import * as fs from 'fs';
 import * as _ from 'lodash';
 import * as path from 'path';
 
-const _split = require('split');
 // TODO: Make this more precise.
-const split: () => any = _split;
+const split: () => any = require('split');
 
 export interface FileStats {
   // TODO: Verify that this member should actually be optional.

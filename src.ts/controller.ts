@@ -19,8 +19,7 @@
  */
 
 import {Common} from './types/common-types';
-const _common = require('@google-cloud/common');
-export const common: Common = _common;
+export const common: Common = require('@google-cloud/common');
 
 import * as assert from 'assert';
 import * as http from 'http';

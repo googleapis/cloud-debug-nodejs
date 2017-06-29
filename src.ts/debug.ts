@@ -15,8 +15,7 @@
  */
 
 import {AuthOptions, Common} from './types/common-types';
-const _common = require('@google-cloud/common');
-const common: Common = _common;
+const common: Common = require('@google-cloud/common');
 
 import * as util from 'util';
 
