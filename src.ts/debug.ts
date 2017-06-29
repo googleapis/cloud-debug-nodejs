@@ -45,7 +45,6 @@ export class Debug extends common.Service {
    */
   constructor(options: AuthOptions) {
     if (new.target !== Debug) {
-      options = common.util.normalizeArguments(new.target, options);
       return new Debug(options);
     }
 
@@ -64,6 +63,6 @@ export class Debug extends common.Service {
     // property. This breaks the SSOT principle. Remove this when
     // https://github.com/GoogleCloudPlatform/google-cloud-node/issues/1891
     // is resolved.
-    this.options = options;
+    this.options = common.util.normalizeArguments(this, options);
   }
 }
