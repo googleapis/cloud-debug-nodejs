@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import * as estree from 'estree';
+
 /**
  * Validates if the AST represented by the node has obvious side-effects.
  * It catches the most common cases such as assignments, method calls, and
@@ -23,7 +25,7 @@
  * @param {Object} node AST Node (as per the Mozilla Parser API)
  * @return {boolean} if the exper
  */
-export function isValid(node: any): boolean {
+export function isValid(node: estree.Node): boolean {
   // Empty expression is allowed
   if (node === null) { return true; }
 
@@ -90,6 +92,7 @@ export function isValid(node: any): boolean {
     case 'TemplateLiteral':
       return node.quasis.every(isValid) && node.expressions.every(isValid);
     case 'TaggedTemplateExpression':
+      // TODO: Check if node.quasi is a type
       return isValid(node.tag) && isValid(node.quasi);
     case 'TemplateElement':
       return true;

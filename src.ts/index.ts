@@ -16,6 +16,8 @@
 
 import { Debug } from './debug';
 import { Debuglet } from './agent/debuglet';
+import { DebugAgentConfig } from './agent/config';
+import { AuthOptions } from './types/common-types';
 
 // Singleton.
 let debuglet;
@@ -34,16 +36,20 @@ let debuglet;
  * @example
  * debug.startAgent();
  */
-export function start(options) {
+export function start(options: DebugAgentConfig | { debug?: DebugAgentConfig }): Debuglet | undefined {
   options = options || {};
-  const agentConfig = options.debug || options;
+  // TODO: Update the documentation to specify that the options object
+  //       contains a `debug` attribute and not a `debugAgent` object.
+  // TODO: Determine how to remove this cast to `any`.
+  const agentConfig = (options as any).debug || options;
 
   // forceNewAgent_ is for testing purposes only.
   if (debuglet && !agentConfig.forceNewAgent_) {
     throw new Error('Debug Agent has already been started');
   }
 
-  const debug = new Debug(options);
+  // TODO: Determine how to remove this cast to `AuthOptions`.
+  const debug = new Debug(options as AuthOptions);
   debuglet = new Debuglet(debug, agentConfig);
   debuglet.start();
 

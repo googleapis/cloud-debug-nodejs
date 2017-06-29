@@ -21,8 +21,17 @@ import * as crypto from 'crypto';
 import * as findit from 'findit2';
 import * as split from 'split';
 
+export interface FileStats {
+  hash: string,
+  lines: number
+}
+
+export interface ScanStats {
+  [filename: string]: FileStats
+}
+
 class ScanResults {
-  private stats_;
+  private stats_: ScanStats;
 
   /**
    * Encapsulates the results of a filesystem scan with methods
@@ -36,14 +45,14 @@ class ScanResults {
    *  attributes respectively
    * @constructor
    */
-  constructor(stats) {
+  constructor(stats: ScanStats) {
     this.stats_ = stats;
   }
 
   /**
    * Used to get all of the file scan results.
    */
-  all() {
+  all(): ScanStats {
     return this.stats_;
   }
 
@@ -55,7 +64,8 @@ class ScanResults {
    *  to determine if the scan results for that filename
    *  should be included in the returned results.
    */
-  selectStats(regex) {
+  selectStats(regex: RegExp): FileStats[] {
+    // TODO: Typescript: Determine why {} is needed here
     return _.pickBy(this.stats_, function(_, key) {
       return regex.test(key);
     });
@@ -74,7 +84,7 @@ class ScanResults {
    *  from which all of the returned paths should be relative
    *  to.
    */
-  selectFiles(regex, baseDir) {
+  selectFiles(regex: RegExp, baseDir: string): string[] {
     // ensure the base directory has only a single trailing path separator
     baseDir = path.normalize(baseDir + path.sep);
     return Object.keys(this.stats_).filter(function(file) {
@@ -86,7 +96,10 @@ class ScanResults {
   }
 }
 
-export function scan(shouldHash, baseDir, regex, callback) {
+export function scan(shouldHash: boolean, baseDir: string, regex: RegExp,
+                     callback: (err?: Error,
+                                results?: ScanResults,
+                                hash?: string) => void): void {
   findFiles(baseDir, regex, function(err, fileList) {
     if (err) {
       callback(err);
@@ -105,7 +118,12 @@ export function scan(shouldHash, baseDir, regex, callback) {
  * @param {!function(?Error, ?string, Object)} callback error-back style callback
  *    returning the hash-code and an object containing file statistics.
  */
-function computeStats(fileList, shouldHash, callback) {
+// TODO: Typescript: Fix the docs associated with this function to match the call signature
+function computeStats(fileList: string[],
+                      shouldHash: boolean,
+                      callback: (err?: Error,
+                                 results?: ScanResults,
+                                 hash?: string) => void): void {
   let pending = fileList.length;
   // return a valid, if fake, result when there are no js files to hash.
   if (pending === 0) {
@@ -152,7 +170,8 @@ function computeStats(fileList, shouldHash, callback) {
  *  files to find based on their filename
  * @param {!function(?Error, Array<string>)} callback error-back callback
  */
-function findFiles(baseDir, regex, callback) {
+function findFiles(baseDir: string, regex: RegExp,
+                   callback: (err?: Error, fileList?: string[]) => void): void {
   let errored = false;
 
   if (!baseDir) {
@@ -192,11 +211,6 @@ function findFiles(baseDir, regex, callback) {
   });
 }
 
-interface FileStats {
-  hash: string,
-  lines: number
-}
-
 /**
  * Compute a sha hash for the given file and record line counts along the way.
  * @param {string} filename
@@ -204,7 +218,8 @@ interface FileStats {
  * @param {function} cb errorback style callback which returns the sha string
  * @private
  */
-function stats(filename, shouldHash, cb: (err, stats?: FileStats) => void) {
+function stats(filename: string, shouldHash: boolean,
+               cb: (err, stats?: FileStats) => void): void {
   let shasum;
   if (shouldHash) {
     shasum = crypto.createHash('sha1');

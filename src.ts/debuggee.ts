@@ -16,15 +16,38 @@
 
 const pjson = require('../package.json');
 import * as _ from 'lodash';
+import { StatusMessage } from './status-message';
+
+// TODO: Determine how to get this interface to satisfy both the code and the docs
+//       In particular, the comments below state some of the properties are
+//       required but the default properties in the code is {}
+interface DebuggeeProperties {
+  project?: string;
+  uniquifier?: string;
+  description?: string;
+  agentVersion?: string;
+  // TODO: Verify that this type is correct.
+  labels?: {
+    [key: string]: string,
+  };
+  sourceContexts?: Array<{ [key: string]: any }>;
+  statusMessage?: StatusMessage;
+}
 
 export class Debuggee {
-  private project;
-  private uniquifier;
-  private description;
-  private agentVersion;
-  private labels;
-  private sourceContexts;
-  private statusMessage;
+  private project: string;
+  private uniquifier: string;
+  private description: string;
+  private agentVersion?: string;
+  private labels?: {
+    [key: string]: string,
+  };
+  private sourceContexts?: Array<{ [key: string]: any }>;
+  private statusMessage?: StatusMessage;
+  id?: string;
+  // TODO: This doesn't seem to ever be set but is referenced in the
+  //       debuglet.ts file.
+  isDisabled?: boolean;
 
   /**
    * Creates a Debuggee service object.
@@ -50,7 +73,7 @@ export class Debuggee {
    *     that the user has a way of noticing.
    *     TODO(ofrobots): has this been renamed to `status` in the API?
    */
-  constructor(properties) {
+  constructor(properties: DebuggeeProperties) {
     if (!(this instanceof Debuggee)) {
       return new Debuggee(properties);
     }

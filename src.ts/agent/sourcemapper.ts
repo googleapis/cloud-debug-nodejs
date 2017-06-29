@@ -23,7 +23,19 @@ import * as sourceMap from 'source-map';
 
 /** @define {string} */ const MAP_EXT = '.map';
 
-export function create(sourcemapPaths, callback) {
+interface MapInfoInput {
+  outputFile: string;
+  mapFile: string;
+  mapConsumer: sourceMap.SourceMapConsumer;
+}
+
+export interface MapInfoOutput {
+  file: string;
+  line: number;
+  column?: number;
+}
+
+export function create(sourcemapPaths: string[], callback: (err?: Error, mapper?: SourceMapper) => void): void {
   const mapper = new SourceMapper();
   const callList = Array.prototype.slice.call(sourcemapPaths)
                  .map(function(path) {
@@ -50,7 +62,7 @@ export function create(sourcemapPaths, callback) {
  *  path should be relative to the process's current working directory
  * @private
  */
-function processSourcemap(infoMap, mapPath, callback) {
+function processSourcemap(infoMap: Map<string, MapInfoInput>, mapPath: string, callback: (err?: Error) => void): void {
   // this handles the case when the path is undefined, null, or
   // the empty string
   if (!mapPath || !_.endsWith(mapPath, MAP_EXT)){
@@ -116,8 +128,8 @@ function processSourcemap(infoMap, mapPath, callback) {
   });
 }
 
-class SourceMapper {
-  infoMap_;
+export class SourceMapper {
+  infoMap_: Map<string, MapInfoInput>;
 
   /**
    * @param {Array.<string>} sourcemapPaths An array of paths to .map sourcemap
@@ -144,7 +156,7 @@ class SourceMapper {
    *  possibly be the input to a transpilation process.  The path should be
    *  relative to the process's current working directory.
    */
-  hasMappingInfo(inputPath) {
+  hasMappingInfo(inputPath: string): boolean {
     return this.infoMap_.has(path.normalize(inputPath));
   }
 
@@ -167,7 +179,7 @@ class SourceMapper {
    *   If the given input file does not have mapping information associated
    *   with it then null is returned.
    */
-  mappingInfo(inputPath, lineNumber, colNumber) {
+  mappingInfo(inputPath: string, lineNumber: number, colNumber: number): MapInfoOutput | null {
     inputPath = path.normalize(inputPath);
     if (!this.hasMappingInfo(inputPath)) {
       return null;

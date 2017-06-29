@@ -18,9 +18,19 @@ import * as _ from 'lodash';
 import * as vm from 'vm';
 import * as path from 'path';
 import * as semver from 'semver';
+import * as acorn from 'acorn';
+import * as estree from 'estree';
 
 import * as state from './state';
 import { StatusMessage } from '../status-message';
+
+import * as apiTypes from '../types/api-types';
+import * as v8Types from '../types/v8-types';
+
+import { Logger } from '../types/common-types';
+import { SourceMapper, MapInfoOutput } from './sourcemapper';
+import { DebugAgentConfig } from './config';
+import { FileStats } from './scanner';
 
 const messages = {
   INVALID_BREAKPOINT: 'invalid snapshot - id or location missing',
@@ -43,6 +53,20 @@ const messages = {
 const MODULE_WRAP_PREFIX_LENGTH = require('module').wrap('☃')
                                                    .indexOf('☃');
 
+export interface V8DebugApi {
+  set: (breakpoint: apiTypes.Breakpoint, cb: (err?: Error) => void) => void;
+  clear: (breakpoint: apiTypes.Breakpoint) => boolean;
+  wait: (breakpoint: apiTypes.Breakpoint, callback: (err?: Error) => void) => void;
+  log: (breakpoint: apiTypes.Breakpoint, print: (format: string, exps: string[]) => void, shouldStop: () => boolean) => void;
+  messages: { [key: string]: string };
+  numBreakpoints_: () => number;
+  numListeners_: () => number;
+}
+
+interface BreakPointData {
+  v8Breakpoint: v8Types.BreakPoint;
+}
+
 /**
  * Formats a provided message and a high-resolution interval of the format
  * [seconds, nanoseconds] (for example, from process.hrtime()) prefixed with a
@@ -51,22 +75,22 @@ const MODULE_WRAP_PREFIX_LENGTH = require('module').wrap('☃')
  * @param {number[]} interval The interval to format.
  * @return {string} A formatted string.
  */
-const formatInterval = function(msg, interval) {
+const formatInterval = function(msg: string, interval: number[]): string {
   return msg + (interval[0] * 1000 + interval[1] / 1000000) + 'ms';
 };
 
-let singleton;
-export function create(logger_, config_, jsFiles_, sourcemapper_) {
+let singleton: V8DebugApi;
+export function create(logger_: Logger, config_: DebugAgentConfig, jsFiles_: FileStats[], sourcemapper_: SourceMapper): V8DebugApi {
   if (singleton && !config_.forceNewAgent_) {
     return singleton;
   }
 
-  let v8 = null;
-  let logger = null;
-  let config = null;
-  let fileStats = null;
-  let breakpoints = {};
-  let sourcemapper = null;
+  let v8: v8Types.Debug = null;
+  let logger: Logger = null;
+  let config: DebugAgentConfig = null;
+  let fileStats: FileStats[] = null;
+  let breakpoints: { [id: number]: BreakPointData } = {};
+  let sourcemapper: SourceMapper = null;
   // Entries map breakpoint id to { enabled: <bool>, listener: <function> }
   const listeners = {};
   let numBreakpoints = 0;
@@ -106,7 +130,7 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
      * @param {function(?Error)} cb callback with an options error string 1st
      *            argument
      */
-    set: function(breakpoint, cb) {
+    set: function(breakpoint: apiTypes.Breakpoint, cb: (err?: Error) => void): void {
       if (!v8 ||
           !breakpoint ||
           typeof breakpoint.id === 'undefined' || // 0 is a valid id
@@ -149,7 +173,7 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
       }
     },
 
-    clear: function(breakpoint) {
+    clear: function(breakpoint: apiTypes.Breakpoint): boolean {
       if (typeof breakpoint.id === 'undefined') {
         return false;
       }
@@ -175,7 +199,7 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
      * @param {Breakpoint} breakpoint
      * @param {Function} callback
      */
-    wait: function(breakpoint, callback) {
+    wait: function(breakpoint: apiTypes.Breakpoint, callback: (err?: Error) => void): void {
       const num = breakpoints[breakpoint.id].v8Breakpoint.number();
       const listener = onBreakpointHit.bind(
           null, breakpoint, function(err) {
@@ -195,7 +219,7 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
      * @param {Breakpoint} breakpoint
      * @param {Function} callback
      */
-    log: function(breakpoint, print, shouldStop) {
+    log: function(breakpoint: apiTypes.Breakpoint, print: (format: string, exps: string[]) => void, shouldStop: () => boolean): void {
       const num = breakpoints[breakpoint.id].v8Breakpoint.number();
       let logsThisSecond = 0;
       let timesliceEnd = Date.now() + 1000;
@@ -207,7 +231,8 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
           timesliceEnd = currTime + 1000;
         }
         print(breakpoint.logMessageFormat,
-          breakpoint.evaluatedExpressions.map(JSON.stringify));
+          // TODO: Determine how to remove the `as` cast below
+          breakpoint.evaluatedExpressions.map(JSON.stringify as (ob: any) => string));
         logsThisSecond++;
         if (shouldStop()) {
           listeners[num].enabled = false;
@@ -230,8 +255,8 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
 
     // The following are for testing:
     messages: messages,
-    numBreakpoints_: function() { return Object.keys(breakpoints).length; },
-    numListeners_: function()   { return Object.keys(listeners).length; }
+    numBreakpoints_: function(): number { return Object.keys(breakpoints).length; },
+    numListeners_: function(): number   { return Object.keys(listeners).length; }
   };
 
   /* -- Private Functions -- */
@@ -246,12 +271,12 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
    *    be used to compile source expressions to JavaScript
    * @param {function(?Error)} cb error-back style callback
    */
-  function setInternal(breakpoint, mapInfo, compile, cb) {
+  // TODO: Fix the documented types to match the function's input types
+  function setInternal(breakpoint: apiTypes.Breakpoint, mapInfo: MapInfoOutput, compile: (src: string) => string, cb: (err?: Error) => void): void {
     // Parse and validate conditions and watch expressions for correctness and
     // immutability
     let ast = null;
     if (breakpoint.condition) {
-      const acorn = require('acorn');
       try {
         // We parse as ES6; even though the underlying V8 version may only
         // support a subset. This should be fine as the objective of the parse
@@ -348,7 +373,7 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
    *
    * @param {Breakpoint} breakpoint
    */
-  function getBreakpointCompiler(breakpoint) {
+  function getBreakpointCompiler(breakpoint: apiTypes.Breakpoint): ((uncompiled: string) => string) | null {
     switch(path.normalize(breakpoint.location.path).split('.').pop()) {
       case 'coffee':
         return function(uncompiled) {
@@ -375,7 +400,7 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
     return null;
   }
 
-  function setByRegExp(scriptPath, line, column) {
+  function setByRegExp(scriptPath: string, line: number, column: number): v8Types.BreakPoint {
     const regexp = pathToRegExp(scriptPath);
     const num = v8.setScriptBreakPointByRegExp(regexp, line - 1, column - 1);
     const v8bp = v8.findBreakPoint(num);
@@ -404,7 +429,7 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
   //   return v8bp;
   // }
 
-  function onBreakpointHit(breakpoint, callback, execState) {
+  function onBreakpointHit(breakpoint: apiTypes.Breakpoint, callback: (err?: Error) => void, execState: v8Types.ExecutionState): void {
     const v8bp = breakpoints[breakpoint.id].v8Breakpoint;
 
     if (!v8bp.active()) {
@@ -416,8 +441,7 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
         messages.V8_BREAKPOINT_DISABLED);
     }
 
-    // TODO: Fix this cast to 'any'
-    const result = checkCondition(breakpoint, execState) as any;
+    const result = checkCondition(breakpoint, execState);
     if (result.error) {
       return setErrorStatusAndCallback(callback, breakpoint,
         StatusMessage.BREAKPOINT_CONDITION,
@@ -447,7 +471,7 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
    * @param {Debug#ExecutionState} execState
    * @param {Debug#BreakEvent} eventData
    */
-  function handleDebugEvents(evt, execState, eventData) {
+  function handleDebugEvents(evt: v8Types.DebugEvent, execState: v8Types.ExecutionState, eventData: v8Types.BreakEvent): void {
     try {
       switch (evt) {
         case v8.DebugEvent.Break:
@@ -465,7 +489,7 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
     }
   }
 
-  function captureBreakpointData(breakpoint, execState) {
+  function captureBreakpointData(breakpoint: apiTypes.Breakpoint, execState: v8Types.ExecutionState): void {
     const expressionErrors = [];
     if (breakpoint.expressions && breakpoints[breakpoint.id].compile) {
       for (let i = 0; i < breakpoint.expressions.length; i++) {
@@ -500,7 +524,9 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
     } else {
       const captured = state.capture(execState, breakpoint.expressions, config, v8);
       breakpoint.stackFrames = captured.stackFrames;
-      breakpoint.variableTable = captured.variableTable;
+      // TODO: This suggests the Status type and Variable type are the same.
+      //       Determine if that is the case.
+      breakpoint.variableTable = captured.variableTable as apiTypes.Variable[];
       breakpoint.evaluatedExpressions =
         expressionErrors.concat(captured.evaluatedExpressions);
     }
@@ -510,7 +536,7 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
    * Evaluates the breakpoint condition, if present.
    * @return object with either a boolean value or an error property
    */
-  function checkCondition(breakpoint, execState) {
+  function checkCondition(breakpoint: apiTypes.Breakpoint, execState: v8Types.ExecutionState): { value?: boolean, error?: string } {
     if (!breakpoint.condition) {
       return { value: true };
     }
@@ -523,17 +549,24 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
     return { value: !!(result.mirror.value()) }; // intentional !!
   }
 
-  /**
-   * @constructor
-   */
-  function BreakpointData(apiBreakpoint, v8Breakpoint, parsedCondition, compile) {
-    this.apiBreakpoint = apiBreakpoint;
-    this.v8Breakpoint = v8Breakpoint;
-    this.parsedCondition = parsedCondition;
-    this.compile = compile;
+  class BreakpointData {
+    apiBreakpoint: apiTypes.Breakpoint;
+    v8Breakpoint: v8Types.BreakPoint;
+    parsedCondition: estree.Node;
+    compile: (src: string) => string;
+
+    /**
+     * @constructor
+     */
+    constructor(apiBreakpoint: apiTypes.Breakpoint, v8Breakpoint: v8Types.BreakPoint, parsedCondition: estree.Node, compile: (src: string) => string) {
+      this.apiBreakpoint = apiBreakpoint;
+      this.v8Breakpoint = v8Breakpoint;
+      this.parsedCondition = parsedCondition;
+      this.compile = compile;
+    }
   }
 
-  function setErrorStatusAndCallback(fn, breakpoint, refersTo, message) {
+  function setErrorStatusAndCallback(fn: (err?: Error) => void, breakpoint: apiTypes.Breakpoint, refersTo: apiTypes.Reference, message: string): void {
     const error = new Error(message);
     return setImmediate(function() {
       if (breakpoint && !breakpoint.status) {
@@ -549,7 +582,7 @@ export function create(logger_, config_, jsFiles_, sourcemapper_) {
 /**
  * @param {!string} scriptPath path of a script
  */
-function pathToRegExp(scriptPath) {
+function pathToRegExp(scriptPath: string): RegExp {
   // make sure the script path starts with a slash. This makes sure our
   // regexp doesn't match monkey.js when the user asks to set a breakpoint
   // in key.js
@@ -565,7 +598,7 @@ function pathToRegExp(scriptPath) {
 }
 
 // Exposed for unit testing.
-export function findScripts(scriptPath, config, fileStats) {
+export function findScripts(scriptPath: string, config: DebugAgentConfig, fileStats: FileStats[]): string[] {
   // Use repository relative mapping if present.
   if (config.appPathRelativeToRepository) {
     const candidate = scriptPath.replace(config.appPathRelativeToRepository,
@@ -610,7 +643,7 @@ export function findScripts(scriptPath, config, fileStats) {
  * @return {array<string>} list of files that match.
  */
 // Exposed for unit testing.
-export function findScriptsFuzzy(scriptPath, fileList) {
+export function findScriptsFuzzy(scriptPath: string, fileList: string[]): string[] {
   let matches = fileList;
   const components = scriptPath.split(path.sep);
   for (let i = components.length - 1; i >= 0; i--) {
