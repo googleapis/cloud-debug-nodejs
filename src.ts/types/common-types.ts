@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import * as http from 'http';
+
 export interface AuthOptions {
   credentials?: {client_email: string; private_key: string;};
   keyFilename?: string;
@@ -34,20 +36,39 @@ export interface ServiceObjectConfig {
   methods?: any;
 }
 
-export interface Common {
-  Service: new(config: ServiceConfig, options: AuthOptions) => any;
-  ServiceObject: new(config: ServiceObjectConfig) => any;
-  util: {
-    // TODO: Make this more precise.
-    normalizeArguments: (globalContext: any, localConfig: any, options?: any) =>
-        any;
-  };
+export interface LoggerOptions {
+  level?: string;
+  levels?: string[];
+  tag: string;
 }
 
 export interface Logger {
+  new(options?: string | LoggerOptions): Logger;
+  LEVELS: string[];
   // TODO: Determine the correct signatures for these members
   error: (message: any, ...args: any[]) => void;
   warn: (message: any, ...args: any[]) => void;
   info: (message: any, ...args: any[]) => void;
   debug: (message: any, ...args: any[]) => void;
+}
+
+export interface Service {
+  new(config: ServiceConfig, options: AuthOptions): Service;
+}
+
+export interface ServiceObject {
+  new(config: ServiceObjectConfig): ServiceObject;
+  // TODO: Determine if this signature is correct.
+  request: (reqOpts: { uri: string, json: boolean }, callback: (err: Error, body: any, response: http.ServerResponse) => void) => void;
+}
+
+export interface Common {
+  Service: Service;
+  ServiceObject: ServiceObject;
+  logger: Logger;
+  util: {
+    // TODO: Make this more precise.
+    normalizeArguments: (globalContext: any, localConfig: any, options?: any) =>
+        any;
+  };
 }

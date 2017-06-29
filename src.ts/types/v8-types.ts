@@ -276,7 +276,12 @@ export interface ExecutionState {
 }
 
 // TODO: Add the rest of the methods in this interface
-export interface BreakPoint { script_break_point: () => ScriptBreakPoint; }
+export interface BreakPoint {
+  script_break_point: () => ScriptBreakPoint;
+  // TODO: The debug code assumes these method exist.  Verify they exist.
+  number: () => number;
+  active: () => boolean;
+}
 
 // TODO: Add the rest of the methods in this interface
 export interface ScriptBreakPoint { number: () => number; }

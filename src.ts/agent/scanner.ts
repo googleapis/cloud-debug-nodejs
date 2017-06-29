@@ -15,20 +15,34 @@
  */
 
 import * as crypto from 'crypto';
-import * as findit from 'findit2';
+
+import * as events from 'events';
+// TODO: Make this more precise.
+const findit: (dir: string) => events.EventEmitter = require('findit2');
+
 import * as fs from 'fs';
 import * as _ from 'lodash';
 import * as path from 'path';
-import * as split from 'split';
+
+// TODO: Make this more precise.
+const split: () => any = require('split');
 
 export interface FileStats {
-  hash: string;
+  // TODO: Verify that this member should actually be optional.
+  hash?: string;
   lines: number;
 }
 
-export interface ScanStats { [filename: string]: FileStats; }
+// TODO: Update the code so that `undefined  is not a possible property value
+export interface ScanStats { [filename: string]: FileStats|undefined; }
 
-class ScanResults {
+export interface ScanResults {
+  all(): ScanStats;
+  selectStats(regex: RegExp): ScanStats;
+  selectFiles(regex: RegExp, baseDir: string): string[];
+}
+
+class ScanResultsImpl implements ScanResults {
   private stats_: ScanStats;
 
   /**
@@ -62,8 +76,7 @@ class ScanResults {
    *  to determine if the scan results for that filename
    *  should be included in the returned results.
    */
-  selectStats(regex: RegExp): FileStats[] {
-    // TODO: Typescript: Determine why {} is needed here
+  selectStats(regex: RegExp): ScanStats | {} {
     return _.pickBy(this.stats_, function(_, key) {
       return regex.test(key);
     });
@@ -97,14 +110,15 @@ class ScanResults {
 
 export function scan(
     shouldHash: boolean, baseDir: string, regex: RegExp,
-    callback: (err?: Error, results?: ScanResults, hash?: string) =>
+    callback: (err: Error|null, results?: ScanResults, hash?: string) =>
         void): void {
-  findFiles(baseDir, regex, function(err, fileList) {
+  findFiles(baseDir, regex, function(err: Error|null, fileList?: string[]) {
     if (err) {
       callback(err);
       return;
     }
-    computeStats(fileList, shouldHash, callback);
+    // TODO: Handle the case where `fileList` is undefined.
+    computeStats(fileList as string[], shouldHash, callback);
   });
 }
 
@@ -121,19 +135,20 @@ export function scan(
 // call signature
 function computeStats(
     fileList: string[], shouldHash: boolean,
-    callback: (err?: Error, results?: ScanResults, hash?: string) =>
+    callback: (err: Error|null, results?: ScanResults, hash?: string) =>
         void): void {
   let pending = fileList.length;
   // return a valid, if fake, result when there are no js files to hash.
   if (pending === 0) {
-    callback(null, new ScanResults({}), 'EMPTY-no-js-files');
+    callback(null, new ScanResultsImpl({}), 'EMPTY-no-js-files');
     return;
   }
 
-  const hashes: string[] = [];
-  const statistics = {};
+  // TODO: Address the case where the array contains `undefined`.
+  const hashes: Array<string|undefined> = [];
+  const statistics: ScanStats = {};
   fileList.forEach(function(filename) {
-    stats(filename, shouldHash, function(err, fileStats) {
+    stats(filename, shouldHash, function(err: Error, fileStats: FileStats|undefined) {
       if (err) {
         callback(err);
         return;
@@ -141,7 +156,8 @@ function computeStats(
 
       pending--;
       if (shouldHash) {
-        hashes.push(fileStats.hash);
+        // TODO: Address the case when `fileStats` is `undefined`
+        hashes.push((fileStats as FileStats).hash);
       }
       statistics[filename] = fileStats;
 
@@ -154,7 +170,7 @@ function computeStats(
           const sha1 = crypto.createHash('sha1').update(buffer).digest('hex');
           hash = 'SHA1-' + sha1;
         }
-        callback(null, new ScanResults(statistics), hash);
+        callback(null, new ScanResultsImpl(statistics), hash);
       }
     });
   });
@@ -171,7 +187,7 @@ function computeStats(
  */
 function findFiles(
     baseDir: string, regex: RegExp,
-    callback: (err?: Error, fileList?: string[]) => void): void {
+    callback: (err: Error|null, fileList?: string[]) => void): void {
   let errored = false;
 
   if (!baseDir) {
@@ -182,20 +198,20 @@ function findFiles(
   const find = findit(baseDir);
   const fileList: string[] = [];
 
-  find.on('error', function(err) {
+  find.on('error', function(err: Error) {
     errored = true;
     callback(err);
     return;
   });
 
-  find.on('directory', function(dir, _, stop) {
+  find.on('directory', function(dir: string, _: fs.Stats, stop: () => void) {
     const base = path.basename(dir);
     if (base === '.git' || base === 'node_modules') {
       stop();  // do not descend
     }
   });
 
-  find.on('file', function(file) {
+  find.on('file', function(file: string) {
     if (regex.test(file)) {
       fileList.push(file);
     }
@@ -220,8 +236,8 @@ function findFiles(
  */
 function stats(
     filename: string, shouldHash: boolean,
-    cb: (err, stats?: FileStats) => void): void {
-  let shasum;
+    cb: (err: Error|null, stats?: FileStats) => void): void {
+  let shasum: crypto.Hash;
   if (shouldHash) {
     shasum = crypto.createHash('sha1');
   }
@@ -229,17 +245,18 @@ function stats(
   const s = (fs as any).ReadStream(filename);
   let lines = 0;
   const byLine = s.pipe(split());
-  byLine.on('error', function(e) {
+  byLine.on('error', function(e: Error) {
     cb(e);
   });
-  byLine.on('data', function(d) {
+  byLine.on('data', function(d: string) {
     if (shouldHash) {
       shasum.update(d);
     }
     lines++;
   });
   byLine.on('end', function() {
-    let d;
+    // TODO: Address the case where `d` is `undefined`.
+    let d: string | undefined;
     if (shouldHash) {
       d = shasum.digest('hex');
     }

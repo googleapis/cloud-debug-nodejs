@@ -22,10 +22,10 @@ import * as sourceMap from 'source-map';
 
 /** @define {string} */ const MAP_EXT = '.map';
 
-interface MapInfoInput {
+export interface MapInfoInput {
   outputFile: string;
   mapFile: string;
-  mapConsumer: sourceMap.SourceMapConsumer;
+  mapConsumer: sourceMap.RawSourceMap;
 }
 
 export interface MapInfoOutput {
@@ -36,11 +36,11 @@ export interface MapInfoOutput {
 
 export function create(
     sourcemapPaths: string[],
-    callback: (err?: Error, mapper?: SourceMapper) => void): void {
+    callback: (err: Error|null, mapper?: SourceMapper) => void): void {
   const mapper = new SourceMapper();
   const callList =
-      Array.prototype.slice.call(sourcemapPaths).map(function(path) {
-        return function(cb) {
+      Array.prototype.slice.call(sourcemapPaths).map(function(path: string) {
+        return function(cb: (err: Error|null) => void) {
           processSourcemap(mapper.infoMap_, path, cb);
         };
       });
@@ -64,7 +64,7 @@ export function create(
  */
 function processSourcemap(
     infoMap: Map<string, MapInfoInput>, mapPath: string,
-    callback: (err?: Error) => void): void {
+    callback: (err: Error|null) => void): void {
   // this handles the case when the path is undefined, null, or
   // the empty string
   if (!mapPath || !_.endsWith(mapPath, MAP_EXT)) {
@@ -75,15 +75,18 @@ function processSourcemap(
   }
   mapPath = path.normalize(mapPath);
 
-  fs.readFile(mapPath, 'utf8', function(err, data) {
+  fs.readFile(mapPath, 'utf8', function(err: Error, data: string) {
     if (err) {
       return callback(
           new Error('Could not read sourcemap file ' + mapPath + ': ' + err));
     }
 
-    let consumer;
+    let consumer: sourceMap.RawSourceMap;
     try {
-      consumer = new sourceMap.SourceMapConsumer(data);
+      // TODO: Determine how to reconsile the type conflict where `consumer`
+      //       is constructed as a SourceMapConsumer but is used as a
+      //       RawSourceMap.
+      consumer = new sourceMap.SourceMapConsumer(data) as any as sourceMap.RawSourceMap;
     } catch (e) {
       return callback(new Error(
           'An error occurred while reading the ' +
@@ -102,12 +105,12 @@ function processSourcemap(
     const outputPath = path.normalize(path.join(parentDir, outputBase));
 
     const sources = Array.prototype.slice.call(consumer.sources)
-                        .filter(function(value) {
+                        .filter(function(value: string) {
                           // filter out any empty string, null, or undefined
                           // sources
                           return !!value;
                         })
-                        .map(function(relPath) {
+                        .map(function(relPath: string) {
                           // resolve the paths relative to the map file so that
                           // they are relative to the process's current working
                           // directory
@@ -119,7 +122,7 @@ function processSourcemap(
           new Error('No sources listed in the sourcemap file ' + mapPath));
     }
 
-    sources.forEach(function(src) {
+    sources.forEach(function(src: string) {
       infoMap.set(
           path.normalize(src),
           {outputFile: outputPath, mapFile: mapPath, mapConsumer: consumer});
@@ -187,7 +190,8 @@ export class SourceMapper {
       return null;
     }
 
-    const entry = this.infoMap_.get(inputPath);
+    // TODO: `entry` could be `undefined` here.  Address this case.
+    const entry = this.infoMap_.get(inputPath) as any as MapInfoInput;
     const sourcePos = {
       source: path.relative(path.dirname(entry.mapFile), inputPath),
       line: lineNumber + 1,  // the SourceMapConsumer expects the line number
@@ -195,7 +199,8 @@ export class SourceMapper {
       column: colNumber      // to be zero-based
     };
 
-    const consumer = entry.mapConsumer;
+    // TODO: Determine how to remove the explicit cast here.
+    const consumer: sourceMap.SourceMapConsumer = entry.mapConsumer as any as sourceMap.SourceMapConsumer;
     const allPos = consumer.allGeneratedPositionsFor(sourcePos);
     /*
      * Based on testing, it appears that the following code is needed to
@@ -204,10 +209,10 @@ export class SourceMapper {
      * In particular, the generatedPositionFor() alone doesn't appear to
      * give the correct mapping information.
      */
-    const mappedPos = allPos && allPos.length > 0 ?
+    const mappedPos: sourceMap.Position = allPos && allPos.length > 0 ?
         Array.prototype.reduce.call(
             allPos,
-            function(accumulator, value /*, index, arr*/) {
+            function(accumulator: sourceMap.Position, value: sourceMap.Position /*, index, arr*/) {
               return value.line < accumulator.line ? value : accumulator;
             }) :
         consumer.generatedPositionFor(sourcePos);
@@ -217,9 +222,12 @@ export class SourceMapper {
       line: mappedPos.line - 1,  // convert the one-based line numbers returned
                                  // by the SourceMapConsumer to the expected
                                  // zero-based output.
-      column: mappedPos.col      // SourceMapConsumer uses zero-based column
-                                 // numbers which is the same as the expected
-                                 // output
+      // TODO: The `sourceMap.Position` type definition has a `column`
+      //       attribute and not a `col` attribute.  Determine if the type
+      //       definition or this code is correct.
+      column: (mappedPos as any).col // SourceMapConsumer uses zero-based column
+                                     // numbers which is the same as the
+                                     // expected output
     };
   }
 }

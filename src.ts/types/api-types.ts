@@ -72,11 +72,15 @@ export interface Timestamp {
 
 export interface Breakpoint {
   stackFrames: StackFrame[];
-  evaluatedExpressions: Variable[];
-  variableTable: Variable[];
+  // TODO: Update the code so that `|null` is not needed.
+  evaluatedExpressions: Array<Variable|null>;
+  // TODO: Update the code so that `|null` is not needed.
+  variableTable: Array<Variable|null>;
+  // TODO: The `controller.ts` file assumes `id` is not null or undefined.
+  //       Verify it it should be optional.
+  id?: string;
   // TODO: The debug code assumes the rest of these members
   //       are optional.  Determine if this is correct.
-  id?: string;
   action?: Action;
   location?: SourceLocation;
   condition?: string;

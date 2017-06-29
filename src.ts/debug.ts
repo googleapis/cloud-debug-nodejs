@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-import * as _common from '@google-cloud/common';
-
 import {AuthOptions, Common} from './types/common-types';
+const common: Common = require('@google-cloud/common');
 
-const common: Common = _common;
 import * as util from 'util';
 
 export class Debug {

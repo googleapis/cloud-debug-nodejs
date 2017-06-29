@@ -20,7 +20,7 @@ import {Debug} from './debug';
 import {AuthOptions} from './types/common-types';
 
 // Singleton.
-let debuglet;
+let debuglet: Debuglet;
 
 /**
  * Start the Debug agent that will make your application available for debugging

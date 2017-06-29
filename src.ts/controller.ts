@@ -18,7 +18,9 @@
  * @module debug/controller
  */
 
-import * as _common from '@google-cloud/common';
+import {Common} from './types/common-types';
+export const common: Common = require('@google-cloud/common');
+
 import * as assert from 'assert';
 import * as http from 'http';
 import * as qs from 'querystring';
@@ -26,15 +28,12 @@ import * as qs from 'querystring';
 import {Debug} from './debug';
 import {Debuggee} from './debuggee';
 import {Breakpoint} from './types/api-types';
-import {Common} from './types/common-types';
-
-const common: Common = _common;
 
 /** @const {string} Cloud Debug API endpoint */
 const API = 'https://clouddebugger.googleapis.com/v2/controller';
 
 export class Controller extends common.ServiceObject {
-  private nextWaitToken_?: string;
+  private nextWaitToken_: string | null;
 
   /**
    * @constructor
@@ -52,7 +51,7 @@ export class Controller extends common.ServiceObject {
    * @param {!function(?Error,Object=)} callback
    * @private
    */
-  register(debuggee: Debuggee, callback: (err?: Error, result?: {
+  register(debuggee: Debuggee, callback: (err: Error|null, result?: {
                                  debuggee: Debuggee
                                }) => void): void {
     const options = {
@@ -87,7 +86,7 @@ export class Controller extends common.ServiceObject {
   listBreakpoints(
       debuggee: Debuggee,
       callback:
-          (err?: Error, response?: http.ServerResponse, body?: any) => void):
+          (err: Error|null, response?: http.ServerResponse, body?: any) => void):
       void {
     const that = this;
     assert(debuggee.id, 'should have a registered debuggee');
@@ -138,7 +137,8 @@ export class Controller extends common.ServiceObject {
     breakpoint.isFinalState = true;
     const options = {
       uri: API + '/debuggees/' + encodeURIComponent(debuggee.id) +
-          '/breakpoints/' + encodeURIComponent(breakpoint.id),
+          // TODO: Address the case where `breakpoint.id` is `undefined`.
+          '/breakpoints/' + encodeURIComponent(breakpoint.id as string),
       json: true,
       method: 'PUT',
       body: {debuggeeId: debuggee.id, breakpoint: breakpoint}
