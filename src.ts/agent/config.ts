@@ -193,6 +193,8 @@ export interface DebugAgentConfig {
    * @private
    */
   internal: {
+    // TODO: Determine if clang-format can be configured to place
+    //       a newline between these two statements.
     registerDelayOnFetcherErrorSec: number; maxRegistrationRetryDelay: number;
   };
 
