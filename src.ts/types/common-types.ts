@@ -43,7 +43,7 @@ export interface LoggerOptions {
 }
 
 export interface Logger {
-  new(options?: string | LoggerOptions): Logger;
+  new(options?: string|LoggerOptions): Logger;
   LEVELS: string[];
   // TODO: Determine the correct signatures for these members
   error: (message: any, ...args: any[]) => void;
@@ -59,7 +59,10 @@ export interface Service {
 export interface ServiceObject {
   new(config: ServiceObjectConfig): ServiceObject;
   // TODO: Determine if this signature is correct.
-  request: (reqOpts: { uri: string, json: boolean }, callback: (err: Error, body: any, response: http.ServerResponse) => void) => void;
+  request:
+      (reqOpts: {uri: string, json: boolean},
+       callback: (err: Error, body: any, response: http.ServerResponse) =>
+           void) => void;
 }
 
 export interface Common {

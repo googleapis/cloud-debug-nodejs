@@ -76,7 +76,7 @@ class ScanResultsImpl implements ScanResults {
    *  to determine if the scan results for that filename
    *  should be included in the returned results.
    */
-  selectStats(regex: RegExp): ScanStats | {} {
+  selectStats(regex: RegExp): ScanStats|{} {
     return _.pickBy(this.stats_, function(_, key) {
       return regex.test(key);
     });
@@ -148,31 +148,34 @@ function computeStats(
   const hashes: Array<string|undefined> = [];
   const statistics: ScanStats = {};
   fileList.forEach(function(filename) {
-    stats(filename, shouldHash, function(err: Error, fileStats: FileStats|undefined) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    stats(
+        filename, shouldHash,
+        function(err: Error, fileStats: FileStats|undefined) {
+          if (err) {
+            callback(err);
+            return;
+          }
 
-      pending--;
-      if (shouldHash) {
-        // TODO: Address the case when `fileStats` is `undefined`
-        hashes.push((fileStats as FileStats).hash);
-      }
-      statistics[filename] = fileStats;
+          pending--;
+          if (shouldHash) {
+            // TODO: Address the case when `fileStats` is `undefined`
+            hashes.push((fileStats as FileStats).hash);
+          }
+          statistics[filename] = fileStats;
 
-      if (pending === 0) {
-        let hash;
-        if (shouldHash) {
-          // Sort the hashes to get a deterministic order as the files may not
-          // be in the same order each time we scan the disk.
-          const buffer = hashes.sort().join();
-          const sha1 = crypto.createHash('sha1').update(buffer).digest('hex');
-          hash = 'SHA1-' + sha1;
-        }
-        callback(null, new ScanResultsImpl(statistics), hash);
-      }
-    });
+          if (pending === 0) {
+            let hash;
+            if (shouldHash) {
+              // Sort the hashes to get a deterministic order as the files may
+              // not be in the same order each time we scan the disk.
+              const buffer = hashes.sort().join();
+              const sha1 =
+                  crypto.createHash('sha1').update(buffer).digest('hex');
+              hash = 'SHA1-' + sha1;
+            }
+            callback(null, new ScanResultsImpl(statistics), hash);
+          }
+        });
   });
 }
 
@@ -256,7 +259,7 @@ function stats(
   });
   byLine.on('end', function() {
     // TODO: Address the case where `d` is `undefined`.
-    let d: string | undefined;
+    let d: string|undefined;
     if (shouldHash) {
       d = shasum.digest('hex');
     }

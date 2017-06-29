@@ -86,7 +86,8 @@ function processSourcemap(
       // TODO: Determine how to reconsile the type conflict where `consumer`
       //       is constructed as a SourceMapConsumer but is used as a
       //       RawSourceMap.
-      consumer = new sourceMap.SourceMapConsumer(data) as any as sourceMap.RawSourceMap;
+      consumer = new sourceMap.SourceMapConsumer(data) as any as
+          sourceMap.RawSourceMap;
     } catch (e) {
       return callback(new Error(
           'An error occurred while reading the ' +
@@ -200,7 +201,8 @@ export class SourceMapper {
     };
 
     // TODO: Determine how to remove the explicit cast here.
-    const consumer: sourceMap.SourceMapConsumer = entry.mapConsumer as any as sourceMap.SourceMapConsumer;
+    const consumer: sourceMap.SourceMapConsumer =
+        entry.mapConsumer as any as sourceMap.SourceMapConsumer;
     const allPos = consumer.allGeneratedPositionsFor(sourcePos);
     /*
      * Based on testing, it appears that the following code is needed to
@@ -212,7 +214,9 @@ export class SourceMapper {
     const mappedPos: sourceMap.Position = allPos && allPos.length > 0 ?
         Array.prototype.reduce.call(
             allPos,
-            function(accumulator: sourceMap.Position, value: sourceMap.Position /*, index, arr*/) {
+            function(
+                accumulator: sourceMap.Position,
+                value: sourceMap.Position /*, index, arr*/) {
               return value.line < accumulator.line ? value : accumulator;
             }) :
         consumer.generatedPositionFor(sourcePos);
@@ -225,9 +229,10 @@ export class SourceMapper {
       // TODO: The `sourceMap.Position` type definition has a `column`
       //       attribute and not a `col` attribute.  Determine if the type
       //       definition or this code is correct.
-      column: (mappedPos as any).col // SourceMapConsumer uses zero-based column
-                                     // numbers which is the same as the
-                                     // expected output
+      column:
+          (mappedPos as any).col  // SourceMapConsumer uses zero-based column
+                                  // numbers which is the same as the
+                                  // expected output
     };
   }
 }

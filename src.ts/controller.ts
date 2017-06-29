@@ -33,7 +33,7 @@ import {Breakpoint} from './types/api-types';
 const API = 'https://clouddebugger.googleapis.com/v2/controller';
 
 export class Controller extends common.ServiceObject {
-  private nextWaitToken_: string | null;
+  private nextWaitToken_: string|null;
 
   /**
    * @constructor
@@ -85,9 +85,8 @@ export class Controller extends common.ServiceObject {
    */
   listBreakpoints(
       debuggee: Debuggee,
-      callback:
-          (err: Error|null, response?: http.ServerResponse, body?: any) => void):
-      void {
+      callback: (err: Error|null, response?: http.ServerResponse, body?: any) =>
+          void): void {
     const that = this;
     assert(debuggee.id, 'should have a registered debuggee');
     const query: any = {success_on_timeout: true};

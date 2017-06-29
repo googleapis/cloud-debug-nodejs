@@ -27,7 +27,7 @@ import {StatusMessage} from '../status-message';
 
 import * as v8Types from '../types/v8-types';
 import * as apiTypes from '../types/api-types';
-import { DebugAgentConfig } from './config';
+import {DebugAgentConfig} from './config';
 
 // TODO: Determine if `ScopeType` should be named `scopeType`.
 // tslint:disable-next-line:variable-name
@@ -47,8 +47,8 @@ const ARG_LOCAL_LIMIT_MESSAGE_INDEX = 3;
  *         evaluatedExpressions fields
  */
 export function capture(
-    execState: v8Types.ExecutionState, expressions: string[], config: DebugAgentConfig,
-    v8: v8Types.Debug): apiTypes.Breakpoint {
+    execState: v8Types.ExecutionState, expressions: string[],
+    config: DebugAgentConfig, v8: v8Types.Debug): apiTypes.Breakpoint {
   return (new StateResolver(execState, expressions, config, v8)).capture_();
 }
 
@@ -60,7 +60,7 @@ export function capture(
  * @return an object with error and mirror fields.
  */
 export function evaluate(expression: string, frame: v8Types.FrameMirror):
-    {error: string|null, mirror?: v8Types.ValueMirror} {
+    {error: string | null, mirror?: v8Types.ValueMirror} {
   // First validate the expression to make sure it doesn't mutate state
   const acorn = require('acorn');
   try {
@@ -100,8 +100,8 @@ class StateResolver {
    * @constructor
    */
   constructor(
-      execState: v8Types.ExecutionState, expressions: string[], config: DebugAgentConfig,
-      v8: v8Types.Debug) {
+      execState: v8Types.ExecutionState, expressions: string[],
+      config: DebugAgentConfig, v8: v8Types.Debug) {
     this.state_ = execState;
     this.expressions_ = expressions;
     this.config_ = config;
@@ -167,7 +167,8 @@ class StateResolver {
         } else {
           // TODO: Determine how to not downcast this to v8Types.ValueMirror
           // TODO: Handle the case where `result.mirror` is `undefined`.
-          evaluated = that.resolveVariable_(expression, result.mirror as v8Types.ValueMirror, true);
+          evaluated = that.resolveVariable_(
+              expression, result.mirror as v8Types.ValueMirror, true);
           const varTableIdx = evaluated.varTableIndex;
           if (typeof varTableIdx !== 'undefined') {
             evalIndexSet.add(varTableIdx);
@@ -402,7 +403,7 @@ class StateResolver {
     args = args;
 
     const self = this;
-    const usedNames: { [name: string]: boolean } = {};
+    const usedNames: {[name: string]: boolean} = {};
     const makeMirror = this.ctx_.MakeMirror;
     const allScopes = frame.allScopes();
     const count = allScopes.length;
@@ -428,7 +429,8 @@ class StateResolver {
     return flatten(scopes.map(function(scope: v8Types.ScopeMirror) {
              return transform(
                  // TODO: Update this so that `locals` is not of type `any[]`.
-                 scope.details().object(), function(locals: any[], value, name: string) {
+                 scope.details().object(),
+                 function(locals: any[], value, name: string) {
                    const trg = makeMirror(value);
                    if (!usedNames[name]) {
                      // It's a valid variable that belongs in the locals list
@@ -441,7 +443,8 @@ class StateResolver {
                    }  // otherwise another same-named variable occured at a
                       // lower scope
                    return locals;
-                 }, []);
+                 },
+                 []);
            }))
         .concat((function() {
           // The frame receiver is the 'this' context that is present during

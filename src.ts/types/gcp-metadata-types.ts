@@ -19,6 +19,14 @@ import * as http from 'http';
 export interface GcpMetadata {
   // TODO: Determine if the signature of the callback on these methods are
   //       correct.
-  instance: (options: string | { property: string}, callback: (err: Error, response: http.ServerResponse, metadataProject: string) => void) => http.ServerResponse;
-  project: (options: string | { property: string}, callback: (err: Error, response: http.ServerResponse, metadataProject: string) => void) => http.ServerResponse;
+  instance:
+      (options: string|{property: string},
+       callback:
+           (err: Error, response: http.ServerResponse,
+            metadataProject: string) => void) => http.ServerResponse;
+  project:
+      (options: string|{property: string},
+       callback:
+           (err: Error, response: http.ServerResponse,
+            metadataProject: string) => void) => http.ServerResponse;
 }
