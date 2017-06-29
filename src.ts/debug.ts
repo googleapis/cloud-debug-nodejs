@@ -57,7 +57,8 @@ export class Debug extends common.Service {
     };
 
     // TODO: Update Service to provide types
-    options = options || {};
+    // TODO: Determine if we should check if `options` is `undefined` or
+    //       `null` here and, if so, provide a default value.
     super(config, options);
 
     // FIXME(ofrobots): We need our own copy of options because Service may
