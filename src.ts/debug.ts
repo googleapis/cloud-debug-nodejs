@@ -44,6 +44,11 @@ export class Debug extends common.Service {
    * @param {object} options - [Configuration object](#/docs)
    */
   constructor(options: AuthOptions) {
+    if (new.target !== Debug) {
+      options = common.util.normalizeArguments(new.target, options);
+      return new Debug(options);
+    }
+
     const config = {
       projectIdRequired: false,
       baseUrl: 'https://clouddebugger.googleapis.com/v2',
@@ -53,11 +58,6 @@ export class Debug extends common.Service {
 
     // TODO: Update Service to provide types
     super(config, options || {});
-
-    if (!(this instanceof Debug)) {
-      options = common.util.normalizeArguments(this, options);
-      return new Debug(options);
-    }
 
     // FIXME(ofrobots): We need our own copy of options because Service may
     // default to '{{projectId}}' when options doesn't contain the `projectId`.
