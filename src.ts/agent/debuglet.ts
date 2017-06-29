@@ -14,42 +14,46 @@
  * limitations under the License.
  */
 
-import * as crypto from 'crypto';
-import * as fs from 'fs';
-import * as path from 'path';
-import { EventEmitter } from 'events';
-import * as extend from 'extend';
-import * as util from 'util';
-import * as semver from 'semver';
-import * as _ from 'lodash';
-import * as metadata from 'gcp-metadata';
 import * as common from '@google-cloud/common';
+import * as crypto from 'crypto';
+import {EventEmitter} from 'events';
+import * as extend from 'extend';
+import * as fs from 'fs';
+import * as metadata from 'gcp-metadata';
+import * as _ from 'lodash';
+import * as path from 'path';
+import * as semver from 'semver';
+import * as util from 'util';
 
-import * as v8debugapi from './v8debugapi';
-import { Debuggee } from '../debuggee';
-import { Controller } from '../controller';
+import {Controller} from '../controller';
+import {Debuggee} from '../debuggee';
+import {StatusMessage} from '../status-message';
+
 // The following import syntax is used because './config' has a default export
 import defaultConfig from './config';
 import * as scanner from './scanner';
-import { StatusMessage } from '../status-message';
 import * as SourceMapper from './sourcemapper';
+import * as v8debugapi from './v8debugapi';
+
 const pjson = require('../../package.json');
 
 import * as assert from 'assert';
 
-import { Breakpoint } from '../types/api-types';
-import { DebugAgentConfig } from './config';
-import { Debug } from '../debug';
-import { Logger } from '../types/common-types';
-import { V8DebugApi } from './v8debugapi';
+import {Breakpoint} from '../types/api-types';
+import {DebugAgentConfig} from './config';
+import {Debug} from '../debug';
+import {Logger} from '../types/common-types';
+import {V8DebugApi} from './v8debugapi';
 
 const ALLOW_EXPRESSIONS_MESSAGE = 'Expressions and conditions are not allowed' +
-  ' by default. Please set the allowExpressions configuration option to true.' +
-  ' See the debug agent documentation at https://goo.gl/ShSm6r.';
-const NODE_VERSION_MESSAGE = 'Node.js version not supported. Node.js 5.2.0 and ' +
-  ' versions older than 0.12 are not supported.';
-const BREAKPOINT_ACTION_MESSAGE = 'The only currently supported breakpoint actions' +
-  ' are CAPTURE and LOG.';
+    ' by default. Please set the allowExpressions configuration option to true.' +
+    ' See the debug agent documentation at https://goo.gl/ShSm6r.';
+const NODE_VERSION_MESSAGE =
+    'Node.js version not supported. Node.js 5.2.0 and ' +
+    ' versions older than 0.12 are not supported.';
+const BREAKPOINT_ACTION_MESSAGE =
+    'The only currently supported breakpoint actions' +
+    ' are CAPTURE and LOG.';
 
 /**
  * Formats a breakpoint object prefixed with a provided message as a string
@@ -59,11 +63,13 @@ const BREAKPOINT_ACTION_MESSAGE = 'The only currently supported breakpoint actio
  * @return {string} A formatted string.
  */
 const formatBreakpoint = function(msg: string, breakpoint: Breakpoint): string {
-  let text = msg + util.format('breakpoint id: %s,\n\tlocation: %s',
-    breakpoint.id, util.inspect(breakpoint.location));
+  let text = msg +
+      util.format(
+          'breakpoint id: %s,\n\tlocation: %s', breakpoint.id,
+          util.inspect(breakpoint.location));
   if (breakpoint.createdTime) {
     const unixTime = parseInt(breakpoint.createdTime.seconds, 10);
-    const date = new Date(unixTime * 1000); // to milliseconds.
+    const date = new Date(unixTime * 1000);  // to milliseconds.
     text += '\n\tcreatedTime: ' + date.toString();
   }
   if (breakpoint.condition) {
@@ -82,31 +88,35 @@ const formatBreakpoint = function(msg: string, breakpoint: Breakpoint): string {
  * @param {Object.<string, Breakpoint>} breakpoints A map of breakpoints.
  * @return {string} A formatted string.
  */
-const formatBreakpoints = function(msg: string, breakpoints: { [key: string]: Breakpoint }): string {
-  return msg + Object.keys(breakpoints).map(function (b) {
-    return formatBreakpoint('', breakpoints[b]);
-  }).join('\n');
+const formatBreakpoints = function(
+    msg: string, breakpoints: {[key: string]: Breakpoint}): string {
+  return msg +
+      Object.keys(breakpoints)
+          .map(function(b) {
+            return formatBreakpoint('', breakpoints[b]);
+          })
+          .join('\n');
 };
 
 export class Debuglet extends EventEmitter {
   private config_: DebugAgentConfig;
   private debug_: Debug;
-  private v8debug_: V8DebugApi | null;
+  private v8debug_: V8DebugApi|null;
   private running_: boolean;
   private project_: string;
   private fetcherActive_: boolean;
   private logger_: Logger;
   private debugletApi_: Controller;
   private debuggee_: Debuggee;
-  private activeBreakpointMap_: { [key: string]: Breakpoint };
-  private completedBreakpointMap_: { [key: string]: boolean };
+  private activeBreakpointMap_: {[key: string]: Breakpoint};
+  private completedBreakpointMap_: {[key: string]: boolean};
 
   /**
    * @param {Debug} debug - A Debug instance.
    * @param {object=} config - The option parameters for the Debuglet.
    * @event 'started' once the startup tasks are completed. Only called once.
-   * @event 'stopped' if the agent stops due to a fatal error after starting. Only
-   *     called once.
+   * @event 'stopped' if the agent stops due to a fatal error after starting.
+   * Only called once.
    * @event 'registered' once successfully registered to the debug api. May be
    *     emitted multiple times.
    * @event 'remotelyDisabled' if the debuggee is disabled by the server. May be
@@ -138,10 +148,8 @@ export class Debuglet extends EventEmitter {
     this.fetcherActive_ = false;
 
     /** @private {common.logger} */
-    this.logger_ = new common.logger({
-      level: common.logger.LEVELS[this.config_.logLevel],
-      tag: pjson.name
-    });
+    this.logger_ = new common.logger(
+        {level: common.logger.LEVELS[this.config_.logLevel], tag: pjson.name});
 
     /** @private {DebugletApi} */
     this.debugletApi_ = new Controller(this.debug_);
@@ -166,9 +174,8 @@ export class Debuglet extends EventEmitter {
         // AppEngine Flex doesn't have this environment variable. We provide a
         // fake value as a work-around, but only on Flex (GAE_SERVICE will be
         // defined on Flex).
-        minorVersion_:
-            process.env.GAE_MINOR_VERSION ||
-                (process.env.GAE_SERVICE ? 'fake-minor-version' : undefined)
+        minorVersion_: process.env.GAE_MINOR_VERSION ||
+            (process.env.GAE_SERVICE ? 'fake-minor-version' : undefined)
       }
     };
 
@@ -187,92 +194,104 @@ export class Debuglet extends EventEmitter {
    */
   start(): void {
     const that = this;
-    fs.stat(path.join(that.config_.workingDirectory, 'package.json'), function(err) {
-      if (err && err.code === 'ENOENT') {
-        that.logger_.error('No package.json located in working directory.');
-        that.emit('initError', new Error('No package.json found.'));
-        return;
-      }
-      let id;
-      if (process.env.GAE_MINOR_VERSION) {
-        id = 'GAE-' + process.env.GAE_MINOR_VERSION;
-      }
-      scanner.scan(!id, that.config_.workingDirectory, /.js$|.map$/,
-          function(err, fileStats, hash) {
-        if (err) {
-          that.logger_.error('Error scanning the filesystem.', err);
-          that.emit('initError', err);
-          return;
-        }
-
-        const jsStats = fileStats.selectStats(/.js$/);
-        const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
-        SourceMapper.create(mapFiles, function(err, mapper) {
-          if (err) {
-            that.logger_.error('Error processing the sourcemaps.', err);
-            that.emit('initError', err);
+    fs.stat(
+        path.join(that.config_.workingDirectory, 'package.json'),
+        function(err1) {
+          if (err1 && err1.code === 'ENOENT') {
+            that.logger_.error('No package.json located in working directory.');
+            that.emit('initError', new Error('No package.json found.'));
             return;
           }
+          let id;
+          if (process.env.GAE_MINOR_VERSION) {
+            id = 'GAE-' + process.env.GAE_MINOR_VERSION;
+          }
+          scanner.scan(
+              !id, that.config_.workingDirectory, /.js$|.map$/,
+              function(err2, fileStats, hash) {
+                if (err2) {
+                  that.logger_.error('Error scanning the filesystem.', err2);
+                  that.emit('initError', err2);
+                  return;
+                }
 
-          that.v8debug_ = v8debugapi.create(that.logger_, that.config_, jsStats, mapper);
+                const jsStats = fileStats.selectStats(/.js$/);
+                const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
+                SourceMapper.create(mapFiles, function(err3, mapper) {
+                  if (err3) {
+                    that.logger_.error(
+                        'Error processing the sourcemaps.', err3);
+                    that.emit('initError', err3);
+                    return;
+                  }
 
-          id = id || hash;
+                  that.v8debug_ = v8debugapi.create(
+                      that.logger_, that.config_, jsStats, mapper);
 
-          that.logger_.info('Unique ID for this Application: ' + id);
+                  id = id || hash;
 
-          that.getProjectId_(function(err, project, onGCP) {
-            if (err) {
-              that.logger_.error('Unable to discover projectId. Please provide ' +
-                                 'the projectId to be able to use the Debuglet',
-                                 err);
-              that.emit('initError', err);
-              return;
-            }
+                  that.logger_.info('Unique ID for this Application: ' + id);
 
-            that.getSourceContext_(function(err, sourceContext) {
-              if (err) {
-                that.logger_.warn('Unable to discover source context', err);
-                // This is ignorable.
-              }
+                  that.getProjectId_(function(err4, project, onGCP) {
+                    if (err4) {
+                      that.logger_.error(
+                          'Unable to discover projectId. Please provide ' +
+                              'the projectId to be able to use the Debuglet',
+                          err4);
+                      that.emit('initError', err4);
+                      return;
+                    }
 
-              if (semver.satisfies(process.version, '5.2 || <4')) {
-                // Using an unsupported version. We report an error message about the
-                // Node.js version, but we keep on running. The idea is that the user
-                // may miss the error message on the console. This way we can report the
-                // error when the user tries to set a breakpoint.
-                that.logger_.error(NODE_VERSION_MESSAGE);
-              }
+                    that.getSourceContext_(function(err5, sourceContext) {
+                      if (err5) {
+                        that.logger_.warn(
+                            'Unable to discover source context', err5);
+                        // This is ignorable.
+                      }
 
-              // We can register as a debuggee now.
-              that.logger_.debug('Starting debuggee, project', project);
-              that.running_ = true;
-              that.project_ = project;
-              that.debuggee_ = Debuglet.createDebuggee(
-                  project, id, that.config_.serviceContext, sourceContext,
-                  that.config_.description, null, onGCP);
-              that.scheduleRegistration_(0 /* immediately */);
-              that.emit('started');
-            });
-          });
+                      if (semver.satisfies(process.version, '5.2 || <4')) {
+                        // Using an unsupported version. We report an error
+                        // message about the Node.js version, but we keep on
+                        // running. The idea is that the user may miss the error
+                        // message on the console. This way we can report the
+                        // error when the user tries to set a breakpoint.
+                        that.logger_.error(NODE_VERSION_MESSAGE);
+                      }
+
+                      // We can register as a debuggee now.
+                      that.logger_.debug('Starting debuggee, project', project);
+                      that.running_ = true;
+                      that.project_ = project;
+                      that.debuggee_ = Debuglet.createDebuggee(
+                          project, id, that.config_.serviceContext,
+                          sourceContext, that.config_.description, null, onGCP);
+                      that.scheduleRegistration_(0 /* immediately */);
+                      that.emit('started');
+                    });
+                  });
+                });
+              });
         });
-      });
-    });
   }
 
   /**
    * @private
    */
   // TODO: Determine the type of sourceContext
-  static createDebuggee(projectId: string, uid: string, serviceContext: { service?: string, version?: string, minorVersion_?: string }, sourceContext: { [key: string]: string }, description: string,
-                        errorMessage: string, onGCP: boolean): Debuggee {
+  static createDebuggee(
+      projectId: string, uid: string,
+      serviceContext:
+          {service?: string, version?: string, minorVersion_?: string},
+      sourceContext: {[key: string]: string}, description: string,
+      errorMessage: string, onGCP: boolean): Debuggee {
     const cwd = process.cwd();
     const mainScript = path.relative(cwd, process.argv[1]);
 
     const version = 'google.com/node-' + (onGCP ? 'gcp' : 'standalone') + '/v' +
-                  pjson.version;
+        pjson.version;
     let desc = process.title + ' ' + mainScript;
 
-    const labels: { [key: string]: string } = {
+    const labels: {[key: string]: string} = {
       'main script': mainScript,
       'process.title': process.title,
       'node version': process.versions.node,
@@ -310,13 +329,12 @@ export class Debuglet extends EventEmitter {
       desc += ' description:' + description;
     }
 
-    const uniquifier = Debuglet._createUniquifier(desc, version, uid, sourceContext,
-        labels);
+    const uniquifier =
+        Debuglet._createUniquifier(desc, version, uid, sourceContext, labels);
 
-    const statusMessage =
-        errorMessage ?
-            new StatusMessage(StatusMessage.UNSPECIFIED, errorMessage, true) :
-            null;
+    const statusMessage = errorMessage ?
+        new StatusMessage(StatusMessage.UNSPECIFIED, errorMessage, true) :
+        null;
 
     const properties = {
       project: projectId,
@@ -333,46 +351,51 @@ export class Debuglet extends EventEmitter {
   /**
    * @private
    */
-  getProjectId_(callback: (err?: Error, project?: string, onGCP?: boolean) => void): void {
+  getProjectId_(
+      callback: (err?: Error, project?: string, onGCP?: boolean) => void):
+      void {
     const that = this;
 
-    // We need to figure out whether we are running on GCP. We can use our ability
-    // to access the metadata service as a test for that.
+    // We need to figure out whether we are running on GCP. We can use our
+    // ability to access the metadata service as a test for that.
     // TODO: change this to getProjectId in the future.
     // TODO: Determine if it is expected that the second argument (which was
     //       named `response`) is not used.
-    metadata.project(
-        'project-id', function(err, _, metadataProject) {
-          // We should get an error if we are not on GCP.
-          const onGCP = !err;
+    metadata.project('project-id', function(err, _, metadataProject) {
+      // We should get an error if we are not on GCP.
+      const onGCP = !err;
 
-          // We perfer to use the locally available projectId as that is least
-          // surprising to users.
-          const project = that.debug_.options.projectId ||
-                        process.env.GCLOUD_PROJECT || metadataProject;
+      // We perfer to use the locally available projectId as that is least
+      // surprising to users.
+      const project = that.debug_.options.projectId ||
+          process.env.GCLOUD_PROJECT || metadataProject;
 
-          // We if don't have a projectId by now, we fail with an error.
-          if (!project) {
-            return callback(err);
-          }
-          return callback(null, project, onGCP);
-        });
+      // We if don't have a projectId by now, we fail with an error.
+      if (!project) {
+        return callback(err);
+      }
+      return callback(null, project, onGCP);
+    });
   }
 
-  getSourceContext_(callback: (err: Error | string, sourceContext: { [key: string]: string }) => void): void {
-    fs.readFile('source-context.json', 'utf8', function(err: string | Error, data) {
-      let sourceContext;
-      if (!err) {
-        try {
-          sourceContext = JSON.parse(data);
-        } catch (e) {
-          // TODO: Fix casting `err` from an ErrnoException to a string
-          err = 'Malformed source-context.json file: ' + e;
-        }
-      }
-      // We keep on going even if there are errors.
-      return callback(err, sourceContext);
-    });
+  getSourceContext_(
+      callback:
+          (err: Error|string, sourceContext: {[key: string]: string}) => void):
+      void {
+    fs.readFile(
+        'source-context.json', 'utf8', function(err: string|Error, data) {
+          let sourceContext;
+          if (!err) {
+            try {
+              sourceContext = JSON.parse(data);
+            } catch (e) {
+              // TODO: Fix casting `err` from an ErrnoException to a string
+              err = 'Malformed source-context.json file: ' + e;
+            }
+          }
+          // We keep on going even if there are errors.
+          return callback(err, sourceContext);
+        });
   }
 
   /**
@@ -383,10 +406,10 @@ export class Debuglet extends EventEmitter {
     const that = this;
 
     function onError(err) {
-      that.logger_.error('Failed to re-register debuggee ' +
-        that.project_ + ': ' + err);
-      that.scheduleRegistration_(Math.min((seconds + 1) * 2,
-        that.config_.internal.maxRegistrationRetryDelay));
+      that.logger_.error(
+          'Failed to re-register debuggee ' + that.project_ + ': ' + err);
+      that.scheduleRegistration_(Math.min(
+          (seconds + 1) * 2, that.config_.internal.maxRegistrationRetryDelay));
     }
 
     setTimeout(function() {
@@ -436,56 +459,59 @@ export class Debuglet extends EventEmitter {
       assert(that.fetcherActive_);
 
       that.logger_.info('Fetching breakpoints');
-      that.debugletApi_.listBreakpoints(that.debuggee_, function(err, response,
-                                                                 body) {
-        if (err) {
-          that.logger_.error('Unable to fetch breakpoints – stopping fetcher',
-                             err);
-          that.fetcherActive_ = false;
-          // We back-off from fetching breakpoints, and try to register again
-          // after a while. Successful registration will restart the breakpoint
-          // fetcher.
-          that.scheduleRegistration_(
-              that.config_.internal.registerDelayOnFetcherErrorSec);
-          return;
-        }
-
-        switch (response.statusCode) {
-          case 404:
-            // Registration expired. Deactivate the fetcher and queue
-            // re-registration, which will re-active breakpoint fetching.
-            that.logger_.info('\t404 Registration expired.');
-            that.fetcherActive_ = false;
-            that.scheduleRegistration_(0 /*immediately*/);
-            return;
-
-          default:
-            that.logger_.info('\t' + response.statusCode + ' completed.');
-            if (body.wait_expired) {
-              that.logger_.info('\tLong poll completed.');
-              that.scheduleBreakpointFetch_(0/*immediately*/);
+      that.debugletApi_.listBreakpoints(
+          that.debuggee_, function(err, response, body) {
+            if (err) {
+              that.logger_.error(
+                  'Unable to fetch breakpoints – stopping fetcher', err);
+              that.fetcherActive_ = false;
+              // We back-off from fetching breakpoints, and try to register
+              // again after a while. Successful registration will restart the
+              // breakpoint fetcher.
+              that.scheduleRegistration_(
+                  that.config_.internal.registerDelayOnFetcherErrorSec);
               return;
             }
-            const bps = (body.breakpoints || []).filter(function(bp) {
-              const action = bp.action || 'CAPTURE';
-              if (action !== 'CAPTURE' && action !== 'LOG') {
-                that.logger_.warn('Found breakpoint with invalid action:', action);
-                bp.status = new StatusMessage(StatusMessage.UNSPECIFIED,
-                  BREAKPOINT_ACTION_MESSAGE, true);
-                that.rejectBreakpoint_(bp);
-                return false;
-              }
-              return true;
-            });
-            that.updateActiveBreakpoints_(bps);
-            if (Object.keys(that.activeBreakpointMap_).length) {
-              that.logger_.info(formatBreakpoints('Active Breakpoints: ',
-                that.activeBreakpointMap_));
+
+            switch (response.statusCode) {
+              case 404:
+                // Registration expired. Deactivate the fetcher and queue
+                // re-registration, which will re-active breakpoint fetching.
+                that.logger_.info('\t404 Registration expired.');
+                that.fetcherActive_ = false;
+                that.scheduleRegistration_(0 /*immediately*/);
+                return;
+
+              default:
+                that.logger_.info('\t' + response.statusCode + ' completed.');
+                if (body.wait_expired) {
+                  that.logger_.info('\tLong poll completed.');
+                  that.scheduleBreakpointFetch_(0 /*immediately*/);
+                  return;
+                }
+                const bps = (body.breakpoints || []).filter(function(bp) {
+                  const action = bp.action || 'CAPTURE';
+                  if (action !== 'CAPTURE' && action !== 'LOG') {
+                    that.logger_.warn(
+                        'Found breakpoint with invalid action:', action);
+                    bp.status = new StatusMessage(
+                        StatusMessage.UNSPECIFIED, BREAKPOINT_ACTION_MESSAGE,
+                        true);
+                    that.rejectBreakpoint_(bp);
+                    return false;
+                  }
+                  return true;
+                });
+                that.updateActiveBreakpoints_(bps);
+                if (Object.keys(that.activeBreakpointMap_).length) {
+                  that.logger_.info(formatBreakpoints(
+                      'Active Breakpoints: ', that.activeBreakpointMap_));
+                }
+                that.scheduleBreakpointFetch_(
+                    that.config_.breakpointUpdateIntervalSec);
+                return;
             }
-            that.scheduleBreakpointFetch_(that.config_.breakpointUpdateIntervalSec);
-            return;
-        }
-      });
+          });
     }, seconds * 1000).unref();
   }
 
@@ -499,15 +525,14 @@ export class Debuglet extends EventEmitter {
     const updatedBreakpointMap = this.convertBreakpointListToMap_(breakpoints);
 
     if (breakpoints.length) {
-      that.logger_.info(formatBreakpoints('Server breakpoints: ',
-        updatedBreakpointMap));
+      that.logger_.info(
+          formatBreakpoints('Server breakpoints: ', updatedBreakpointMap));
     }
 
     breakpoints.forEach(function(breakpoint: Breakpoint) {
 
       if (!that.completedBreakpointMap_[breakpoint.id] &&
           !that.activeBreakpointMap_[breakpoint.id]) {
-
         // New breakpoint
         that.addBreakpoint_(breakpoint, function(err) {
           if (err) {
@@ -522,16 +547,16 @@ export class Debuglet extends EventEmitter {
 
     // Remove completed breakpoints that the server no longer cares about.
     Debuglet.mapSubtract(this.completedBreakpointMap_, updatedBreakpointMap)
-      .forEach(function(breakpoint){
-        // TODO: FIXME: breakpoint is a boolean here that doesn't have an id
-        //              field.  It is possible that breakpoint.id is always
-        //              undefined!
-        delete this.completedBreakpointMap_[(breakpoint as any).id];
-      }, this);
+        .forEach(function(breakpoint) {
+          // TODO: FIXME: breakpoint is a boolean here that doesn't have an id
+          //              field.  It is possible that breakpoint.id is always
+          //              undefined!
+          delete this.completedBreakpointMap_[(breakpoint as any).id];
+        }, this);
 
     // Remove active breakpoints that the server no longer care about.
     Debuglet.mapSubtract(this.activeBreakpointMap_, updatedBreakpointMap)
-      .forEach(this.removeBreakpoint_, this);
+        .forEach(this.removeBreakpoint_, this);
   }
 
   /**
@@ -540,7 +565,8 @@ export class Debuglet extends EventEmitter {
    * @return {Object.<string, Breakpoint>} A map of breakpoint IDs to breakpoints.
    * @private
    */
-  convertBreakpointListToMap_(breakpointList: Breakpoint[]): { [key: string]: Breakpoint } {
+  convertBreakpointListToMap_(breakpointList: Breakpoint[]):
+      {[key: string]: Breakpoint} {
     const map = {};
     breakpointList.forEach(function(breakpoint) {
       map[breakpoint.id] = breakpoint;
@@ -565,30 +591,34 @@ export class Debuglet extends EventEmitter {
    * @return {boolean} false on error
    * @private
    */
-  addBreakpoint_(breakpoint: Breakpoint, cb: (ob: Error | string) => void): void {
+  addBreakpoint_(breakpoint: Breakpoint, cb: (ob: Error|string) => void): void {
     const that = this;
 
     if (!that.config_.allowExpressions &&
         (breakpoint.condition || breakpoint.expressions)) {
       that.logger_.error(ALLOW_EXPRESSIONS_MESSAGE);
-      breakpoint.status = new StatusMessage(StatusMessage.UNSPECIFIED,
-        ALLOW_EXPRESSIONS_MESSAGE, true);
-      setImmediate(function() { cb(ALLOW_EXPRESSIONS_MESSAGE); });
+      breakpoint.status = new StatusMessage(
+          StatusMessage.UNSPECIFIED, ALLOW_EXPRESSIONS_MESSAGE, true);
+      setImmediate(function() {
+        cb(ALLOW_EXPRESSIONS_MESSAGE);
+      });
       return;
     }
 
     if (semver.satisfies(process.version, '5.2 || <4')) {
       const message = NODE_VERSION_MESSAGE;
       that.logger_.error(message);
-      breakpoint.status = new StatusMessage(StatusMessage.UNSPECIFIED,
-        message, true);
-      setImmediate(function() { cb(message); });
+      breakpoint.status =
+          new StatusMessage(StatusMessage.UNSPECIFIED, message, true);
+      setImmediate(function() {
+        cb(message);
+      });
       return;
     }
 
-    that.v8debug_.set(breakpoint, function(err) {
-      if (err) {
-        cb(err);
+    that.v8debug_.set(breakpoint, function(err1) {
+      if (err1) {
+        cb(err1);
         return;
       }
 
@@ -596,18 +626,19 @@ export class Debuglet extends EventEmitter {
       that.activeBreakpointMap_[breakpoint.id] = breakpoint;
 
       if (breakpoint.action === 'LOG') {
-        that.v8debug_.log(breakpoint,
-          function(fmt: string, exprs: string[]) {
-            console.log('LOGPOINT:', Debuglet.format(fmt, exprs));
-          },
-          function() {
-            return that.completedBreakpointMap_[breakpoint.id];
-          });
+        that.v8debug_.log(
+            breakpoint,
+            function(fmt: string, exprs: string[]) {
+              console.log('LOGPOINT:', Debuglet.format(fmt, exprs));
+            },
+            function() {
+              return that.completedBreakpointMap_[breakpoint.id];
+            });
       } else {
-        that.v8debug_.wait(breakpoint, function(err) {
-          if (err) {
-            that.logger_.error(err);
-            cb(err);
+        that.v8debug_.wait(breakpoint, function(err2) {
+          if (err2) {
+            that.logger_.error(err2);
+            cb(err2);
             return;
           }
 
@@ -668,15 +699,14 @@ export class Debuglet extends EventEmitter {
 
     const now = Date.now() / 1000;
     const createdTime = breakpoint.createdTime ?
-      parseInt(breakpoint.createdTime.seconds) : now;
+        parseInt(breakpoint.createdTime.seconds, 10) :
+        now;
     const expiryTime = createdTime + that.config_.breakpointExpirationSec;
 
     setTimeout(function() {
       that.logger_.info('Expiring breakpoint ' + breakpoint.id);
       breakpoint.status = {
-        description: {
-          format: 'The snapshot has expired'
-        },
+        description: {format: 'The snapshot has expired'},
         isError: true,
         refersTo: StatusMessage.BREAKPOINT_AGE
       };
@@ -709,7 +739,7 @@ export class Debuglet extends EventEmitter {
   // TODO: Fix the docs because the code actually assumes that the values
   //       of the keys in the supplied arguments have boolean values or
   //       Breakpoint values.
-  static mapSubtract<T, U>(A: { [key: string]: T}, B: { [key: string]: U}): T[] {
+  static mapSubtract<T, U>(A: {[key: string]: T}, B: {[key: string]: U}): T[] {
     const removed = [];
     for (let key in A) {
       if (!B[key]) {
@@ -728,17 +758,17 @@ export class Debuglet extends EventEmitter {
     const tokens = Debuglet._tokenize(base, exprs.length);
     for (let i = 0; i < tokens.length; i++) {
       // TODO: Determine how to remove this explicit cast
-      if (!(tokens[i] as { v: string }).v) {
+      if (!(tokens[i] as {v: string}).v) {
         continue;
       }
       // TODO: Determine how to not have an explicit cast here
-      if ((tokens[i] as { v: string }).v === '$$') {
+      if ((tokens[i] as {v: string}).v === '$$') {
         tokens[i] = '$';
         continue;
       }
       for (let j = 0; j < exprs.length; j++) {
         // TODO: Determine how to not have an explicit cast here
-        if ((tokens[i] as { v: string }).v === '$' + j) {
+        if ((tokens[i] as {v: string}).v === '$' + j) {
           tokens[i] = exprs[j];
           break;
         }
@@ -747,17 +777,19 @@ export class Debuglet extends EventEmitter {
     return tokens.join('');
   }
 
-  static _tokenize(base: string, exprLength: number): Array<{ v: string } | string> {
+  static _tokenize(base: string, exprLength: number):
+      Array<{v: string}|string> {
     let acc = Debuglet._delimit(base, '$$');
     for (let i = exprLength - 1; i >= 0; i--) {
       const newAcc = [];
       for (let j = 0; j < acc.length; j++) {
         // TODO: Determine how to remove this explicit cast
-        if ((acc[j] as { v: string }).v) {
+        if ((acc[j] as {v: string}).v) {
           newAcc.push(acc[j]);
         } else {
           // TODO: Determine how to not have an explicit cast to string here
-          newAcc.push.apply(newAcc, Debuglet._delimit(acc[j] as string, '$' + i));
+          newAcc.push.apply(
+              newAcc, Debuglet._delimit(acc[j] as string, '$' + i));
         }
       }
       acc = newAcc;
@@ -765,20 +797,22 @@ export class Debuglet extends EventEmitter {
     return acc;
   }
 
-  static _delimit(source: string, delim: string): Array<{ v: string } | string> {
+  static _delimit(source: string, delim: string): Array<{v: string}|string> {
     const pieces = source.split(delim);
     const dest = [];
     dest.push(pieces[0]);
     for (let i = 1; i < pieces.length; i++) {
-      dest.push({ v: delim }, pieces[i]);
+      dest.push({v: delim}, pieces[i]);
     }
     return dest;
   }
 
-  static _createUniquifier(desc: string, version: string, uid: string, sourceContext: { [key: string]: any },
-    labels: { [key: string]: string }): string {
+  static _createUniquifier(
+      desc: string, version: string, uid: string,
+      sourceContext: {[key: string]: any},
+      labels: {[key: string]: string}): string {
     const uniquifier = desc + version + uid + JSON.stringify(sourceContext) +
-      JSON.stringify(labels);
+        JSON.stringify(labels);
     return crypto.createHash('sha1').update(uniquifier).digest('hex');
   }
 }

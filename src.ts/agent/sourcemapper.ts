@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-import * as _ from 'lodash';
 import * as async from 'async';
 import * as fs from 'fs';
+import * as _ from 'lodash';
 import * as path from 'path';
-
 import * as sourceMap from 'source-map';
 
 /** @define {string} */ const MAP_EXT = '.map';
@@ -35,20 +34,21 @@ export interface MapInfoOutput {
   column?: number;
 }
 
-export function create(sourcemapPaths: string[], callback: (err?: Error, mapper?: SourceMapper) => void): void {
+export function create(
+    sourcemapPaths: string[],
+    callback: (err?: Error, mapper?: SourceMapper) => void): void {
   const mapper = new SourceMapper();
-  const callList = Array.prototype.slice.call(sourcemapPaths)
-                 .map(function(path) {
-                   return function(callback) {
-                     processSourcemap(mapper.infoMap_, path, callback);
-                   };
-                 });
+  const callList =
+      Array.prototype.slice.call(sourcemapPaths).map(function(path) {
+        return function(cb) {
+          processSourcemap(mapper.infoMap_, path, cb);
+        };
+      });
 
   async.parallelLimit(callList, 10, function(err) {
-    if (err){
-      return callback(
-        new Error('An error occurred while processing the sourcemap files' +
-          err));
+    if (err) {
+      return callback(new Error(
+          'An error occurred while processing the sourcemap files' + err));
     }
 
     callback(null, mapper);
@@ -62,69 +62,70 @@ export function create(sourcemapPaths: string[], callback: (err?: Error, mapper?
  *  path should be relative to the process's current working directory
  * @private
  */
-function processSourcemap(infoMap: Map<string, MapInfoInput>, mapPath: string, callback: (err?: Error) => void): void {
+function processSourcemap(
+    infoMap: Map<string, MapInfoInput>, mapPath: string,
+    callback: (err?: Error) => void): void {
   // this handles the case when the path is undefined, null, or
   // the empty string
-  if (!mapPath || !_.endsWith(mapPath, MAP_EXT)){
+  if (!mapPath || !_.endsWith(mapPath, MAP_EXT)) {
     return setImmediate(function() {
-      callback(new Error('The path ' + mapPath +
-        ' does not specify a sourcemap file'));
+      callback(new Error(
+          'The path ' + mapPath + ' does not specify a sourcemap file'));
     });
   }
   mapPath = path.normalize(mapPath);
 
-  fs.readFile(mapPath, 'utf8',
-    function(err, data) {
-      if (err){
-        return callback(new Error('Could not read sourcemap file ' + mapPath +
-          ': ' + err));
-      }
+  fs.readFile(mapPath, 'utf8', function(err, data) {
+    if (err) {
+      return callback(
+          new Error('Could not read sourcemap file ' + mapPath + ': ' + err));
+    }
 
-      let consumer;
-      try {
-        consumer = new sourceMap.SourceMapConsumer(data);
-      }
-      catch(e) {
-        return callback(new Error('An error occurred while reading the '+
+    let consumer;
+    try {
+      consumer = new sourceMap.SourceMapConsumer(data);
+    } catch (e) {
+      return callback(new Error(
+          'An error occurred while reading the ' +
           'sourcemap file ' + mapPath + ': ' + e));
-      }
+    }
 
-      /*
-        * If the sourcemap file defines a "file" attribute, use it as
-        * the output file where the path is relative to the directory
-        * containing the map file.  Otherwise, use the name of the output
-        * file (with the .map extension removed) as the output file.
-        */
-      const outputBase = consumer.file ? consumer.file
-                                       : path.basename(mapPath, '.map');
-      const parentDir = path.dirname(mapPath);
-      const outputPath = path.normalize(path.join(parentDir, outputBase));
+    /*
+     * If the sourcemap file defines a "file" attribute, use it as
+     * the output file where the path is relative to the directory
+     * containing the map file.  Otherwise, use the name of the output
+     * file (with the .map extension removed) as the output file.
+     */
+    const outputBase =
+        consumer.file ? consumer.file : path.basename(mapPath, '.map');
+    const parentDir = path.dirname(mapPath);
+    const outputPath = path.normalize(path.join(parentDir, outputBase));
 
-      const sources = Array.prototype.slice.call(consumer.sources)
-        .filter(function(value) {
-          // filter out any empty string, null, or undefined sources
-          return !!value;
-        })
-        .map(function(relPath) {
-          // resolve the paths relative to the map file so that they
-          // are relative to the process's current working directory
-          return path.normalize(path.join(parentDir, relPath));
-        });
+    const sources = Array.prototype.slice.call(consumer.sources)
+                        .filter(function(value) {
+                          // filter out any empty string, null, or undefined
+                          // sources
+                          return !!value;
+                        })
+                        .map(function(relPath) {
+                          // resolve the paths relative to the map file so that
+                          // they are relative to the process's current working
+                          // directory
+                          return path.normalize(path.join(parentDir, relPath));
+                        });
 
-      if (sources.length === 0) {
-        return callback(new Error('No sources listed in the sourcemap file ' +
-          mapPath));
-      }
+    if (sources.length === 0) {
+      return callback(
+          new Error('No sources listed in the sourcemap file ' + mapPath));
+    }
 
-      sources.forEach(function(src) {
-        infoMap.set(path.normalize(src), {
-          outputFile: outputPath,
-          mapFile: mapPath,
-          mapConsumer: consumer
-        });
-      });
+    sources.forEach(function(src) {
+      infoMap.set(
+          path.normalize(src),
+          {outputFile: outputPath, mapFile: mapPath, mapConsumer: consumer});
+    });
 
-      callback(null);
+    callback(null);
   });
 }
 
@@ -179,7 +180,8 @@ export class SourceMapper {
    *   If the given input file does not have mapping information associated
    *   with it then null is returned.
    */
-  mappingInfo(inputPath: string, lineNumber: number, colNumber: number): MapInfoOutput | null {
+  mappingInfo(inputPath: string, lineNumber: number, colNumber: number):
+      MapInfoOutput|null {
     inputPath = path.normalize(inputPath);
     if (!this.hasMappingInfo(inputPath)) {
       return null;
@@ -188,34 +190,36 @@ export class SourceMapper {
     const entry = this.infoMap_.get(inputPath);
     const sourcePos = {
       source: path.relative(path.dirname(entry.mapFile), inputPath),
-      line: lineNumber + 1, // the SourceMapConsumer expects the line number
-                            // to be one-based but expects the column number
-      column: colNumber     // to be zero-based
+      line: lineNumber + 1,  // the SourceMapConsumer expects the line number
+                             // to be one-based but expects the column number
+      column: colNumber      // to be zero-based
     };
 
     const consumer = entry.mapConsumer;
     const allPos = consumer.allGeneratedPositionsFor(sourcePos);
     /*
-    * Based on testing, it appears that the following code is needed to
-    * properly get the correct mapping information.
-    *
-    * In particular, the generatedPositionFor() alone doesn't appear to
-    * give the correct mapping information.
-    */
+     * Based on testing, it appears that the following code is needed to
+     * properly get the correct mapping information.
+     *
+     * In particular, the generatedPositionFor() alone doesn't appear to
+     * give the correct mapping information.
+     */
     const mappedPos = allPos && allPos.length > 0 ?
-      Array.prototype.reduce.call(allPos,
-        function(accumulator, value/*, index, arr*/) {
-            return value.line < accumulator.line ? value : accumulator;
-        }) : consumer.generatedPositionFor(sourcePos);
+        Array.prototype.reduce.call(
+            allPos,
+            function(accumulator, value /*, index, arr*/) {
+              return value.line < accumulator.line ? value : accumulator;
+            }) :
+        consumer.generatedPositionFor(sourcePos);
 
     return {
       file: entry.outputFile,
-      line: mappedPos.line - 1, // convert the one-based line numbers returned
-                                // by the SourceMapConsumer to the expected
-                                // zero-based output.
-      column: mappedPos.col     // SourceMapConsumer uses zero-based column
-                                // numbers which is the same as the expected
-                                // output
+      line: mappedPos.line - 1,  // convert the one-based line numbers returned
+                                 // by the SourceMapConsumer to the expected
+                                 // zero-based output.
+      column: mappedPos.col      // SourceMapConsumer uses zero-based column
+                                 // numbers which is the same as the expected
+                                 // output
     };
   }
 }

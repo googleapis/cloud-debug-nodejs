@@ -27,7 +27,9 @@ import * as estree from 'estree';
  */
 export function isValid(node: estree.Node): boolean {
   // Empty expression is allowed
-  if (node === null) { return true; }
+  if (node === null) {
+    return true;
+  }
 
   switch (node.type) {
     case 'Program':
@@ -69,14 +71,14 @@ export function isValid(node: estree.Node): boolean {
 
     case 'ConditionalExpression':
       return isValid(node.test) && isValid(node.alternate) &&
-        isValid(node.consequent);
+          isValid(node.consequent);
 
     case 'MemberExpression':
       return isValid(node.object) && isValid(node.property);
 
     case 'ObjectExpression':
       // every property is a valid expression
-      return node.properties.every(function(prop){
+      return node.properties.every(function(prop) {
         return isValid(prop.value);
       });
 

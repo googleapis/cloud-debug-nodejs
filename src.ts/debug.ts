@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import { Common, AuthOptions } from './types/common-types';
-
 import * as _common from '@google-cloud/common';
+
+import {AuthOptions, Common} from './types/common-types';
+
 const common: Common = _common;
 import * as util from 'util';
 
@@ -41,7 +42,8 @@ export class Debug {
    * @constructor
    * @alias module:debug
    *
-   * @resource [What is Stackdriver Debug]{@link https://cloud.google.com/debug/}
+   * @resource [What is Stackdriver Debug]{@link
+   * https://cloud.google.com/debug/}
    *
    * @param {object} options - [Configuration object](#/docs)
    */

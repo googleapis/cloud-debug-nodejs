@@ -16,13 +16,9 @@
 
 export declare type Action = 'CAPTURE' | 'LOG';
 
-export declare type Reference = 'UNSPECIFIED' |
-                                'BREAKPOINT_SOURCE_LOCATION' |
-                                'BREAKPOINT_CONDITION' |
-                                'BREAKPOINT_EXPRESSION' |
-                                'BREAKPOINT_AGE' |
-                                'VARIABLE_NAME' |
-                                'VARIABLE_VALUE';
+export declare type Reference = 'UNSPECIFIED' | 'BREAKPOINT_SOURCE_LOCATION' |
+    'BREAKPOINT_CONDITION' | 'BREAKPOINT_EXPRESSION' | 'BREAKPOINT_AGE' |
+    'VARIABLE_NAME' | 'VARIABLE_VALUE';
 
 export interface FormatMessage {
   format: string;
@@ -70,8 +66,8 @@ export interface StackFrame {
 //       Determine if this is actually needed or if the create(d)Time attribute
 //       should only be a string.
 export interface Timestamp {
-  seconds: string; // int64
-  nano: string; // int32
+  seconds: string;  // int64
+  nano: string;     // int32
 }
 
 export interface Breakpoint {
@@ -90,7 +86,8 @@ export interface Breakpoint {
   isFinalState?: boolean;
   // TODO: The API reference says the following attribute is `createTime`
   //       However, the existing code is using `createdTime`.
-  // See: https://cloud.google.com/debugger/api/reference/rest/v2/debugger.debuggees.breakpoints#breakpoint
+  // See:
+  // https://cloud.google.com/debugger/api/reference/rest/v2/debugger.debuggees.breakpoints#breakpoint
   //      In addtion, the API reference says the `create(d)Time` attribute
   //      is a string in Timestamp format, but the code assumes it is a
   //      Timestamp object

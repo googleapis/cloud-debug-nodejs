@@ -23,7 +23,7 @@ export interface DebugAgentConfig {
    * @memberof DebugAgentConfig
    * @default
    */
-  workingDirectory: string | null,
+  workingDirectory: string|null;
 
   /**
    * @property {?string} A user specified way of identifying the service
@@ -31,25 +31,25 @@ export interface DebugAgentConfig {
    * @memberof DebugAgentConfig
    * @default
    */
-  description: string | null,
+  description: string|null;
 
   /**
    * @property {boolean} Whether or not it is permitted to evaluate expressions.
-   * Locals and arguments are not displayed and watch expressions and conditions
-   * are dissallowed when this is `false`.
+   * Locals and arguments are not displayed and watch expressions and
+   * conditions are dissallowed when this is `false`.
    * @memberof DebugAgentConfig
    * @default
    */
-  allowExpressions: boolean,
+  allowExpressions: boolean;
 
   /**
    * @property {object} Identifies the context of the running service -
    * [ServiceContext](https://cloud.google.com/error-reporting/reference/rest/v1beta1/ServiceContext?authuser=2).
    * This information is utilized in the UI to identify all the running
    * instances of your service. This is discovered automatically when your
-   * application is running on Google Cloud Platform. You may optionally choose
-   * to provide this information yourself to identify your service differently
-   * from the default mechanism.
+   * application is running on Google Cloud Platform. You may optionally
+   * choose to provide this information yourself to identify your service
+   * differently from the default mechanism.
    * @memberof DebugAgentConfig
    * @default
    */
@@ -58,32 +58,33 @@ export interface DebugAgentConfig {
      * @property {?string} the service name
      * @default
      */
-    service: string | null,
+    service: string | null;
 
     /**
      * @property {?string} the service version
      * @default
      */
-    version: string | null,
+    version: string | null;
 
     /**
      * @property {?string} a unique deployment identifier. This is used
      * internally only.
      * @private
      */
-    minorVersion_: string | null
-  },
+    minorVersion_: string | null;
+  };
 
   /**
    * @property {?string}   The path within your repository to the directory
-   * containing the package.json for your deployed application. This should be
-   * provided if your deployed application appears as a subdirectory of your
-   * repository. Usually this is unnecessary, but may be useful in cases where
-   * the debug agent is unable to resolve breakpoint locations unambiguously.
+   * containing the package.json for your deployed application. This should
+   * be provided if your deployed application appears as a subdirectory of
+   * your repository. Usually this is unnecessary, but may be useful in
+   * cases where the debug agent is unable to resolve breakpoint locations
+   * unambiguously.
    * @memberof DebugAgentConfig
    * @default
    */
-  appPathRelativeToRepository: string | null,
+  appPathRelativeToRepository: string|null;
 
   /**
    * @property {number} agent log level 0-disabled, 1-error, 2-warn, 3-info,
@@ -91,7 +92,7 @@ export interface DebugAgentConfig {
    * @memberof DebugAgentConfig
    * @default
    */
-  logLevel: number,
+  logLevel: number;
 
   /**
    * @property {number} How frequently should the list of breakpoints be
@@ -99,7 +100,7 @@ export interface DebugAgentConfig {
    * @memberof DebugAgentConfig
    * @default
    */
-  breakpointUpdateIntervalSec: number,
+  breakpointUpdateIntervalSec: number;
 
   /**
    * @property {number} breakpoints and logpoints older than this number of
@@ -107,7 +108,7 @@ export interface DebugAgentConfig {
    * @memberof DebugAgentConfig
    * @default
    */
-  breakpointExpirationSec: number,
+  breakpointExpirationSec: number;
 
   /**
    * @property {object} configuration options on what is captured on a
@@ -120,7 +121,7 @@ export interface DebugAgentConfig {
      * belonging to node-core.
      * @default
      */
-    includeNodeModules: boolean,
+    includeNodeModules: boolean;
 
 
     /**
@@ -128,40 +129,41 @@ export interface DebugAgentConfig {
      * The limit is aimed to reduce overall capture time.
      * @default
      */
-    maxFrames: number,
+    maxFrames: number;
 
     /**
      * @property {number} We collect locals and arguments on a few top frames.
      * For the rest only collect the source location
      * @default
      */
-    maxExpandFrames: number,
+    maxExpandFrames: number;
 
     /**
      * @property {number} To reduce the overall capture time, limit the number
-     * of properties gathered on large objects. A value of 0 disables the limit.
+     * of properties gathered on large objects. A value of 0 disables the
+     * limit.
      * @default
      */
-    maxProperties: number,
+    maxProperties: number;
 
     /**
      * @property {number} Total 'size' of data to gather. This is NOT the
-     * number of bytes of data that are sent over the wire, but instead a very
-     * very coarse approximation based on the length of names and values of the
-     * properties. This should be somewhat proportional to the amount of
-     * processing needed to capture the data and subsequently the network
-     * traffic. A value of 0 disables the limit.
+     * number of bytes of data that are sent over the wire, but instead a
+     * very very coarse approximation based on the length of names and
+     * values of the properties. This should be somewhat proportional to the
+     * amount of processing needed to capture the data and subsequently the
+     * network traffic. A value of 0 disables the limit.
      * @default
      */
-    maxDataSize: number,
+    maxDataSize: number;
 
     /**
      * @property {number} To limit the size of the buffer, we truncate long
      * strings. A value of 0 disables truncation.
      * @default
      */
-    maxStringLength: number
-  },
+    maxStringLength: number;
+  };
 
   /**
    * @property {object} options affecting log points.
@@ -174,15 +176,15 @@ export interface DebugAgentConfig {
      * @memberof DebugAgentConfig
      * @default
      */
-    maxLogsPerSecond: number,
+    maxLogsPerSecond: number;
 
     /**
      * @property {number} Number of seconds to wait after the
      * `maxLogsPerSecond` rate is hit before logging resumes per logpoint.
      * @default
      */
-    logDelaySeconds: number
-  },
+    logDelaySeconds: number;
+  };
 
   /**
    * @property {object} These configuration options are for internal
@@ -191,9 +193,10 @@ export interface DebugAgentConfig {
    * @private
    */
   internal: {
-    registerDelayOnFetcherErrorSec: number,
-    maxRegistrationRetryDelay: number
-  },
+    // TODO: Determine if clang-format can be configured to place
+    //       a newline between these two statements.
+    registerDelayOnFetcherErrorSec: number; maxRegistrationRetryDelay: number;
+  };
 
   /**
    * @property {boolean} Used by tests to force loading of a new agent if one
@@ -201,7 +204,7 @@ export interface DebugAgentConfig {
    * @memberof DebugAgentConfig
    * @private
    */
-  forceNewAgent_: boolean,
+  forceNewAgent_: boolean;
 
   /**
    * @property {boolean} Uses by tests to cause the start() function to return
@@ -209,7 +212,7 @@ export interface DebugAgentConfig {
    * @memberof DebugAgentConfig
    * @private
    */
-  testMode_: boolean
+  testMode_: boolean;
 }
 
 const defaultConfig: DebugAgentConfig = {
@@ -221,11 +224,7 @@ const defaultConfig: DebugAgentConfig = {
 
   // FIXME(ofrobots): today we prioritize GAE_MODULE_NAME/GAE_MODULE_VERSION
   // over the user specified config. We should reverse that.
-  serviceContext: {
-    service: null,
-    version: null,
-    minorVersion_: null
-  },
+  serviceContext: {service: null, version: null, minorVersion_: null},
 
   appPathRelativeToRepository: null,
   logLevel: 1,
@@ -241,10 +240,7 @@ const defaultConfig: DebugAgentConfig = {
     maxStringLength: 100
   },
 
-  log: {
-    maxLogsPerSecond: 50,
-    logDelaySeconds: 1
-  },
+  log: {maxLogsPerSecond: 50, logDelaySeconds: 1},
 
   internal: {
     registerDelayOnFetcherErrorSec: 300,  // 5 minutes.
