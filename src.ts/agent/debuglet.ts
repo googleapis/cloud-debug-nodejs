@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Common } from '../types/common-types';
+import {Common} from '../types/common-types';
 const common: Common = require('@google-cloud/common');
 
 import * as crypto from 'crypto';
@@ -22,7 +22,7 @@ import {EventEmitter} from 'events';
 import * as extend from 'extend';
 import * as fs from 'fs';
 
-import { GcpMetadata } from '../types/gcp-metadata-types';
+import {GcpMetadata} from '../types/gcp-metadata-types';
 const metadata: GcpMetadata = require('gcp-metadata');
 
 import * as _ from 'lodash';
@@ -219,7 +219,9 @@ export class Debuglet extends EventEmitter {
           //       `null`.
           scanner.scan(
               !id, that.config_.workingDirectory as string, /.js$|.map$/,
-              function(err2: Error|null, fileStats?: scanner.ScanResults, hash?: string) {
+              function(
+                  err2: Error|null, fileStats?: scanner.ScanResults,
+                  hash?: string) {
                 if (err2) {
                   that.logger_.error('Error scanning the filesystem.', err2);
                   that.emit('initError', err2);
@@ -227,8 +229,10 @@ export class Debuglet extends EventEmitter {
                 }
 
                 // TODO: Handle the case where `fileStats` is `undefined`.
-                const jsStats = (fileStats as scanner.ScanResults).selectStats(/.js$/);
-                const mapFiles = (fileStats as scanner.ScanResults).selectFiles(/.map$/, process.cwd());
+                const jsStats =
+                    (fileStats as scanner.ScanResults).selectStats(/.js$/);
+                const mapFiles = (fileStats as scanner.ScanResults)
+                                     .selectFiles(/.map$/, process.cwd());
                 SourceMapper.create(mapFiles, function(err3, mapper) {
                   if (err3) {
                     that.logger_.error(
@@ -239,13 +243,16 @@ export class Debuglet extends EventEmitter {
 
                   that.v8debug_ = v8debugapi.create(
                       // TODO: Handle the case where `mapper` is `undefined`.
-                      that.logger_, that.config_, jsStats, mapper as SourceMapper.SourceMapper);
+                      that.logger_, that.config_, jsStats,
+                      mapper as SourceMapper.SourceMapper);
 
                   id = id || hash;
 
                   that.logger_.info('Unique ID for this Application: ' + id);
 
-                  that.getProjectId_(function(err4: Error|null, project: string|undefined, onGCP?: boolean) {
+                  that.getProjectId_(function(
+                      err4: Error|null, project: string|undefined,
+                      onGCP?: boolean) {
                     if (err4) {
                       that.logger_.error(
                           'Unable to discover projectId. Please provide ' +
@@ -277,12 +284,14 @@ export class Debuglet extends EventEmitter {
                       // TODO: Address the case where `project` is `undefined`.
                       that.project_ = project as string;
                       that.debuggee_ = Debuglet.createDebuggee(
-                          // TODO: Address the case when `project` is `undefined`.
+                          // TODO: Address the case when `project` is
+                          // `undefined`.
                           // TODO: Address the case when `id` is `undefined`.
                           project as string, id as string,
                           that.config_.serviceContext,
                           // TODO: Handle the case where `onGCP` is `undefined`.
-                          sourceContext, that.config_.description, null, onGCP as boolean);
+                          sourceContext, that.config_.description, null,
+                          onGCP as boolean);
                       that.scheduleRegistration_(0 /* immediately */);
                       that.emit('started');
                     });
@@ -297,9 +306,11 @@ export class Debuglet extends EventEmitter {
    */
   // TODO: Determine the type of sourceContext
   static createDebuggee(
-      projectId: string, uid: string,
-      serviceContext:
-          {service: string|null, version: string|null, minorVersion_: string|null},
+      projectId: string, uid: string, serviceContext: {
+        service: string | null,
+        version: string|null,
+        minorVersion_: string|null
+      },
       sourceContext: {[key: string]: string}, description: string|null,
       errorMessage: string|null, onGCP: boolean): Debuggee {
     const cwd = process.cwd();
@@ -379,21 +390,23 @@ export class Debuglet extends EventEmitter {
     // TODO: change this to getProjectId in the future.
     // TODO: Determine if it is expected that the second argument (which was
     //       named `response`) is not used.
-    metadata.project('project-id', function(err: Error, _: http.ServerResponse, metadataProject: string) {
-      // We should get an error if we are not on GCP.
-      const onGCP = !err;
+    metadata.project(
+        'project-id',
+        function(err: Error, _: http.ServerResponse, metadataProject: string) {
+          // We should get an error if we are not on GCP.
+          const onGCP = !err;
 
-      // We perfer to use the locally available projectId as that is least
-      // surprising to users.
-      const project = that.debug_.options.projectId ||
-          process.env.GCLOUD_PROJECT || metadataProject;
+          // We perfer to use the locally available projectId as that is least
+          // surprising to users.
+          const project = that.debug_.options.projectId ||
+              process.env.GCLOUD_PROJECT || metadataProject;
 
-      // We if don't have a projectId by now, we fail with an error.
-      if (!project) {
-        return callback(err);
-      }
-      return callback(null, project, onGCP);
-    });
+          // We if don't have a projectId by now, we fail with an error.
+          if (!project) {
+            return callback(err);
+          }
+          return callback(null, project, onGCP);
+        });
   }
 
   getSourceContext_(
@@ -437,34 +450,41 @@ export class Debuglet extends EventEmitter {
       }
 
       // TODO: Handle the case when `that.debuggee_` is null.
-      that.debugletApi_.register(that.debuggee_ as Debuggee, function(err: Error|null, result?: { debuggee: Debuggee; }) {
-        if (err) {
-          onError(err);
-          return;
-        }
+      that.debugletApi_.register(
+          that.debuggee_ as Debuggee,
+          function(err: Error|null, result?: {debuggee: Debuggee;}) {
+            if (err) {
+              onError(err);
+              return;
+            }
 
-        // TODO: It appears that the Debuggee class never has an `isDisabled`
-        //       field set.  Determine if this is a bug or if the following
-        //       code is not needed.
-        // TODO: Handle the case when `result` is undefined.
-        if ((result as { debuggee: Debuggee}).debuggee.isDisabled) {
-          // Server has disabled this debuggee / debug agent.
-          onError(new Error('Disabled by the server'));
-          that.emit('remotelyDisabled');
-          return;
-        }
+            // TODO: It appears that the Debuggee class never has an
+            // `isDisabled`
+            //       field set.  Determine if this is a bug or if the following
+            //       code is not needed.
+            // TODO: Handle the case when `result` is undefined.
+            if ((result as {debuggee: Debuggee}).debuggee.isDisabled) {
+              // Server has disabled this debuggee / debug agent.
+              onError(new Error('Disabled by the server'));
+              that.emit('remotelyDisabled');
+              return;
+            }
 
-        // TODO: Handle the case when `result` is undefined.
-        that.logger_.info('Registered as debuggee:', (result as {debuggee: Debuggee}).debuggee.id);
-        // TODO: Handle the case when `that.debuggee_` is null.
-        // TODO: Handle the case when `result` is undefined.
-        (that.debuggee_ as Debuggee).id = (result as {debuggee: Debuggee}).debuggee.id;
-        // TODO: Handle the case when `result` is undefined.
-        that.emit('registered', (result as {debuggee: Debuggee}).debuggee.id);
-        if (!that.fetcherActive_) {
-          that.scheduleBreakpointFetch_(0);
-        }
-      });
+            // TODO: Handle the case when `result` is undefined.
+            that.logger_.info(
+                'Registered as debuggee:',
+                (result as {debuggee: Debuggee}).debuggee.id);
+            // TODO: Handle the case when `that.debuggee_` is null.
+            // TODO: Handle the case when `result` is undefined.
+            (that.debuggee_ as Debuggee).id =
+                (result as {debuggee: Debuggee}).debuggee.id;
+            // TODO: Handle the case when `result` is undefined.
+            that.emit(
+                'registered', (result as {debuggee: Debuggee}).debuggee.id);
+            if (!that.fetcherActive_) {
+              that.scheduleBreakpointFetch_(0);
+            }
+          });
     }, seconds * 1000).unref();
   }
 
@@ -510,25 +530,28 @@ export class Debuglet extends EventEmitter {
 
               default:
                 // TODO: Address the case where `response` is `undefined`.
-                that.logger_.info('\t' + (response as http.ServerResponse).statusCode + ' completed.');
+                that.logger_.info(
+                    '\t' + (response as http.ServerResponse).statusCode +
+                    ' completed.');
                 if (body.wait_expired) {
                   that.logger_.info('\tLong poll completed.');
                   that.scheduleBreakpointFetch_(0 /*immediately*/);
                   return;
                 }
-                const bps = (body.breakpoints || []).filter(function(bp: Breakpoint) {
-                  const action = bp.action || 'CAPTURE';
-                  if (action !== 'CAPTURE' && action !== 'LOG') {
-                    that.logger_.warn(
-                        'Found breakpoint with invalid action:', action);
-                    bp.status = new StatusMessage(
-                        StatusMessage.UNSPECIFIED, BREAKPOINT_ACTION_MESSAGE,
-                        true);
-                    that.rejectBreakpoint_(bp);
-                    return false;
-                  }
-                  return true;
-                });
+                const bps =
+                    (body.breakpoints || []).filter(function(bp: Breakpoint) {
+                      const action = bp.action || 'CAPTURE';
+                      if (action !== 'CAPTURE' && action !== 'LOG') {
+                        that.logger_.warn(
+                            'Found breakpoint with invalid action:', action);
+                        bp.status = new StatusMessage(
+                            StatusMessage.UNSPECIFIED,
+                            BREAKPOINT_ACTION_MESSAGE, true);
+                        that.rejectBreakpoint_(bp);
+                        return false;
+                      }
+                      return true;
+                    });
                 that.updateActiveBreakpoints_(bps);
                 if (Object.keys(that.activeBreakpointMap_).length) {
                   that.logger_.info(formatBreakpoints(
@@ -596,7 +619,7 @@ export class Debuglet extends EventEmitter {
    */
   convertBreakpointListToMap_(breakpointList: Breakpoint[]):
       {[key: string]: Breakpoint} {
-    const map: { [id: string]: Breakpoint } = {};
+    const map: {[id: string]: Breakpoint} = {};
     breakpointList.forEach(function(breakpoint) {
       // TODO: Address the case when `breakpoint.id` is `undefined`.
       map[breakpoint.id as string] = breakpoint;
@@ -660,15 +683,16 @@ export class Debuglet extends EventEmitter {
 
       if (breakpoint.action === 'LOG') {
         // TODO: Address the case when `that.v8debug_` is `null`.
-        (that.v8debug_ as V8DebugApi).log(
-            breakpoint,
-            function(fmt: string, exprs: string[]) {
-              console.log('LOGPOINT:', Debuglet.format(fmt, exprs));
-            },
-            function() {
-              // TODO: Address the case when `breakpoint.id` is `undefined`.
-              return that.completedBreakpointMap_[breakpoint.id as string];
-            });
+        (that.v8debug_ as V8DebugApi)
+            .log(
+                breakpoint,
+                function(fmt: string, exprs: string[]) {
+                  console.log('LOGPOINT:', Debuglet.format(fmt, exprs));
+                },
+                function() {
+                  // TODO: Address the case when `breakpoint.id` is `undefined`.
+                  return that.completedBreakpointMap_[breakpoint.id as string];
+                });
       } else {
         // TODO: Address the case when `that.v8debug_` is `null`.
         (that.v8debug_ as V8DebugApi).wait(breakpoint, function(err2) {
