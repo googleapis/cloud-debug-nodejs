@@ -15,11 +15,9 @@
  */
 
 import {AuthOptions, Common} from './types/common-types';
-const common: Common = require('@google-cloud/common');
+export const common: Common = require('@google-cloud/common');
 
-import * as util from 'util';
-
-export class Debug {
+export class Debug extends common.Service {
   options: AuthOptions;
 
   /**
@@ -46,8 +44,8 @@ export class Debug {
    * @param {object} options - [Configuration object](#/docs)
    */
   constructor(options: AuthOptions) {
-    if (!(this instanceof Debug)) {
-      options = common.util.normalizeArguments(this, options);
+    if (new.target !== Debug) {
+      options = common.util.normalizeArguments(null, options);
       return new Debug(options);
     }
 
@@ -59,7 +57,9 @@ export class Debug {
     };
 
     // TODO: Update Service to provide types
-    common.Service.call(this, config, options);
+    // TODO: Determine if we should check if `options` is `undefined` or
+    //       `null` here and, if so, provide a default value.
+    super(config, options);
 
     // FIXME(ofrobots): We need our own copy of options because Service may
     // default to '{{projectId}}' when options doesn't contain the `projectId`.
@@ -69,6 +69,3 @@ export class Debug {
     this.options = options;
   }
 }
-// TODO: Determine how to use class syntax directly so that this line is not
-//       needed.
-util.inherits(Debug, common.Service);
