@@ -45,6 +45,7 @@ export class Debug extends common.Service {
    */
   constructor(options: AuthOptions) {
     if (new.target !== Debug) {
+      options = common.util.normalizeArguments(null, options);
       return new Debug(options);
     }
 
@@ -56,13 +57,14 @@ export class Debug extends common.Service {
     };
 
     // TODO: Update Service to provide types
-    super(config, options || {});
+    options = options || {};
+    super(config, options);
 
     // FIXME(ofrobots): We need our own copy of options because Service may
     // default to '{{projectId}}' when options doesn't contain the `projectId`.
     // property. This breaks the SSOT principle. Remove this when
     // https://github.com/GoogleCloudPlatform/google-cloud-node/issues/1891
     // is resolved.
-    this.options = common.util.normalizeArguments(this, options);
+    this.options = options;
   }
 }
