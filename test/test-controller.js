@@ -106,7 +106,7 @@ describe('Controller API', function() {
 
     it('should deal with a missing breakpoints response', function(done) {
       var scope = nock(url)
-        .get(api + '/debuggees/fake-debuggee/breakpoints?success_on_timeout=true')
+        .get(api + '/debuggees/fake-debuggee/breakpoints?successOnTimeout=true')
         .reply(200, { kind: 'whatever' });
 
       var debuggee = { id: 'fake-debuggee' };
@@ -124,7 +124,7 @@ describe('Controller API', function() {
       tests.forEach(function(invalidResponse, index) {
         it('should pass test ' + index, function(done) {
           var scope = nock(url)
-            .get(api + '/debuggees/fake-debuggee/breakpoints?success_on_timeout=true')
+            .get(api + '/debuggees/fake-debuggee/breakpoints?successOnTimeout=true')
             .reply(200, invalidResponse);
           var debuggee = { id: 'fake-debuggee' };
           var controller = new Controller(fakeDebug);
@@ -140,7 +140,7 @@ describe('Controller API', function() {
 
     it('should throw error on http errors', function(done) {
       var scope = nock(url)
-        .get(api + '/debuggees/fake-debuggee/breakpoints?success_on_timeout=true')
+        .get(api + '/debuggees/fake-debuggee/breakpoints?successOnTimeout=true')
         .reply(403);
       var debuggee = { id: 'fake-debuggee' };
       var controller = new Controller(fakeDebug);
@@ -154,15 +154,15 @@ describe('Controller API', function() {
 
     it('should work with waitTokens', function(done) {
       var scope = nock(url)
-        .get(api + '/debuggees/fake-debuggee/breakpoints?success_on_timeout=true')
+        .get(api + '/debuggees/fake-debuggee/breakpoints?successOnTimeout=true')
         .reply(200, {
-          wait_expired: true
+          waitExpired: true
         });
       var debuggee = { id: 'fake-debuggee' };
       var controller = new Controller(fakeDebug);
       controller.listBreakpoints(debuggee, function(err, response, result) {
         assert.ifError(err, 'not expecting an error');
-        assert(response.body.wait_expired, 'should have expired set');
+        assert(response.body.waitExpired, 'should have expired set');
         scope.done();
         done();
       });
@@ -176,7 +176,7 @@ describe('Controller API', function() {
     testsBreakpoints.forEach(function(breakpoints, index) {
       it('should pass test ' + index, function(done) {
         var scope = nock(url)
-          .get(api + '/debuggees/fake-debuggee/breakpoints?success_on_timeout=true')
+          .get(api + '/debuggees/fake-debuggee/breakpoints?successOnTimeout=true')
           .reply(200, {
             breakpoints: breakpoints
           });

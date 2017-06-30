@@ -103,3 +103,14 @@ export interface Breakpoint {
     [key: string]: string,
   };
 }
+
+export interface ListBreakpointsQuery {
+  waitToken?: string;
+  successOnTimeout?: boolean;
+}
+
+export interface ListBreakpointsResponse {
+  breakpoints: Breakpoint[];
+  nextWaitToken: string;
+  waitExpired: boolean;
+}
