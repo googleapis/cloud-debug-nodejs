@@ -74,7 +74,7 @@ gulp.task('compile', () => {
     tsResult.dts.pipe(gulp.dest(`${outDir}/types`)),
     tsResult.js
         .pipe(sourcemaps.write(
-            '.', {includeContent: false, sourceRoot: '../../src'}))
+            '.', {includeContent: false, sourceRoot: '../../src.ts'}))
         .pipe(gulp.dest(`${outDir}/src`)),
     tsResult.js.pipe(gulp.dest(`${outDir}/src`))
   ]);
