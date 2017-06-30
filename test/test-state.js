@@ -16,7 +16,7 @@
 'use strict';
 
 const assert = require('assert');
-const state = require('../src/agent/state.js');
+const state = require('../build/src/agent/state.js');
 
 describe('state', () => {
   // Testing of state.js is driven through test-v8debugapi.js. There are

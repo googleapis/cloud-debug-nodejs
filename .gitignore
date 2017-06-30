@@ -1,8 +1,6 @@
-src
-node_modules
+build
 coverage
+node_modules
 npm-debug.log
 .DS_Store
 .vscode
-src
-definitions

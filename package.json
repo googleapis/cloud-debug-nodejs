@@ -3,7 +3,7 @@
   "version": "2.1.1",
   "author": "Google Inc.",
   "description": "Stackdriver Debug Agent for Node.js",
-  "main": "./src/index.js",
+  "main": "./build/src/index.js",
   "repository": "googlecloudplatform/cloud-debug-nodejs",
   "keywords": [
     "google",
@@ -71,5 +71,11 @@
     "coverage": "gulp && ./bin/run-test.sh -c",
     "bump": "gulp && ./bin/run-bump.sh",
     "closure": "gulp && ./node_modules/.bin/closure-npc"
-  }
+  },
+  "files":[
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md",
+    "build/src"
+  ]
 }

@@ -41,7 +41,7 @@ import * as scanner from './scanner';
 import * as SourceMapper from './sourcemapper';
 import * as v8debugapi from './v8debugapi';
 
-const pjson = require('../../package.json');
+const pjson = require('../../../package.json');
 
 import * as assert from 'assert';
 

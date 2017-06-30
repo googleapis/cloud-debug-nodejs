@@ -31,8 +31,8 @@ const format = require('gulp-clang-format');
 
 const tsconfigPath = path.join(__dirname, 'tsconfig.json');
 const tslintPath = path.join(__dirname, 'tslint.json');
-const outDir = '.';
-const sources = ['src.ts/**/*.ts', 'src.ts/**/*.js'];
+const outDir = 'build';
+const sources = ['src.ts/**/*.ts'];
 
 let exitOnError = true;
 function onError() {
@@ -62,7 +62,7 @@ gulp.task('test.check-lint', () => {
 });
 
 gulp.task('clean', () => {
-  return del(['src']);
+  return del(['build']);
 });
 
 gulp.task('compile', () => {
@@ -71,10 +71,10 @@ gulp.task('compile', () => {
                        .pipe(ts.createProject(tsconfigPath)())
                        .on('error', onError);
   return merge([
-    tsResult.dts.pipe(gulp.dest(`${outDir}/definitions`)),
+    tsResult.dts.pipe(gulp.dest(`${outDir}/types`)),
     tsResult.js
         .pipe(sourcemaps.write(
-            '.', {includeContent: false, sourceRoot: '../../src'}))
+            '.', {includeContent: false, sourceRoot: '../../src.ts'}))
         .pipe(gulp.dest(`${outDir}/src`)),
     tsResult.js.pipe(gulp.dest(`${outDir}/src`))
   ]);

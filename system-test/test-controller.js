@@ -26,9 +26,9 @@ assert.ok(
     'Need to have GOOGLE_APPLICATION_CREDENTIALS defined to be able to run ' +
     'this test');
 
-var Controller = require('../src/controller.js').Controller;
-var Debuggee = require('../src/debuggee.js').Debuggee;
-var debug = require('../src/debug.js').Debug();
+var Controller = require('../build/src/controller.js').Controller;
+var Debuggee = require('../build/src/debuggee.js').Debuggee;
+var debug = require('../build/src/debug.js').Debug();
 
 
 describe('Controller', function() {
