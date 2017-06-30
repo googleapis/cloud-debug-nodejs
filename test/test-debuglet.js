@@ -498,7 +498,7 @@ describe('Debuglet', function() {
       var scope = nock(API)
                       .post(REGISTER_PATH)
                       .reply(200, {debuggee: {id: DEBUGGEE_ID}})
-                      .get(BPS_PATH + '?success_on_timeout=true')
+                      .get(BPS_PATH + '?successOnTimeout=true')
                       .reply(404)
                       .post(REGISTER_PATH)
                       .reply(200, {debuggee: {id: DEBUGGEE_ID}});
@@ -525,7 +525,7 @@ describe('Debuglet', function() {
       var scope = nock(API)
                       .post(REGISTER_PATH)
                       .reply(200, {debuggee: {id: DEBUGGEE_ID}})
-                      .get(BPS_PATH + '?success_on_timeout=true')
+                      .get(BPS_PATH + '?successOnTimeout=true')
                       .reply(200, {breakpoints: [bp]});
 
       debuglet.once('registered', function reg(id) {
@@ -552,7 +552,7 @@ describe('Debuglet', function() {
       var scope = nock(API)
         .post(REGISTER_PATH)
         .reply(200, { debuggee: { id: DEBUGGEE_ID } })
-        .get(BPS_PATH + '?success_on_timeout=true')
+        .get(BPS_PATH + '?successOnTimeout=true')
         .reply(200, {
           breakpoints: [{
             id: 'test',
@@ -590,7 +590,7 @@ describe('Debuglet', function() {
       var scope = nock(API)
         .post(REGISTER_PATH)
         .reply(200, { debuggee: { id: DEBUGGEE_ID } })
-        .get(BPS_PATH + '?success_on_timeout=true')
+        .get(BPS_PATH + '?successOnTimeout=true')
         .reply(200, {
           breakpoints: [{
             id: 'test',
@@ -629,11 +629,11 @@ describe('Debuglet', function() {
                       .reply(200, {debuggee: {id: DEBUGGEE_ID}})
                       .post(REGISTER_PATH)
                       .reply(200, {debuggee: {id: DEBUGGEE_ID}})
-                      .get(BPS_PATH + '?success_on_timeout=true')
+                      .get(BPS_PATH + '?successOnTimeout=true')
                       .reply(404)
-                      .get(BPS_PATH + '?success_on_timeout=true')
-                      .reply(200, {wait_expired: true})
-                      .get(BPS_PATH + '?success_on_timeout=true')
+                      .get(BPS_PATH + '?successOnTimeout=true')
+                      .reply(200, {waitExpired: true})
+                      .get(BPS_PATH + '?successOnTimeout=true')
                       .reply(200, {breakpoints: [bp, errorBp]})
                       .put(BPS_PATH + '/' + errorBp.id,
                            function(body) {
@@ -669,7 +669,7 @@ describe('Debuglet', function() {
           nock(API)
               .post(REGISTER_PATH)
               .reply(200, {debuggee: {id: DEBUGGEE_ID}})
-              .get(BPS_PATH + '?success_on_timeout=true')
+              .get(BPS_PATH + '?successOnTimeout=true')
               .reply(200, {breakpoints: [bp]})
               .put(BPS_PATH + '/test',
                    function(body) {
@@ -717,7 +717,7 @@ describe('Debuglet', function() {
           nock(API)
               .post(REGISTER_PATH)
               .reply(200, {debuggee: {id: DEBUGGEE_ID}})
-              .get(BPS_PATH + '?success_on_timeout=true')
+              .get(BPS_PATH + '?successOnTimeout=true')
               .reply(200, {breakpoints: [bp]})
               .put(BPS_PATH + '/test',
                    function(body) {
@@ -725,7 +725,7 @@ describe('Debuglet', function() {
                             'The snapshot has expired';
                    })
               .reply(200)
-              .get(BPS_PATH + '?success_on_timeout=true')
+              .get(BPS_PATH + '?successOnTimeout=true')
               .times(4)
               .reply(200, {breakpoints: [bp]});
 

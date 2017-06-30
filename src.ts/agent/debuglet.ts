@@ -533,7 +533,13 @@ export class Debuglet extends EventEmitter {
                 that.logger_.info(
                     '\t' + (response as http.ServerResponse).statusCode +
                     ' completed.');
-                if (body.wait_expired) {
+                if (!body) {
+                  that.logger_.error('\tinvalid list response: empty body');
+                  that.scheduleBreakpointFetch_(
+                      that.config_.breakpointUpdateIntervalSec);
+                  return;
+                }
+                if (body.waitExpired) {
                   that.logger_.info('\tLong poll completed.');
                   that.scheduleBreakpointFetch_(0 /*immediately*/);
                   return;

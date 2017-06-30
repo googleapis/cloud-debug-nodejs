@@ -27,7 +27,7 @@ import * as qs from 'querystring';
 
 import {Debug} from './debug';
 import {Debuggee} from './debuggee';
-import {Breakpoint} from './types/api-types';
+import {Breakpoint, ListBreakpointsQuery, ListBreakpointsResponse} from './types/api-types';
 
 /** @const {string} Cloud Debug API endpoint */
 const API = 'https://clouddebugger.googleapis.com/v2/controller';
@@ -85,11 +85,12 @@ export class Controller extends common.ServiceObject {
    */
   listBreakpoints(
       debuggee: Debuggee,
-      callback: (err: Error|null, response?: http.ServerResponse, body?: any) =>
-          void): void {
+      callback:
+          (err: Error|null, response?: http.ServerResponse,
+           body?: ListBreakpointsResponse) => void): void {
     const that = this;
     assert(debuggee.id, 'should have a registered debuggee');
-    const query: any = {success_on_timeout: true};
+    const query: ListBreakpointsQuery = {successOnTimeout: true};
     if (that.nextWaitToken_) {
       query.waitToken = that.nextWaitToken_;
     }

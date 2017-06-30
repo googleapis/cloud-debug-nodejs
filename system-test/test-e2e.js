@@ -129,7 +129,7 @@ describe('@google-cloud/debug end-to-end behavior', function () {
   });
 
   it('should set breakpoints correctly', function() {
-    this.timeout(25 * 1000);
+    this.timeout(90 * 1000);
     // Kick off promise chain by getting a list of debuggees
     return api.listDebuggees(projectId).then(function(results) {
       // Check that the debuggee created in this test is among the list of
@@ -188,7 +188,7 @@ describe('@google-cloud/debug end-to-end behavior', function () {
       console.log('-- waiting before checking if the log was written');
       return Promise.all([breakpoint, delay(10 * 1000)]);
     }).then(function(results) {
-      // Check the contents of the log, and then delete the breakpoint
+      // Check the contents of the log, but keep the original breakpoint.
 
       var breakpoint = results[0];
 
@@ -197,13 +197,13 @@ describe('@google-cloud/debug end-to-end behavior', function () {
           'transcript in child ' + index + ' should contain value of o: ' +
           child.transcript);
       });
-      return api.deleteBreakpoint(debuggeeId, breakpoint.id);
+      return Promise.resolve();
     }).then(function() {
       // Set another breakpoint at the same location
 
       console.log('-- setting a breakpoint');
       return api.setBreakpoint(debuggeeId, {
-        id: 'breakpoint-1',
+        id: 'breakpoint-2',
         location: {path: FILENAME, line: 5},
         expressions: ['process'], // Process for large variable
         condition: 'n === 10'
@@ -254,12 +254,24 @@ describe('@google-cloud/debug end-to-end behavior', function () {
       assert.strictEqual(arg.value, '10');
       console.log('-- checking log point was hit again');
       children.forEach(function(child) {
-        assert.ok(child.transcript
-          .split('LOGPOINT: o is: {"a":[1,"hi",true]}').length > 4);
+        const count = (child.transcript
+            .match(/LOGPOINT: o is: \{"a":\[1,"hi",true\]\}/g) || []).length;
+        assert.ok(count > 4);
       });
 
       return api.deleteBreakpoint(debuggeeId, breakpoint.id);
     }).then(function() {
+      // wait for 60 seconds
+      console.log('-- waiting for 60 seconds');
+      return delay(60 * 1000);
+    }).then(function() {
+      // Make sure the log point is continuing to be hit.
+      console.log('-- checking log point was hit again');
+      children.forEach(function(child) {
+        const count = (child.transcript
+            .match(/LOGPOINT: o is: \{"a":\[1,"hi",true\]\}/g) || []).length;
+        assert.ok(count > 60);
+      });
       console.log('-- test passed');
       return Promise.resolve();
     });
@@ -305,7 +317,7 @@ describe('@google-cloud/debug end-to-end behavior', function () {
 
       console.log('-- setting a logpoint');
       return api.setBreakpoint(debuggeeId, {
-        id: 'breakpoint-1',
+        id: 'breakpoint-3',
         location: {path: FILENAME, line: 5},
         condition: 'n === 10',
         action: 'LOG',
@@ -332,8 +344,8 @@ describe('@google-cloud/debug end-to-end behavior', function () {
       // If no throttling occurs, we expect ~20 logs since we are logging
       // 2x per second over a 10 second period.
       children.forEach(function(child) {
-        var logCount = child.transcript
-          .split('LOGPOINT: o is: {"a":[1,"hi",true]}').length - 1;
+        const logCount = (child.transcript
+            .match(/LOGPOINT: o is: \{"a":\[1,"hi",true\]\}/g) || []).length;
         // A log count of greater than 10 indicates that we did not successfully
         // pause when the rate of `maxLogsPerSecond` was reached.
         assert(logCount <= 10, 'log count is greater than 10: ' + logCount);
