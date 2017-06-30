@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-const pjson = require('../package.json');
+const pjson = require('../../package.json');
 import * as _ from 'lodash';
 import {StatusMessage} from './status-message';
 
