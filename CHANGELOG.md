@@ -1,13 +1,36 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
-# 2017-06-18, Version 2.1.1 (Experimental), @ofrobots
+## 2017-07-05, Version 2.1.2 (Experimental), @ofrobots
+
+This release fixes the handling of `waitExpired` (#287) which was causing breakpoints to be expired too early.
+
+### Commits
+* [[`16bf513a82`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/16bf513a82)] - move src.ts back to src (#297) (Ali Ijaz Sheikh)
+* [[`edfb19bc91`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/edfb19bc91)] - delete accidentally committed file (#298) (Ali Ijaz Sheikh)
+* [[`31b6e9f231`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/31b6e9f231)] - Build and packaging cleanups (#296) (Ali Ijaz Sheikh)
+* [[`334fba2f06`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/334fba2f06)] - fixe typos: waitExpired, successOnTimeout (#287) (Ali Ijaz Sheikh)
+* [[`8906108524`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/8906108524)] - Update `debug.ts` to use class syntax (#295) (Dominic Kramer) [#295](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/295)
+* [[`8d044a28ae`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/8d044a28ae)] - Format the code (#294) (Dominic Kramer) [#294](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/294)
+* [[`8202cf044b`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/8202cf044b)] - Enable all `tsconfig.json` options (#293) (Dominic Kramer) [#293](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/293)
+* [[`499112ccf2`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/499112ccf2)] - Reformat the code and enable linting (#292) (Dominic Kramer) [#292](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/292)
+* [[`675ef726af`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/675ef726af)] - Add types to all non-test files (#291) (Dominic Kramer) [#291](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/291)
+* [[`2733e5c711`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/2733e5c711)] - Convert `var` to `const` or `let` (#290) (Dominic Kramer) [#290](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/290)
+* [[`a0f9cc47d0`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/a0f9cc47d0)] - Convert `require`s to `import`s (#289) (Dominic Kramer) [#289](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/289)
+* [[`e135835ac6`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/e135835ac6)] - **TS**: Convert `debug-assert.js` to Typescript (#288) (Dominic Kramer) [#288](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/288)
+* [[`8d4467ebb0`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/8d4467ebb0)] - Update README. (#282) (Jason Dobry)
+* [[`ccf504b5fc`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/ccf504b5fc)] - Fix the system tests (#286) (Dominic Kramer) [#286](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/286)
+* [[`ec19973ce4`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/ec19973ce4)] - Use Typescript class syntax (#285) (Dominic Kramer) [#285](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/285)
+* [[`8ee9583f18`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/8ee9583f18)] - Initial gulpfile that only maps src.ts to src (#281) (Dominic Kramer) [#281](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/281)
+* [[`4bf7b8f5b8`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/4bf7b8f5b8)] - v2.1.1 (Ali Ijaz Sheikh)
+
+## 2017-06-18, Version 2.1.1 (Experimental), @ofrobots
 
 This release reverts #275 which was regressing debuggee identification on GAE and GCE.
 
 * [[`66d67f8b1b`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/66d67f8b1b)] - ***Revert*** "Use service name as debuggee id on gke (#275)" (#278)" (Ali Ijaz Sheikh)
 * [[`e3c4853fdb`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/e3c4853fdb)] - Document the support of transpiled code (#277) (Dominic Kramer) [#277](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/277)
 
-# 2017-06-12, Version 2.1.0 (Experimental), @matthewloring
+## 2017-06-12, Version 2.1.0 (Experimental), @matthewloring
 
 ### Notable changes
 
@@ -32,7 +55,7 @@ This release reverts #275 which was regressing debuggee identification on GAE an
 * [[`e7f15f5f56`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/e7f15f5f56)] - add note about scopes on GKE (#264) (Ali Ijaz Sheikh) 
 * [[`8571d8544f`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/8571d8544f)] - Specify test-only client version in test debugger (#262) (Matthew Loring) [#262](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/262)
 
-# 2017-05-15, Version 2.0.0 (Experimental), @matthewloring
+## 2017-05-15, Version 2.0.0 (Experimental), @matthewloring
 
 ### Notable changes
 
