@@ -32,7 +32,7 @@ const format = require('gulp-clang-format');
 const tsconfigPath = path.join(__dirname, 'tsconfig.json');
 const tslintPath = path.join(__dirname, 'tslint.json');
 const outDir = 'build';
-const sources = ['src.ts/**/*.ts'];
+const sources = ['src/**/*.ts'];
 
 let exitOnError = true;
 function onError() {
@@ -74,7 +74,7 @@ gulp.task('compile', () => {
     tsResult.dts.pipe(gulp.dest(`${outDir}/types`)),
     tsResult.js
         .pipe(sourcemaps.write(
-            '.', {includeContent: false, sourceRoot: '../../src.ts'}))
+            '.', {includeContent: false, sourceRoot: '../../src'}))
         .pipe(gulp.dest(`${outDir}/src`)),
     tsResult.js.pipe(gulp.dest(`${outDir}/src`))
   ]);
