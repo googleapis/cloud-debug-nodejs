@@ -61,6 +61,7 @@ describe('test-options-credentials', function() {
       setImmediate(done);
       return true;
     });
+    nocks.projectId('project-via-metadata');
     debuglet = new Debuglet(debug, config);
     debuglet.start();
   });
@@ -83,6 +84,7 @@ describe('test-options-credentials', function() {
       setImmediate(done);
       return true;
     });
+    nocks.projectId('project-via-metadata');
     debuglet = new Debuglet(debug, config);
     debuglet.start();
   });
@@ -113,6 +115,7 @@ describe('test-options-credentials', function() {
       setImmediate(done);
       return true;
     });
+    nocks.projectId('project-via-metadata');
     ['client_id', 'client_secret', 'refresh_token'].forEach(function(field) {
       assert(fileCredentials.hasOwnProperty(field));
       assert(options.credentials.hasOwnProperty(field));

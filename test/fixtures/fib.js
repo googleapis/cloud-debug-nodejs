@@ -21,10 +21,8 @@ function fib(n) {
  * limitations under the License.
  */
 
-var proxyquire = require('proxyquire');
-proxyquire('gcp-metadata', {
-  'retry-request': require('request')
-});
+const nocks = require('../nocks.js');
+nocks.projectId('fake-project-id');
 
 var debuglet = require('../..').start({
   debug: {
