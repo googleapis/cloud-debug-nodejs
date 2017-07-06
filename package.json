@@ -1,6 +1,6 @@
 {
   "name": "@google-cloud/debug-agent",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "author": "Google Inc.",
   "description": "Stackdriver Debug Agent for Node.js",
   "main": "./build/src/index.js",
@@ -72,7 +72,7 @@
     "bump": "gulp && ./bin/run-bump.sh",
     "closure": "gulp && ./node_modules/.bin/closure-npc"
   },
-  "files":[
+  "files": [
     "CHANGELOG.md",
     "LICENSE",
     "README.md",
