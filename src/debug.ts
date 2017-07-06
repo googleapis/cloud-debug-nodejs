@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import {AuthOptions, Common} from './types/common-types';
+import {AuthenticationConfig, Common} from './types/common-types';
 export const common: Common = require('@google-cloud/common');
 
 export class Debug extends common.Service {
-  options: AuthOptions;
+  options: AuthenticationConfig;
 
   /**
    * <p class="notice">
@@ -43,7 +43,7 @@ export class Debug extends common.Service {
    *
    * @param {object} options - [Configuration object](#/docs)
    */
-  constructor(options: AuthOptions) {
+  constructor(options: AuthenticationConfig) {
     if (new.target !== Debug) {
       options = common.util.normalizeArguments(null, options);
       return new Debug(options);

@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import {DebugAgentConfig} from './agent/config';
+import {DebugAgentConfig, StackdriverConfig} from './agent/config';
 import {Debuglet} from './agent/debuglet';
 import {Debug} from './debug';
-import {AuthOptions} from './types/common-types';
 
 // Singleton.
 let debuglet: Debuglet;
@@ -27,7 +26,6 @@ let debuglet: Debuglet;
  * with Stackdriver Debug.
  *
  * @param {object=} options - Options
- * @param {object=} options.debugAgent - Debug agent configuration
  * TODO: add an optional callback function.
  *
  * @resource [Introductory video]{@link
@@ -36,13 +34,11 @@ let debuglet: Debuglet;
  * @example
  * debug.startAgent();
  */
-export function start(options: DebugAgentConfig|
-                      {debug?: DebugAgentConfig}): Debuglet|undefined {
+export function start(options: DebugAgentConfig|StackdriverConfig): Debuglet|
+    undefined {
   options = options || {};
-  // TODO: Update the documentation to specify that the options object
-  //       contains a `debug` attribute and not a `debugAgent` object.
-  // TODO: Determine how to remove this cast to `any`.
-  const agentConfig = (options as any).debug || options;
+  const agentConfig: DebugAgentConfig =
+      (options as StackdriverConfig).debug || (options as DebugAgentConfig);
 
   // forceNewAgent_ is for testing purposes only.
   if (debuglet && !agentConfig.forceNewAgent_) {
@@ -50,7 +46,7 @@ export function start(options: DebugAgentConfig|
   }
 
   // TODO: Determine how to remove this cast to `AuthOptions`.
-  const debug = new Debug(options as AuthOptions);
+  const debug = new Debug(options);
   debuglet = new Debuglet(debug, agentConfig);
   debuglet.start();
 
