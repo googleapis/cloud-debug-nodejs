@@ -45,7 +45,6 @@
     "merge2": "^1.0.3",
     "mocha": "^3.0.0",
     "nock": "^9.0.0",
-    "proxyquire": "^1.7.11",
     "request": "^2.81.0",
     "source-map-support": "^0.4.15",
     "tslint": "^5.4.3",
@@ -72,7 +71,7 @@
     "bump": "gulp && ./bin/run-bump.sh",
     "closure": "gulp && ./node_modules/.bin/closure-npc"
   },
-  "files":[
+  "files": [
     "CHANGELOG.md",
     "LICENSE",
     "README.md",

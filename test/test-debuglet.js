@@ -15,11 +15,6 @@
  */
 'use strict';
 
-var proxyquire = require('proxyquire');
-proxyquire('gcp-metadata', {
-  'retry-request': require('request')
-});
-
 var _ = require('lodash');
 var assert = require('assert');
 var DEFAULT_CONFIG = require('../build/src/agent/config.js').default;
@@ -61,6 +56,12 @@ function verifyBreakpointRejection(re, body) {
   return status.isError && hasCorrectDescription;
 }
 
+function mockedGetProjectId(cb) {
+  setImmediate(() => {
+    cb(new Error('network unavailable'));
+  });
+};
+
 describe('Debuglet', function() {
   describe('setup', function() {
     before(function() { oldGP = process.env.GCLOUD_PROJECT; });
@@ -87,10 +88,10 @@ describe('Debuglet', function() {
     });
 
     it('should not start when projectId is not available', function(done) {
-      this.timeout(8000);
       var debug = require('../build/src/debug.js').Debug();
       var debuglet = new Debuglet(debug, defaultConfig);
 
+      debuglet.getProjectId_ = mockedGetProjectId;
       debuglet.once('initError', function(err) {
         assert.ok(err);
         // no need to stop the debuggee.
@@ -101,10 +102,10 @@ describe('Debuglet', function() {
     });
 
     it('should not crash without project num', function(done) {
-      this.timeout(8000);
       var debug = require('../build/src/debug.js').Debug();
       var debuglet = new Debuglet(debug, defaultConfig);
 
+      debuglet.getProjectId_ = mockedGetProjectId;
       debuglet.once('started', function() { assert.fail(); });
       debuglet.once('initError', function() {
         done();
@@ -118,6 +119,7 @@ describe('Debuglet', function() {
           {projectId: projectId, credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
 
+      nocks.projectId('project-via-metadata');
       var scope = nock(API)
                       .post(REGISTER_PATH)
                       .reply(200, {debuggee: {id: DEBUGGEE_ID}});
@@ -144,6 +146,7 @@ describe('Debuglet', function() {
         var debug = require('../build/src/debug.js').Debug({credentials: fakeCredentials});
         var debuglet = new Debuglet(debug, defaultConfig);
 
+        nocks.projectId('project-via-metadata');
         var scope = nock(API)
                         .post(REGISTER_PATH)
                         .reply(200, {debuggee: {id: DEBUGGEE_ID}});
@@ -168,8 +171,7 @@ describe('Debuglet', function() {
            });
            var debuglet = new Debuglet(debug, defaultConfig);
 
-           // TODO: also make sure we don't request the project from metadata
-           // service.
+           nocks.projectId('project-via-metadata');
            var scope = nock(API)
                            .post(REGISTER_PATH)
                            .reply(200, {debuggee: {id: DEBUGGEE_ID}});
@@ -191,6 +193,7 @@ describe('Debuglet', function() {
         var debug = require('../build/src/debug.js').Debug({credentials: fakeCredentials});
         var debuglet = new Debuglet(debug, defaultConfig);
 
+        nocks.projectId('project-via-metadata');
         var scope = nock(API)
                         .post(REGISTER_PATH)
                         .reply(200, {debuggee: {id: DEBUGGEE_ID}});
@@ -311,6 +314,7 @@ describe('Debuglet', function() {
                {projectId: 'fake-project', credentials: fakeCredentials});
            var debuglet = new Debuglet(debug, defaultConfig);
 
+           nocks.projectId('project-via-metadata');
            var scope =
                nock(API).post(REGISTER_PATH, function(body) {
                           assert.ok(
@@ -334,6 +338,7 @@ describe('Debuglet', function() {
         var debuglet = new Debuglet(debug, defaultConfig);
 
         nocks.oauth2();
+        nocks.projectId('project-via-metadata');
         var scope =
             nock(API).post(REGISTER_PATH, function(body) {
                        assert.ok(_.isString(body.debuggee.labels.minorversion));
@@ -357,6 +362,7 @@ describe('Debuglet', function() {
           {projectId: '11020304f2934', credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
 
+      nocks.projectId('project-via-metadata');
       var scope = nock(API)
                       .post(REGISTER_PATH)
                       .reply(404)
@@ -396,6 +402,7 @@ describe('Debuglet', function() {
       var debuglet = new Debuglet(debug, defaultConfig);
 
       nocks.oauth2();
+      nocks.projectId('project-via-metadata');
       var scope = nock(API)
                       .post(REGISTER_PATH)
                       .reply(200, {debuggee: {id: DEBUGGEE_ID}});
@@ -422,6 +429,7 @@ describe('Debuglet', function() {
       };
       var debuglet = new Debuglet(debug, defaultConfig);
 
+      nocks.projectId('project-via-metadata');
       var scope = nock(API).post(REGISTER_PATH, function(body) {
                              return body.debuggee.sourceContexts[0] &&
                                     body.debuggee.sourceContexts[0].a === 5;
@@ -445,6 +453,7 @@ describe('Debuglet', function() {
              {projectId: 'fake-project', credentials: fakeCredentials});
          var debuglet = new Debuglet(debug, defaultConfig);
 
+         nocks.projectId('project-via-metadata');
          var scope =
              nock(API)
                  .post(REGISTER_PATH)
@@ -466,6 +475,7 @@ describe('Debuglet', function() {
           {projectId: 'fake-project', credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
 
+      nocks.projectId('project-via-metadata');
       var scope =
           nock(API)
               .post(REGISTER_PATH)
@@ -495,6 +505,7 @@ describe('Debuglet', function() {
           {projectId: 'fake-project', credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
 
+      nocks.projectId('project-via-metadata');
       var scope = nock(API)
                       .post(REGISTER_PATH)
                       .reply(200, {debuggee: {id: DEBUGGEE_ID}})
@@ -522,6 +533,7 @@ describe('Debuglet', function() {
           {projectId: 'fake-project', credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
 
+      nocks.projectId('project-via-metadata');
       var scope = nock(API)
                       .post(REGISTER_PATH)
                       .reply(200, {debuggee: {id: DEBUGGEE_ID}})
@@ -549,6 +561,7 @@ describe('Debuglet', function() {
       var debuglet = new Debuglet(debug, defaultConfig);
       debuglet.config_.allowExpressions = false;
 
+      nocks.projectId('project-via-metadata');
       var scope = nock(API)
         .post(REGISTER_PATH)
         .reply(200, { debuggee: { id: DEBUGGEE_ID } })
@@ -587,6 +600,7 @@ describe('Debuglet', function() {
       var debuglet = new Debuglet(debug, defaultConfig);
       debuglet.config_.allowExpressions = false;
 
+      nocks.projectId('project-via-metadata');
       var scope = nock(API)
         .post(REGISTER_PATH)
         .reply(200, { debuggee: { id: DEBUGGEE_ID } })
@@ -624,6 +638,7 @@ describe('Debuglet', function() {
           {projectId: 'fake-project', credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
 
+      nocks.projectId('project-via-metadata');
       var scope = nock(API)
                       .post(REGISTER_PATH)
                       .reply(200, {debuggee: {id: DEBUGGEE_ID}})
@@ -665,6 +680,7 @@ describe('Debuglet', function() {
                           {breakpointExpirationSec: 1, forceNewAgent_: true});
       this.timeout(6000);
 
+      nocks.projectId('project-via-metadata');
       var scope =
           nock(API)
               .post(REGISTER_PATH)
@@ -713,6 +729,7 @@ describe('Debuglet', function() {
       });
       this.timeout(6000);
 
+      nocks.projectId('project-via-metadata');
       var scope =
           nock(API)
               .post(REGISTER_PATH)

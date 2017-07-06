@@ -19,11 +19,13 @@
 var assert = require('assert');
 var module = require('..');
 var nock = require('nock');
+var nocks = require('./nocks.js');
 
 nock.disableNetConnect();
 
 describe('Debug module', function() {
   before(function(done) {
+    nocks.projectId('project-via-metadata');
     var debuglet = module.start(
         {projectId: '0', debug: {forceNewAgent_: true, testMode_: true}});
     debuglet.on('started', function() {
