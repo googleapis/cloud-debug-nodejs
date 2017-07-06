@@ -18,8 +18,10 @@ import * as http from 'http';
 
 /**
  * Authentication Configuration – shared across all Google Cloud Libraries.
- * For more details see {@link https://googlecloudplatform.github.io/google-cloud-node/#/docs/google-cloud/0.56.0/guides/authentication}
- * and {@link https://developers.google.com/identity/protocols/application-default-credentials}.
+ * For more details see {@link
+ * https://googlecloudplatform.github.io/google-cloud-node/#/docs/google-cloud/0.56.0/guides/authentication}
+ * and {@link
+ * https://developers.google.com/identity/protocols/application-default-credentials}.
  */
 export interface AuthenticationConfig {
   /**
