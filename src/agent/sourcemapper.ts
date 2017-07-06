@@ -39,9 +39,9 @@ export function create(
     callback: (err: Error|null, mapper?: SourceMapper) => void): void {
   const mapper = new SourceMapper();
   const callList =
-      Array.prototype.slice.call(sourcemapPaths).map(function(path: string) {
+      Array.prototype.slice.call(sourcemapPaths).map(function(p: string) {
         return function(cb: (err: Error|null) => void) {
-          processSourcemap(mapper.infoMap_, path, cb);
+          processSourcemap(mapper.infoMap_, p, cb);
         };
       });
 

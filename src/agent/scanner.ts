@@ -57,8 +57,8 @@ class ScanResultsImpl implements ScanResults {
    *  attributes respectively
    * @constructor
    */
-  constructor(stats: ScanStats) {
-    this.stats_ = stats;
+  constructor(statsParm: ScanStats) {
+    this.stats_ = statsParm;
   }
 
   /**
@@ -77,7 +77,7 @@ class ScanResultsImpl implements ScanResults {
    *  should be included in the returned results.
    */
   selectStats(regex: RegExp): ScanStats|{} {
-    return _.pickBy(this.stats_, function(_, key) {
+    return _.pickBy(this.stats_, function(_ignore, key) {
       return regex.test(key);
     });
   }
@@ -207,7 +207,7 @@ function findFiles(
     return;
   });
 
-  find.on('directory', function(dir: string, _: fs.Stats, stop: () => void) {
+  find.on('directory', function(dir: string, _ignore: fs.Stats, stop: () => void) {
     const base = path.basename(dir);
     if (base === '.git' || base === 'node_modules') {
       stop();  // do not descend
