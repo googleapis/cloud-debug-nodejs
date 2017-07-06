@@ -63,13 +63,12 @@
     "split": "^1.0.0"
   },
   "scripts": {
-    "build": "gulp",
-    "test": "gulp test",
-    "system-test": "gulp && ./bin/run-system-test.sh",
-    "changelog": "gulp && ./bin/run-changelog.sh",
-    "coverage": "gulp && ./bin/run-test.sh -c",
-    "bump": "gulp && ./bin/run-bump.sh",
-    "closure": "gulp && ./node_modules/.bin/closure-npc"
+    "build": "gulp compile",
+    "changelog": "npm run build && ./bin/run-changelog.sh",
+    "coverage": "npm run build && ./bin/run-test.sh -c",
+    "prepare": "npm run build",
+    "system-test": "npm run build && ./bin/run-system-test.sh",
+    "test": "gulp test"
   },
   "files": [
     "CHANGELOG.md",
