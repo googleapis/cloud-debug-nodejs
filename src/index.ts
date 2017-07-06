@@ -25,8 +25,7 @@ let debuglet: Debuglet;
  * Start the Debug agent that will make your application available for debugging
  * with Stackdriver Debug.
  *
- * @param {object=} options - Options
- * TODO: add an optional callback function.
+ * @param options - Authentication and agent configuration.
  *
  * @resource [Introductory video]{@link
  * https://www.youtube.com/watch?v=tyHcK_kAOpw}

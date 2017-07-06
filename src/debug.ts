@@ -41,7 +41,7 @@ export class Debug extends common.Service {
    * @resource [What is Stackdriver Debug]{@link
    * https://cloud.google.com/debug/}
    *
-   * @param {object} options - [Configuration object](#/docs)
+   * @param options - [Authentication options](#/docs)
    */
   constructor(options: AuthenticationConfig) {
     if (new.target !== Debug) {
