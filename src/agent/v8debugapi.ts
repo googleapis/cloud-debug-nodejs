@@ -254,7 +254,7 @@ export function create(
       let timesliceEnd = Date.now() + 1000;
       // TODO: Determine why the Error argument is not used.
       const listener =
-          onBreakpointHit.bind(null, breakpoint, function(_: Error) {
+          onBreakpointHit.bind(null, breakpoint, function(_err: Error) {
             const currTime = Date.now();
             if (currTime > timesliceEnd) {
               logsThisSecond = 0;

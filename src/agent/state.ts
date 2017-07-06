@@ -154,7 +154,7 @@ class StateResolver {
     // Evaluate the watch expressions
     const evalIndexSet = new Set();
     if (that.expressions_) {
-      that.expressions_.forEach(function(expression, index) {
+      that.expressions_.forEach(function(expression, index2) {
         const result = evaluate(expression, that.state_.frame(0));
         let evaluated;
 
@@ -174,7 +174,7 @@ class StateResolver {
             evalIndexSet.add(varTableIdx);
           }
         }
-        that.evaluatedExpressions_[index] = evaluated;
+        that.evaluatedExpressions_[index2] = evaluated;
       });
     }
 

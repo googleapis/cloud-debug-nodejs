@@ -392,7 +392,7 @@ export class Debuglet extends EventEmitter {
     //       named `response`) is not used.
     metadata.project(
         'project-id',
-        function(err: Error, _: http.ServerResponse, metadataProject: string) {
+        function(err: Error, _res: http.ServerResponse, metadataProject: string) {
           // We should get an error if we are not on GCP.
           const onGCP = !err;
 
