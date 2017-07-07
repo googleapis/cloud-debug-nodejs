@@ -44,7 +44,6 @@ export function start(options: DebugAgentConfig|StackdriverConfig): Debuglet|
     throw new Error('Debug Agent has already been started');
   }
 
-  // TODO: Determine how to remove this cast to `AuthOptions`.
   const debug = new Debug(options);
   debuglet = new Debuglet(debug, agentConfig);
   debuglet.start();
