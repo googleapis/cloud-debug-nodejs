@@ -14,205 +14,156 @@
  * limitations under the License.
  */
 
-/**
- * @typedef {object} DebugAgentConfig
- */
-export interface DebugAgentConfig {
-  /**
-   * @property {?string}
-   * @memberof DebugAgentConfig
-   * @default
-   */
+import {AuthenticationConfig} from '../types/common-types';
+
+export interface DebugAgentConfig extends AuthenticationConfig {
   workingDirectory: string|null;
 
   /**
-   * @property {?string} A user specified way of identifying the service
-   * that the debug agent is monitoring.
-   * @memberof DebugAgentConfig
-   * @default
+   * A user specified way of identifying the service
    */
   description: string|null;
 
   /**
-   * @property {boolean} Whether or not it is permitted to evaluate expressions.
+   * Whether or not it is permitted to evaluate expressions.
    * Locals and arguments are not displayed and watch expressions and
    * conditions are dissallowed when this is `false`.
-   * @memberof DebugAgentConfig
-   * @default
    */
   allowExpressions: boolean;
 
   /**
-   * @property {object} Identifies the context of the running service -
+   * Identifies the context of the running service -
    * [ServiceContext](https://cloud.google.com/error-reporting/reference/rest/v1beta1/ServiceContext?authuser=2).
    * This information is utilized in the UI to identify all the running
    * instances of your service. This is discovered automatically when your
    * application is running on Google Cloud Platform. You may optionally
    * choose to provide this information yourself to identify your service
    * differently from the default mechanism.
-   * @memberof DebugAgentConfig
-   * @default
    */
   serviceContext: {
     /**
-     * @property {?string} the service name
-     * @default
+     * The service name.
      */
     service: string | null;
 
     /**
-     * @property {?string} the service version
-     * @default
+     * The service version.
      */
     version: string | null;
 
     /**
-     * @property {?string} a unique deployment identifier. This is used
-     * internally only.
-     * @private
+     * A unique deployment identifier. This is used internally only.
      */
     minorVersion_: string | null;
   };
 
   /**
-   * @property {?string}   The path within your repository to the directory
+   * The path within your repository to the directory
    * containing the package.json for your deployed application. This should
    * be provided if your deployed application appears as a subdirectory of
    * your repository. Usually this is unnecessary, but may be useful in
    * cases where the debug agent is unable to resolve breakpoint locations
    * unambiguously.
-   * @memberof DebugAgentConfig
-   * @default
    */
   appPathRelativeToRepository: string|null;
 
   /**
-   * @property {number} agent log level 0-disabled, 1-error, 2-warn, 3-info,
-   * 4-debug
-   * @memberof DebugAgentConfig
-   * @default
+   * agent log level 0-disabled, 1-error, 2-warn, 3-info, 4-debug
    */
   logLevel: number;
 
   /**
-   * @property {number} How frequently should the list of breakpoints be
-   * refreshed from the cloud debug server.
-   * @memberof DebugAgentConfig
-   * @default
+   * How frequently should the list of breakpoints be refreshed from the cloud
+   * debug server.
    */
   breakpointUpdateIntervalSec: number;
 
   /**
-   * @property {number} breakpoints and logpoints older than this number of
-   * seconds will be expired on the server.
-   * @memberof DebugAgentConfig
-   * @default
+   * breakpoints and logpoints older than this number of seconds will be expired
+   * on the server.
    */
   breakpointExpirationSec: number;
 
   /**
-   * @property {object} configuration options on what is captured on a
-   * snapshot.
-   * @memberof DebugAgentConfig
+   * configuration options on what is captured on a snapshot.
    */
   capture: {
     /**
-     * @property {boolean} Whether to include details about stack frames
-     * belonging to node-core.
-     * @default
+     * Whether to include details about stack frames belonging to node-core.
      */
     includeNodeModules: boolean;
 
-
     /**
-     * @property {number} Maximum number of stack frames to capture data for.
-     * The limit is aimed to reduce overall capture time.
-     * @default
+     * Maximum number of stack frames to capture data for. The limit is aimed to
+     * reduce overall capture time.
      */
     maxFrames: number;
 
     /**
-     * @property {number} We collect locals and arguments on a few top frames.
-     * For the rest only collect the source location
-     * @default
+     * We collect locals and arguments on a few top frames. For the rest only
+     * collect the source location
      */
     maxExpandFrames: number;
 
     /**
-     * @property {number} To reduce the overall capture time, limit the number
-     * of properties gathered on large objects. A value of 0 disables the
-     * limit.
-     * @default
+     * To reduce the overall capture time, limit the number of properties
+     * gathered on large objects. A value of 0 disables the limit.
      */
     maxProperties: number;
 
     /**
-     * @property {number} Total 'size' of data to gather. This is NOT the
-     * number of bytes of data that are sent over the wire, but instead a
-     * very very coarse approximation based on the length of names and
-     * values of the properties. This should be somewhat proportional to the
-     * amount of processing needed to capture the data and subsequently the
-     * network traffic. A value of 0 disables the limit.
-     * @default
+     * Total 'size' of data to gather. This is NOT the number of bytes of data
+     * that are sent over the wire, but instead a very very coarse approximation
+     * based on the length of names and values of the properties. This should be
+     * somewhat proportional to the amount of processing needed to capture the
+     * data and subsequently the network traffic. A value of 0 disables the
+     * limit.
      */
     maxDataSize: number;
 
     /**
-     * @property {number} To limit the size of the buffer, we truncate long
-     * strings. A value of 0 disables truncation.
-     * @default
+     * To limit the size of the buffer, we truncate long strings. A value of 0
+     * disables truncation.
      */
     maxStringLength: number;
   };
 
   /**
-   * @property {object} options affecting log points.
-   * @memberof DebugAgentConfig
+   * options affecting log points.
    */
   log: {
     /**
-     * @property {number} The maximum number of logs to record per second per
-     * logpoint.
-     * @memberof DebugAgentConfig
-     * @default
+     * The maximum number of logs to record per second per logpoint.
      */
     maxLogsPerSecond: number;
 
     /**
-     * @property {number} Number of seconds to wait after the
-     * `maxLogsPerSecond` rate is hit before logging resumes per logpoint.
-     * @default
+     * Number of seconds to wait after the `maxLogsPerSecond` rate is hit before
+     * logging resumes per logpoint.
      */
     logDelaySeconds: number;
   };
 
   /**
-   * @property {object} These configuration options are for internal
-   * experimentation only.
-   * @memberof DebugAgentConfig
-   * @private
+   * These configuration options are for internal  experimentation only.
    */
   internal: {
-    // TODO: Determine if clang-format can be configured to place
-    //       a newline between these two statements.
     registerDelayOnFetcherErrorSec: number; maxRegistrationRetryDelay: number;
   };
 
   /**
-   * @property {boolean} Used by tests to force loading of a new agent if one
-   * exists already
-   * @memberof DebugAgentConfig
-   * @private
+   * Used by tests to force loading of a new agent if one exists already
    */
   forceNewAgent_: boolean;
 
   /**
-   * @property {boolean} Uses by tests to cause the start() function to return
-   * the debuglet.
-   * @memberof DebugAgentConfig
-   * @private
+   * Uses by tests to cause the start() function to return the debuglet.
    */
   testMode_: boolean;
+}
+
+export interface StackdriverConfig extends AuthenticationConfig {
+  debug?: DebugAgentConfig;
 }
 
 const defaultConfig: DebugAgentConfig = {

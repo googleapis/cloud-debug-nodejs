@@ -16,10 +16,38 @@
 
 import * as http from 'http';
 
-export interface AuthOptions {
-  credentials?: {client_email: string; private_key: string;};
-  keyFilename?: string;
+/**
+ * Authentication Configuration – shared across all Google Cloud Libraries.
+ * For more details see {@link
+ * https://googlecloudplatform.github.io/google-cloud-node/#/docs/google-cloud/0.56.0/guides/authentication}
+ * and {@link
+ * https://developers.google.com/identity/protocols/application-default-credentials}.
+ */
+export interface AuthenticationConfig {
+  /**
+   * The projectId of the Google Cloud Platform project whose applications will
+   * be debugged. If not specified, we will try to use detect this through
+   * either the GCLOUD_PROJECT environment variable, through the embedded
+   * projectId in the provided key, the metadata service, or the default project
+   * configured in the gcloud cli. If none of these mechanisms are successful,
+   * the debug agent will fail to function.
+   */
   projectId?: string;
+
+  /**
+   * Path to a service account .json, .pem or .p12 key file.
+   */
+  keyFilename?: string;
+
+  /**
+   * Required when using .p12 or pem key files.
+   */
+  email?: string;
+
+  /**
+   * Instead of a keyFilename, credentials can also be provided inline.
+   */
+  credentials?: {client_email?: string; private_key?: string;};
 }
 
 export interface ServiceConfig {
@@ -53,7 +81,7 @@ export interface Logger {
 }
 
 export interface Service {
-  new(config: ServiceConfig, options: AuthOptions): Service;
+  new(config: ServiceConfig, options: AuthenticationConfig): Service;
 }
 
 export interface ServiceObject {
