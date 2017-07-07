@@ -67,12 +67,15 @@ export interface V8DebugApi {
   numListeners_: () => number;
 }
 
-interface BreakPointData {
-  v8Breakpoint: v8Types.BreakPoint;
-  // TODO: The code in this method assumes this method exists.  Verify that
-  //       is correct.
-  // TODO: Update this so that `null|` is not needed here.
-  compile: null|((text: string) => string);
+class BreakpointData {
+  constructor(
+      public apiBreakpoint: apiTypes.Breakpoint,
+      public v8Breakpoint: v8Types.BreakPoint,
+      public parsedCondition: estree.Node,
+      // TODO: The code in this method assumes that `compile` exists.  Verify
+      // that is correct.
+      // TODO: Update this so that `null|` is not needed for `compile`.
+      public compile: null|((src: string) => string)) {}
 }
 
 /**
@@ -99,7 +102,7 @@ export function create(
   let logger: Logger|null = null;
   let config: DebugAgentConfig|null = null;
   let fileStats: ScanStats|null = null;
-  let breakpoints: {[id: string]: BreakPointData} = {};
+  let breakpoints: {[id: string]: BreakpointData} = {};
   let sourcemapper: SourceMapper|null = null;
   // Entries map breakpoint id to { enabled: <bool>, listener: <function> }
   // TODO: Determine if the listener type is correct
@@ -657,25 +660,6 @@ export function create(
     return {
       value: !!((result.mirror as v8Types.ValueMirror).value())
     };  // intentional !!
-  }
-
-  class BreakpointData {
-    apiBreakpoint: apiTypes.Breakpoint;
-    v8Breakpoint: v8Types.BreakPoint;
-    parsedCondition: estree.Node;
-    compile: null|((src: string) => string);
-
-    /**
-     * @constructor
-     */
-    constructor(
-        apiBreakpoint: apiTypes.Breakpoint, v8Breakpoint: v8Types.BreakPoint,
-        parsedCondition: estree.Node, compile: null|((src: string) => string)) {
-      this.apiBreakpoint = apiBreakpoint;
-      this.v8Breakpoint = v8Breakpoint;
-      this.parsedCondition = parsedCondition;
-      this.compile = compile;
-    }
   }
 
   function setErrorStatusAndCallback(

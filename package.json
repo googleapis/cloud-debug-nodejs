@@ -4,6 +4,7 @@
   "author": "Google Inc.",
   "description": "Stackdriver Debug Agent for Node.js",
   "main": "./build/src/index.js",
+  "types": "./build/types/index.d.ts",
   "repository": "googlecloudplatform/cloud-debug-nodejs",
   "keywords": [
     "google",
@@ -41,7 +42,6 @@
     "gulp-tslint": "^8.1.1",
     "gulp-typescript": "^3.1.6",
     "istanbul": "^0.4.1",
-    "jshint": "^2.7.0",
     "merge2": "^1.0.3",
     "mocha": "^3.0.0",
     "nock": "^9.0.0",
@@ -74,6 +74,7 @@
     "CHANGELOG.md",
     "LICENSE",
     "README.md",
-    "build/src"
+    "build/src",
+    "build/types"
   ]
 }

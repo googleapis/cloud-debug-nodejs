@@ -34,27 +34,6 @@ export interface MapInfoOutput {
   column?: number;
 }
 
-export function create(
-    sourcemapPaths: string[],
-    callback: (err: Error|null, mapper?: SourceMapper) => void): void {
-  const mapper = new SourceMapper();
-  const callList =
-      Array.prototype.slice.call(sourcemapPaths).map(function(p: string) {
-        return function(cb: (err: Error|null) => void) {
-          processSourcemap(mapper.infoMap_, p, cb);
-        };
-      });
-
-  async.parallelLimit(callList, 10, function(err) {
-    if (err) {
-      return callback(new Error(
-          'An error occurred while processing the sourcemap files' + err));
-    }
-
-    callback(null, mapper);
-  });
-}
-
 /**
  * @param {!Map} infoMap The map that maps input source files to
  *  SourceMapConsumer objects that are used to calculate mapping information
@@ -235,4 +214,25 @@ export class SourceMapper {
                                   // expected output
     };
   }
+}
+
+export function create(
+    sourcemapPaths: string[],
+    callback: (err: Error|null, mapper?: SourceMapper) => void): void {
+  const mapper = new SourceMapper();
+  const callList =
+      Array.prototype.slice.call(sourcemapPaths).map(function(p: string) {
+        return function(cb: (err: Error|null) => void) {
+          processSourcemap(mapper.infoMap_, p, cb);
+        };
+      });
+
+  async.parallelLimit(callList, 10, function(err) {
+    if (err) {
+      return callback(new Error(
+          'An error occurred while processing the sourcemap files' + err));
+    }
+
+    callback(null, mapper);
+  });
 }
