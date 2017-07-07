@@ -18,10 +18,6 @@ while true; do
   shift
 done
 
-# Lint
-# TODO: Re-enable this when the transition to Typescript is complete
-# $(npm bin)/jshint . || exit 1
-
 # Get test/coverage command
 counter=0
 function run {
