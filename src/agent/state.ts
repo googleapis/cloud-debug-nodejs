@@ -41,19 +41,6 @@ const GETTER_MESSAGE_INDEX = 2;
 const ARG_LOCAL_LIMIT_MESSAGE_INDEX = 3;
 
 /**
- * Captures the stack and current execution state.
- *
- * @return an object with stackFrames, variableTable, and
- *         evaluatedExpressions fields
- */
-export function capture(
-    execState: v8Types.ExecutionState, expressions: string[],
-    config: DebugAgentConfig, v8: v8Types.Debug): apiTypes.Breakpoint {
-  return (new StateResolver(execState, expressions, config, v8)).capture_();
-}
-
-
-/**
  * Checks that the provided expressions will not have side effects and
  * then evaluates the expression in the current execution context.
  *
@@ -581,4 +568,16 @@ class StateResolver {
 // This function is used by unit tests to make sure assertions are enabled.
 export function testAssert(): void {
   assert.equal(0, 1);
+}
+
+/**
+ * Captures the stack and current execution state.
+ *
+ * @return an object with stackFrames, variableTable, and
+ *         evaluatedExpressions fields
+ */
+export function capture(
+    execState: v8Types.ExecutionState, expressions: string[],
+    config: DebugAgentConfig, v8: v8Types.Debug): apiTypes.Breakpoint {
+  return (new StateResolver(execState, expressions, config, v8)).capture_();
 }

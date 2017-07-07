@@ -54,10 +54,14 @@ gulp.task('format', () => {
 });
 
 gulp.task('test.check-lint', () => {
+  const program = require('tslint').Linter.createProgram('./tsconfig.json');
   return gulp.src(sources)
-      .pipe(tslint(
-          {configuration: tslintPath, formatter: 'verbose'}))
-      .pipe(tslint.report())
+    .pipe(tslint(
+      {
+        configuration: tslintPath,
+        formatter: 'prose', program
+      }))
+    .pipe(tslint.report())
       .on('warning', onError);
 });
 

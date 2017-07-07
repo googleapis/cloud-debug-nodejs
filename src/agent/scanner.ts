@@ -207,12 +207,13 @@ function findFiles(
     return;
   });
 
-  find.on('directory', function(dir: string, _ignore: fs.Stats, stop: () => void) {
-    const base = path.basename(dir);
-    if (base === '.git' || base === 'node_modules') {
-      stop();  // do not descend
-    }
-  });
+  find.on(
+      'directory', function(dir: string, _ignore: fs.Stats, stop: () => void) {
+        const base = path.basename(dir);
+        if (base === '.git' || base === 'node_modules') {
+          stop();  // do not descend
+        }
+      });
 
   find.on('file', function(file: string) {
     if (regex.test(file)) {
