@@ -51,6 +51,8 @@ import {Debug} from '../debug';
 import {Logger} from '../types/common-types';
 import {V8DebugApi} from './v8debugapi';
 
+const promisify = require('util.promisify');
+
 const ALLOW_EXPRESSIONS_MESSAGE = 'Expressions and conditions are not allowed' +
     ' by default. Please set the allowExpressions configuration option to true.' +
     ' See the debug agent documentation at https://goo.gl/ShSm6r.';
@@ -198,106 +200,104 @@ export class Debuglet extends EventEmitter {
    * as it is on the critical path of application startup.
    * @private
    */
-  start(): void {
+  async start(): Promise<void> {
     const that = this;
-    fs.stat(
-        // TODO: Address the fact that `that.config_.workingDirectory` could
-        //       be `null`.
-        path.join(that.config_.workingDirectory as string, 'package.json'),
-        function(err1) {
-          if (err1 && err1.code === 'ENOENT') {
-            that.logger_.error('No package.json located in working directory.');
-            that.emit('initError', new Error('No package.json found.'));
+    const stat = promisify(fs.stat);
+
+    try {
+      // TODO: Address the fact that `that.config_.workingDirectory` could
+      //       be `null`.
+      await stat(
+          path.join(that.config_.workingDirectory as string, 'package.json'));
+    } catch (err) {
+      that.logger_.error('No package.json located in working directory.');
+      that.emit('initError', new Error('No package.json found.'));
+      return;
+    }
+
+    // TODO: Verify that it is fine for `id` to be undefined.
+    let id: string|undefined;
+    if (process.env.GAE_MINOR_VERSION) {
+      id = 'GAE-' + process.env.GAE_MINOR_VERSION;
+    }
+    // TODO: Address the case when `that.config_.workingDirectory` is
+    //       `null`.
+    scanner.scan(
+        !id, that.config_.workingDirectory as string, /.js$|.map$/,
+        function(
+            err2: Error|null, fileStats?: scanner.ScanResults, hash?: string) {
+          if (err2) {
+            that.logger_.error('Error scanning the filesystem.', err2);
+            that.emit('initError', err2);
             return;
           }
-          // TODO: Verify that it is fine for `id` to be undefined.
-          let id: string|undefined;
-          if (process.env.GAE_MINOR_VERSION) {
-            id = 'GAE-' + process.env.GAE_MINOR_VERSION;
-          }
-          // TODO: Address the case when `that.config_.workingDirectory` is
-          //       `null`.
-          scanner.scan(
-              !id, that.config_.workingDirectory as string, /.js$|.map$/,
-              function(
-                  err2: Error|null, fileStats?: scanner.ScanResults,
-                  hash?: string) {
-                if (err2) {
-                  that.logger_.error('Error scanning the filesystem.', err2);
-                  that.emit('initError', err2);
-                  return;
+
+          // TODO: Handle the case where `fileStats` is `undefined`.
+          const jsStats =
+              (fileStats as scanner.ScanResults).selectStats(/.js$/);
+          const mapFiles = (fileStats as scanner.ScanResults)
+                               .selectFiles(/.map$/, process.cwd());
+          SourceMapper.create(mapFiles, function(err3, mapper) {
+            if (err3) {
+              that.logger_.error('Error processing the sourcemaps.', err3);
+              that.emit('initError', err3);
+              return;
+            }
+
+            that.v8debug_ = v8debugapi.create(
+                // TODO: Handle the case where `mapper` is `undefined`.
+                that.logger_, that.config_, jsStats,
+                mapper as SourceMapper.SourceMapper);
+
+            id = id || hash;
+
+            that.logger_.info('Unique ID for this Application: ' + id);
+
+            that.getProjectId_(function(
+                err4: Error|null, project: string|undefined, onGCP?: boolean) {
+              if (err4) {
+                that.logger_.error(
+                    'Unable to discover projectId. Please provide ' +
+                        'the projectId to be able to use the Debuglet',
+                    err4);
+                that.emit('initError', err4);
+                return;
+              }
+
+              that.getSourceContext_(function(err5, sourceContext) {
+                if (err5) {
+                  that.logger_.warn('Unable to discover source context', err5);
+                  // This is ignorable.
                 }
 
-                // TODO: Handle the case where `fileStats` is `undefined`.
-                const jsStats =
-                    (fileStats as scanner.ScanResults).selectStats(/.js$/);
-                const mapFiles = (fileStats as scanner.ScanResults)
-                                     .selectFiles(/.map$/, process.cwd());
-                SourceMapper.create(mapFiles, function(err3, mapper) {
-                  if (err3) {
-                    that.logger_.error(
-                        'Error processing the sourcemaps.', err3);
-                    that.emit('initError', err3);
-                    return;
-                  }
+                if (semver.satisfies(process.version, '5.2 || <4')) {
+                  // Using an unsupported version. We report an error
+                  // message about the Node.js version, but we keep on
+                  // running. The idea is that the user may miss the error
+                  // message on the console. This way we can report the
+                  // error when the user tries to set a breakpoint.
+                  that.logger_.error(NODE_VERSION_MESSAGE);
+                }
 
-                  that.v8debug_ = v8debugapi.create(
-                      // TODO: Handle the case where `mapper` is `undefined`.
-                      that.logger_, that.config_, jsStats,
-                      mapper as SourceMapper.SourceMapper);
-
-                  id = id || hash;
-
-                  that.logger_.info('Unique ID for this Application: ' + id);
-
-                  that.getProjectId_(function(
-                      err4: Error|null, project: string|undefined,
-                      onGCP?: boolean) {
-                    if (err4) {
-                      that.logger_.error(
-                          'Unable to discover projectId. Please provide ' +
-                              'the projectId to be able to use the Debuglet',
-                          err4);
-                      that.emit('initError', err4);
-                      return;
-                    }
-
-                    that.getSourceContext_(function(err5, sourceContext) {
-                      if (err5) {
-                        that.logger_.warn(
-                            'Unable to discover source context', err5);
-                        // This is ignorable.
-                      }
-
-                      if (semver.satisfies(process.version, '5.2 || <4')) {
-                        // Using an unsupported version. We report an error
-                        // message about the Node.js version, but we keep on
-                        // running. The idea is that the user may miss the error
-                        // message on the console. This way we can report the
-                        // error when the user tries to set a breakpoint.
-                        that.logger_.error(NODE_VERSION_MESSAGE);
-                      }
-
-                      // We can register as a debuggee now.
-                      that.logger_.debug('Starting debuggee, project', project);
-                      that.running_ = true;
-                      // TODO: Address the case where `project` is `undefined`.
-                      that.project_ = project as string;
-                      that.debuggee_ = Debuglet.createDebuggee(
-                          // TODO: Address the case when `project` is
-                          // `undefined`.
-                          // TODO: Address the case when `id` is `undefined`.
-                          project as string, id as string,
-                          that.config_.serviceContext,
-                          // TODO: Handle the case where `onGCP` is `undefined`.
-                          sourceContext, that.config_.description, null,
-                          onGCP as boolean);
-                      that.scheduleRegistration_(0 /* immediately */);
-                      that.emit('started');
-                    });
-                  });
-                });
+                // We can register as a debuggee now.
+                that.logger_.debug('Starting debuggee, project', project);
+                that.running_ = true;
+                // TODO: Address the case where `project` is `undefined`.
+                that.project_ = project as string;
+                that.debuggee_ = Debuglet.createDebuggee(
+                    // TODO: Address the case when `project` is
+                    // `undefined`.
+                    // TODO: Address the case when `id` is `undefined`.
+                    project as string, id as string,
+                    that.config_.serviceContext,
+                    // TODO: Handle the case where `onGCP` is `undefined`.
+                    sourceContext, that.config_.description, null,
+                    onGCP as boolean);
+                that.scheduleRegistration_(0 /* immediately */);
+                that.emit('started');
               });
+            });
+          });
         });
   }
 
