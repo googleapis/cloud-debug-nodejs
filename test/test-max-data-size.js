@@ -43,19 +43,17 @@ describe('maxDataSize', function() {
   before(function(done) {
     if (!api) {
       var logger = common.logger({ logLevel: config.logLevel });
-      scanner.scan(true, config.workingDirectory, /.js$/,
-      function(err, fileStats, hash) {
-        assert(!err);
+      scanner.scan(true, config.workingDirectory, /.js$/)
+        .then(function (fileStats) {
+          var jsStats = fileStats.selectStats(/.js$/);
+          var mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
+          SourceMapper.create(mapFiles, function (err, mapper) {
+            assert(!err);
 
-        var jsStats = fileStats.selectStats(/.js$/);
-        var mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
-        SourceMapper.create(mapFiles, function(err, mapper) {
-          assert(!err);
-
-          api = v8debugapi.create(logger, config, jsStats, mapper);
-          done();
+            api = v8debugapi.create(logger, config, jsStats, mapper);
+            done();
+          });
         });
-      });
     } else {
       done();
     }

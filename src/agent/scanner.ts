@@ -40,32 +40,30 @@ export interface ScanResults {
   all(): ScanStats;
   selectStats(regex: RegExp): ScanStats;
   selectFiles(regex: RegExp, baseDir: string): string[];
+  hash?: string;
 }
 
 class ScanResultsImpl implements ScanResults {
-  private stats_: ScanStats;
-
   /**
    * Encapsulates the results of a filesystem scan with methods
    * to easily select scan information or filenames for a
    * specific subset of the files listed in the scan results.
    *
-   * @param {Object} stats An object that contains filenames
+   * @param stats An object that contains filenames
    *  as keys where each key maps to an object containing the
    *  hash and number of lines for the specified file.  This
    *  information is accessed via the `hash` and `lines`
    *  attributes respectively
-   * @constructor
+   * @param hash A hashcode computed from the contents of all the files.
    */
-  constructor(statsParm: ScanStats) {
-    this.stats_ = statsParm;
-  }
+  constructor(
+      private readonly stats: ScanStats, public readonly hash?: string) {}
 
   /**
    * Used to get all of the file scan results.
    */
   all(): ScanStats {
-    return this.stats_;
+    return this.stats;
   }
 
   /**
@@ -77,7 +75,7 @@ class ScanResultsImpl implements ScanResults {
    *  should be included in the returned results.
    */
   selectStats(regex: RegExp): ScanStats|{} {
-    return _.pickBy(this.stats_, function(_ignore, key) {
+    return _.pickBy(this.stats, function(_ignore, key) {
       return regex.test(key);
     });
   }
@@ -98,7 +96,7 @@ class ScanResultsImpl implements ScanResults {
   selectFiles(regex: RegExp, baseDir: string): string[] {
     // ensure the base directory has only a single trailing path separator
     baseDir = path.normalize(baseDir + path.sep);
-    return Object.keys(this.stats_)
+    return Object.keys(this.stats)
         .filter(function(file) {
           return file && regex.test(file);
         })
@@ -109,16 +107,20 @@ class ScanResultsImpl implements ScanResults {
 }
 
 export function scan(
-    shouldHash: boolean, baseDir: string, regex: RegExp,
-    callback: (err: Error|null, results?: ScanResults, hash?: string) =>
-        void): void {
-  findFiles(baseDir, regex, function(err: Error|null, fileList?: string[]) {
-    if (err) {
-      callback(err);
-      return;
-    }
-    // TODO: Handle the case where `fileList` is undefined.
-    computeStats(fileList as string[], shouldHash, callback);
+    shouldHash: boolean, baseDir: string, regex: RegExp): Promise<ScanResults> {
+  return new Promise<ScanResults>((resolve, reject) => {
+    findFiles(baseDir, regex, function(err1: Error|null, fileList?: string[]) {
+      if (err1) {
+        return reject(err1);
+      }
+      // TODO: Handle the case where `fileList` is undefined.
+      computeStats(fileList as string[], shouldHash, (err2, results) => {
+        if (err2) {
+          return reject(err2);
+        }
+        resolve(results);
+      });
+    });
   });
 }
 
@@ -135,12 +137,11 @@ export function scan(
 // call signature
 function computeStats(
     fileList: string[], shouldHash: boolean,
-    callback: (err: Error|null, results?: ScanResults, hash?: string) =>
-        void): void {
+    callback: (err: Error|null, results?: ScanResults) => void): void {
   let pending = fileList.length;
   // return a valid, if fake, result when there are no js files to hash.
   if (pending === 0) {
-    callback(null, new ScanResultsImpl({}), 'EMPTY-no-js-files');
+    callback(null, new ScanResultsImpl({}, 'EMPTY-no-js-files'));
     return;
   }
 
@@ -148,7 +149,7 @@ function computeStats(
   const hashes: Array<string|undefined> = [];
   const statistics: ScanStats = {};
   fileList.forEach(function(filename) {
-    stats(
+    statsForFile(
         filename, shouldHash,
         function(err: Error, fileStats: FileStats|undefined) {
           if (err) {
@@ -173,7 +174,7 @@ function computeStats(
                   crypto.createHash('sha1').update(buffer).digest('hex');
               hash = 'SHA1-' + sha1;
             }
-            callback(null, new ScanResultsImpl(statistics), hash);
+            callback(null, new ScanResultsImpl(statistics, hash));
           }
         });
   });
@@ -238,7 +239,7 @@ function findFiles(
  * @param {function} cb errorback style callback which returns the sha string
  * @private
  */
-function stats(
+function statsForFile(
     filename: string, shouldHash: boolean,
     cb: (err: Error|null, stats?: FileStats) => void): void {
   let shasum: crypto.Hash;

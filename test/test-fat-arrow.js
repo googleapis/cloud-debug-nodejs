@@ -46,13 +46,11 @@ describe(__filename, function() {
   });
   beforeEach(function(done) {
     if (!api) {
-      scanner.scan(true, config.workingDirectory, /.js$/,
-        function(err, fileStats, hash) {
-          assert(!err);
-
+      scanner.scan(true, config.workingDirectory, /.js$/)
+        .then(function (fileStats) {
           var jsStats = fileStats.selectStats(/.js$/);
           var mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
-          SourceMapper.create(mapFiles, function(err, mapper) {
+          SourceMapper.create(mapFiles, function (err, mapper) {
             api = v8debugapi.create(logger, config, jsStats, mapper);
             assert.ok(api, 'should be able to create the api');
             done();
