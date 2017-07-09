@@ -21,24 +21,30 @@ var path = require('path');
 
 var SourceMapper = require('../build/src/agent/sourcemapper.js');
 
+var BASE_PATH = path.join(__dirname, 'fixtures', 'sourcemapper');
+
 /**
- * @param {string} tool The name of the tool that was used to generate the 
+ * @param {string} tool The name of the tool that was used to generate the
  *  given sourcemap data
- * @param {string} mapFilePath The path to the sourcemap file of a
+ * @param {string} relativeMapFilePath The path to the sourcemap file of a
  *  transpilation to test
- * @param {string} inputFilePath The path to the input file that was
+ * @param {string} relativeInputFilePath The path to the input file that was
  *  transpiled to generate the specified sourcemap file
- * @param {string} outputFilePath The path to the output file that was 
- *  generated during the transpilation process that constructed the 
+ * @param {string} relativeOutputFilePath The path to the output file that was
+ *  generated during the transpilation process that constructed the
  *  specified sourcemap file
  * @param {Array.<Array.<number, number>>} inToOutLineNums An array of arrays
  *  where each element in the array is a pair of numbers.  The first number
  *  in the pair is the line number from the input file and the second number
  *  in the pair is the expected line number in the corresponding output file
- * 
+ *
  *  Note: The line numbers are zero-based
  */
-function testTool(tool, mapFilePath, inputFilePath, outputFilePath, inToOutLineNums) {
+function testTool(tool, relativeMapFilePath, relativeInputFilePath, relativeOutputFilePath, inToOutLineNums) {
+  var mapFilePath = path.join(BASE_PATH, relativeMapFilePath);
+  var inputFilePath = path.join(BASE_PATH, relativeInputFilePath);
+  var outputFilePath = path.join(BASE_PATH, relativeOutputFilePath);
+
   describe('sourcemapper for tool ' + tool, function() {
     var sourcemapper;
 
@@ -62,11 +68,21 @@ function testTool(tool, mapFilePath, inputFilePath, outputFilePath, inToOutLineN
         done();
     });
 
-    it('for tool ' + tool + 
+    it('for tool ' + tool +
+      ' it states that it has mapping info for files with a path' +
+      ' similar to a path it knows about',
+      function(done) {
+        assert.equal(sourcemapper.hasMappingInfo(relativeInputFilePath), true);
+        var movedPath = path.join('/some/other/base/dir/', relativeInputFilePath);
+        assert.equal(sourcemapper.hasMappingInfo(movedPath), true);
+        done();
+    });
+
+    it('for tool ' + tool +
       ' it states that it does not have mapping info for a file it ' +
       'doesn\'t recognize',
       function(done) {
-        assert.equal(sourcemapper.hasMappingInfo('INVALID_' + inputFilePath), false);
+        assert.equal(sourcemapper.hasMappingInfo(inputFilePath + '_INVALID'), false);
         done();
     });
 
@@ -90,11 +106,10 @@ function testTool(tool, mapFilePath, inputFilePath, outputFilePath, inToOutLineN
   });
 }
 
-var basePath = path.join(__dirname, 'fixtures', 'sourcemapper');
-testTool('Babel', 
-  path.join(basePath, 'babel', 'out.js.map'),
-  path.join(basePath, 'babel', 'in.js'),
-  path.join(basePath, 'babel', 'out.js'), [
+testTool('Babel',
+  path.join('babel', 'out.js.map'),
+  path.join('babel', 'in.js'),
+  path.join('babel', 'out.js'), [
   [1, 14],
   [2, 15],
   [3, 16],
@@ -148,9 +163,9 @@ testTool('Babel',
 ]);
 
 testTool('Typescript',
-  path.join(basePath, 'typescript', 'out.js.map'),
-  path.join(basePath, 'typescript', 'in.ts'),
-  path.join(basePath, 'typescript', 'out.js'), [
+  path.join('typescript', 'out.js.map'),
+  path.join('typescript', 'in.ts'),
+  path.join('typescript', 'out.js'), [
   [1, 5],
   [2, 6],
   [3, 9],
@@ -167,9 +182,9 @@ testTool('Typescript',
 ]);
 
 testTool('Coffeescript',
-  path.join(basePath, 'coffeescript', 'in.js.map'),
-  path.join(basePath, 'coffeescript', 'in.coffee'),
-  path.join(basePath, 'coffeescript', 'in.js'),[
+  path.join('coffeescript', 'in.js.map'),
+  path.join('coffeescript', 'in.coffee'),
+  path.join('coffeescript', 'in.js'),[
   [1, 1],
   [2, 7],
   [3, 8],

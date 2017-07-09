@@ -19,6 +19,7 @@ import * as fs from 'fs';
 import * as _ from 'lodash';
 import * as path from 'path';
 import * as sourceMap from 'source-map';
+import {findScriptsFuzzy} from './v8debugapi';
 
 /** @define {string} */ const MAP_EXT = '.map';
 
@@ -128,6 +129,31 @@ export class SourceMapper {
   }
 
   /**
+   * Used to get the information about the transpiled file from a given input
+   * source file provided there isn't any ambiguity with associating the input
+   * path to exactly one output transpiled file.
+   *
+   * @param inputPath The (possibly relative) path to the original source file.
+   * @return The `MapInfoInput` object that describes the transpiled file
+   *  associated with the specified input path.  `null` is returned if either
+   *  zero files are associated with the input path or if more than one file
+   *  could possibly be associated with the given input path.
+   */
+  private getMappingInfo(inputPath: string): MapInfoInput|null {
+    if (this.infoMap_.has(path.normalize(inputPath))) {
+      return this.infoMap_.get(inputPath) as MapInfoInput;
+    }
+
+    const matches =
+        findScriptsFuzzy(inputPath, Array.from(this.infoMap_.keys()));
+    if (matches.length === 1) {
+      return this.infoMap_.get(matches[0]) as MapInfoInput;
+    }
+
+    return null;
+  }
+
+  /**
    * Used to determine if the source file specified by the given path has
    * a .map file and an output file associated with it.
    *
@@ -141,7 +167,7 @@ export class SourceMapper {
    *  relative to the process's current working directory.
    */
   hasMappingInfo(inputPath: string): boolean {
-    return this.infoMap_.has(path.normalize(inputPath));
+    return this.getMappingInfo(inputPath) !== null;
   }
 
   /**
@@ -166,12 +192,11 @@ export class SourceMapper {
   mappingInfo(inputPath: string, lineNumber: number, colNumber: number):
       MapInfoOutput|null {
     inputPath = path.normalize(inputPath);
-    if (!this.hasMappingInfo(inputPath)) {
+    const entry = this.getMappingInfo(inputPath);
+    if (entry === null) {
       return null;
     }
 
-    // TODO: `entry` could be `undefined` here.  Address this case.
-    const entry = this.infoMap_.get(inputPath) as any as MapInfoInput;
     const sourcePos = {
       source: path.relative(path.dirname(entry.mapFile), inputPath),
       line: lineNumber + 1,  // the SourceMapConsumer expects the line number
