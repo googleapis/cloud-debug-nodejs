@@ -743,7 +743,6 @@ export function findScripts(
  *     available.
  * @return {array<string>} list of files that match.
  */
-// Exposed for unit testing.
 export function findScriptsFuzzy(
     scriptPath: string, fileList: string[]): string[] {
   let matches = fileList;
