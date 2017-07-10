@@ -20,7 +20,9 @@ var assert = require('assert');
 var DEFAULT_CONFIG = require('../build/src/agent/config.js').default;
 DEFAULT_CONFIG.allowExpressions = true;
 var Debuglet = require('../build/src/agent/debuglet.js').Debuglet;
+var dns = require('dns');
 var extend = require('extend');
+var metadata = require('gcp-metadata');
 
 var DEBUGGEE_ID = 'bar';
 var API = 'https://clouddebugger.googleapis.com';
@@ -63,6 +65,150 @@ function mockedGetProjectId(cb) {
 };
 
 describe('Debuglet', function() {
+  describe('runningOnGCP', () => {
+    let savedLookup;
+    before(() => {
+      savedLookup = dns.lookup;
+    });
+    
+    after(() => {
+      dns.lookup = savedLookup;
+    });
+
+    it('should resolve true if metadata service is resolveable', (done) => {
+      dns.lookup = (hostname, cb) => {
+        setImmediate(() => {
+          cb(null, { address: '700.800.900.fake', family: 'Addams'});
+        });
+      };
+
+      Debuglet.runningOnGCP().then((onGCP) => {
+        assert.strictEqual(onGCP, true);
+        done();
+      });
+    });
+
+    it('should resolve false if metadata service not resolveable', (done) => {
+      dns.lookup = (hostname, cb) => {
+        setImmediate(() => {
+          cb(new Error('resolution error'));
+        });
+      };
+
+      Debuglet.runningOnGCP().then((onGCP) => {
+        assert.strictEqual(onGCP, false);
+        done();
+      });
+    });
+  });
+
+  describe('getProjectIdFromMetadata', () => {
+    let savedProject;
+    before(() => {
+      savedProject = metadata.project;
+    });
+    after(() => {
+      metadata.project = savedProject;
+    });
+
+    it('should return project retrived from metadata', (done) => {
+      const FAKE_PROJECT_ID = 'fake-project-id-from-metadata';
+      var debug = require('../build/src/debug.js').Debug();
+      var debuglet = new Debuglet(debug, defaultConfig);
+
+      metadata.project = (path, cb) => {
+        setImmediate(() => { 
+          cb(null, {}, FAKE_PROJECT_ID);
+        });
+      }
+
+      Debuglet.getProjectIdFromMetadata().then((projectId) => {
+        assert.strictEqual(projectId, FAKE_PROJECT_ID);
+        done();
+      });
+    });
+
+    it('should return null on error', (done) => {
+      var debug = require('../build/src/debug.js').Debug();
+      var debuglet = new Debuglet(debug, defaultConfig);
+
+      metadata.project = (path, cb) => {
+        setImmediate(() => { cb(new Error()); });
+      }
+
+      Debuglet.getProjectIdFromMetadata().catch((err) => {
+        done();
+      });
+    });
+  });
+
+  describe('getProjectId', () => {
+    let savedGetProjectIdFromMetadata;
+
+    beforeEach(() => {
+      savedGetProjectIdFromMetadata = Debuglet.getProjectIdFromMetadata;
+    });
+
+    afterEach(() => {
+      Debuglet.getProjectIdFromMetadata = savedGetProjectIdFromMetadata;
+    });
+
+    it('should not query metadata if local config.projectId is set', (done) => {
+      Debuglet.getProjectIdFromMetadata = () => {
+        assert.fail();
+      };
+      Debuglet.getProjectId({ projectId: 'from-config' }).then((projectId) => {
+        assert.strictEqual(projectId, 'from-config');
+        done();
+      });
+    });
+
+    it('should not query metadata if env. var. is set', (done) => {
+      const envs = process.env;
+      process.env = {};
+      process.env.GCLOUD_PROJECT = 'from-env-var';
+
+      Debuglet.getProjectIdFromMetadata = () => {
+        assert.fail();
+      };
+      Debuglet.getProjectId({}).then((projectId) => {
+        assert.strictEqual(projectId, 'from-env-var');
+        // restore environment variables.
+        process.env = envs;
+        done();
+      });
+    });
+
+    it('should query the project from metadata', (done) => {
+      const envs = process.env;
+      process.env = {};
+
+      Debuglet.getProjectIdFromMetadata = () => {
+        return Promise.resolve('from-metadata');
+      };
+      Debuglet.getProjectId({}).then((projectId) => {
+        assert.strictEqual(projectId, 'from-metadata');
+        // restore environment variables.
+        process.env = envs;
+        done();        
+      });
+    });
+
+    it('should reject on error', (done) => {
+      const envs = process.env;
+      process.env = {};
+
+      Debuglet.getProjectIdFromMetadata = () => {
+        return Promise.reject(new Error('rejection'));
+      };
+      Debuglet.getProjectId({}).catch((err) => {
+        // restore environment variables.
+        process.env = envs;
+        done();
+      });
+    });   
+  });
+
   describe('setup', function() {
     before(function() { oldGP = process.env.GCLOUD_PROJECT; });
 

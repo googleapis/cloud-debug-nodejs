@@ -20,6 +20,7 @@ const common: Common = require('@google-cloud/common');
 import * as crypto from 'crypto';
 import {EventEmitter} from 'events';
 import * as extend from 'extend';
+import * as dns from 'dns';
 import * as fs from 'fs';
 
 import {GcpMetadata} from '../types/gcp-metadata-types';
@@ -403,6 +404,40 @@ export class Debuglet extends EventEmitter {
           }
           return callback(null, project, onGCP);
         });
+  }
+
+  static async getProjectId(config: DebugAgentConfig): Promise<string> {
+    const project = config.projectId ||
+        process.env.GCLOUD_PROJECT ||
+        await this.getProjectIdFromMetadata();
+    if (!project) {
+      const msg = 'Unable to discover projectId. Please provide the ' +
+          'projectId to be able to use the Debug agent';
+      throw new Error(msg);
+    }
+    return project;
+  }
+
+  static async runningOnGCP(): Promise<boolean> {
+    const lookup = promisify(dns.lookup);
+    try {
+      await lookup('metadata.google.internal.');
+      return true;
+    } catch (err) {
+      // Take failure to resolve metadata service to indicate that we are not
+      // running on GCP.
+      return false;
+    }
+  }
+
+  static getProjectIdFromMetadata(): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      metadata.project(
+          'project-id',
+          (err: Error, _res: http.ServerResponse, projectId: string) => {
+            err ? reject(err) : resolve(projectId);
+          });
+    });
   }
 
   getSourceContext_(
