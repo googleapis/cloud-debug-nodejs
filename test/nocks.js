@@ -46,7 +46,7 @@ function nockProjectId(reply) {
   return nock('http://metadata.google.internal')
     .get('/computeMetadata/v1/project/project-id')
     .once()
-    .reply(reply);
+    .reply(200, reply);
 }
 
 module.exports = {
