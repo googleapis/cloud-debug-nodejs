@@ -121,29 +121,27 @@ describe('v8debugapi', function() {
 
   beforeEach(function(done) {
     if (!api) {
-      scanner.scan(true, config.workingDirectory, /.js$|.map$/,
-      function(err, fileStats, hash) {
-        assert(!err);
+      scanner.scan(true, config.workingDirectory, /.js$|.map$/)
+        .then(function (fileStats) {
+          var jsStats = fileStats.selectStats(/.js$/);
+          var mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
+          SourceMapper.create(mapFiles, function (err, mapper) {
+            assert(!err);
 
-        var jsStats = fileStats.selectStats(/.js$/);
-        var mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
-        SourceMapper.create(mapFiles, function(err, mapper) {
-          assert(!err);
+            api = v8debugapi.create(logger, config, jsStats, mapper);
+            assert.ok(api, 'should be able to create the api');
 
-          api = v8debugapi.create(logger, config, jsStats, mapper);
-          assert.ok(api, 'should be able to create the api');
-
-          // monkey-patch wait to add validation of the breakpoints.
-          var origWait = api.wait;
-          api.wait = function(bp, callback) {
-            origWait(bp, function(err) {
-              validateBreakpoint(bp);
-              callback(err);
-            });
-          };
-          done();
+            // monkey-patch wait to add validation of the breakpoints.
+            var origWait = api.wait;
+            api.wait = function (bp, callback) {
+              origWait(bp, function (err) {
+                validateBreakpoint(bp);
+                callback(err);
+              });
+            };
+            done();
+          });
         });
-      });
     } else {
       assert(stateIsClean(api));
       done();
