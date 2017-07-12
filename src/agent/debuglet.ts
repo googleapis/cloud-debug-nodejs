@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import {Common} from '../types/common-types';
+import {AuthenticationConfig, Common} from '../types/common-types';
 const common: Common = require('@google-cloud/common');
 
 import * as crypto from 'crypto';
 import {EventEmitter} from 'events';
 import * as extend from 'extend';
+import * as dns from 'dns';
 import * as fs from 'fs';
 
 import {GcpMetadata} from '../types/gcp-metadata-types';
@@ -235,7 +236,7 @@ export class Debuglet extends EventEmitter {
 
     const jsStats = fileStats.selectStats(/.js$/);
     const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
-    SourceMapper.create(mapFiles, function(err3, mapper) {
+    SourceMapper.create(mapFiles, async function(err3, mapper) {
       if (err3) {
         that.logger_.error('Error processing the sourcemaps.', err3);
         that.emit('initError', err3);
@@ -251,48 +252,44 @@ export class Debuglet extends EventEmitter {
 
       that.logger_.info('Unique ID for this Application: ' + id);
 
-      that.getProjectId_(function(
-          err4: Error|null, project: string|undefined, onGCP?: boolean) {
-        if (err4) {
-          that.logger_.error(
-              'Unable to discover projectId. Please provide ' +
-                  'the projectId to be able to use the Debuglet',
-              err4);
-          that.emit('initError', err4);
-          return;
+      const onGCP = await Debuglet.runningOnGCP();
+      let project: string;
+      try {
+        project = await Debuglet.getProjectId(that.debug_.options);
+      } catch (err) {
+        that.logger_.error(err.message);
+        that.emit('initError', err);
+        return;
+      }
+
+      that.getSourceContext_(function(err5, sourceContext) {
+        if (err5) {
+          that.logger_.warn('Unable to discover source context', err5);
+          // This is ignorable.
         }
 
-        that.getSourceContext_(function(err5, sourceContext) {
-          if (err5) {
-            that.logger_.warn('Unable to discover source context', err5);
-            // This is ignorable.
-          }
+        if (semver.satisfies(process.version, '5.2 || <4')) {
+          // Using an unsupported version. We report an error
+          // message about the Node.js version, but we keep on
+          // running. The idea is that the user may miss the error
+          // message on the console. This way we can report the
+          // error when the user tries to set a breakpoint.
+          that.logger_.error(NODE_VERSION_MESSAGE);
+        }
 
-          if (semver.satisfies(process.version, '5.2 || <4')) {
-            // Using an unsupported version. We report an error
-            // message about the Node.js version, but we keep on
-            // running. The idea is that the user may miss the error
-            // message on the console. This way we can report the
-            // error when the user tries to set a breakpoint.
-            that.logger_.error(NODE_VERSION_MESSAGE);
-          }
-
-          // We can register as a debuggee now.
-          that.logger_.debug('Starting debuggee, project', project);
-          that.running_ = true;
-          // TODO: Address the case where `project` is `undefined`.
-          that.project_ = project as string;
-          that.debuggee_ = Debuglet.createDebuggee(
-              // TODO: Address the case when `project` is
-              // `undefined`.
-              // TODO: Address the case when `id` is `undefined`.
-              project as string, id as string, that.config_.serviceContext,
-              // TODO: Handle the case where `onGCP` is `undefined`.
-              sourceContext, that.config_.description, null, onGCP as boolean);
-          that.scheduleRegistration_(0 /* immediately */);
-          that.emit('started');
-        });
+        // We can register as a debuggee now.
+        that.logger_.debug('Starting debuggee, project', project);
+        that.running_ = true;
+        // TODO: Address the case where `project` is `undefined`.
+        that.project_ = project;
+        that.debuggee_ = Debuglet.createDebuggee(
+            // TODO: Address the case when `id` is `undefined`.
+            project, id as string, that.config_.serviceContext, sourceContext,
+            that.config_.description, null, onGCP);
+        that.scheduleRegistration_(0 /* immediately */);
+        that.emit('started');
       });
+
     });
   }
 
@@ -372,37 +369,37 @@ export class Debuglet extends EventEmitter {
     return new Debuggee(properties);
   }
 
-  /**
-   * @private
-   */
-  getProjectId_(
-      callback: (err: Error|null, project?: string, onGCP?: boolean) => void):
-      void {
-    const that = this;
+  static async getProjectId(options: AuthenticationConfig): Promise<string> {
+    const project = options.projectId || process.env.GCLOUD_PROJECT ||
+        await this.getProjectIdFromMetadata();
+    if (!project) {
+      const msg = 'Unable to discover projectId. Please provide the ' +
+          'projectId to be able to use the Debug agent';
+      throw new Error(msg);
+    }
+    return project;
+  }
 
-    // We need to figure out whether we are running on GCP. We can use our
-    // ability to access the metadata service as a test for that.
-    // TODO: change this to getProjectId in the future.
-    // TODO: Determine if it is expected that the second argument (which was
-    //       named `response`) is not used.
-    metadata.project(
-        'project-id',
-        function(
-            err: Error, _res: http.ServerResponse, metadataProject: string) {
-          // We should get an error if we are not on GCP.
-          const onGCP = !err;
+  static async runningOnGCP(): Promise<boolean> {
+    const lookup = promisify(dns.lookup);
+    try {
+      await lookup('metadata.google.internal.');
+      return true;
+    } catch (err) {
+      // Take failure to resolve metadata service to indicate that we are not
+      // running on GCP.
+      return false;
+    }
+  }
 
-          // We perfer to use the locally available projectId as that is least
-          // surprising to users.
-          const project = that.debug_.options.projectId ||
-              process.env.GCLOUD_PROJECT || metadataProject;
-
-          // We if don't have a projectId by now, we fail with an error.
-          if (!project) {
-            return callback(err);
-          }
-          return callback(null, project, onGCP);
-        });
+  static getProjectIdFromMetadata(): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      metadata.project(
+          'project-id',
+          (err: Error, _res: http.ServerResponse, projectId: string) => {
+            err ? reject(err) : resolve(projectId);
+          });
+    });
   }
 
   getSourceContext_(
