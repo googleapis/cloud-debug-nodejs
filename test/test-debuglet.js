@@ -136,6 +136,46 @@ describe('Debuglet', function() {
     });
   });
 
+  describe('getClusterNameFromMetadata', () => {
+    let savedInstance;
+    before(() => {
+      savedInstance = metadata.instance;
+    });
+    after(() => {
+      metadata.instance = savedInstance;
+    });
+
+    it('should return project retrived from metadata', (done) => {
+      const FAKE_CLUSTER_NAME = 'fake-cluster-name-from-metadata';
+      var debug = require('../build/src/debug.js').Debug();
+      var debuglet = new Debuglet(debug, defaultConfig);
+
+      metadata.instance = (path, cb) => {
+        setImmediate(() => { 
+          cb(null, {}, FAKE_CLUSTER_NAME);
+        });
+      }
+
+      Debuglet.getClusterNameFromMetadata().then((clusterName) => {
+        assert.strictEqual(clusterName, FAKE_CLUSTER_NAME);
+        done();
+      });
+    });
+
+    it('should return null on error', (done) => {
+      var debug = require('../build/src/debug.js').Debug();
+      var debuglet = new Debuglet(debug, defaultConfig);
+
+      metadata.instance = (path, cb) => {
+        setImmediate(() => { cb(new Error()); });
+      }
+
+      Debuglet.getClusterNameFromMetadata().catch((err) => {
+        done();
+      });
+    });
+  });
+
   describe('getProjectId', () => {
     let savedGetProjectIdFromMetadata;
 

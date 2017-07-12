@@ -402,6 +402,16 @@ export class Debuglet extends EventEmitter {
     });
   }
 
+  static getClusterNameFromMetadata(): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      metadata.instance(
+          'cluster-name',
+          (err: Error, _res: http.ServerResponse, clusterName: string) => {
+            err ? reject(err) : resolve(clusterName);
+          });
+    });
+  }
+
   getSourceContext_(
       callback:
           (err: Error|string, sourceContext: {[key: string]: string}) => void):
