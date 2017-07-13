@@ -7,7 +7,7 @@
 [![devDependency Status][david-dev-image]][david-dev-url]
 [![Known Vulnerabilities][snyk-image]][snyk-url]
 
-> *This module is experimental, and should be used by early adopters. This module uses APIs that may be undocumented and subject to change without notice.*
+> **Beta**. *This is a Beta release of the Stackdriver Debugger agent for Node.js. These libraries might be changed in backward-incompatible ways and are not subject to any SLA or deprecation policy.*
 
 This module provides Stackdriver Debugger support for Node.js applications. [Stackdriver Debugger](https://cloud.google.com/tools/cloud-debugger/) is a feature of [Google Cloud Platform](https://cloud.google.com/) that lets you debug your applications in production without stopping or pausing your application. Here's an introductory video:
 
