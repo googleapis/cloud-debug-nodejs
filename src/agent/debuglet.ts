@@ -262,6 +262,24 @@ export class Debuglet extends EventEmitter {
         return;
       }
 
+      if (onGCP &&
+          (!that.config_.serviceContext ||
+           !that.config_.serviceContext.service)) {
+        // If on GCP, check if the clusterName instance attribute is availble.
+        // Use this as the service context for better service identification on
+        // GKE.
+        try {
+          const clusterName = await Debuglet.getClusterNameFromMetadata();
+          that.config_.serviceContext = {
+            service: clusterName,
+            version: 'unversioned',
+            minorVersion_: null
+          };
+        } catch (err) {
+          /* we are not running on GKE - Ignore error. */
+        }
+      }
+
       that.getSourceContext_(function(err5, sourceContext) {
         if (err5) {
           that.logger_.warn('Unable to discover source context', err5);
@@ -398,6 +416,16 @@ export class Debuglet extends EventEmitter {
           'project-id',
           (err: Error, _res: http.ServerResponse, projectId: string) => {
             err ? reject(err) : resolve(projectId);
+          });
+    });
+  }
+
+  static getClusterNameFromMetadata(): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      metadata.instance(
+          'attributes/cluster-name',
+          (err: Error, _res: http.ServerResponse, clusterName: string) => {
+            err ? reject(err) : resolve(clusterName);
           });
     });
   }

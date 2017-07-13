@@ -136,6 +136,46 @@ describe('Debuglet', function() {
     });
   });
 
+  describe('getClusterNameFromMetadata', () => {
+    let savedInstance;
+    before(() => {
+      savedInstance = metadata.instance;
+    });
+    after(() => {
+      metadata.instance = savedInstance;
+    });
+
+    it('should return project retrived from metadata', (done) => {
+      const FAKE_CLUSTER_NAME = 'fake-cluster-name-from-metadata';
+      var debug = require('../build/src/debug.js').Debug();
+      var debuglet = new Debuglet(debug, defaultConfig);
+
+      metadata.instance = (path, cb) => {
+        setImmediate(() => { 
+          cb(null, {}, FAKE_CLUSTER_NAME);
+        });
+      }
+
+      Debuglet.getClusterNameFromMetadata().then((clusterName) => {
+        assert.strictEqual(clusterName, FAKE_CLUSTER_NAME);
+        done();
+      });
+    });
+
+    it('should return null on error', (done) => {
+      var debug = require('../build/src/debug.js').Debug();
+      var debuglet = new Debuglet(debug, defaultConfig);
+
+      metadata.instance = (path, cb) => {
+        setImmediate(() => { cb(new Error()); });
+      }
+
+      Debuglet.getClusterNameFromMetadata().catch((err) => {
+        done();
+      });
+    });
+  });
+
   describe('getProjectId', () => {
     let savedGetProjectIdFromMetadata;
 
@@ -502,8 +542,6 @@ describe('Debuglet', function() {
       });
     });
 
-
-
     it('should retry on failed registration', function(done) {
       this.timeout(10000);
       var debug = require('../build/src/debug.js').Debug(
@@ -563,6 +601,37 @@ describe('Debuglet', function() {
       debuglet.start();
     });
 
+    it('should attempt to retrieve cluster name if needed', (done) => {
+      const savedRunningOnGCP = Debuglet.runningOnGCP;
+      Debuglet.runningOnGCP = () => {
+        return Promise.resolve(true);
+      };
+      const clusterScope = 
+          nock('http://metadata.google.internal')
+            .get('/computeMetadata/v1/instance/attributes/cluster-name')
+            .once()
+            .reply(200, 'cluster-name-from-metadata');
+
+      var debug = require('../build/src/debug.js').Debug(
+          {projectId: 'fake-project', credentials: fakeCredentials});
+      var debuglet = new Debuglet(debug, defaultConfig);
+
+      nocks.oauth2();
+      var scope = nock(API)
+                      .post(REGISTER_PATH)
+                      .reply(200, {debuggee: {id: DEBUGGEE_ID}});
+
+      debuglet.once('registered', function(id) {
+        assert.equal(id, DEBUGGEE_ID);
+        debuglet.stop();
+        clusterScope.done();
+        scope.done();
+        Debuglet.runningOnGCP = savedRunningOnGCP;
+        done();
+      });
+
+      debuglet.start();
+    });
 
     it('should pass source context to api if present', function(done) {
       var debug = require('../build/src/debug.js').Debug(
