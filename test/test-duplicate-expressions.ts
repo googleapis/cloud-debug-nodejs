@@ -28,7 +28,8 @@ var SourceMapper = require('../src/agent/sourcemapper.js');
 var scanner = require('../src/agent/scanner.js');
 var foo = require('./test-duplicate-expressions-code.js');
 
-function _stateIsClean(api) {
+// TODO: Determine why this must be named `stateIsClean1`.
+function stateIsClean1(api) {
   assert.equal(api.numBreakpoints_(), 0,
     'there should be no breakpoints active');
   assert.equal(api.numListeners_(), 0,
@@ -59,11 +60,11 @@ describe(__filename, function() {
           });
         });
     } else {
-      assert(_stateIsClean(api));
+      assert(stateIsClean1(api));
       done();
     }
   });
-  afterEach(function() { assert(_stateIsClean(api)); });
+  afterEach(function() { assert(stateIsClean1(api)); });
 
   it('should not duplicate expressions', function(done) {
     api.set(breakpointInFoo, function(err) {
