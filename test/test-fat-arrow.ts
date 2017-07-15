@@ -71,7 +71,8 @@ describe(__filename, function() {
       assert.ifError(err);
       api.wait(brk, function(err) {
         assert.ifError(err);
-        var frame = brk.stackFrames[0];
+        // TODO: Fix this explicit cast.
+        var frame = (brk as any).stackFrames[0];
         var args = frame.arguments;
         var locals = frame.locals;
         assert.equal(args.length, 0, 'There should be zero arguments');
@@ -95,7 +96,8 @@ describe(__filename, function() {
       assert.ifError(err);
       api.wait(brk, function(err) {
         assert.ifError(err);
-        var frame = brk.stackFrames[0];
+        // TODO: Fix this explicit cast.
+        var frame = (brk as any).stackFrames[0];
         var args = frame.arguments;
         var locals = frame.locals;
         assert.equal(args.length, 0, 'There should be zero arguments');
