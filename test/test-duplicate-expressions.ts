@@ -1,10 +1,3 @@
-/*1* KEEP THIS CODE AT THE TOP TO AVOID LINE NUMBER CHANGES */
-/*2*/'use strict';
-/*3*/function foo(a) {
-/*4*/  process.nextTick(function() {
-/*5*/    a = 0;
-/*6*/  });
-/*7*/}
 /**
  * Copyright 2015 Google Inc. All Rights Reserved.
  *
@@ -23,7 +16,7 @@
 
 var breakpointInFoo = {
   id: 'fake-id-123',
-  location: { path: 'test-duplicate-expressions.js', line: 4 }
+  location: { path: 'test-duplicate-expressions-code.js', line: 4 }
 };
 
 var assert = require('assert');
@@ -33,8 +26,9 @@ var common = require('@google-cloud/common');
 var defaultConfig = require('../src/agent/config.js').default;
 var SourceMapper = require('../src/agent/sourcemapper.js');
 var scanner = require('../src/agent/scanner.js');
+var foo = require('./test-duplicate-expressions-code.js');
 
-function stateIsClean(api) {
+function _stateIsClean(api) {
   assert.equal(api.numBreakpoints_(), 0,
     'there should be no breakpoints active');
   assert.equal(api.numListeners_(), 0,
@@ -65,18 +59,19 @@ describe(__filename, function() {
           });
         });
     } else {
-      assert(stateIsClean(api));
+      assert(_stateIsClean(api));
       done();
     }
   });
-  afterEach(function() { assert(stateIsClean(api)); });
+  afterEach(function() { assert(_stateIsClean(api)); });
 
   it('should not duplicate expressions', function(done) {
     api.set(breakpointInFoo, function(err) {
       assert.ifError(err);
       api.wait(breakpointInFoo, function(err) {
         assert.ifError(err);
-        var frames = breakpointInFoo.stackFrames[0];
+        // TODO: Determine how to remove this cast to any.
+        var frames = (breakpointInFoo as any).stackFrames[0];
         var exprs = frames.arguments.concat(frames.locals);
         var varTableIndicesSeen = [];
         exprs.forEach(function(expr) {
