@@ -113,7 +113,7 @@ function validateBreakpoint(breakpoint) {
 
 describe('v8debugapi', function() {
   var config = extend({}, defaultConfig, {
-    workingDirectory: __dirname,
+    workingDirectory: path.join(__dirname, '..'),
     forceNewAgent_: true
   });
   var logger = common.logger({ logLevel: config.logLevel });
@@ -172,7 +172,7 @@ describe('v8debugapi', function() {
 
   it('should set error for breakpoint in non-js files',
     function(done) {
-      require('./fixtures/key-bad.json');
+      require('../fixtures/key-bad.json');
       var bp = { id: 0, location: {line: 1, path: path.join('fixtures',
         'key-bad.json')}};
       api.set(bp, function(err) {
@@ -187,7 +187,7 @@ describe('v8debugapi', function() {
 
   it('should disambiguate incorrect path if filename is unique',
     function(done) {
-      require('./fixtures/foo.js');
+      require('../fixtures/foo.js');
       var bp = { id: 0, location: {line: 1, path: path.join(path.sep, 'test',
         'foo.js')}};
       api.set(bp, function(err) {
@@ -199,7 +199,7 @@ describe('v8debugapi', function() {
 
   it('should disambiguate incorrect path if partial path is unique',
     function(done) {
-      require('./fixtures/foo.js');
+      require('../fixtures/foo.js');
       // hello.js is not unique but a/hello.js is.
       var bp = { id: 0, location: {line: 1, path: path.join(path.sep, 'Server',
         'a', 'hello.js')}};
@@ -234,8 +234,8 @@ describe('v8debugapi', function() {
     });
 
     it('should reject breakpoint when filename is ambiguous', function(done) {
-      require('./fixtures/a/hello.js');
-      require('./fixtures/b/hello.js');
+      require('../fixtures/a/hello.js');
+      require('../fixtures/b/hello.js');
       var bp = {id: 'ambiguous', location: {line: 1, path: 'hello.js'}};
       api.set(bp, function(err) {
         assert.ok(err);
@@ -249,7 +249,7 @@ describe('v8debugapi', function() {
     });
 
     it('should reject breakpoint on non-existent line', function(done) {
-      require('./fixtures/foo.js');
+      require('../fixtures/foo.js');
       var bp = {
         id: 'non-existent line',
         location: {path: path.join('fixtures', 'foo.js'), line: 500}
@@ -1036,11 +1036,11 @@ describe('v8debugapi', function() {
       function (done) {
         var bp = {
           id: 'coffee-id-1729',
-          location: { path: path.join('.', 'test', 'fixtures', 'coffee',
+          location: { path: path.join('.', 'fixtures', 'coffee',
             'transpile.coffee'), line: 3 },
           condition: 'if n == 3 then true else false'
         };
-        var tt = require('./fixtures/coffee/transpile');
+        var tt = require('../fixtures/coffee/transpile');
         api.set(bp, function(err) {
           assert.ifError(err);
           api.wait(bp, function(err) {
@@ -1077,11 +1077,11 @@ describe('v8debugapi', function() {
       function (done) {
         var bp = {
           id: 'babel-id-1729',
-          location: { path: path.join('.', 'test', 'fixtures', 'es6', 'transpile.es6'),
+          location: { path: path.join('.', 'fixtures', 'es6', 'transpile.es6'),
             line: 3 },
           condition: 'i + j === 3'
         };
-        var tt = require('./fixtures/es6/transpile');
+        var tt = require('../fixtures/es6/transpile');
         api.set(bp, function(err) {
           assert.ifError(err);
           api.wait(bp, function(err) {
@@ -1103,11 +1103,11 @@ describe('v8debugapi', function() {
       function(done) {
         var bp = {
             id: 'coffee-id-1729',
-            location: { path: path.join('.', 'test', 'fixtures', 'coffee',
+            location: { path: path.join('.', 'fixtures', 'coffee',
               'transpile.coffee'), line: 3 },
             expressions: ['if n == 3 then Math.PI * n else n']
           };
-        var tt = require('./fixtures/coffee/transpile');
+        var tt = require('../fixtures/coffee/transpile');
         api.set(bp, function(err) {
           assert.ifError(err);
           api.wait(bp, function(err) {
@@ -1132,12 +1132,12 @@ describe('v8debugapi', function() {
       function(done) {
         var bp = {
             id: 'coffee-id-1729',
-            location: { path: path.join('.', 'test', 'fixtures',
+            location: { path: path.join('.', 'fixtures',
               'coffee', 'transpile.coffee'),
               line: 3 },
             expressions: [':)', 'n n, n', 'process=this', '((x) -> x x) n', 'return']
           };
-        var tt = require('./fixtures/coffee/transpile');
+        var tt = require('../fixtures/coffee/transpile');
         api.set(bp, function(err) {
           assert.ifError(err);
           api.wait(bp, function(err) {
@@ -1210,7 +1210,7 @@ describe('v8debugapi', function() {
 
 
     it('should correctly stop on line-1 breakpoints', function(done) {
-      var foo = require('./fixtures/foo.js');
+      var foo = require('../fixtures/foo.js');
       var bp = { id: 'bp-line-1', location: {
         path: 'foo.js',
         line: 1,
@@ -1265,7 +1265,7 @@ describe('v8debugapi', function() {
         }
       };
 
-      const run = require('./fixtures/ts/async.js');
+      const run = require('../fixtures/ts/async.js');
       api.set(bp, (err) => {
         assert.ifError(err);
         api.wait(bp, (err) => {

@@ -22,6 +22,7 @@ var common = require('@google-cloud/common');
 var defaultConfig = require('../build/src/agent/config.js').default;
 var SourceMapper = require('../build/src/agent/sourcemapper.js');
 var scanner = require('../build/src/agent/scanner.js');
+var path = require('path');
 
 process.env.GCLOUD_PROJECT = 0;
 
@@ -35,14 +36,14 @@ function stateIsClean(api) {
 
 describe(__filename, function() {
   var config = extend({}, defaultConfig, {
-    workingDirectory: __dirname,
+    workingDirectory: path.join(__dirname, '..'),
     forceNewAgent_: true
   });
   var logger = common.logger({ logLevel: config.logLevel });
   var api = null;
   var foo;
   before(function () {
-    foo = require('./fixtures/fat-arrow.js');
+    foo = require('../fixtures/fat-arrow.js');
   });
   beforeEach(function(done) {
     if (!api) {

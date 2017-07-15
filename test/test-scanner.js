@@ -19,7 +19,7 @@ var fs = require('fs');
 var path = require('path');
 var assert = require('assert');
 
-var fixtureDir = path.join(__dirname, './fixtures');
+var fixtureDir = path.join(__dirname, '..', 'fixtures');
 var fixture = function(file) {
   return path.join(fixtureDir, file);
 };

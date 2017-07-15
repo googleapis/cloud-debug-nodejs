@@ -26,7 +26,7 @@ var Debugger = require('../test/debugger.js');
 
 var CLUSTER_WORKERS = 3;
 
-var FILENAME = 'test/fixtures/fib.js';
+var FILENAME = 'fixtures/fib.js';
 
 var delay = function(delayTimeMS) {
   return new Promise(function(resolve, reject) {
