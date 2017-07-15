@@ -114,7 +114,8 @@ Debugger.prototype.listBreakpoints = function(debuggeeId, options, callback) {
     options = {};
   }
 
-  var query = {
+  // TODO: Remove this cast as `any`
+  var query: any = {
     clientVersion: this.clientVersion_,
     includeAllUsers: !!options.includeAllUsers,
     includeInactive: !!options.includeInactive,
