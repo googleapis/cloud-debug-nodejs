@@ -207,5 +207,5 @@ In the Debug UI, you only need to provide the original source code -- you don't 
 [debugger-api]: https://console.cloud.google.com/apis/api/clouddebugger.googleapis.com/overview
 [snyk-image]: https://snyk.io/test/github/GoogleCloudPlatform/cloud-debug-nodejs/badge.svg
 [snyk-url]: https://snyk.io/test/github/GoogleCloudPlatform/cloud-debug-nodejs
-[config-js]: https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/blob/master/src/agent/config.js
+[config-ts]: https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/blob/master/src/agent/config.ts
 [configuration-object]: https://googlecloudplatform.github.io/google-cloud-node/#/docs/google-cloud/0.45.0/google-cloud
