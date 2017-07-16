@@ -16,7 +16,7 @@
 
 'use strict';
 
-var assert = require('assert');
+import * as assert from 'assert';
 // TODO: Determine how to not have a type declaration here.
 var module: NodeModule = require('../..');
 var nock = require('nock');

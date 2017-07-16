@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-var assert = require('assert');
+import * as assert from 'assert';
 var nock   = require('nock');
 var request = require('./auth-request.js');
 var Debuggee = require('../src/debuggee.js').Debuggee;
@@ -71,7 +71,8 @@ describe('Controller API', function() {
          });
          var controller = new Controller(fakeDebug);
          controller.register(debuggee, function(err, result) {
-           assert.ifError(err, 'not expecting an error');
+           // TODO: Fix this incorrect method signature.
+           (assert as any).ifError(err, 'not expecting an error');
            assert.equal(result.debuggee.id, 'fake-debuggee');
            assert.ok(result.debuggee.isDisabled);
            scope.done();
@@ -160,7 +161,8 @@ describe('Controller API', function() {
       var debuggee = { id: 'fake-debuggee' };
       var controller = new Controller(fakeDebug);
       controller.listBreakpoints(debuggee, function(err, response, result) {
-        assert.ifError(err, 'not expecting an error');
+        // TODO: Fix this incorrect method signature.
+        (assert as any).ifError(err, 'not expecting an error');
         assert(response.body.waitExpired, 'should have expired set');
         scope.done();
         done();

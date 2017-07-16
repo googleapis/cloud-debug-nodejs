@@ -19,7 +19,7 @@ var breakpointInFoo = {
   location: { path: 'test-duplicate-expressions-code.js', line: 4 }
 };
 
-var assert = require('assert');
+import * as assert from 'assert';
 var extend = require('extend');
 var v8debugapi = require('../src/agent/v8debugapi.js');
 var common = require('@google-cloud/common');

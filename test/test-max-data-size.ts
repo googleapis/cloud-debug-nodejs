@@ -16,7 +16,7 @@
 
 process.env.GCLOUD_DIAGNOSTICS_CONFIG = 'test/fixtures/test-config.js';
 
-var assert = require('assert');
+import * as assert from 'assert';
 var extend = require('extend');
 var common = require('@google-cloud/common');
 var v8debugapi = require('../src/agent/v8debugapi.js');
@@ -94,7 +94,8 @@ describe('maxDataSize', function() {
           return acc &&
                  (!elem.status ||
                    elem.status.description.format !== 'Max data size reached');
-        }), true);
+        // TODO: Fix this incorrect method signature.
+        }), true as any as string);
         // TODO: Determine how to remove this cast to any.
         (api as any).clear(bp);
         done();

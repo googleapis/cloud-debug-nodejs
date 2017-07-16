@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-var assert = require('assert');
+import * as assert from 'assert';
 var extend = require('extend');
 var v8debugapi = require('../src/agent/v8debugapi.js');
 var common = require('@google-cloud/common');
