@@ -1,13 +1,3 @@
-/*1* KEEP THIS CODE AT THE TOP TO AVOID LINE NUMBER CHANGES */
-/*2*/'use strict';
-/*3*/function foo(b) {/* jshint validthis: true */
-/*4*/ this.a = 10;
-/*5*/ this.a += b;
-/*6*/ return this;
-/*7*/}
-/*8*/function bar(j) {
-/*9*/ return j;
-/*10*/}
 /**
  * Copyright 2015 Google Inc. All Rights Reserved.
  *
@@ -24,13 +14,14 @@
  * limitations under the License.
  */
 
-var assert = require('assert');
+import * as assert from 'assert';
 var extend = require('extend');
 var v8debugapi = require('../src/agent/v8debugapi.js');
 var common = require('@google-cloud/common');
 var defaultConfig = require('../src/agent/config.js').default;
 var SourceMapper = require('../src/agent/sourcemapper.js');
 var scanner = require('../src/agent/scanner.js');
+var code = require('./test-this-context-code.js');
 
 function stateIsClean(api) {
   assert.equal(api.numBreakpoints_(), 0,
@@ -71,17 +62,19 @@ describe(__filename, function() {
   it('Should be able to read the argument and the context', function(done) {
       var brk = {
         id: 'fake-id-123',
-        location: { path: 'test-this-context.js', line: 5 }
+        location: { path: 'test-this-context-code.js', line: 5 }
       };
       var ctxMembers;
     api.set(brk, function(err) {
       assert.ifError(err);
       api.wait(brk, function(err) {
         assert.ifError(err);
-        var frame = brk.stackFrames[0];
+        // TODO: Determine how to remove this cast to any.
+        var frame = (brk as any).stackFrames[0];
         var args = frame.arguments;
         var locals = frame.locals;
-        ctxMembers = brk.variableTable.slice(brk.variableTable.length-1)[0]
+        // TODO: Determine how to remove these casts to any.
+        ctxMembers = (brk as any).variableTable.slice((brk as any).variableTable.length-1)[0]
           .members;
         assert.deepEqual(ctxMembers.length, 1, 
           'There should be one member in the context variable value');
@@ -93,19 +86,20 @@ describe(__filename, function() {
         api.clear(brk);
         done();
       });
-      process.nextTick(foo.bind({}, 1));
+      process.nextTick(code.foo.bind({}, 1));
     });
   });
   it('Should be able to read the argument and deny the context', function(done) {
       var brk = {
         id: 'fake-id-123',
-        location: { path: 'test-this-context.js', line: 9 }
+        location: { path: 'test-this-context-code.js', line: 9 }
       };
     api.set(brk, function(err) {
       assert.ifError(err);
       api.wait(brk, function(err) {
         assert.ifError(err);
-        var frame = brk.stackFrames[0];
+        // TODO: Determine how to remove this cast to any.
+        var frame = (brk as any).stackFrames[0];
         var args = frame.arguments;
         var locals = frame.locals;
         assert.equal(args.length, 0, 'There should be zero arguments');
@@ -114,7 +108,7 @@ describe(__filename, function() {
         api.clear(brk);
         done();
       });
-      process.nextTick(bar.bind(null, 1));
+      process.nextTick(code.bar.bind(null, 1));
     });
   });
 });
