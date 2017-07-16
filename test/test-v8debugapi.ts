@@ -1,13 +1,3 @@
-/*1* KEEP THIS CODE AT THE TOP TO AVOID LINE NUMBER CHANGES */
-/*2*/'use strict';
-/*3*/function foo(n) {
-/*4*/  var A = [1, 2, 3]; var B = { a: 5, b: 6, c: 7 };
-/*5*/  return n+42+A[0]+B.b;
-/*6*/}
-/*7*/function getterObject() {
-/*8*/  var hasGetter = { _a: 5, get a() { return this._a; }, b: 'hello world' };
-/*9*/  return hasGetter.a;
-/*10*/}
 /**
  * Copyright 2015 Google Inc. All Rights Reserved.
  *
@@ -26,12 +16,13 @@
 
 var breakpointInFoo = {
   id: 'fake-id-123',
-  location: { path: 'test-v8debugapi.js', line: 4 }
+  // TODO: Determine if we should be restricting to only the build directory.
+  location: { path: 'build/test/test-v8debugapi-code.js', line: 4 }
 };
 
 var MAX_INT = 2147483647; // Max signed int32.
 
-var assert = require('assert');
+import * as assert from 'assert';
 var extend = require('extend');
 var v8debugapi = require('../src/agent/v8debugapi.js');
 var common = require('@google-cloud/common');
@@ -41,6 +32,7 @@ var scanner = require('../src/agent/scanner.js');
 var SourceMapper = require('../src/agent/sourcemapper.js');
 var path = require('path');
 var semver = require('semver');
+var code = require('./test-v8debugapi-code.js');
 
 function stateIsClean(api) {
   assert.equal(api.numBreakpoints_(), 0,
@@ -177,10 +169,10 @@ describe('v8debugapi', function() {
         'key-bad.json')}};
       api.set(bp, function(err) {
         assert.ok(err, 'should return an error');
-        assert.ok(bp.status);
-        assert.ok(bp.status instanceof StatusMessage);
-        assert.equal(bp.status.refersTo, 'BREAKPOINT_SOURCE_LOCATION');
-        assert.ok(bp.status.isError);
+        assert.ok((bp as any).status);
+        assert.ok((bp as any).status instanceof StatusMessage);
+        assert.equal((bp as any).status.refersTo, 'BREAKPOINT_SOURCE_LOCATION');
+        assert.ok((bp as any).status.isError);
         done();
       });
     });
@@ -221,12 +213,12 @@ describe('v8debugapi', function() {
     ];
 
     badBreakpoints.forEach(function(bp) {
-      it('should reject breakpoint ' + bp.id, function(done) {
+      it('should reject breakpoint ' + (bp as any).id, function(done) {
         api.set(bp, function(err) {
           assert.ok(err, 'should return an error');
-          assert.ok(bp.status);
-          assert.ok(bp.status instanceof StatusMessage);
-          assert.ok(bp.status.isError);
+          assert.ok((bp as any).status);
+          assert.ok((bp as any).status instanceof StatusMessage);
+          assert.ok((bp as any).status.isError);
           done();
         });
 
@@ -239,10 +231,10 @@ describe('v8debugapi', function() {
       var bp = {id: 'ambiguous', location: {line: 1, path: 'hello.js'}};
       api.set(bp, function(err) {
         assert.ok(err);
-        assert.ok(bp.status);
-        assert.ok(bp.status instanceof StatusMessage);
-        assert.ok(bp.status.isError);
-        assert(bp.status.description.format ===
+        assert.ok((bp as any).status);
+        assert.ok((bp as any).status instanceof StatusMessage);
+        assert.ok((bp as any).status.isError);
+        assert((bp as any).status.description.format ===
           api.messages.SOURCE_FILE_AMBIGUOUS);
         done();
       });
@@ -256,10 +248,10 @@ describe('v8debugapi', function() {
       };
       api.set(bp, function(err) {
         assert.ok(err);
-        assert.ok(bp.status);
-        assert.ok(bp.status instanceof StatusMessage);
-        assert.ok(bp.status.isError);
-        assert(bp.status.description.format.match(
+        assert.ok((bp as any).status);
+        assert.ok((bp as any).status instanceof StatusMessage);
+        assert.ok((bp as any).status.isError);
+        assert((bp as any).status.description.format.match(
           `${api.messages.INVALID_LINE_NUMBER}.*foo.js:500`));
         done();
       });
@@ -366,18 +358,21 @@ describe('v8debugapi', function() {
   describe('path normalization', function() {
     var breakpoints = [
       { id: 'path0', location: {line: 4, path: path.join(path.sep, 'test',
-        'test-v8debugapi.js')}},
+        'test-v8debugapi-code.js')}},
       { id: 'path1', location: {line: 4, path: path.join('test',
-        'test-v8debugapi.js')}},
-      { id: 'path2', location: {line: 4, path: __filename }},
+        'test-v8debugapi-code.js')}},
+      { id: 'path2', location: {line: 4, path:
+        // Usage the absolute path to `test-v8debugapi-code.js`.
+        __filename.split(path.sep).slice(0, -1).concat('test-v8debugapi-code.js').join(path.sep)
+      }},
       { id: 'with . in path', location: {path: path.join('test', '.',
-        'test-v8debugapi.js'), line: 4}},
+        'test-v8debugapi-code.js'), line: 4}},
       { id: 'with . in path', location: {path: path.join('.',
-        'test-v8debugapi.js'), line: 4}},
+        'test-v8debugapi-code.js'), line: 4}},
       { id: 'with .. in path', location: {path: path.join('test', '..',
-        'test-v8debugapi.js'), line: 4}},
+        'test-v8debugapi-code.js'), line: 4}},
       { id: 'with .. in path', location: {path: path.join('..', 'test',
-        'test-v8debugapi.js'), line: 4}}
+        'test-v8debugapi-code.js'), line: 4}}
     ];
 
     breakpoints.forEach(function(bp) {
@@ -389,7 +384,7 @@ describe('v8debugapi', function() {
             api.clear(bp);
             done();
           });
-          process.nextTick(function() {foo(7);});
+          process.nextTick(function() {code.foo(7);});
         });
       });
     });
@@ -427,7 +422,7 @@ describe('v8debugapi', function() {
         api.log(bp, function(fmt) { transcript += fmt; },
           function() { return completed; });
         var interval = setInterval(function() {
-          foo(1);
+          code.foo(1);
           runCount++;
         }, 100);
         setTimeout(function() {
@@ -454,7 +449,7 @@ describe('v8debugapi', function() {
           api.clear(bp);
           done();
         });
-        process.nextTick(function() {foo(1);});
+        process.nextTick(function() {code.foo(1);});
       });
 
     });
@@ -477,8 +472,8 @@ describe('v8debugapi', function() {
             done();
           }, 100);
         });
-        process.nextTick(function() {foo(1);});
-        setTimeout(function() {foo(2);}, 50);
+        process.nextTick(function() {code.foo(1);});
+        setTimeout(function() {code.foo(2);}, 50);
       });
     });
 
@@ -497,7 +492,7 @@ describe('v8debugapi', function() {
           api.clear(bp);
           done();
         });
-        process.nextTick(function() {foo(1);});
+        process.nextTick(function() {code.foo(1);});
       });
 
     });
@@ -509,10 +504,10 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          assert.ok(bp.stackFrames);
-          assert.ok(bp.variableTable);
+          assert.ok((bp as any).stackFrames);
+          assert.ok((bp as any).variableTable);
 
-          var topFrame = bp.stackFrames[0];
+          var topFrame = (bp as any).stackFrames[0];
           assert.ok(topFrame);
           assert.equal(topFrame['function'], 'foo');
           assert.equal(topFrame.locals[0].name, 'n');
@@ -522,7 +517,7 @@ describe('v8debugapi', function() {
           api.clear(bp);
           done();
         });
-      process.nextTick(function() {foo(2);});
+      process.nextTick(function() {code.foo(2);});
       });
     });
 
@@ -535,19 +530,19 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          assert.ok(bp.stackFrames);
-          assert.ok(bp.variableTable);
-          var topFrame = bp.stackFrames[0];
+          assert.ok((bp as any).stackFrames);
+          assert.ok((bp as any).variableTable);
+          var topFrame = (bp as any).stackFrames[0];
           assert.ok(topFrame);
           assert.equal(topFrame['function'], 'foo');
           assert.equal(topFrame.arguments.length, 1);
-          var argsVal = bp.variableTable[topFrame.arguments[0].varTableIndex];
+          var argsVal = (bp as any).variableTable[topFrame.arguments[0].varTableIndex];
           assert(argsVal.status.isError);
           assert(argsVal.status.description.format.match(
             'Locals and arguments are only displayed.*config.capture.maxExpandFrames=0'
             ));
           assert.equal(topFrame.locals.length, 1);
-          var localsVal = bp.variableTable[topFrame.locals[0].varTableIndex];
+          var localsVal = (bp as any).variableTable[topFrame.locals[0].varTableIndex];
           assert(localsVal.status.isError);
           assert(localsVal.status.description.format.match(
             'Locals and arguments are only displayed.*config.capture.maxExpandFrames=0'
@@ -556,7 +551,7 @@ describe('v8debugapi', function() {
           config.capture.maxExpandFrames = oldCount;
           done();
         });
-      process.nextTick(function() {foo(2);});
+      process.nextTick(function() {code.foo(2);});
       });
     });
 
@@ -569,9 +564,9 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          assert.ok(bp.stackFrames);
-          assert.equal(bp.stackFrames.length, config.capture.maxFrames);
-          var topFrame = bp.stackFrames[0];
+          assert.ok((bp as any).stackFrames);
+          assert.equal((bp as any).stackFrames.length, config.capture.maxFrames);
+          var topFrame = (bp as any).stackFrames[0];
           assert.ok(topFrame);
           assert.equal(topFrame['function'], 'foo');
           assert.equal(topFrame.locals[0].name, 'n');
@@ -580,7 +575,7 @@ describe('v8debugapi', function() {
           config.capture.maxFrames = oldMax;
           done();
         });
-      process.nextTick(function() {foo(2);});
+      process.nextTick(function() {code.foo(2);});
       });
     });
 
@@ -599,21 +594,21 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          assert.ok(bp.stackFrames);
-          assert.ok(bp.variableTable);
-          assert.ok(bp.evaluatedExpressions);
+          assert.ok((bp as any).stackFrames);
+          assert.ok((bp as any).variableTable);
+          assert.ok((bp as any).evaluatedExpressions);
 
-          var topFrame = bp.stackFrames[0];
+          var topFrame = (bp as any).stackFrames[0];
           assert.equal(topFrame['function'], 'foo');
           assert.equal(topFrame.locals[0].name, 'n');
           assert.equal(topFrame.locals[0].value, '3');
 
-          var watch = bp.evaluatedExpressions[0];
+          var watch = (bp as any).evaluatedExpressions[0];
           assert.equal(watch.name, 'process');
           assert.ok(watch.varTableIndex);
 
           // Make sure the process object looks sensible.
-          var processVal = bp.variableTable[watch.varTableIndex];
+          var processVal = (bp as any).variableTable[watch.varTableIndex];
           assert.ok(processVal);
           assert.ok(processVal.members.some(function(m) {
             return m.name === 'nextTick' && m.value.match('function.*');
@@ -627,14 +622,16 @@ describe('v8debugapi', function() {
           config.capture.maxProperties = oldMaxProps;
           done();
         });
-        process.nextTick(function() {foo(3);});
+        process.nextTick(function() {code.foo(3);});
       });
     });
 
     it('should report error for native prop or getter', function(done) {
       var bp = {
         id: 'fake-id-124',
-        location: { path: 'test-v8debugapi.js', line: 9 },
+        // TODO: This path can be lest strict when this file has been
+        //       converted to Typescript.
+        location: { path: 'build/test/test-v8debugapi-code.js', line: 9 },
         expressions: ['process.env', 'hasGetter']
       };
       var oldMaxData = config.capture.maxDataSize;
@@ -644,21 +641,21 @@ describe('v8debugapi', function() {
         api.wait(bp, function(err) {
           assert.ifError(err);
 
-          var procEnv = bp.evaluatedExpressions[0];
+          var procEnv = (bp as any).evaluatedExpressions[0];
           assert.equal(procEnv.name, 'process.env');
-          var envVal = bp.variableTable[procEnv.varTableIndex];
+          var envVal = (bp as any).variableTable[procEnv.varTableIndex];
           envVal.members.forEach(function(member) {
             if (member.hasOwnProperty('varTableIndex')) {
-               assert(bp.variableTable[member.varTableIndex].status.isError);
+               assert((bp as any).variableTable[member.varTableIndex].status.isError);
             }
           });
-          var hasGetter = bp.evaluatedExpressions[1];
-          var getterVal = bp.variableTable[hasGetter.varTableIndex];
+          var hasGetter = (bp as any).evaluatedExpressions[1];
+          var getterVal = (bp as any).variableTable[hasGetter.varTableIndex];
           assert(getterVal.members.some(function(m) {
             return m.value === '5';
           }));
           assert(getterVal.members.some(function(m) {
-            var resolved = bp.variableTable[m.varTableIndex];
+            var resolved = (bp as any).variableTable[m.varTableIndex];
             return resolved && resolved.status.isError;
           }));
 
@@ -666,14 +663,16 @@ describe('v8debugapi', function() {
           config.capture.maxDataSize = oldMaxData;
           done();
         });
-        process.nextTick(function() {getterObject();});
+        process.nextTick(function() {code.getterObject();});
       });
     });
 
     it('should work with array length despite being native', function(done) {
       var bp  = {
         id: breakpointInFoo.id,
-        location:  { path: 'test-v8debugapi.js', line: 5 },
+        // TODO: This path can be lest strict when this file has been
+        //       converted to Typescript.
+        location:  { path: 'build/test/test-v8debugapi-code.js', line: 5 },
         expressions: ['A']
       };
       api.set(bp, function(err) {
@@ -681,9 +680,9 @@ describe('v8debugapi', function() {
         api.wait(bp, function(err) {
           assert.ifError(err);
 
-          var arrEnv = bp.evaluatedExpressions[0];
+          var arrEnv = (bp as any).evaluatedExpressions[0];
           assert.equal(arrEnv.name, 'A');
-          var envVal = bp.variableTable[arrEnv.varTableIndex];
+          var envVal = (bp as any).variableTable[arrEnv.varTableIndex];
           var found = false;
           envVal.members.forEach(function(member) {
             if (member.name === 'length') {
@@ -697,14 +696,16 @@ describe('v8debugapi', function() {
           api.clear(bp);
           done();
         });
-        process.nextTick(function() {foo();});
+        process.nextTick(function() {code.foo();});
       });
     });
 
     it('should limit string length', function(done) {
       var bp = {
         id: 'fake-id-124',
-        location: { path: 'test-v8debugapi.js', line: 9 }
+        // TODO: This path can be lest strict when this file has been
+        //       converted to Typescript.
+        location: { path: 'build/test/test-v8debugapi-code.js', line: 9 }
       };
       var oldMaxLength = config.capture.maxStringLength;
       var oldMaxData = config.capture.maxDataSize;
@@ -714,10 +715,10 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          var hasGetter = bp.stackFrames[0].locals.filter(function(value) {
+          var hasGetter = (bp as any).stackFrames[0].locals.filter(function(value) {
             return value.name === 'hasGetter';
           });
-          var getterVal = bp.variableTable[hasGetter[0].varTableIndex];
+          var getterVal = (bp as any).variableTable[hasGetter[0].varTableIndex];
           var stringItems = getterVal.members.filter(function(m) {
             return m.value === 'hel...';
           });
@@ -731,14 +732,16 @@ describe('v8debugapi', function() {
           config.capture.maxStringLength = oldMaxLength;
           done();
         });
-        process.nextTick(function() {getterObject();});
+        process.nextTick(function() {code.getterObject();});
       });
     });
 
     it('should limit array length', function(done) {
       var bp = {
         id: 'fake-id-124',
-        location: { path: 'test-v8debugapi.js', line: 5 }
+        // TODO: This path can be lest strict when this file has been
+        //       converted to Typescript.
+        location: { path: 'build/test/test-v8debugapi-code.js', line: 5 }
       };
       var oldMax = config.capture.maxProperties;
       config.capture.maxProperties = 1;
@@ -746,10 +749,10 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          var aResults = bp.stackFrames[0].locals.filter(function(value) {
+          var aResults = (bp as any).stackFrames[0].locals.filter(function(value) {
             return value.name === 'A';
           });
-          var aVal = bp.variableTable[aResults[0].varTableIndex];
+          var aVal = (bp as any).variableTable[aResults[0].varTableIndex];
           // should have 1 element + truncation message.
           assert.equal(aVal.members.length, 2);
           assert(aVal.members[1].name.match(
@@ -759,14 +762,16 @@ describe('v8debugapi', function() {
           config.capture.maxProperties = oldMax;
           done();
         });
-        process.nextTick(function() {foo(2);});
+        process.nextTick(function() {code.foo(2);});
       });
     });
 
     it('should limit object length', function(done) {
       var bp = {
         id: 'fake-id-124',
-        location: { path: 'test-v8debugapi.js', line: 5 }
+        // TODO: This path can be lest strict when this file has been
+        //       converted to Typescript.
+        location: { path: 'build/test/test-v8debugapi-code.js', line: 5 }
       };
       var oldMax = config.capture.maxProperties;
       config.capture.maxProperties = 1;
@@ -774,10 +779,10 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          var bResults = bp.stackFrames[0].locals.filter(function(value) {
+          var bResults = (bp as any).stackFrames[0].locals.filter(function(value) {
             return value.name === 'B';
           });
-          var bVal = bp.variableTable[bResults[0].varTableIndex];
+          var bVal = (bp as any).variableTable[bResults[0].varTableIndex];
           // should have 1 element + truncation message
           assert.equal(bVal.members.length, 2);
           assert(bVal.members[1].name.match(
@@ -787,7 +792,7 @@ describe('v8debugapi', function() {
           config.capture.maxProperties = oldMax;
           done();
         });
-        process.nextTick(function() {foo(2);});
+        process.nextTick(function() {code.foo(2);});
       });
     });
 
@@ -795,7 +800,9 @@ describe('v8debugapi', function() {
         function(done) {
       var bp = {
         id: 'fake-id-124',
-        location: { path: 'test-v8debugapi.js', line: 9 },
+        // TODO: This path can be lest strict when this file has been
+        //       converted to Typescript.
+        location: { path: 'build/test/test-v8debugapi-code.js', line: 9 },
         expressions: ['hasGetter']
       };
       var oldMaxLength = config.capture.maxStringLength;
@@ -806,8 +813,8 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          var hasGetter = bp.evaluatedExpressions[0];
-          var getterVal = bp.variableTable[hasGetter.varTableIndex];
+          var hasGetter = (bp as any).evaluatedExpressions[0];
+          var getterVal = (bp as any).variableTable[hasGetter.varTableIndex];
           var stringItems = getterVal.members.filter(function(m) {
             return m.value === 'hello world';
           });
@@ -820,7 +827,7 @@ describe('v8debugapi', function() {
           config.capture.maxStringLength = oldMaxLength;
           done();
         });
-        process.nextTick(function() {getterObject();});
+        process.nextTick(function() {code.getterObject();});
       });
     });
 
@@ -828,7 +835,9 @@ describe('v8debugapi', function() {
       function(done) {
         var bp = {
           id: 'fake-id-124',
-          location: { path: 'test-v8debugapi.js', line: 5 },
+          // TODO: This path can be lest strict when this file has been
+          //       converted to Typescript.
+          location: { path: 'build/test/test-v8debugapi-code.js', line: 5 },
           expressions: ['A']
         };
         var oldMaxProps = config.capture.maxProperties;
@@ -839,8 +848,8 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            var foo = bp.evaluatedExpressions[0];
-            var fooVal = bp.variableTable[foo.varTableIndex];
+            var foo = (bp as any).evaluatedExpressions[0];
+            var fooVal = (bp as any).variableTable[foo.varTableIndex];
             // '1', '2', '3', and 'length'
             assert.equal(fooVal.members.length, 4);
             assert.strictEqual(foo.status, undefined);
@@ -850,7 +859,7 @@ describe('v8debugapi', function() {
             config.capture.maxProperties = oldMaxProps;
             done();
           });
-          process.nextTick(function() {foo(2);});
+          process.nextTick(function() {code.foo(2);});
         });
     });
 
@@ -858,7 +867,9 @@ describe('v8debugapi', function() {
       function(done) {
         var bp = {
           id: 'fake-id-124',
-          location: { path: 'test-v8debugapi.js', line: 5 },
+          // TODO: This path can be lest strict when this file has been
+          //       converted to Typescript.
+          location: { path: 'build/test/test-v8debugapi-code.js', line: 5 },
           expressions: ['B']
         };
         var oldMaxProps = config.capture.maxProperties;
@@ -869,8 +880,8 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            var foo = bp.evaluatedExpressions[0];
-            var fooVal = bp.variableTable[foo.varTableIndex];
+            var foo = (bp as any).evaluatedExpressions[0];
+            var fooVal = (bp as any).variableTable[foo.varTableIndex];
             assert.equal(fooVal.members.length, 3);
             assert.strictEqual(foo.status, undefined);
 
@@ -879,7 +890,7 @@ describe('v8debugapi', function() {
             config.capture.maxProperties = oldMaxProps;
             done();
           });
-          process.nextTick(function() {foo(2);});
+          process.nextTick(function() {code.foo(2);});
         });
     });
 
@@ -887,7 +898,9 @@ describe('v8debugapi', function() {
       function(done) {
         var bp = {
           id: 'fake-id-124',
-          location: { path: 'test-v8debugapi.js', line: 5 },
+          // TODO: This path can be lest strict when this file has been
+          //       converted to Typescript.
+          location: { path: 'build/test/test-v8debugapi-code.js', line: 5 },
           expressions: ['A']
         };
         var oldMaxProps = config.capture.maxProperties;
@@ -898,8 +911,8 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            var foo = bp.evaluatedExpressions[0];
-            var fooVal = bp.variableTable[foo.varTableIndex];
+            var foo = (bp as any).evaluatedExpressions[0];
+            var fooVal = (bp as any).variableTable[foo.varTableIndex];
             assert(fooVal.status.description.format.match(
               'Max data size reached'));
             assert(fooVal.status.isError);
@@ -909,7 +922,7 @@ describe('v8debugapi', function() {
             config.capture.maxProperties = oldMaxProps;
             done();
           });
-          process.nextTick(function() {foo(2);});
+          process.nextTick(function() {code.foo(2);});
         });
     });
 
@@ -917,7 +930,9 @@ describe('v8debugapi', function() {
       function(done) {
         var bp = {
           id: 'fake-id-124',
-          location: { path: 'test-v8debugapi.js', line: 5 },
+          // TODO: This path can be lest strict when this file has been
+          //       converted to Typescript.
+          location: { path: 'build/test/test-v8debugapi-code.js', line: 5 },
           expressions: ['B']
         };
         var oldMaxProps = config.capture.maxProperties;
@@ -928,8 +943,8 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            var foo = bp.evaluatedExpressions[0];
-            var fooVal = bp.variableTable[foo.varTableIndex];
+            var foo = (bp as any).evaluatedExpressions[0];
+            var fooVal = (bp as any).variableTable[foo.varTableIndex];
             assert(fooVal.status.description.format.match(
               'Max data size reached'));
             assert(fooVal.status.isError);
@@ -939,7 +954,7 @@ describe('v8debugapi', function() {
             config.capture.maxProperties = oldMaxProps;
             done();
           });
-          process.nextTick(function() {foo(2);});
+          process.nextTick(function() {code.foo(2);});
         });
     });
 
@@ -947,7 +962,9 @@ describe('v8debugapi', function() {
       function(done) {
         var bp = {
           id: 'fake-id-124',
-          location: { path: 'test-v8debugapi.js', line: 5 },
+          // TODO: This path can be lest strict when this file has been
+          //       converted to Typescript.
+          location: { path: 'build/test/test-v8debugapi-code.js', line: 5 },
           expressions: ['A']
         };
         var oldMaxProps = config.capture.maxProperties;
@@ -959,7 +976,7 @@ describe('v8debugapi', function() {
           api.wait(bp, function(err) {
             assert.ifError(err);
 
-            var bResults = bp.stackFrames[0].locals.filter(function(value) {
+            var bResults = (bp as any).stackFrames[0].locals.filter(function(value) {
               return value.name === 'B';
             });
             assert(bResults);
@@ -976,7 +993,7 @@ describe('v8debugapi', function() {
             config.capture.maxProperties = oldMaxProps;
             done();
           });
-          process.nextTick(function() {foo(2);});
+          process.nextTick(function() {code.foo(2);});
         });
     });
 
@@ -991,19 +1008,19 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          assert.ok(bp.stackFrames);
-          assert.ok(bp.variableTable);
-          assert.ok(bp.evaluatedExpressions);
+          assert.ok((bp as any).stackFrames);
+          assert.ok((bp as any).variableTable);
+          assert.ok((bp as any).evaluatedExpressions);
 
-          for (var i in bp.evaluatedExpressions) {
-            var expr = bp.evaluatedExpressions[i];
+          for (var i in (bp as any).evaluatedExpressions) {
+            var expr = (bp as any).evaluatedExpressions[i];
             assert(expr.status && expr.status.isError);
           }
 
           api.clear(bp);
           done();
         });
-        process.nextTick(function() {foo(3);});
+        process.nextTick(function() {code.foo(3);});
       });
 
     });
@@ -1019,15 +1036,15 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          assert.ok(bp.stackFrames);
+          assert.ok((bp as any).stackFrames);
 
-          var topFrame = bp.stackFrames[0];
+          var topFrame = (bp as any).stackFrames[0];
           assert.equal(topFrame.locals[0].name, 'n');
           assert.equal(topFrame.locals[0].value, '5');
           api.clear(bp);
           done();
         });
-        process.nextTick(function() {foo(4); foo(5);});
+        process.nextTick(function() {code.foo(4); code.foo(5);});
       });
 
     });
@@ -1046,9 +1063,9 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            assert.ok(bp.stackFrames);
+            assert.ok((bp as any).stackFrames);
 
-            var topFrame = bp.stackFrames[0];
+            var topFrame = (bp as any).stackFrames[0];
             assert.equal(topFrame['function'], 'foo');
             assert.equal(topFrame.locals[0].name, 'n');
             assert.equal(topFrame.locals[0].value, '3');
@@ -1088,9 +1105,9 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            assert.ok(bp.stackFrames);
+            assert.ok((bp as any).stackFrames);
 
-            var topFrame = bp.stackFrames[0];
+            var topFrame = (bp as any).stackFrames[0];
             assert.equal(topFrame.locals[0].name, 'j');
             assert.equal(topFrame.locals[0].value, '2');
             assert.equal(topFrame['function'], 'foo');
@@ -1115,12 +1132,12 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            assert.ok(bp.stackFrames);
-            assert.ok(bp.variableTable);
-            assert.ok(bp.evaluatedExpressions);
+            assert.ok((bp as any).stackFrames);
+            assert.ok((bp as any).variableTable);
+            assert.ok((bp as any).evaluatedExpressions);
 
-            for (var i in bp.evaluatedExpressions) {
-              var expr = bp.evaluatedExpressions[i];
+            for (var i in (bp as any).evaluatedExpressions) {
+              var expr = (bp as any).evaluatedExpressions[i];
               assert(expr.value === String(Math.PI * 3));
             }
 
@@ -1146,12 +1163,12 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            assert.ok(bp.stackFrames);
-            assert.ok(bp.variableTable);
-            assert.ok(bp.evaluatedExpressions);
+            assert.ok((bp as any).stackFrames);
+            assert.ok((bp as any).variableTable);
+            assert.ok((bp as any).evaluatedExpressions);
 
-            for (var i in bp.evaluatedExpressions) {
-              var expr = bp.evaluatedExpressions[i];
+            for (var i in (bp as any).evaluatedExpressions) {
+              var expr = (bp as any).evaluatedExpressions[i];
               assert(expr.status && expr.status.isError);
               if (expr.name === ':)' ||
                   expr.name === 'process=this' ||
@@ -1184,7 +1201,7 @@ describe('v8debugapi', function() {
             assert(false, 'should not reach here');
           });
           process.nextTick(function() {
-            foo(6);
+            code.foo(6);
             process.nextTick(function() {
               api.clear(bp);
               assert(stateIsClean(api));
@@ -1224,7 +1241,7 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          assert.ok(bp.stackFrames);
+          assert.ok((bp as any).stackFrames);
 
           api.clear(bp);
           done();
@@ -1256,7 +1273,7 @@ describe('v8debugapi', function() {
           api.clear(bp);
           throw new Error(message);
         });
-        process.nextTick(function() {foo(1);});
+        process.nextTick(function() {code.foo(1);});
       });
     });
 
@@ -1274,9 +1291,9 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, (err) => {
           assert.ifError(err);
-          assert.ok(bp.stackFrames);
+          assert.ok((bp as any).stackFrames);
 
-          const topFrame = bp.stackFrames[0];
+          const topFrame = (bp as any).stackFrames[0];
           assert.ok(topFrame.locals.some((local) => (local.name === '_a')));
           assert.ok(topFrame.locals.some((local) => (local.name === 'res')));
           api.clear(bp);
