@@ -22,7 +22,11 @@
 
 var pjson = require('../package.json');
 var common = require('@google-cloud/common');
-var qs = require('querystring');
+// TODO: Verify these types are correct.
+const qs: { parse: (qs: any, sep?: string, eq?: string,
+  options?: { maxKeys?: number }) => any,
+  stringify: (obj: object|string|boolean|number, sep?: string,
+    eq?: string, name?: string) => string} = require('querystring');
 import * as util from 'util';
 
 /** @const {string} Cloud Debug API endpoint */

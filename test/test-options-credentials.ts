@@ -19,7 +19,7 @@ import * as path from 'path';
 import * as assert from 'assert';
 import * as nock from 'nock';
 var nocks = require('./nocks.js');
-var extend = require('extend');
+import * as extend from 'extend';
 var config = require('../src/agent/config.js').default;
 var Debuglet = require('../src/agent/debuglet.js').Debuglet;
 

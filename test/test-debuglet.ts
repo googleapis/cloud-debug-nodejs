@@ -22,7 +22,7 @@ var DEFAULT_CONFIG = require('../src/agent/config.js').default;
 DEFAULT_CONFIG.allowExpressions = true;
 DEFAULT_CONFIG.workingDirectory = path.join(__dirname, '..');
 var Debuglet = require('../src/agent/debuglet.js').Debuglet;
-var dns = require('dns');
+import * as dns from 'dns';
 import * as extend from 'extend';
 var metadata = require('gcp-metadata');
 
@@ -68,11 +68,15 @@ describe('Debuglet', function() {
     });
     
     after(() => {
-      dns.lookup = savedLookup;
+      // TODO: Fix this cast to any that is caused by the fact that `lookup`
+      //       is a readonly property.
+      (dns as any).lookup = savedLookup;
     });
 
     it('should resolve true if metadata service is resolveable', (done) => {
-      dns.lookup = (hostname, cb) => {
+      // TODO: Fix this cast to any that is caused by the fact that `lookup`
+      //       is a readonly property.
+      (dns as any).lookup = (hostname, cb) => {
         setImmediate(() => {
           cb(null, { address: '700.800.900.fake', family: 'Addams'});
         });
@@ -85,7 +89,9 @@ describe('Debuglet', function() {
     });
 
     it('should resolve false if metadata service not resolveable', (done) => {
-      dns.lookup = (hostname, cb) => {
+      // TODO: Fix this cast to any that is caused by the fact that `lookup`
+      //       is a readonly property.
+      (dns as any).lookup = (hostname, cb) => {
         setImmediate(() => {
           cb(new Error('resolution error'));
         });
