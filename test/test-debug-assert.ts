@@ -15,7 +15,7 @@
  */
 'use strict';
 
-const realAssert = require('assert');
+import * as realAssert from 'assert';
 
 describe('debug-assert', () => {
   const debugAssert = require('../src/agent/debug-assert.js').debugAssert;

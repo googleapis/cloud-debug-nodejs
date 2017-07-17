@@ -15,9 +15,9 @@
  */
 'use strict';
 
-var path = require('path');
+import * as path from 'path';
 import * as assert from 'assert';
-var nock = require('nock');
+import * as nock from 'nock';
 var nocks = require('./nocks.js');
 var extend = require('extend');
 var config = require('../src/agent/config.js').default;

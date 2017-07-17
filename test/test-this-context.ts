@@ -15,7 +15,7 @@
  */
 
 import * as assert from 'assert';
-var extend = require('extend');
+import * as extend from 'extend';
 var v8debugapi = require('../src/agent/v8debugapi.js');
 var common = require('@google-cloud/common');
 var defaultConfig = require('../src/agent/config.js').default;

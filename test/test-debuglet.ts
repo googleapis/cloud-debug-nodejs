@@ -15,15 +15,15 @@
  */
 'use strict';
 
-var _ = require('lodash');
-var path = require('path');
+import * as _ from 'lodash';
+import * as path from 'path';
 import * as assert from 'assert';
 var DEFAULT_CONFIG = require('../src/agent/config.js').default;
 DEFAULT_CONFIG.allowExpressions = true;
 DEFAULT_CONFIG.workingDirectory = path.join(__dirname, '..');
 var Debuglet = require('../src/agent/debuglet.js').Debuglet;
 var dns = require('dns');
-var extend = require('extend');
+import * as extend from 'extend';
 var metadata = require('gcp-metadata');
 
 var DEBUGGEE_ID = 'bar';

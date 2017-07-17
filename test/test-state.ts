@@ -15,7 +15,7 @@
  */
 'use strict';
 
-const assert = require('assert');
+import * as assert from 'assert';
 const state = require('../src/agent/state.js');
 
 describe('state', () => {

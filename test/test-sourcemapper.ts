@@ -17,7 +17,7 @@
 'use strict';
 
 import * as assert from 'assert';
-var path = require('path');
+import * as path from 'path';
 
 var SourceMapper = require('../src/agent/sourcemapper.js');
 

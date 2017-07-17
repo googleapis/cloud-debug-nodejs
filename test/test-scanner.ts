@@ -15,8 +15,8 @@
  */
  'use strict';
 
-var fs = require('fs');
-var path = require('path');
+import * as fs from 'fs';
+import * as path from 'path';
 import * as assert from 'assert';
 
 var fixtureDir = path.join(__dirname, './fixtures');

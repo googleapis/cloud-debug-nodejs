@@ -23,15 +23,15 @@ var breakpointInFoo = {
 var MAX_INT = 2147483647; // Max signed int32.
 
 import * as assert from 'assert';
-var extend = require('extend');
+import * as extend from 'extend';
 var v8debugapi = require('../src/agent/v8debugapi.js');
 var common = require('@google-cloud/common');
 var defaultConfig = require('../src/agent/config.js').default;
 var StatusMessage = require('../src/status-message.js').StatusMessage;
 var scanner = require('../src/agent/scanner.js');
 var SourceMapper = require('../src/agent/sourcemapper.js');
-var path = require('path');
-var semver = require('semver');
+import * as path from 'path';
+import * as semver from 'semver';
 var code = require('./test-v8debugapi-code.js');
 
 function stateIsClean(api) {

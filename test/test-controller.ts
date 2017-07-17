@@ -15,8 +15,8 @@
  */
 
 import * as assert from 'assert';
-var nock   = require('nock');
-var request = require('./auth-request.js');
+import * as nock from 'nock';
+var request = require('./auth-request.js').default;
 var Debuggee = require('../src/debuggee.js').Debuggee;
 
 // the tests in this file rely on the GCLOUD_PROJECT environment variable

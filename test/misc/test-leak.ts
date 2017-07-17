@@ -4,7 +4,7 @@ var v8debugapi = require('../src/v8debugapi.js');
 var Logger = require('../src/logger.js');
 var config = require('../config.js').default;
 import * as assert from 'assert';
-var util = require('util');
+import * as util from 'util';
 var logger = new Logger(config.logLevel);
 
 assert.ok(v8debugapi.init(logger, config));

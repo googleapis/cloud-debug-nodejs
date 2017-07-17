@@ -23,7 +23,7 @@
 var pjson = require('../package.json');
 var common = require('@google-cloud/common');
 var qs = require('querystring');
-var util = require('util');
+import * as util from 'util';
 
 /** @const {string} Cloud Debug API endpoint */
 var API = 'https://clouddebugger.googleapis.com/v2/debugger';

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
- var nock = require('nock');
+import * as nock from 'nock';
 
 // In the future _=>true.
 function accept() {
