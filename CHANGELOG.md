@@ -1,5 +1,23 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## 2017-07-17, Version 2.1.3 (Beta), @ofrobots
+
+This module is now in Beta. This release (re)-fixes the naming of debug targets on GKE (#308) along with a fuzzy search for sourcemaps (#306).
+
+### Commits
+* [[`eff37c20f5`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/eff37c20f5)] - beta (#310) (Ali Ijaz Sheikh)
+* [[`70d8730d13`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/70d8730d13)] - Use clusterName as service name on GKE (#309) (Ali Ijaz Sheikh)
+* [[`8ddb5ec87f`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/8ddb5ec87f)] - Simplify metadata (#308) (Ali Ijaz Sheikh)
+* [[`800ed08d5e`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/800ed08d5e)] - Start using async/await to flatten the pyramid in Debuglet.start (#307) (Ali Ijaz Sheikh)
+* [[`db21564549`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/db21564549)] - Use fuzzy search when using sourcemaps (#306) (Dominic Kramer)
+* [[`f13d122718`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/f13d122718)] - lint, tooling, and other misc. changes (#304) (Ali Ijaz Sheikh)
+* [[`dd8ef67432`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/dd8ef67432)] - switch to package-lock.json (#305) (Ali Ijaz Sheikh)
+* [[`2d07105969`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/2d07105969)] - tune up configuration types (#300) (Ali Ijaz Sheikh)
+* [[`9eb42e66e7`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/9eb42e66e7)] - npm scripts cleanup (#302) (Ali Ijaz Sheikh)
+* [[`2297c09557`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/2297c09557)] - Lint and yarn (#301) (Ali Ijaz Sheikh)
+* [[`7ccdcd7274`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/7ccdcd7274)] - drop test dependency on proxyquire (#303) (Ali Ijaz Sheikh)
+* [[`0679ec7835`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/0679ec7835)] - v2.1.2 (Ali Ijaz Sheikh)
+
 ## 2017-07-05, Version 2.1.2 (Experimental), @ofrobots
 
 This release fixes the handling of `waitExpired` (#287) which was causing breakpoints to be expired too early.
