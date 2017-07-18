@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
+import * as apiTypes from '../src/types/api-types';
+
 import * as assert from 'assert';
 import * as nock from 'nock';
 import * as request from './auth-request';
 import {Debuggee} from '../src/debuggee';
+import {Debug} from '../src/debug';
 
 // the tests in this file rely on the GCLOUD_PROJECT environment variable
 // not being set
@@ -45,9 +48,12 @@ describe('Controller API', function() {
       var debuggee = new Debuggee({
         project: 'fake-project',
         uniquifier: 'fake-id',
-        description: 'unit test'
+        description: 'unit test',
+        // TODO: Determine if statusMessage should be optional.
+        statusMessage: null
       });
-      var controller = new Controller(fakeDebug);
+      // TODO: Fix fakeDebug to actually implement Debug.
+      var controller = new Controller(fakeDebug as any as Debug);
       controller.register(debuggee, function(err, result) {
         assert(!err, 'not expecting an error');
         assert.equal(result.debuggee.id, 'fake-debuggee');
@@ -67,9 +73,12 @@ describe('Controller API', function() {
          var debuggee = new Debuggee({
            project: 'fake-project',
            uniquifier: 'fake-id',
-           description: 'unit test'
+           description: 'unit test',
+           // TODO: Determine if statusMessage should be optional.
+          statusMessage: null
          });
-         var controller = new Controller(fakeDebug);
+        // TODO: Fix fakeDebug to actually implement Debug.
+         var controller = new Controller(fakeDebug as any as Debug);
          controller.register(debuggee, function(err, result) {
            // TODO: Fix this incorrect method signature.
            (assert as any).ifError(err, 'not expecting an error');
@@ -95,9 +104,12 @@ describe('Controller API', function() {
       var debuggee = new Debuggee({
         project: 'fake-project',
         uniquifier: 'fake-id',
-        description: 'unit test'
+        description: 'unit test',
+        // TODO: Determine if statusMessage should be optional.
+        statusMessage: null
       });
-      var controller = new Controller(fakeDebug);
+      // TODO: Fix fakeDebug to actually implement Debug.
+      var controller = new Controller(fakeDebug as any as Debug);
       controller.register(debuggee, function(err/*, result*/) {
         assert.ifError(err);
         done();
@@ -110,8 +122,10 @@ describe('Controller API', function() {
         .reply(200, { kind: 'whatever' });
 
       var debuggee = { id: 'fake-debuggee' };
-      var controller = new Controller(fakeDebug);
-      controller.listBreakpoints(debuggee, function(err, response, result) {
+      // TODO: Fix fakeDebug to actually implement Debug.
+      var controller = new Controller(fakeDebug as any as Debug);
+      // TODO: Fix debuggee to actually implement Debuggee
+      controller.listBreakpoints(debuggee as Debuggee, function(err, response, result) {
         assert(!err, 'not expecting an error');
         assert(!result.breakpoints, 'should not have a breakpoints property');
         scope.done();
@@ -127,8 +141,10 @@ describe('Controller API', function() {
             .get(api + '/debuggees/fake-debuggee/breakpoints?successOnTimeout=true')
             .reply(200, invalidResponse);
           var debuggee = { id: 'fake-debuggee' };
-          var controller = new Controller(fakeDebug);
-          controller.listBreakpoints(debuggee, function(err, response, result) {
+          // TODO: Fix fakeDebug to actually implement Debug.
+          var controller = new Controller(fakeDebug as any as Debug);
+          // TODO: Fix debuggee to actually implement Debuggee
+          controller.listBreakpoints(debuggee as Debuggee, function(err, response, result) {
             assert(!err, 'not expecting an error');
             assert(!result.breakpoints, 'should not have breakpoints property');
             scope.done();
@@ -143,8 +159,10 @@ describe('Controller API', function() {
         .get(api + '/debuggees/fake-debuggee/breakpoints?successOnTimeout=true')
         .reply(403);
       var debuggee = { id: 'fake-debuggee' };
-      var controller = new Controller(fakeDebug);
-      controller.listBreakpoints(debuggee, function(err, response, result) {
+      // TODO: Fix fakeDebug to actually implement Debug.
+      var controller = new Controller(fakeDebug as any as Debug);
+      // TODO: Fix debuggee to actually implement Debuggee
+      controller.listBreakpoints(debuggee as Debuggee, function(err, response, result) {
         assert(err instanceof Error, 'expecting an error');
         assert(!result, 'should not have a result');
         scope.done();
@@ -159,11 +177,15 @@ describe('Controller API', function() {
           waitExpired: true
         });
       var debuggee = { id: 'fake-debuggee' };
-      var controller = new Controller(fakeDebug);
-      controller.listBreakpoints(debuggee, function(err, response, result) {
+      // TODO: Fix fakeDebug to actually implement Debug.
+      var controller = new Controller(fakeDebug as any as Debug);
+      // TODO: Fix debuggee to actually implement Debuggee
+      controller.listBreakpoints(debuggee as Debuggee, function(err, response, result) {
         // TODO: Fix this incorrect method signature.
         (assert as any).ifError(err, 'not expecting an error');
-        assert(response.body.waitExpired, 'should have expired set');
+        // TODO: Fix this error that states `body` is not a property
+        //       of `ServerResponse`.
+        assert((response as any).body.waitExpired, 'should have expired set');
         scope.done();
         done();
       });
@@ -182,8 +204,10 @@ describe('Controller API', function() {
             breakpoints: breakpoints
           });
         var debuggee = { id: 'fake-debuggee' };
-        var controller = new Controller(fakeDebug);
-        controller.listBreakpoints(debuggee, function(err, response, result) {
+        // TODO: Fix fakeDebug to actually implement Debug.
+        var controller = new Controller(fakeDebug as any as Debug);
+        // TODO: Fix debuggee to actually implement Debuggee
+        controller.listBreakpoints(debuggee as Debuggee, function(err, response, result) {
           assert(!err, 'not expecting an error');
           assert(result.breakpoints, 'should have a breakpoints property');
           var bps = result.breakpoints;
@@ -205,8 +229,11 @@ describe('Controller API', function() {
           })
         .reply(200, { kind: 'debugletcontroller#updateActiveBreakpointResponse'});
       var debuggee = { id: 'fake-debuggee' };
-      var controller = new Controller(fakeDebug);
-      controller.updateBreakpoint(debuggee, breakpoint,
+      // TODO: Fix fakeDebug to actually implement Debug.
+      var controller = new Controller(fakeDebug as any as Debug);
+      // TODO: Fix debuggee to actually implement Debuggee
+      // TODO: Fix breakpoint to actually Breakpoint
+      controller.updateBreakpoint(debuggee as Debuggee, breakpoint as apiTypes.Breakpoint,
         function(err, result) {
           assert(!err, 'not expecting an error');
           assert.equal(result.kind, 'debugletcontroller#updateActiveBreakpointResponse');

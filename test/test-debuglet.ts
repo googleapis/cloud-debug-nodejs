@@ -15,6 +15,8 @@
  */
 'use strict';
 
+import {DebugAgentConfig} from '../src/agent/config';
+
 import * as _ from 'lodash';
 import * as path from 'path';
 import * as assert from 'assert';
@@ -200,6 +202,8 @@ describe('Debuglet', function() {
       Debuglet.getProjectIdFromMetadata = () => {
         // TODO: Fix this invalid method signature.
         (assert as any).fail();
+        // TODO: Determine if this should be used here.
+        return Promise.reject('');
       };
       Debuglet.getProjectId({ projectId: 'from-config' }).then((projectId) => {
         assert.strictEqual(projectId, 'from-config');
@@ -215,6 +219,8 @@ describe('Debuglet', function() {
       Debuglet.getProjectIdFromMetadata = () => {
         // TODO: Fix this invalid method signature.
         (assert as any).fail();
+        // TODO: Determine if this should be used here.
+        return Promise.reject('');
       };
       Debuglet.getProjectId({}).then((projectId) => {
         assert.strictEqual(projectId, 'from-env-var');
@@ -270,8 +276,11 @@ describe('Debuglet', function() {
       var testValue = 2 * defaultConfig.capture.maxExpandFrames;
       var config = {capture: {maxExpandFrames: testValue}};
 
-      var mergedConfig = Debuglet.normalizeConfig_(config);
-      var compareConfig = Debuglet.normalizeConfig_();
+      // TODO: Fix this so that config does not have to be cast as DebugAgentConfig.
+      var mergedConfig = Debuglet.normalizeConfig_(config as DebugAgentConfig);
+      // TODO: Debuglet.normalizeConfig_() expects 1 parameter.  Determine
+      //       if `undefined` should be used here.
+      var compareConfig = Debuglet.normalizeConfig_(undefined);
       // The actual config should be exactly defaultConfig with only
       // maxExpandFrames adjusted.
       compareConfig.capture.maxExpandFrames = testValue;
@@ -512,7 +521,8 @@ describe('Debuglet', function() {
            assert.ok(debuglet.config_);
            assert.ok(debuglet.config_.serviceContext);
            assert.ok(
-               _.isUndefined(debuglet.config_.serviceContext.minorVersion));
+               // TODO: Verify that this should corrected from minorVersion to minorVersion_
+               _.isUndefined(debuglet.config_.serviceContext.minorVersion_));
          });
 
       it('should not provide minorversion upon registration on non flex',
@@ -656,7 +666,10 @@ describe('Debuglet', function() {
       var old = Debuglet.prototype.getSourceContext_;
       Debuglet.prototype.getSourceContext_ = function(cb) {
         setImmediate(function () {
-          cb(null, {a: 5});
+          // TODO: Determine if 5 should be converted to a string or if the
+          //       the object literal should allow keys with values that are
+          //       numbers.
+          cb(null, {a: '' + 5});
         });
       };
       var debuglet = new Debuglet(debug, defaultConfig);
@@ -1002,18 +1015,20 @@ describe('Debuglet', function() {
 
   describe('format', function() {
     it('should be correct', function() {
-      assert.deepEqual(Debuglet.format('hi', [5]), 'hi');
-      assert.deepEqual(Debuglet.format('hi $0', [5]), 'hi 5');
-      assert.deepEqual(Debuglet.format('hi $0 $1', [5, 'there']), 'hi 5 there');
-      assert.deepEqual(Debuglet.format('hi $0 $1', [5]), 'hi 5 $1');
-      assert.deepEqual(Debuglet.format('hi $0 $1 $0', [5]), 'hi 5 $1 5');
-      assert.deepEqual(Debuglet.format('hi $$', [5]), 'hi $');
-      assert.deepEqual(Debuglet.format('hi $$0', [5]), 'hi $0');
-      assert.deepEqual(Debuglet.format('hi $00', [5]), 'hi 50');
-      assert.deepEqual(Debuglet.format('hi $0', ['$1', 5]), 'hi $1');
+      // TODO: Determine if Debuglet.format() should allow a number[]
+      //       or if only string[] should be allowed.
+      assert.deepEqual(Debuglet.format('hi', [5] as any as string[]), 'hi');
+      assert.deepEqual(Debuglet.format('hi $0', [5] as any as string[]), 'hi 5');
+      assert.deepEqual(Debuglet.format('hi $0 $1', [5, 'there'] as any as string[]), 'hi 5 there');
+      assert.deepEqual(Debuglet.format('hi $0 $1', [5] as any as string[]), 'hi 5 $1');
+      assert.deepEqual(Debuglet.format('hi $0 $1 $0', [5] as any as string[]), 'hi 5 $1 5');
+      assert.deepEqual(Debuglet.format('hi $$', [5] as any as string[]), 'hi $');
+      assert.deepEqual(Debuglet.format('hi $$0', [5] as any as string[]), 'hi $0');
+      assert.deepEqual(Debuglet.format('hi $00', [5] as any as string[]), 'hi 50');
+      assert.deepEqual(Debuglet.format('hi $0', ['$1', 5] as any as string[]), 'hi $1');
       assert.deepEqual(
           Debuglet.format('hi $11',
-                          [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd']),
+                          [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd'] as any as string[]),
           'hi b');
     });
   });
@@ -1022,7 +1037,12 @@ describe('Debuglet', function() {
     it('should have sensible labels', function() {
       var debuggee = Debuglet.createDebuggee(
           'some project', 'id',
-          {service: 'some-service', version: 'production'});
+          // TODO: Verify that `null` for minorVersion_ should be used here
+          //       or if minorVersion_ should be optional.
+          {service: 'some-service', version: 'production', minorVersion_: null},
+          // TODO: Determine if these are the correct values that should be
+          //       use here.
+          {}, null, null, false);
       assert.ok(debuggee);
       assert.ok(debuggee.labels);
       assert.strictEqual(debuggee.labels.module, 'some-service');
@@ -1032,7 +1052,12 @@ describe('Debuglet', function() {
     it('should not add a module label when service is default', function() {
       var debuggee =
           Debuglet.createDebuggee('fancy-project', 'very-unique',
-                                  {service: 'default', version: 'yellow.5'});
+                                  // TODO: Verify that `null` for minorVersion_ should be used here
+                                  //       or if minorVersion_ should be optional.
+                                  {service: 'default', version: 'yellow.5', minorVersion_: null},
+                                  // TODO: Determine if these are the correct values that should be
+                                  //       use here.
+                                  {}, null, null, false);
       assert.ok(debuggee);
       assert.ok(debuggee.labels);
       assert.strictEqual(debuggee.labels.module, undefined);
@@ -1042,7 +1067,9 @@ describe('Debuglet', function() {
     it('should have an error statusMessage with the appropriate arg',
        function() {
          var debuggee = Debuglet.createDebuggee(
-             'a', 'b', undefined, undefined, undefined, 'Some Error Message');
+             'a', 'b', undefined, undefined, undefined, 'Some Error Message',
+             // TODO: Determine if this value for onGCP is correct.
+             false);
          assert.ok(debuggee);
          assert.ok(debuggee.statusMessage);
        });

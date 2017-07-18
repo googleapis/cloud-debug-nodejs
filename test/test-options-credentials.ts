@@ -15,6 +15,8 @@
  */
 'use strict';
 
+import {DebugAgentConfig} from '../src/agent/config';
+
 import * as path from 'path';
 import * as assert from 'assert';
 import * as nock from 'nock';
@@ -62,7 +64,8 @@ describe('test-options-credentials', function() {
       return true;
     });
     nocks.projectId('project-via-metadata');
-    debuglet = new Debuglet(debug, config);
+    // TODO: Determine how to remove this cast.
+    debuglet = new Debuglet(debug, config as any as DebugAgentConfig);
     debuglet.start();
   });
 
@@ -85,7 +88,8 @@ describe('test-options-credentials', function() {
       return true;
     });
     nocks.projectId('project-via-metadata');
-    debuglet = new Debuglet(debug, config);
+    // TODO: Determine how to remove this cast.
+    debuglet = new Debuglet(debug, config as any as DebugAgentConfig);
     debuglet.start();
   });
 
@@ -121,7 +125,8 @@ describe('test-options-credentials', function() {
       assert(options.credentials.hasOwnProperty(field));
       assert.notEqual(options.credentials[field], fileCredentials[field]);
     });
-    debuglet = new Debuglet(debug, config);
+    // TODO: Determine how to remove this cast.
+    debuglet = new Debuglet(debug, config as any as DebugAgentConfig);
     debuglet.start();
   });
 });

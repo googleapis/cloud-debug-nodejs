@@ -19,7 +19,7 @@
 import * as assert from 'assert';
 import * as path from 'path';
 
-import {SourceMapper} from '../src/agent/sourcemapper';
+import * as SourceMapper from '../src/agent/sourcemapper';
 
 var BASE_PATH = path.join(__dirname, 'fixtures', 'sourcemapper');
 

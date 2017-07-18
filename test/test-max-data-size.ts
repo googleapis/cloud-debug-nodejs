@@ -17,18 +17,18 @@
 process.env.GCLOUD_DIAGNOSTICS_CONFIG = 'test/fixtures/test-config.js';
 
 import * as commonTypes from '../src/types/common-types';
+import {V8DebugApi} from '../src/agent/v8debugapi';
 
 import * as assert from 'assert';
 import * as extend from 'extend';
 const common: commonTypes.Common = require('@google-cloud/common');
 import * as v8debugapi from '../src/agent/v8debugapi';
-import {SourceMapper} from '../src/agent/sourcemapper';
+import * as SourceMapper from '../src/agent/sourcemapper';
 import * as scanner from '../src/agent/scanner';
 import * as defaultConfig from '../src/agent/config';
 import * as path from 'path';
 var foo = require('./test-max-data-size-code.js');
-// TODO: Determine why the compiler says this must be of type 'string'.
-var api: string;
+var api: V8DebugApi;
 
 var breakpointInFoo = {
   id: 'fake-id-123',
@@ -42,7 +42,11 @@ describe('maxDataSize', function() {
 
   before(function(done) {
     if (!api) {
-      var logger = common.logger({ logLevel: config.logLevel });
+      // TODO: It appears `logLevel` is a typo and should be `level`.  Verify
+      //       that this is true.
+      // TODO: The `tag` property is rquired.  Determine what value should be
+      //       used for tag here.
+      var logger = new common.logger({ level: config.logLevel, tag: '' });
       scanner.scan(true, config.workingDirectory, /.js$/)
         .then(function (fileStats) {
           var jsStats = fileStats.selectStats(/.js$/);

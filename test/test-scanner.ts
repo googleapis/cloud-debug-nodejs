@@ -60,7 +60,10 @@ describe('scanner', function() {
 
     it('should be able to filter filenames', function(done) {
       scanner.scan(true, fixture('coffee'), /.*$/).then(function(fileStats) {
-        var files = fileStats.selectFiles(/.js$/);
+        // TODO: `selectFiles` expects two parameters.  Determine if the
+        //       the second parameter should be optional or (if not) the
+        //       correct value is used here.
+        var files = fileStats.selectFiles(/.js$/, '.');
         assert.strictEqual(files.length, 1);
         assert.ok(files[0], path.join(fixtureDir, 'coffee', 'transpile.js'));
         done();
