@@ -24,7 +24,7 @@ var fixture = function(file) {
   return path.join(fixtureDir, file);
 };
 
-var scanner = require('../src/agent/scanner.js');
+import * as scanner from '../src/agent/scanner';
 
 describe('scanner', function() {
 

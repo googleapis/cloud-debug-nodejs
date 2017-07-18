@@ -16,13 +16,15 @@
 
 process.env.GCLOUD_DIAGNOSTICS_CONFIG = 'test/fixtures/test-config.js';
 
+import * as commonTypes from '../src/types/common-types';
+
 import * as assert from 'assert';
 import * as extend from 'extend';
-var common = require('@google-cloud/common');
-var v8debugapi = require('../src/agent/v8debugapi.js');
-var SourceMapper = require('../src/agent/sourcemapper.js');
-var scanner = require('../src/agent/scanner.js');
-var defaultConfig = require('../src/agent/config.js').default;
+const common: commonTypes.Common = require('@google-cloud/common');
+import * as v8debugapi from '../src/agent/v8debugapi';
+import {SourceMapper} from '../src/agent/sourcemapper';
+import * as scanner from '../src/agent/scanner';
+import * as defaultConfig from '../src/agent/config';
 import * as path from 'path';
 var foo = require('./test-max-data-size-code.js');
 // TODO: Determine why the compiler says this must be of type 'string'.

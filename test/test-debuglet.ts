@@ -18,13 +18,14 @@
 import * as _ from 'lodash';
 import * as path from 'path';
 import * as assert from 'assert';
-var DEFAULT_CONFIG = require('../src/agent/config.js').default;
-DEFAULT_CONFIG.allowExpressions = true;
-DEFAULT_CONFIG.workingDirectory = path.join(__dirname, '..');
-var Debuglet = require('../src/agent/debuglet.js').Debuglet;
+import * as DEFAULT_CONFIG from '../src/agent/config';
+// TODO: Remove this cast to any.
+(DEFAULT_CONFIG as any).allowExpressions = true;
+(DEFAULT_CONFIG as any).workingDirectory = path.join(__dirname, '..');
+import {Debuglet} from '../src/agent/debuglet';
 import * as dns from 'dns';
 import * as extend from 'extend';
-var metadata = require('gcp-metadata');
+const metadata: {project: any, instance: any} = require('gcp-metadata');
 
 var DEBUGGEE_ID = 'bar';
 var API = 'https://clouddebugger.googleapis.com';

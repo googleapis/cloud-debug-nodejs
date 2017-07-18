@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
+import * as commonTypes from '../src/types/common-types';
+
 import * as assert from 'assert';
 import * as extend from 'extend';
-var v8debugapi = require('../src/agent/v8debugapi.js');
-var common = require('@google-cloud/common');
-var defaultConfig = require('../src/agent/config.js').default;
-var SourceMapper = require('../src/agent/sourcemapper.js');
-var scanner = require('../src/agent/scanner.js');
+import * as v8debugapi from '../src/agent/v8debugapi';
+const common: commonTypes.Common = require('@google-cloud/common');
+import * as defaultConfig from '../src/agent/config';
+import {SourceMapper} from '../src/agent/sourcemapper';
+import * as scanner from '../src/agent/scanner';
 var foo = require('./test-try-catch-code.js');
 
 function stateIsClean(api) {

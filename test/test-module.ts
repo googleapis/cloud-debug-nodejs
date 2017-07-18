@@ -20,7 +20,7 @@ import * as assert from 'assert';
 // TODO: Determine how to not have a type declaration here.
 var module: NodeModule = require('../..');
 import * as nock from 'nock';
-var nocks = require('./nocks.js');
+import * as nocks from './nocks';
 
 nock.disableNetConnect();
 

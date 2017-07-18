@@ -20,8 +20,10 @@
  * @module debug/debugger
  */
 
-var pjson = require('../package.json');
-var common = require('@google-cloud/common');
+import * as commonTypes from '../src/types/common-types';
+
+var pjson = require('../../package.json');
+const common: commonTypes.Common = require('@google-cloud/common');
 // TODO: Verify these types are correct.
 const qs: { parse: (qs: any, sep?: string, eq?: string,
   options?: { maxKeys?: number }) => any,

@@ -18,10 +18,10 @@
 import * as path from 'path';
 import * as assert from 'assert';
 import * as nock from 'nock';
-var nocks = require('./nocks.js');
+import * as nocks from './nocks';
 import * as extend from 'extend';
-var config = require('../src/agent/config.js').default;
-var Debuglet = require('../src/agent/debuglet.js').Debuglet;
+import * as config from '../src/agent/config';
+import {Debuglet} from '../src/agent/debuglet';
 
 var envProject = process.env.GCLOUD_PROJECT;
 

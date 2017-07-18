@@ -16,14 +16,14 @@
 
 import * as assert from 'assert';
 import * as nock from 'nock';
-var request = require('./auth-request.js').default;
-var Debuggee = require('../src/debuggee.js').Debuggee;
+import * as request from './auth-request';
+import {Debuggee} from '../src/debuggee';
 
 // the tests in this file rely on the GCLOUD_PROJECT environment variable
 // not being set
 delete process.env.GCLOUD_PROJECT;
 
-var Controller = require('../src/controller.js').Controller;
+import {Controller} from '../src/controller';
 var fakeDebug = {
   request: request
 };
