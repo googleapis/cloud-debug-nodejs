@@ -19,6 +19,9 @@
  */
 
 import * as commonTypes from '../src/types/common-types';
+import * as apiTypes from '../src/types/api-types';
+import {Debug} from '../src/debug';
+import {Debuggee} from '../src/debuggee';
 
 const pjson = require('../../package.json');
 export const common: commonTypes.Common = require('@google-cloud/common');
@@ -33,13 +36,13 @@ import * as util from 'util';
 const API = 'https://clouddebugger.googleapis.com/v2/debugger';
 
 export class Debugger extends common.ServiceObject {
-  private nextWaitToken_;
-  private clientVersion_;
+  private nextWaitToken_: string|null;
+  private clientVersion_: string;
 
   /**
    * @constructor
    */
-  constructor(debug) {
+  constructor(debug: Debug) {
     super({
       parent: debug,
       baseUrl: '/debugger'
@@ -62,7 +65,7 @@ export class Debugger extends common.ServiceObject {
    *     called with a list of Debuggee objects as a parameter, or an Error object
    *     if an error occurred in obtaining it.
    */
-  listDebuggees(projectId, includeInactive, callback) {
+  listDebuggees(projectId: string, includeInactive: boolean, callback: (err: Error|null, debuggees?: Debuggee[]) => void) {
     if (typeof(includeInactive) === 'function') {
       callback = includeInactive;
       includeInactive = false;
@@ -114,10 +117,16 @@ export class Debugger extends common.ServiceObject {
    *     called with a list of Breakpoint objects as a parameter, or an Error
    *     object if an error occurred in obtaining it.
    */
-  listBreakpoints(debuggeeId, options, callback) {
+  listBreakpoints(debuggeeId: string, options: {
+    includeAllUsers: boolean;
+    includeInactive: boolean;
+    stripResults: boolean;
+    actions: string
+  }, callback: (err: Error|null, breakpoints?: apiTypes.Breakpoint[]) => void) {
     if (typeof(options) === 'function') {
       callback = options;
-      options = {};
+      // TODO: Determine how to remove this cast.
+      options = {} as any;
     }
 
     // TODO: Remove this cast as `any`
@@ -127,8 +136,9 @@ export class Debugger extends common.ServiceObject {
       includeInactive: !!options.includeInactive,
       stripResults: !!options.stripResults
     };
-    if (options.action) {
-      query.action = { value: options.action };
+    // TODO: Determine how to remove this cast.
+    if ((options as any).action) {
+      query.action = { value: (options as any).action };
     }
     if (this.nextWaitToken_) {
       query.waitToken = this.nextWaitToken_;
@@ -166,7 +176,7 @@ export class Debugger extends common.ServiceObject {
    *     called with information about the given breakpoint, or an Error object
    *     if an error occurred in obtaining its information.
    */
-  getBreakpoint(debuggeeId, breakpointId, callback) {
+  getBreakpoint(debuggeeId: string, breakpointId: string, callback: (err: Error|null, bp?: apiTypes.Breakpoint) => void) {
     const query = {
       clientVersion: this.clientVersion_
     };
@@ -202,7 +212,7 @@ export class Debugger extends common.ServiceObject {
    *     that the Breakpoint object here will differ from the input object in
    *     that its id field will be set.
    */
-  setBreakpoint(debuggeeId, breakpoint, callback) {
+  setBreakpoint(debuggeeId: string, breakpoint: apiTypes.Breakpoint, callback: (err: Error|null, bp?: apiTypes.Breakpoint) => void) {
     const query = {
       clientVersion: this.clientVersion_
     };
@@ -240,7 +250,7 @@ export class Debugger extends common.ServiceObject {
    *     deleting a breakpoint. If no error occurred, the first argument will be
    *     set to null.
    */
-  deleteBreakpoint(debuggeeId, breakpointId, callback) {
+  deleteBreakpoint(debuggeeId: string, breakpointId: string, callback: (err: Error|null) => void) {
     const query = {
       clientVersion: this.clientVersion_
     };

@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-const breakpointInFoo = {
+import * as commonTypes from '../src/types/common-types';
+import * as apiTypes from '../src/types/api-types';
+import {V8DebugApi} from '../src/agent/v8debugapi';
+
+// TODO: Have this actually implement Breakpoint
+const breakpointInFoo: apiTypes.Breakpoint = {
   id: 'fake-id-123',
   location: { path: 'test-duplicate-expressions-code.js', line: 4 }
-};
-
-import * as commonTypes from '../src/types/common-types';
+} as apiTypes.Breakpoint;
 
 import * as assert from 'assert';
 import * as extend from 'extend';
@@ -31,7 +34,7 @@ import * as scanner from '../src/agent/scanner';
 const foo = require('./test-duplicate-expressions-code.js');
 
 // TODO: Determine why this must be named `stateIsClean1`.
-function stateIsClean1(api) {
+function stateIsClean1(api: V8DebugApi): boolean {
   assert.equal(api.numBreakpoints_(), 0,
     'there should be no breakpoints active');
   assert.equal(api.numListeners_(), 0,
@@ -47,7 +50,7 @@ describe(__filename, function() {
   // TODO: It appears `logLevel` is a typo and should be `level`.  However,
   //       with this change, the tests fail.  Resolve this.
   const logger = new common.logger({ logLevel: config.logLevel } as any as commonTypes.LoggerOptions);
-  let api = null;
+  let api: V8DebugApi|null = null;
 
   beforeEach(function(done) {
     if (!api) {

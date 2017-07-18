@@ -15,6 +15,8 @@
  */
 
 import * as commonTypes from '../src/types/common-types';
+import * as apiTypes from '../src/types/api-types';
+import {V8DebugApi} from '../src/agent/v8debugapi';
 
 import * as assert from 'assert';
 import * as extend from 'extend';
@@ -26,7 +28,7 @@ import * as scanner from '../src/agent/scanner';
 const foo = require('./test-duplicate-nested-expressions-code.js');
 
 // TODO: Determine why this must be named `_stateIsClean`.
-function stateIsClean2(api) {
+function stateIsClean2(api: V8DebugApi): boolean {
   assert.equal(api.numBreakpoints_(), 0,
     'there should be no breakpoints active');
   assert.equal(api.numListeners_(), 0,
@@ -42,7 +44,7 @@ describe(__filename, function() {
   // TODO: It appears `logLevel` is a typo and should be `level`.  However,
   //       with this change, the tests fail.  Resolve this.
   const logger = new common.logger({ logLevel: config.logLevel} as any as commonTypes.LoggerOptions);
-  let api = null;
+  let api: V8DebugApi|null = null;
 
   beforeEach(function(done) {
     if (!api) {
@@ -65,10 +67,11 @@ describe(__filename, function() {
   });
   afterEach(function() { assert(stateIsClean2(api)); });
   it('Should read the argument before the name is confounded', function(done) {
-      const brk = {
-        id: 'fake-id-123',
-        location: { path: 'test-duplicate-nested-expressions-code.js', line: 4 }
-      };
+    // TODO: Have this actually implement Breakpoint
+    const brk: apiTypes.Breakpoint = {
+      id: 'fake-id-123',
+      location: { path: 'test-duplicate-nested-expressions-code.js', line: 4 }
+    } as apiTypes.Breakpoint;
     api.set(brk, function(err) {
       assert.ifError(err);
       api.wait(brk, function(err) {
@@ -91,10 +94,11 @@ describe(__filename, function() {
   });
 
   it('Should read an argument after the name is confounded', function(done) {
-    const brk = {
+    // TODO: Have this actually implement Breakpoint
+    const brk: apiTypes.Breakpoint = {
       id: 'fake-id-1234',
       location: { path: 'test-duplicate-nested-expressions-code.js', line: 5 }
-    };
+    } as apiTypes.Breakpoint;
     api.set(brk, function(err) {
       assert.ifError(err);
       api.wait(brk, function(err) {
@@ -117,10 +121,11 @@ describe(__filename, function() {
   });
 
   it('Should read an argument value after its value is modified', function(done) {
-    const brk = {
+    // TODO: Have this actually implement Breakpoint
+    const brk: apiTypes.Breakpoint = {
       id: 'fake-id-1234',
       location: { path: 'test-duplicate-nested-expressions-code.js', line: 6 }
-    };
+    } as apiTypes.Breakpoint;
     api.set(brk, function(err) {
       assert.ifError(err);
       api.wait(brk, function(err) {
@@ -143,10 +148,11 @@ describe(__filename, function() {
   });
 
   it('Should represent a const name at its local-scope when clearly defined', function(done) {
-    const brk = {
+    // TODO: Have this actually implement Breakpoint
+    const brk: apiTypes.Breakpoint = {
       id: 'fake-id-1234',
       location: { path: 'test-duplicate-nested-expressions-code.js', line: 8 }
-    };
+    } as apiTypes.Breakpoint;
     api.set(brk, function(err) {
       assert.ifError(err);
       api.wait(brk, function(err) {

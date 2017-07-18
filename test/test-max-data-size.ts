@@ -17,6 +17,7 @@
 process.env.GCLOUD_DIAGNOSTICS_CONFIG = 'test/fixtures/test-config.js';
 
 import * as commonTypes from '../src/types/common-types';
+import * as apiTypes from '../src/types/api-types';
 import {V8DebugApi} from '../src/agent/v8debugapi';
 
 import * as assert from 'assert';
@@ -30,10 +31,11 @@ import * as path from 'path';
 const foo = require('./test-max-data-size-code.js');
 let api: V8DebugApi;
 
-const breakpointInFoo = {
+// TODO: Have this actually implement Breakpoint
+const breakpointInFoo: apiTypes.Breakpoint = {
   id: 'fake-id-123',
   location: { path: 'test-max-data-size-code.js', line: 4 }
-};
+} as apiTypes.Breakpoint;
 
 describe('maxDataSize', function() {
   const config = extend({}, defaultConfig, {

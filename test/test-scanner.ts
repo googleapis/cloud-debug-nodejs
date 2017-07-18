@@ -19,7 +19,7 @@ import * as path from 'path';
 import * as assert from 'assert';
 
 const fixtureDir = path.join(__dirname, './fixtures');
-const fixture = function(file) {
+const fixture = function(file: string): string {
   return path.join(fixtureDir, file);
 };
 

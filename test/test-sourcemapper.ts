@@ -38,7 +38,7 @@ const BASE_PATH = path.join(__dirname, 'fixtures', 'sourcemapper');
  *
  *  Note: The line numbers are zero-based
  */
-function testTool(tool, relativeMapFilePath, relativeInputFilePath, relativeOutputFilePath, inToOutLineNums) {
+function testTool(tool: string, relativeMapFilePath: string, relativeInputFilePath: string, relativeOutputFilePath: string, inToOutLineNums: Array<Array<number>>) {
   const mapFilePath = path.join(BASE_PATH, relativeMapFilePath);
   const inputFilePath = path.join(BASE_PATH, relativeInputFilePath);
   const outputFilePath = path.join(BASE_PATH, relativeOutputFilePath);

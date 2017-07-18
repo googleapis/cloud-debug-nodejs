@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 
-const breakpointInFoo = {
+import * as apiTypes from '../src/types/api-types';
+import {V8DebugApi} from '../src/agent/v8debugapi';
+import {DebugAgentConfig} from '../src/agent/config';
+
+// TODO: Have this actually implement Breakpoint
+const breakpointInFoo: apiTypes.Breakpoint = {
   id: 'fake-id-123',
   // TODO: Determine if we should be restricting to only the build directory.
   location: { path: 'build/test/test-v8debugapi-code.js', line: 4 }
-};
+} as apiTypes.Breakpoint;
 
 const MAX_INT = 2147483647; // Max signed int32.
 
@@ -36,7 +41,7 @@ import * as path from 'path';
 import * as semver from 'semver';
 const code = require('./test-v8debugapi-code.js');
 
-function stateIsClean(api) {
+function stateIsClean(api: V8DebugApi): boolean {
   assert.equal(api.numBreakpoints_(), 0,
     'there should be no breakpoints active');
   assert.equal(api.numListeners_(), 0,
@@ -44,7 +49,7 @@ function stateIsClean(api) {
   return true;
 }
 
-function validateVariable(variable) {
+function validateVariable(variable: apiTypes.Variable): void {
   if (variable.name) {
     assert.equal(typeof variable.name, 'string');
   }
@@ -64,7 +69,7 @@ function validateVariable(variable) {
   }
 }
 
-function validateSourceLocation(location) {
+function validateSourceLocation(location: apiTypes.SourceLocation): void {
   if (location.path) {
     assert.equal(typeof location.path, 'string');
   }
@@ -75,7 +80,7 @@ function validateSourceLocation(location) {
   }
 }
 
-function validateStackFrame(frame) {
+function validateStackFrame(frame: apiTypes.StackFrame): void {
   if (frame['function']) {
     assert.equal(typeof frame['function'], 'string');
   }
@@ -90,7 +95,7 @@ function validateStackFrame(frame) {
   }
 }
 
-function validateBreakpoint(breakpoint) {
+function validateBreakpoint(breakpoint: apiTypes.Breakpoint): void {
   if (!breakpoint) {
     return;
   }
@@ -106,14 +111,14 @@ function validateBreakpoint(breakpoint) {
 }
 
 describe('v8debugapi', function() {
-  const config = extend({}, defaultConfig, {
+  const config: DebugAgentConfig = extend({}, defaultConfig, {
     workingDirectory: __dirname,
     forceNewAgent_: true
   });
   // TODO: It appears `logLevel` is a typo and should be `level`.  However,
   //       with this change, the tests fail.  Resolve this.
   const logger = new common.logger({ levelLevel: config.logLevel } as any as commonTypes.LoggerOptions);
-  let api = null;
+  let api: V8DebugApi|null = null;
 
   beforeEach(function(done) {
     if (!api) {
@@ -147,7 +152,8 @@ describe('v8debugapi', function() {
 
   it('should be able to set and remove breakpoints', function(done) {
     // clone a clean breakpointInFoo
-    const bp = {id: breakpointInFoo.id, location: breakpointInFoo.location};
+    // TODO: Have this actually implement Breakpoint
+    const bp: apiTypes.Breakpoint = {id: breakpointInFoo.id, location: breakpointInFoo.location} as apiTypes.Breakpoint;
     api.set(bp, function(err) {
       assert.ifError(err);
       assert.equal(api.numBreakpoints_(), 1);
@@ -158,7 +164,8 @@ describe('v8debugapi', function() {
 
   it('should accept breakpoint with ids 0 as a valid breakpoint',
     function(done) {
-      const bp = { id: 0, location: breakpointInFoo.location};
+      // TODO: Have this actually implement Breakpoint
+      const bp: apiTypes.Breakpoint = { id: 0, location: breakpointInFoo.location} as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {
         assert.ifError(err);
         api.clear(bp);
@@ -169,8 +176,9 @@ describe('v8debugapi', function() {
   it('should set error for breakpoint in non-js files',
     function(done) {
       require('./fixtures/key-bad.json');
+      // TODO: Have this actually implement Breakpoint
       const bp = { id: 0, location: {line: 1, path: path.join('fixtures',
-        'key-bad.json')}};
+        'key-bad.json')}} as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {
         assert.ok(err, 'should return an error');
         assert.ok((bp as any).status);
@@ -184,8 +192,9 @@ describe('v8debugapi', function() {
   it('should disambiguate incorrect path if filename is unique',
     function(done) {
       require('./fixtures/foo.js');
-      const bp = { id: 0, location: {line: 1, path: path.join(path.sep, 'test',
-        'foo.js')}};
+      // TODO: Have this actually implement Breakpoint
+      const bp: apiTypes.Breakpoint = { id: 0, location: {line: 1, path: path.join(path.sep, 'test',
+        'foo.js')}} as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {
         assert.ifError(err);
         api.clear(bp);
@@ -197,8 +206,9 @@ describe('v8debugapi', function() {
     function(done) {
       require('./fixtures/foo.js');
       // hello.js is not unique but a/hello.js is.
-      const bp = { id: 0, location: {line: 1, path: path.join(path.sep, 'Server',
-        'a', 'hello.js')}};
+      // TODO: Have this actually implement Breakpoint
+      const bp: apiTypes.Breakpoint = { id: 0, location: {line: 1, path: path.join(path.sep, 'Server',
+        'a', 'hello.js')}} as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {
         assert.ifError(err);
         api.clear(bp);
@@ -207,17 +217,18 @@ describe('v8debugapi', function() {
     });
 
   describe('invalid breakpoints', function() {
-    const badBreakpoints = [
-      {},
-      { id: 'with no location'},
-      { id: 'with bad location', location: {}},
-      { id: 'with no path', location: {line: 4}},
-      { id: 'with no line', location: {path: 'foo.js'}},
-      { id: 'with incomplete path', location: {path: 'st-v8debugapi.js', line: 4}}
+    // TODO: Have this actually be a list of Breakpoints
+    const badBreakpoints: apiTypes.Breakpoint[] = [
+      {} as any as apiTypes.Breakpoint,
+      { id: 'with no location'} as any as apiTypes.Breakpoint,
+      { id: 'with bad location', location: {}} as any as apiTypes.Breakpoint,
+      { id: 'with no path', location: {line: 4}} as any as apiTypes.Breakpoint,
+      { id: 'with no line', location: {path: 'foo.js'}} as any as apiTypes.Breakpoint,
+      { id: 'with incomplete path', location: {path: 'st-v8debugapi.js', line: 4}} as any as apiTypes.Breakpoint
     ];
 
-    badBreakpoints.forEach(function(bp) {
-      it('should reject breakpoint ' + (bp as any).id, function(done) {
+    badBreakpoints.forEach(function(bp: apiTypes.Breakpoint) {
+      it('should reject breakpoint ' + bp.id, function(done) {
         api.set(bp, function(err) {
           assert.ok(err, 'should return an error');
           assert.ok((bp as any).status);
@@ -232,7 +243,8 @@ describe('v8debugapi', function() {
     it('should reject breakpoint when filename is ambiguous', function(done) {
       require('./fixtures/a/hello.js');
       require('./fixtures/b/hello.js');
-      const bp = {id: 'ambiguous', location: {line: 1, path: 'hello.js'}};
+      // TODO: Have this actually implement Breakpoint
+      const bp: apiTypes.Breakpoint = {id: 'ambiguous', location: {line: 1, path: 'hello.js'}} as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {
         assert.ok(err);
         assert.ok((bp as any).status);
@@ -246,10 +258,11 @@ describe('v8debugapi', function() {
 
     it('should reject breakpoint on non-existent line', function(done) {
       require('./fixtures/foo.js');
-      const bp = {
+      // TODO: Have this actually implement Breakpoint
+      const bp: apiTypes.Breakpoint = {
         id: 'non-existent line',
         location: {path: path.join('fixtures', 'foo.js'), line: 500}
-      };
+      } as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {
         assert.ok(err);
         assert.ok((bp as any).status);
@@ -268,11 +281,12 @@ describe('v8debugapi', function() {
       expressions.forEach(function(expr) {
         it('should validate breakpoint with condition "'+expr+'"', function(done) {
           // make a clean copy of breakpointInFoo
-          const bp = {
+          // TODO: Have this actually implement Breakpoint
+          const bp: apiTypes.Breakpoint = {
             id: breakpointInFoo.id,
             location: breakpointInFoo.location,
             condition: expr
-          };
+          } as any as apiTypes.Breakpoint;
           api.set(bp, function(err) {
             test(err);
             api.clear(bp);
@@ -360,26 +374,27 @@ describe('v8debugapi', function() {
   }
 
   describe('path normalization', function() {
+    // TODO: Have this actually be a list of Breakpoints
     const breakpoints = [
       { id: 'path0', location: {line: 4, path: path.join(path.sep, 'test',
-        'test-v8debugapi-code.js')}},
+        'test-v8debugapi-code.js')}} as any as apiTypes.Breakpoint,
       { id: 'path1', location: {line: 4, path: path.join('test',
-        'test-v8debugapi-code.js')}},
+        'test-v8debugapi-code.js')}} as any as apiTypes.Breakpoint,
       { id: 'path2', location: {line: 4, path:
         // Usage the absolute path to `test-v8debugapi-code.js`.
         __filename.split(path.sep).slice(0, -1).concat('test-v8debugapi-code.js').join(path.sep)
-      }},
+      }} as any as apiTypes.Breakpoint,
       { id: 'with . in path', location: {path: path.join('test', '.',
-        'test-v8debugapi-code.js'), line: 4}},
+        'test-v8debugapi-code.js'), line: 4}} as any as apiTypes.Breakpoint,
       { id: 'with . in path', location: {path: path.join('.',
-        'test-v8debugapi-code.js'), line: 4}},
+        'test-v8debugapi-code.js'), line: 4}} as any as apiTypes.Breakpoint,
       { id: 'with .. in path', location: {path: path.join('test', '..',
-        'test-v8debugapi-code.js'), line: 4}},
+        'test-v8debugapi-code.js'), line: 4}} as any as apiTypes.Breakpoint,
       { id: 'with .. in path', location: {path: path.join('..', 'test',
-        'test-v8debugapi-code.js'), line: 4}}
+        'test-v8debugapi-code.js'), line: 4}} as any as apiTypes.Breakpoint
     ];
 
-    breakpoints.forEach(function(bp) {
+    breakpoints.forEach(function(bp: apiTypes.Breakpoint) {
       it('should handle breakpoint as ' + bp.location.path, function(done) {
         api.set(bp, function(err) {
           assert.ifError(err);
@@ -395,8 +410,8 @@ describe('v8debugapi', function() {
   });
 
   describe('log', function() {
-    let oldLPS;
-    let oldDS;
+    let oldLPS: number;
+    let oldDS: number;
 
     before(function() {
       oldLPS = config.log.maxLogsPerSecond;
@@ -413,12 +428,13 @@ describe('v8debugapi', function() {
 
     it('should throttle correctly', function(done) {
       let completed = false;
-      const bp = {
+      // TODO: Have this actually implement Breakpoint
+      const bp: apiTypes.Breakpoint = {
         id: breakpointInFoo.id,
         location: breakpointInFoo.location,
         action: 'LOG',
         logMessageFormat: 'cat'
-      };
+      } as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {
         let transcript = '';
         let runCount = 0;
@@ -445,7 +461,8 @@ describe('v8debugapi', function() {
 
     it('should be possible to wait on a breakpoint', function(done) {
       // clone a clean breakpointInFoo
-      const bp = {id: breakpointInFoo.id, location: breakpointInFoo.location};
+      // TODO: Have this actually implement Breakpoint
+      const bp: apiTypes.Breakpoint = {id: breakpointInFoo.id, location: breakpointInFoo.location} as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {
         assert.ifError(err);
         api.wait(bp, function(err) {
@@ -464,7 +481,8 @@ describe('v8debugapi', function() {
       // If an exception is thrown we will log
       logger.warn = function() { logCount++; };
       // clone a clean breakpointInFoo
-      const bp = {id: breakpointInFoo.id, location: breakpointInFoo.location};
+      // TODO: Have this actually implement Breakpoint
+      const bp: apiTypes.Breakpoint = {id: breakpointInFoo.id, location: breakpointInFoo.location} as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {
         assert.ifError(err);
         api.wait(bp, function(err) {
@@ -483,12 +501,13 @@ describe('v8debugapi', function() {
 
     it('should be possible to wait on a logpoint without expressions',
         function(done) {
-      const bp = {
+      // TODO: Have this actually implement Breakpoint
+      const bp: apiTypes.Breakpoint = {
         id: breakpointInFoo.id,
         action: 'LOG',
         logMessageFormat: 'Hello World',
         location: breakpointInFoo.location
-      };
+      } as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {
         assert.ifError(err);
         api.wait(bp, function(err) {
@@ -503,7 +522,8 @@ describe('v8debugapi', function() {
 
     it('should capture state', function(done) {
       // clone a clean breakpointInFoo
-      const bp  = {id: breakpointInFoo.id, location: breakpointInFoo.location};
+      // TODO: Have this actually implement Breakpoint
+      const bp: apiTypes.Breakpoint  = {id: breakpointInFoo.id, location: breakpointInFoo.location} as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {
         assert.ifError(err);
         api.wait(bp, function(err) {
@@ -527,7 +547,8 @@ describe('v8debugapi', function() {
 
     it('should resolve correct frame count', function(done) {
       // clone a clean breakpointInFoo
-      const bp  = {id: breakpointInFoo.id, location: breakpointInFoo.location};
+      // TODO: Have this actually implement Breakpoint
+      const bp: apiTypes.Breakpoint  = {id: breakpointInFoo.id, location: breakpointInFoo.location} as any as apiTypes.Breakpoint;
       const oldCount = config.capture.maxExpandFrames;
       config.capture.maxExpandFrames = 0;
       api.set(bp, function(err) {
@@ -561,7 +582,8 @@ describe('v8debugapi', function() {
 
     it('should capture correct frame count', function(done) {
       // clone a clean breakpointInFoo
-      const bp  = {id: breakpointInFoo.id, location: breakpointInFoo.location};
+      // TODO: Have this actually implement Breakpoint
+      const bp: apiTypes.Breakpoint  = {id: breakpointInFoo.id, location: breakpointInFoo.location} as any as apiTypes.Breakpoint;
       const oldMax = config.capture.maxFrames;
       config.capture.maxFrames = 1;
       api.set(bp, function(err) {
@@ -585,11 +607,12 @@ describe('v8debugapi', function() {
 
     it('should capture state with watch expressions', function(done) {
       // clone a clean breakpointInFoo
-      const bp  = {
+      // TODO: Have this actually implement Breakpoint
+      const bp: apiTypes.Breakpoint = {
         id: breakpointInFoo.id,
         location: breakpointInFoo.location,
         expressions: ['process']
-      };
+      } as any as apiTypes.Breakpoint;
       const oldMaxProps = config.capture.maxProperties;
       const oldMaxData = config.capture.maxDataSize;
       config.capture.maxProperties = 0;
@@ -631,13 +654,14 @@ describe('v8debugapi', function() {
     });
 
     it('should report error for native prop or getter', function(done) {
-      const bp = {
+      // TODO: Have this actually implement Breakpoint
+      const bp: apiTypes.Breakpoint = {
         id: 'fake-id-124',
         // TODO: This path can be lest strict when this file has been
         //       converted to Typescript.
         location: { path: 'build/test/test-v8debugapi-code.js', line: 9 },
         expressions: ['process.env', 'hasGetter']
-      };
+      } as any as apiTypes.Breakpoint;
       const oldMaxData = config.capture.maxDataSize;
       config.capture.maxDataSize = 20000;
       api.set(bp, function(err) {
@@ -672,13 +696,14 @@ describe('v8debugapi', function() {
     });
 
     it('should work with array length despite being native', function(done) {
-      const bp  = {
+      // TODO: Have this actually implement Breakpoint
+      const bp: apiTypes.Breakpoint = {
         id: breakpointInFoo.id,
         // TODO: This path can be lest strict when this file has been
         //       converted to Typescript.
         location:  { path: 'build/test/test-v8debugapi-code.js', line: 5 },
         expressions: ['A']
-      };
+      } as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {
         assert.ifError(err);
         api.wait(bp, function(err) {
@@ -705,12 +730,13 @@ describe('v8debugapi', function() {
     });
 
     it('should limit string length', function(done) {
-      const bp = {
+      // TODO: Have this actually implement Breakpoint
+      const bp: apiTypes.Breakpoint = {
         id: 'fake-id-124',
         // TODO: This path can be lest strict when this file has been
         //       converted to Typescript.
         location: { path: 'build/test/test-v8debugapi-code.js', line: 9 }
-      };
+      } as any as apiTypes.Breakpoint;
       const oldMaxLength = config.capture.maxStringLength;
       const oldMaxData = config.capture.maxDataSize;
       config.capture.maxStringLength = 3;
@@ -741,12 +767,13 @@ describe('v8debugapi', function() {
     });
 
     it('should limit array length', function(done) {
-      const bp = {
+      // TODO: Have this actually implement Breakpoint
+      const bp: apiTypes.Breakpoint = {
         id: 'fake-id-124',
         // TODO: This path can be lest strict when this file has been
         //       converted to Typescript.
         location: { path: 'build/test/test-v8debugapi-code.js', line: 5 }
-      };
+      } as any as apiTypes.Breakpoint;
       const oldMax = config.capture.maxProperties;
       config.capture.maxProperties = 1;
       api.set(bp, function(err) {
@@ -771,12 +798,13 @@ describe('v8debugapi', function() {
     });
 
     it('should limit object length', function(done) {
-      const bp = {
+      // TODO: Have this actually implement Breakpoint
+      const bp: apiTypes.Breakpoint = {
         id: 'fake-id-124',
         // TODO: This path can be lest strict when this file has been
         //       converted to Typescript.
         location: { path: 'build/test/test-v8debugapi-code.js', line: 5 }
-      };
+      } as any as apiTypes.Breakpoint;
       const oldMax = config.capture.maxProperties;
       config.capture.maxProperties = 1;
       api.set(bp, function(err) {
@@ -802,13 +830,14 @@ describe('v8debugapi', function() {
 
     it('should not limit the length of an evaluated string based on maxStringLength',
         function(done) {
-      const bp = {
+      // TODO: Have this actually implement Breakpoint
+      const bp: apiTypes.Breakpoint = {
         id: 'fake-id-124',
         // TODO: This path can be lest strict when this file has been
         //       converted to Typescript.
         location: { path: 'build/test/test-v8debugapi-code.js', line: 9 },
         expressions: ['hasGetter']
-      };
+      } as any as apiTypes.Breakpoint;
       const oldMaxLength = config.capture.maxStringLength;
       const oldMaxData = config.capture.maxDataSize;
       config.capture.maxStringLength = 3;
@@ -837,13 +866,14 @@ describe('v8debugapi', function() {
 
     it('should not limit the length of an evaluated array based on maxProperties',
       function(done) {
-        const bp = {
+        // TODO: Have this actually implement Breakpoint
+        const bp: apiTypes.Breakpoint = {
           id: 'fake-id-124',
           // TODO: This path can be lest strict when this file has been
           //       converted to Typescript.
           location: { path: 'build/test/test-v8debugapi-code.js', line: 5 },
           expressions: ['A']
-        };
+        } as any as apiTypes.Breakpoint;
         const oldMaxProps = config.capture.maxProperties;
         const oldMaxData = config.capture.maxDataSize;
         config.capture.maxProperties = 1;
@@ -869,13 +899,14 @@ describe('v8debugapi', function() {
 
     it('should not limit the length of an evaluated object based on maxProperties',
       function(done) {
-        const bp = {
+        // TODO: Have this actually implement Breakpoint
+        const bp: apiTypes.Breakpoint = {
           id: 'fake-id-124',
           // TODO: This path can be lest strict when this file has been
           //       converted to Typescript.
           location: { path: 'build/test/test-v8debugapi-code.js', line: 5 },
           expressions: ['B']
-        };
+        } as any as apiTypes.Breakpoint;
         const oldMaxProps = config.capture.maxProperties;
         const oldMaxData = config.capture.maxDataSize;
         config.capture.maxProperties = 1;
@@ -900,13 +931,14 @@ describe('v8debugapi', function() {
 
     it('should display an error for an evaluated array beyond maxDataSize',
       function(done) {
-        const bp = {
+        // TODO: Have this actually implement Breakpoint
+        const bp: apiTypes.Breakpoint = {
           id: 'fake-id-124',
           // TODO: This path can be lest strict when this file has been
           //       converted to Typescript.
           location: { path: 'build/test/test-v8debugapi-code.js', line: 5 },
           expressions: ['A']
-        };
+        } as any as apiTypes.Breakpoint;
         const oldMaxProps = config.capture.maxProperties;
         const oldMaxData = config.capture.maxDataSize;
         config.capture.maxProperties = 5;
@@ -932,13 +964,14 @@ describe('v8debugapi', function() {
 
     it('should display an error for an evaluated object beyond maxDataSize',
       function(done) {
-        const bp = {
+        // TODO: Have this actually implement Breakpoint
+        const bp: apiTypes.Breakpoint = {
           id: 'fake-id-124',
           // TODO: This path can be lest strict when this file has been
           //       converted to Typescript.
           location: { path: 'build/test/test-v8debugapi-code.js', line: 5 },
           expressions: ['B']
-        };
+        } as any as apiTypes.Breakpoint;
         const oldMaxProps = config.capture.maxProperties;
         const oldMaxData = config.capture.maxDataSize;
         config.capture.maxProperties = 5;
@@ -964,13 +997,14 @@ describe('v8debugapi', function() {
 
     it('should set the correct status messages if maxDataSize is reached',
       function(done) {
-        const bp = {
+        // TODO: Have this actually implement Breakpoint
+        const bp: apiTypes.Breakpoint = {
           id: 'fake-id-124',
           // TODO: This path can be lest strict when this file has been
           //       converted to Typescript.
           location: { path: 'build/test/test-v8debugapi-code.js', line: 5 },
           expressions: ['A']
-        };
+        } as any as apiTypes.Breakpoint;
         const oldMaxProps = config.capture.maxProperties;
         const oldMaxData = config.capture.maxDataSize;
         config.capture.maxProperties = 1;
@@ -1003,11 +1037,12 @@ describe('v8debugapi', function() {
 
     it('should capture without values for invalid watch expressions', function(done) {
       // clone a clean breakpointInFoo
-      const bp  = {
+      // TODO: Have this actually implement Breakpoint
+      const bp: apiTypes.Breakpoint  = {
         id: breakpointInFoo.id,
         location: breakpointInFoo.location,
         expressions: [':)', 'process()', 'process=this', 'i', 'process._not._def']
-      };
+      } as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {
         assert.ifError(err);
         api.wait(bp, function(err) {
@@ -1031,11 +1066,12 @@ describe('v8debugapi', function() {
 
     it('should be possible to set conditional breakpoints', function (done) {
       // clone a clean breakpointInFoo
-      const bp  = {
+      // TODO: Have this actually implement Breakpoint
+      const bp: apiTypes.Breakpoint = {
         id: breakpointInFoo.id,
         location: breakpointInFoo.location,
         condition: 'n===5'
-      };
+      } as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {
         assert.ifError(err);
         api.wait(bp, function(err) {
@@ -1055,13 +1091,14 @@ describe('v8debugapi', function() {
 
     it('should be possible to set conditional breakpoints in coffeescript',
       function (done) {
-        const bp = {
+        // TODO: Have this actually implement Breakpoint
+        const bp: apiTypes.Breakpoint = {
           id: 'coffee-id-1729',
           // TODO: Determine if this path should contain 'build'
           location: { path: path.join('.', 'build', 'test', 'fixtures', 'coffee',
             'transpile.coffee'), line: 3 },
           condition: 'if n == 3 then true else false'
-        };
+        } as any as apiTypes.Breakpoint;
         const tt = require('./fixtures/coffee/transpile');
         api.set(bp, function(err) {
           assert.ifError(err);
@@ -1082,12 +1119,13 @@ describe('v8debugapi', function() {
 
     it('should show error for invalid conditions in coffeescript',
       function (done) {
-        const bp = {
+        // TODO: Have this actually implement Breakpoint
+        const bp: apiTypes.Breakpoint = {
           id: 'coffee-id-1729',
           location: { path: path.join('.', 'test', 'fixtures', 'coffee',
             'transpile.coffee'), line: 3 },
           condition: 'process=false'
-        };
+        } as any as apiTypes.Breakpoint;
         api.set(bp, function(err) {
           assert(err);
           assert.equal(err.message, 'Error compiling condition.');
@@ -1097,13 +1135,14 @@ describe('v8debugapi', function() {
 
     it('should be possible to set conditional breakpoints with babel',
       function (done) {
-        const bp = {
+        // TODO: Have this actually implement Breakpoint
+        const bp: apiTypes.Breakpoint = {
           id: 'babel-id-1729',
           // TODO: Determine if this path should contain 'build'
           location: { path: path.join('.', 'build', 'test', 'fixtures', 'es6', 'transpile.es6'),
             line: 3 },
           condition: 'i + j === 3'
-        };
+        } as any as apiTypes.Breakpoint;
         const tt = require('./fixtures/es6/transpile');
         api.set(bp, function(err) {
           assert.ifError(err);
@@ -1124,13 +1163,14 @@ describe('v8debugapi', function() {
 
     it('should be possible to view watch expressions in coffeescript',
       function(done) {
-        const bp = {
+        // TODO: Have this actually implement Breakpoint
+        const bp: apiTypes.Breakpoint = {
             id: 'coffee-id-1729',
             // TODO: Determine if this path should contain 'build'
             location: { path: path.join('.', 'build', 'test', 'fixtures', 'coffee',
               'transpile.coffee'), line: 3 },
             expressions: ['if n == 3 then Math.PI * n else n']
-          };
+          } as any as apiTypes.Breakpoint;
         const tt = require('./fixtures/coffee/transpile');
         api.set(bp, function(err) {
           assert.ifError(err);
@@ -1154,14 +1194,15 @@ describe('v8debugapi', function() {
 
     it('should capture without values for invalid watch expressions in coffeescript',
       function(done) {
-        const bp = {
+        // TODO: Have this actually implement Breakpoint
+        const bp: apiTypes.Breakpoint = {
             id: 'coffee-id-1729',
             // TODO: Determine if this path should contain 'build'
             location: { path: path.join('.', 'build', 'test', 'fixtures',
               'coffee', 'transpile.coffee'),
               line: 3 },
             expressions: [':)', 'n n, n', 'process=this', '((x) -> x x) n', 'return']
-          };
+          } as any as apiTypes.Breakpoint;
         const tt = require('./fixtures/coffee/transpile');
         api.set(bp, function(err) {
           assert.ifError(err);
@@ -1194,11 +1235,12 @@ describe('v8debugapi', function() {
 
     it('should remove listener when breakpoint is cleared before hitting',
       function(done) {
-        const bp  = {
+        // TODO: Have this actually implement Breakpoint
+        const bp: apiTypes.Breakpoint  = {
           id: breakpointInFoo.id,
           location: breakpointInFoo.location,
           condition: 'n===447'
-        };
+        } as any as apiTypes.Breakpoint;
         api.set(bp, function(err) {
           assert.ifError(err);
           api.wait(bp, function() {
@@ -1217,8 +1259,10 @@ describe('v8debugapi', function() {
 
     it('should be possible to set multiple breakpoints at once',
       function(done) {
-        const bp1 = { id: 'bp1', location: { path: __filename, line: 4 }};
-        const bp2 = { id: 'bp2', location: { path: __filename, line: 5 }};
+        // TODO: Have this actually implement Breakpoint
+        const bp1: apiTypes.Breakpoint = { id: 'bp1', location: { path: __filename, line: 4 }} as any as apiTypes.Breakpoint;
+        // TODO: Have this actually implement Breakpoint
+        const bp2: apiTypes.Breakpoint = { id: 'bp2', location: { path: __filename, line: 5 }} as any as apiTypes.Breakpoint;
         api.set(bp1, function(err) {
           assert.ifError(err);
           api.set(bp2, function(err) {
@@ -1236,11 +1280,12 @@ describe('v8debugapi', function() {
 
     it('should correctly stop on line-1 breakpoints', function(done) {
       const foo = require('./fixtures/foo.js');
-      const bp = { id: 'bp-line-1', location: {
+      // TODO: Have this actually implement Breakpoint
+      const bp: apiTypes.Breakpoint = { id: 'bp-line-1', location: {
         path: 'foo.js',
         line: 1,
         column: 45
-      }};
+      }} as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {
         assert.ifError(err);
         api.wait(bp, function(err) {
@@ -1270,7 +1315,8 @@ describe('v8debugapi', function() {
       });
 
       // clone a clean breakpointInFoo
-      const bp = {id: breakpointInFoo.id, location: breakpointInFoo.location};
+      // TODO: Have this actually implement Breakpoint
+      const bp: apiTypes.Breakpoint = {id: breakpointInFoo.id, location: breakpointInFoo.location} as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {
         assert.ifError(err);
         api.wait(bp, function(err) {
@@ -1282,13 +1328,13 @@ describe('v8debugapi', function() {
     });
 
     it('should capture state in transpiled TS async functions', (done) => {
-      const bp = {
+      const bp: apiTypes.Breakpoint = {
         id: 'async-id-1',
         location: {
           path: path.join('.', 'test', 'fixtures', 'ts', 'async.js'),
           line: 71
         }
-      };
+      } as any as apiTypes.Breakpoint;
 
       const run = require('./fixtures/ts/async.js');
       api.set(bp, (err) => {

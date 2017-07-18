@@ -15,6 +15,8 @@
  */
 
 import * as commonTypes from '../src/types/common-types';
+import * as apiTypes from '../src/types/api-types';
+import {V8DebugApi} from '../src/agent/v8debugapi';
 
 import * as assert from 'assert';
 import * as extend from 'extend';
@@ -25,7 +27,7 @@ import * as SourceMapper from '../src/agent/sourcemapper';
 import * as scanner from '../src/agent/scanner';
 const code = require('./test-this-context-code.js');
 
-function stateIsClean(api) {
+function stateIsClean(api: V8DebugApi): boolean {
   assert.equal(api.numBreakpoints_(), 0,
     'there should be no breakpoints active');
   assert.equal(api.numListeners_(), 0,
@@ -41,7 +43,7 @@ describe(__filename, function() {
   // TODO: It appears `logLevel` is a typo and should be `level`.  However,
   //       with this change, the tests fail.  Resolve this.
   const logger = new common.logger({ levelLevel: config.logLevel } as any as commonTypes.LoggerOptions);
-  let api = null;
+  let api: V8DebugApi|null = null;
 
   beforeEach(function(done) {
     if (!api) {
@@ -64,11 +66,12 @@ describe(__filename, function() {
   });
   afterEach(function() { assert(stateIsClean(api)); });
   it('Should be able to read the argument and the context', function(done) {
-      const brk = {
-        id: 'fake-id-123',
-        location: { path: 'test-this-context-code.js', line: 5 }
-      };
-      let ctxMembers;
+    // TODO: Have this actually implement Breakpoint
+    const brk: apiTypes.Breakpoint = {
+      id: 'fake-id-123',
+      location: { path: 'test-this-context-code.js', line: 5 }
+    } as apiTypes.Breakpoint;
+    let ctxMembers;
     api.set(brk, function(err) {
       assert.ifError(err);
       api.wait(brk, function(err) {
@@ -94,10 +97,11 @@ describe(__filename, function() {
     });
   });
   it('Should be able to read the argument and deny the context', function(done) {
-      const brk = {
-        id: 'fake-id-123',
-        location: { path: 'test-this-context-code.js', line: 9 }
-      };
+    // TODO: Have this actually implement Breakpoint
+    const brk = {
+      id: 'fake-id-123',
+      location: { path: 'test-this-context-code.js', line: 9 }
+    } as apiTypes.Breakpoint;
     api.set(brk, function(err) {
       assert.ifError(err);
       api.wait(brk, function(err) {

@@ -29,7 +29,7 @@ const envProject = process.env.GCLOUD_PROJECT;
 nock.disableNetConnect();
 
 describe('test-options-credentials', function() {
-  let debuglet = null;
+  let debuglet: Debuglet|null = null;
 
   beforeEach(function() {
     delete process.env.GCLOUD_PROJECT;
