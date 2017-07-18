@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-'use strict';
-
 import * as assert from 'assert';
 // TODO: Determine how to not have a type declaration here.
 const module: NodeModule = require('../..');

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-'use strict';
 import * as assert from 'assert';
 import * as util from 'util';
 import * as _ from 'lodash'; // for _.find. Can't use ES6 yet.
