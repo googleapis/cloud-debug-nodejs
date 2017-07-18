@@ -20,7 +20,7 @@ import * as assert from 'assert';
 import * as extend from 'extend';
 import * as v8debugapi from '../src/agent/v8debugapi';
 const common: commonTypes.Common = require('@google-cloud/common');
-import * as defaultConfig from '../src/agent/config';
+import defaultConfig from '../src/agent/config';
 import * as SourceMapper from '../src/agent/sourcemapper';
 import * as scanner from '../src/agent/scanner';
 var code = require('./test-this-context-code.js');
@@ -38,11 +38,9 @@ describe(__filename, function() {
     workingDirectory: __dirname,
     forceNewAgent_: true
   });
-  // TODO: It appears `logLevel` is a typo and should be `level`.  Verify
-  //       that this is true.
-  // TODO: The `tag` property is rquired.  Determine what value should be
-  //       used for tag here.
-  var logger = new common.logger({ level: config.logLevel, tag: '' });
+  // TODO: It appears `logLevel` is a typo and should be `level`.  However,
+  //       with this change, the tests fail.  Resolve this.
+  var logger = new common.logger({ levelLevel: config.logLevel } as any as commonTypes.LoggerOptions);
   var api = null;
 
   beforeEach(function(done) {

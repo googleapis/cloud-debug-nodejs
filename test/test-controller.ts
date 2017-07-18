@@ -18,7 +18,7 @@ import * as apiTypes from '../src/types/api-types';
 
 import * as assert from 'assert';
 import * as nock from 'nock';
-import * as request from './auth-request';
+import request from './auth-request';
 import {Debuggee} from '../src/debuggee';
 import {Debug} from '../src/debug';
 

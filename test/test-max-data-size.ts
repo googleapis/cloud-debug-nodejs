@@ -25,7 +25,7 @@ const common: commonTypes.Common = require('@google-cloud/common');
 import * as v8debugapi from '../src/agent/v8debugapi';
 import * as SourceMapper from '../src/agent/sourcemapper';
 import * as scanner from '../src/agent/scanner';
-import * as defaultConfig from '../src/agent/config';
+import defaultConfig from '../src/agent/config';
 import * as path from 'path';
 var foo = require('./test-max-data-size-code.js');
 var api: V8DebugApi;
@@ -42,11 +42,9 @@ describe('maxDataSize', function() {
 
   before(function(done) {
     if (!api) {
-      // TODO: It appears `logLevel` is a typo and should be `level`.  Verify
-      //       that this is true.
-      // TODO: The `tag` property is rquired.  Determine what value should be
-      //       used for tag here.
-      var logger = new common.logger({ level: config.logLevel, tag: '' });
+      // TODO: It appears `logLevel` is a typo and should be `level`.  However,
+      //       with this change, the tests fail.  Resolve this.
+      var logger = new common.logger({ levelLevel: config.logLevel } as any as commonTypes.LoggerOptions);
       scanner.scan(true, config.workingDirectory, /.js$/)
         .then(function (fileStats) {
           var jsStats = fileStats.selectStats(/.js$/);

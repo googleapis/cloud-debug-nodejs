@@ -20,14 +20,14 @@ import {DebugAgentConfig} from '../src/agent/config';
 import * as _ from 'lodash';
 import * as path from 'path';
 import * as assert from 'assert';
-import * as DEFAULT_CONFIG from '../src/agent/config';
-// TODO: Remove this cast to any.
+import DEFAULT_CONFIG from '../src/agent/config';
 (DEFAULT_CONFIG as any).allowExpressions = true;
 (DEFAULT_CONFIG as any).workingDirectory = path.join(__dirname, '..');
 import {Debuglet} from '../src/agent/debuglet';
 import * as dns from 'dns';
 import * as extend from 'extend';
 const metadata: {project: any, instance: any} = require('gcp-metadata');
+import {Debug} from '../src/debug';
 
 var DEBUGGEE_ID = 'bar';
 var API = 'https://clouddebugger.googleapis.com';
@@ -118,7 +118,9 @@ describe('Debuglet', function() {
 
     it('should return project retrived from metadata', (done) => {
       const FAKE_PROJECT_ID = 'fake-project-id-from-metadata';
-      var debug = require('../src/debug.js').Debug();
+      // TODO: Determine if the options to Debug should be optional so that
+      //       new Debug() can be used instead of new Debug({}).
+      var debug = new Debug({});
       var debuglet = new Debuglet(debug, defaultConfig);
 
       metadata.project = (path, cb) => {
@@ -134,7 +136,7 @@ describe('Debuglet', function() {
     });
 
     it('should return null on error', (done) => {
-      var debug = require('../src/debug.js').Debug();
+      var debug = new Debug({});
       var debuglet = new Debuglet(debug, defaultConfig);
 
       metadata.project = (path, cb) => {
@@ -158,7 +160,7 @@ describe('Debuglet', function() {
 
     it('should return project retrived from metadata', (done) => {
       const FAKE_CLUSTER_NAME = 'fake-cluster-name-from-metadata';
-      var debug = require('../src/debug.js').Debug();
+      var debug = new Debug({});
       var debuglet = new Debuglet(debug, defaultConfig);
 
       metadata.instance = (path, cb) => {
@@ -174,7 +176,7 @@ describe('Debuglet', function() {
     });
 
     it('should return null on error', (done) => {
-      var debug = require('../src/debug.js').Debug();
+      var debug = new Debug({});
       var debuglet = new Debuglet(debug, defaultConfig);
 
       metadata.instance = (path, cb) => {
@@ -293,7 +295,7 @@ describe('Debuglet', function() {
         return Promise.reject(new Error('no project id'));
       };
 
-      var debug = require('../src/debug.js').Debug();
+      var debug = new Debug({});
       var debuglet = new Debuglet(debug, defaultConfig);
 
       debuglet.once('initError', function(err) {
@@ -315,7 +317,7 @@ describe('Debuglet', function() {
         return Promise.reject(new Error('no project id'));
       };
 
-      var debug = require('../src/debug.js').Debug();
+      var debug = new Debug({});
       var debuglet = new Debuglet(debug, defaultConfig);
 
       debuglet.once('started', function() {
@@ -331,7 +333,7 @@ describe('Debuglet', function() {
 
     it('should use config.projectId', function(done) {
       var projectId = '11020304f2934-a';
-      var debug = require('../src/debug.js').Debug(
+      var debug = new Debug(
           {projectId: projectId, credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
 
@@ -359,7 +361,7 @@ describe('Debuglet', function() {
       it('should use GCLOUD_PROJECT in lieu of config.projectId', function(
                                                                       done) {
         process.env.GCLOUD_PROJECT = '11020304f2934-b';
-        var debug = require('../src/debug.js').Debug({credentials: fakeCredentials});
+        var debug = new Debug({credentials: fakeCredentials});
         var debuglet = new Debuglet(debug, defaultConfig);
 
         nocks.projectId('project-via-metadata');
@@ -381,7 +383,7 @@ describe('Debuglet', function() {
       it('should use options.projectId in preference to the environment variable',
          function(done) {
            process.env.GCLOUD_PROJECT = 'should-not-be-used';
-           var debug = require('../src/debug.js').Debug({
+           var debug = new Debug({
              projectId: 'project-via-options',
              credentials: fakeCredentials
            });
@@ -406,7 +408,7 @@ describe('Debuglet', function() {
       it('should respect GCLOUD_DEBUG_LOGLEVEL', function(done) {
         process.env.GCLOUD_PROJECT = '11020304f2934';
         process.env.GCLOUD_DEBUG_LOGLEVEL = 3;
-        var debug = require('../src/debug.js').Debug({credentials: fakeCredentials});
+        var debug = new Debug({credentials: fakeCredentials});
         var debuglet = new Debuglet(debug, defaultConfig);
 
         nocks.projectId('project-via-metadata');
@@ -441,7 +443,7 @@ describe('Debuglet', function() {
       it('should respect GAE_SERVICE and GAE_VERSION env. vars.', function() {
         process.env.GAE_SERVICE = 'fake-gae-service';
         process.env.GAE_VERSION = 'fake-gae-version';
-        var debug = require('../src/debug.js').Debug();
+        var debug = new Debug({});
         var debuglet = new Debuglet(debug, defaultConfig);
         assert.ok(debuglet.config_);
         assert.ok(debuglet.config_.serviceContext);
@@ -455,7 +457,7 @@ describe('Debuglet', function() {
          function() {
            process.env.GAE_MODULE_NAME = 'fake-gae-service';
            process.env.GAE_MODULE_VERSION = 'fake-gae-version';
-           var debug = require('../src/debug.js').Debug();
+           var debug = new Debug({});
            var debuglet = new Debuglet(debug, defaultConfig);
            assert.ok(debuglet.config_);
            assert.ok(debuglet.config_.serviceContext);
@@ -468,7 +470,7 @@ describe('Debuglet', function() {
       it('should respect FUNCTION_NAME env. var.',
          function() {
            process.env.FUNCTION_NAME = 'fake-fn-name';
-           var debug = require('../src/debug.js').Debug();
+           var debug = new Debug({});
            var debuglet = new Debuglet(debug, defaultConfig);
            assert.ok(debuglet.config_);
            assert.ok(debuglet.config_.serviceContext);
@@ -483,7 +485,7 @@ describe('Debuglet', function() {
         process.env.GAE_MODULE_VERSION = 'fake-gae-module-version';
         process.env.GAE_SERVICE = 'fake-gae-service';
         process.env.GAE_VERSION = 'fake-gae-version';
-        var debug = require('../src/debug.js').Debug();
+        var debug = new Debug({});
         var debuglet = new Debuglet(debug, defaultConfig);
         assert.ok(debuglet.config_);
         assert.ok(debuglet.config_.serviceContext);
@@ -496,7 +498,7 @@ describe('Debuglet', function() {
       it('should respect GAE_MINOR_VERSION env. var. when available',
          function() {
            process.env.GAE_MINOR_VERSION = 'some minor version';
-           var debug = require('../src/debug.js').Debug();
+           var debug = new Debug({});
            var debuglet = new Debuglet(debug, defaultConfig);
            assert.ok(debuglet.config_);
            assert.ok(debuglet.config_.serviceContext);
@@ -507,7 +509,7 @@ describe('Debuglet', function() {
       it('should conjure a fake minor version when running on flex',
          function() {
            process.env.GAE_SERVICE = 'fake-gae-service';
-           var debug = require('../src/debug.js').Debug();
+           var debug = new Debug({});
            var debuglet = new Debuglet(debug, defaultConfig);
            assert.ok(debuglet.config_);
            assert.ok(debuglet.config_.serviceContext);
@@ -516,18 +518,21 @@ describe('Debuglet', function() {
 
       it('should not have minorVersion unless enviroment provides it',
          function() {
-           var debug = require('../src/debug.js').Debug();
+           var debug = new Debug({});
            var debuglet = new Debuglet(debug, defaultConfig);
            assert.ok(debuglet.config_);
            assert.ok(debuglet.config_.serviceContext);
            assert.ok(
-               // TODO: Verify that this should corrected from minorVersion to minorVersion_
-               _.isUndefined(debuglet.config_.serviceContext.minorVersion_));
+               // TODO: IMPORTANT: It appears that this test is incorrect as it
+               //       is.  That is, if minorVersion is replaced with the
+               //       correctly named minorVersion_, then the test fails.
+               //       Resolve this.
+               _.isUndefined((debuglet.config_.serviceContext as any).minorVersion));
          });
 
       it('should not provide minorversion upon registration on non flex',
          function(done) {
-           var debug = require('../src/debug.js').Debug(
+           var debug = new Debug(
                {projectId: 'fake-project', credentials: fakeCredentials});
            var debuglet = new Debuglet(debug, defaultConfig);
 
@@ -549,7 +554,7 @@ describe('Debuglet', function() {
       it('should provide minorversion upon registration if on flex', function(
                                                                          done) {
         process.env.GAE_SERVICE = 'fake-service';
-        var debug = require('../src/debug.js').Debug(
+        var debug = new Debug(
             {projectId: 'fake-project', credentials: fakeCredentials});
         var debuglet = new Debuglet(debug, defaultConfig);
 
@@ -571,7 +576,7 @@ describe('Debuglet', function() {
 
     it('should retry on failed registration', function(done) {
       this.timeout(10000);
-      var debug = require('../src/debug.js').Debug(
+      var debug = new Debug(
           {projectId: '11020304f2934', credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
 
@@ -594,7 +599,7 @@ describe('Debuglet', function() {
     });
 
     it('should error if a package.json doesn\'t exist', function(done) {
-      var debug = require('../src/debug.js').Debug(
+      var debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials});
       var config = extend({}, defaultConfig,
                           {workingDirectory: __dirname, forceNewAgent_: true});
@@ -609,7 +614,7 @@ describe('Debuglet', function() {
     });
 
     it('should register successfully otherwise', function(done) {
-      var debug = require('../src/debug.js').Debug(
+      var debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
 
@@ -639,7 +644,7 @@ describe('Debuglet', function() {
             .once()
             .reply(200, 'cluster-name-from-metadata');
 
-      var debug = require('../src/debug.js').Debug(
+      var debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
 
@@ -661,7 +666,7 @@ describe('Debuglet', function() {
     });
 
     it('should pass source context to api if present', function(done) {
-      var debug = require('../src/debug.js').Debug(
+      var debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials});
       var old = Debuglet.prototype.getSourceContext_;
       Debuglet.prototype.getSourceContext_ = function(cb) {
@@ -669,7 +674,7 @@ describe('Debuglet', function() {
           // TODO: Determine if 5 should be converted to a string or if the
           //       the object literal should allow keys with values that are
           //       numbers.
-          cb(null, {a: '' + 5});
+          cb(null, {a: 5 as any as string});
         });
       };
       var debuglet = new Debuglet(debug, defaultConfig);
@@ -693,7 +698,7 @@ describe('Debuglet', function() {
     it('should de-activate when the server responds with isDisabled',
        function(done) {
          this.timeout(4000);
-         var debug = require('../src/debug.js').Debug(
+         var debug = new Debug(
              {projectId: 'fake-project', credentials: fakeCredentials});
          var debuglet = new Debuglet(debug, defaultConfig);
 
@@ -714,7 +719,7 @@ describe('Debuglet', function() {
 
     it('should retry after a isDisabled request', function(done) {
       this.timeout(4000);
-      var debug = require('../src/debug.js').Debug(
+      var debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
 
@@ -743,7 +748,7 @@ describe('Debuglet', function() {
     });
 
     it('should re-register when registration expires', function(done) {
-      var debug = require('../src/debug.js').Debug(
+      var debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
 
@@ -770,7 +775,7 @@ describe('Debuglet', function() {
 
     it('should fetch and add breakpoints', function(done) {
       this.timeout(2000);
-      var debug = require('../src/debug.js').Debug(
+      var debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
 
@@ -796,7 +801,7 @@ describe('Debuglet', function() {
     it('should reject breakpoints with conditions when allowExpressions=false',
         function(done) {
       this.timeout(2000);
-      var debug = require('../src/debug.js').Debug(
+      var debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
       debuglet.config_.allowExpressions = false;
@@ -834,7 +839,7 @@ describe('Debuglet', function() {
     it('should reject breakpoints with expressions when allowExpressions=false',
         function(done) {
       this.timeout(2000);
-      var debug = require('../src/debug.js').Debug(
+      var debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
       debuglet.config_.allowExpressions = false;
@@ -872,7 +877,7 @@ describe('Debuglet', function() {
     it('should re-fetch breakpoints on error', function(done) {
       this.timeout(6000);
 
-      var debug = require('../src/debug.js').Debug(
+      var debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials});
       var debuglet = new Debuglet(debug, defaultConfig);
 
@@ -911,7 +916,7 @@ describe('Debuglet', function() {
     });
 
     it('should expire stale breakpoints', function(done) {
-      var debug = require('../src/debug.js').Debug(
+      var debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials});
       var config = extend({}, defaultConfig,
                           {breakpointExpirationSec: 1, forceNewAgent_: true});
@@ -956,7 +961,7 @@ describe('Debuglet', function() {
     // the breakpoint listed as active. It validates that the breakpoint
     // is only expired with the server once.
     it('should not update expired breakpoints', function(done) {
-      var debug = require('../src/debug.js').Debug(
+      var debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials});
       var config = extend({}, defaultConfig, {
         breakpointExpirationSec: 1,
