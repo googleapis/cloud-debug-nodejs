@@ -53,7 +53,9 @@ describe('maxDataSize', function() {
           SourceMapper.create(mapFiles, function (err, mapper) {
             assert(!err);
 
-            api = v8debugapi.create(logger, config, jsStats, mapper);
+            // TODO: Handle the case when mapper is undefined
+            // TODO: Handle the case when v8debugapi.create returns null
+            api = v8debugapi.create(logger, config, jsStats, mapper as SourceMapper.SourceMapper) as V8DebugApi;
             done();
           });
         });
@@ -75,7 +77,9 @@ describe('maxDataSize', function() {
         assert.ifError(err);
         // TODO: Determine how to remove this cast to any.
         assert(bp.variableTable.some(function(v) {
-          return v.status.description.format === 'Max data size reached';
+          // TODO: Handle the case when v is undefined
+          // TODO: Handle the case when v.status is undefined
+          return ((v as any).status as any).description.format === 'Max data size reached';
         }));
         // TODO: Determine how to remove this cast to any.
         (api as any).clear(bp);

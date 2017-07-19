@@ -16,6 +16,7 @@
 
 import * as apiTypes from '../src/types/api-types';
 import {DebugAgentConfig} from '../src/agent/config';
+import {Debuggee} from '../src/debuggee';
 
 import * as _ from 'lodash';
 import * as path from 'path';
@@ -46,7 +47,7 @@ const defaultConfig = extend(true, {}, DEFAULT_CONFIG, {logLevel: 0});
 
 let oldGP: string;
 
-declare type MetadataCallback = (err: Error, ob?: any, result?: string) => void;
+declare type MetadataCallback = (err: Error|null, ob?: any, result?: string) => void;
 
 // TODO: Have this actually implement Breakpoint.
 const bp: apiTypes.Breakpoint = {
@@ -305,9 +306,9 @@ describe('Debuglet', function() {
 
       // TODO: Fix this so that config does not have to be cast as DebugAgentConfig.
       const mergedConfig = Debuglet.normalizeConfig_(config as DebugAgentConfig);
-      // TODO: Debuglet.normalizeConfig_() expects 1 parameter.  Determine
-      //       if `undefined` should be used here.
-      const compareConfig = Debuglet.normalizeConfig_(undefined);
+      // TODO: Debuglet.normalizeConfig_() expects 1 parameter but the original
+      //       test code had zero arguments here.  Determine which is correct.
+      const compareConfig = Debuglet.normalizeConfig_(null as any as DebugAgentConfig);
       // The actual config should be exactly defaultConfig with only
       // maxExpandFrames adjusted.
       compareConfig.capture.maxExpandFrames = testValue;
@@ -369,7 +370,8 @@ describe('Debuglet', function() {
 
       debuglet.once('registered', function(id: string) {
         assert.equal(id, DEBUGGEE_ID);
-        assert.equal(debuglet.debuggee_.project, projectId);
+        // TODO: Handle the case where debuglet.debuggee is undefined
+        assert.equal((debuglet.debuggee_ as Debuggee).project, projectId);
         debuglet.stop();
         scope.done();
         done();
@@ -396,7 +398,8 @@ describe('Debuglet', function() {
 
         debuglet.once('registered', function(id: string) {
           assert.equal(id, DEBUGGEE_ID);
-          assert.equal(debuglet.debuggee_.project, process.env.GCLOUD_PROJECT);
+          // TODO: Handle the case where debuglet.debuggee_ is undefined
+          assert.equal((debuglet.debuggee_ as any).project, process.env.GCLOUD_PROJECT);
           debuglet.stop();
           scope.done();
           done();
@@ -421,7 +424,8 @@ describe('Debuglet', function() {
 
            debuglet.once('registered', function(id: string) {
              assert.equal(id, DEBUGGEE_ID);
-             assert.equal(debuglet.debuggee_.project, 'project-via-options');
+             // TODO: Handle the case where debuglet.debuggee_ is undefined
+             assert.equal((debuglet.debuggee_ as any).project, 'project-via-options');
              debuglet.stop();
              scope.done();
              done();
@@ -701,7 +705,9 @@ describe('Debuglet', function() {
           // TODO: Determine if 5 should be converted to a string or if the
           //       the object literal should allow keys with values that are
           //       numbers.
-          cb(null, {a: 5 as any as string});
+          // TODO: The `cb` expects the first argument to not be null.
+          //       Determine if the first argument can be null.
+          cb(null as any as string, {a: 5 as any as string});
         });
       };
       const debuglet = new Debuglet(debug, defaultConfig);
@@ -1077,8 +1083,9 @@ describe('Debuglet', function() {
           {}, null, null, false);
       assert.ok(debuggee);
       assert.ok(debuggee.labels);
-      assert.strictEqual(debuggee.labels.module, 'some-service');
-      assert.strictEqual(debuggee.labels.version, 'production');
+      // TODO: Handle the case where debuggee.labels is undefined
+      assert.strictEqual((debuggee.labels as any).module, 'some-service');
+      assert.strictEqual((debuggee.labels as any).version, 'production');
     });
 
     it('should not add a module label when service is default', function() {
@@ -1092,14 +1099,18 @@ describe('Debuglet', function() {
                                   {}, null, null, false);
       assert.ok(debuggee);
       assert.ok(debuggee.labels);
-      assert.strictEqual(debuggee.labels.module, undefined);
-      assert.strictEqual(debuggee.labels.version, 'yellow.5');
+      // TODO: Handle the case where debuggee.labels is undefined
+      assert.strictEqual((debuggee.labels as any).module, undefined);
+      assert.strictEqual((debuggee.labels as any).version, 'yellow.5');
     });
 
     it('should have an error statusMessage with the appropriate arg',
        function() {
+         // TODO: The createDebuggee function doesn't allow the third,
+         //       fourth, or fifth parameters to be undefined.  Determine if
+         //       this is correct.
          const debuggee = Debuglet.createDebuggee(
-             'a', 'b', undefined, undefined, undefined, 'Some Error Message',
+             'a', 'b', undefined as any, undefined as any, undefined as any, 'Some Error Message',
              // TODO: Determine if this value for onGCP is correct.
              false);
          assert.ok(debuggee);

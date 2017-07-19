@@ -47,8 +47,8 @@ interface Child {
 describe('@google-cloud/debug end-to-end behavior', function () {
   let api: Debugger;
 
-  let debuggeeId: string;
-  let projectId: string;
+  let debuggeeId: string|null;
+  let projectId: string|null;
   let children: Child[] = [];
 
   before(function() {
@@ -121,12 +121,13 @@ describe('@google-cloud/debug end-to-end behavior', function () {
     // Create a promise for each child that resolves when that child exits.
     const childExitPromises = children.map(function (child) {
       console.log(child.transcript);
-      child.process.kill();
+      // TODO: Handle the case when child.process is undefined
+      (child.process as any).kill();
       return new Promise(function(resolve, reject) {
         const timeout = setTimeout(function() {
           reject(new Error('A child process failed to exit.'));
         }, 3000);
-        child.process.on('exit', function() {
+        (child.process as any).on('exit', function() {
           clearTimeout(timeout);
           resolve();
         });
@@ -203,7 +204,8 @@ describe('@google-cloud/debug end-to-end behavior', function () {
       assert.ok(breakpoint, 'should have set a breakpoint');
       assert.ok(breakpoint.id, 'breakpoint should have an id');
       assert.ok(breakpoint.location, 'breakpoint should have a location');
-      assert.strictEqual(breakpoint.location.path, FILENAME);
+      // TODO: Handle the case when breakpoint.location is undefined
+      assert.strictEqual((breakpoint.location as any).path, FILENAME);
 
       console.log('-- waiting before checking if the log was written');
       return Promise.all([breakpoint, delay(10 * 1000)]);
@@ -242,7 +244,8 @@ describe('@google-cloud/debug end-to-end behavior', function () {
       assert.ok(breakpoint, 'should have set a breakpoint');
       assert.ok(breakpoint.id, 'breakpoint should have an id');
       assert.ok(breakpoint.location, 'breakpoint should have a location');
-      assert.strictEqual(breakpoint.location.path, FILENAME);
+      // TODO: Handle the case when breakpoint.location is undefined
+      assert.strictEqual((breakpoint.location as any).path, FILENAME);
 
       console.log('-- waiting before checking if breakpoint was hit');
       return Promise.all([breakpoint, delay(10 * 1000)]);
@@ -276,7 +279,8 @@ describe('@google-cloud/debug end-to-end behavior', function () {
         arg = _.find(top.arguments, {name: 'n'});
       }
       assert.ok(arg, 'should find the n argument');
-      assert.strictEqual(arg.value, '10');
+      // TODO: Handle the case when arg is undefined
+      assert.strictEqual((arg as any).value, '10');
       console.log('-- checking log point was hit again');
       children.forEach(function(child) {
         const count = (child.transcript
@@ -364,7 +368,8 @@ describe('@google-cloud/debug end-to-end behavior', function () {
       assert.ok(breakpoint, 'should have set a breakpoint');
       assert.ok(breakpoint.id, 'breakpoint should have an id');
       assert.ok(breakpoint.location, 'breakpoint should have a location');
-      assert.strictEqual(breakpoint.location.path, FILENAME);
+      // TODO: Handle the case when breakpoint.location is undefined
+      assert.strictEqual((breakpoint.location as any).path, FILENAME);
 
       console.log('-- waiting before checking if the log was written');
       return Promise.all([breakpoint, delay(10 * 1000)]);

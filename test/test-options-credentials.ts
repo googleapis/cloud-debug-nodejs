@@ -38,7 +38,8 @@ describe('test-options-credentials', function() {
 
   afterEach(function() {
     assert.ok(debuglet);
-    debuglet.stop();
+    // TODO: Handle the case when debuglet is null
+    (debuglet as any).stop();
     debuglet = null;
     process.env.GCLOUD_PROJECT = envProject;
   });

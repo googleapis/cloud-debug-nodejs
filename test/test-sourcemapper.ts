@@ -55,7 +55,8 @@ function testTool(tool: string, relativeMapFilePath: string, relativeInputFilePa
 
         sm.create([mapFilePath], function(err, mapper) {
           assert.ifError(err);
-          sourcemapper = mapper;
+          // TODO: Handle the case when sourceMapper is undefined
+          sourcemapper = mapper as sm.SourceMapper;
         });
     });
 
@@ -88,8 +89,9 @@ function testTool(tool: string, relativeMapFilePath: string, relativeInputFilePa
       const info = sourcemapper.mappingInfo(inputFilePath, inputLine, 0);
       assert.notEqual(info, null,
         'The mapping info for file ' + inputFilePath + ' must be non-null');
-      assert.equal(info.file, outputFilePath);
-      assert.equal(info.line, expectedOutputLine,
+      // TODO: Handle the case when info is undefined
+      assert.equal((info as any).file, outputFilePath);
+      assert.equal((info as any).line, expectedOutputLine,
         ' invalid mapping for input line ' + inputLine);
     };
 

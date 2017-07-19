@@ -50,8 +50,9 @@ describe('Controller', function() {
       // TODO: Only 1 parameter is expected.  Fix this.
       (assert as any).ifError(err, 'should be able to register successfully');
       assert.ok(body);
-      assert.ok(body.debuggee);
-      assert.ok(body.debuggee.id);
+      // TODO: Handle the case when body is undefined
+      assert.ok((body as any).debuggee);
+      assert.ok((body as any).debuggee.id);
       done();
     });
   });
@@ -76,7 +77,8 @@ describe('Controller', function() {
         // TODO: Only 1 parameter is expected.  Fix this.
         (assert as any).ifError(err, 'should successfully list breakpoints');
         assert.ok(body);
-        assert.ok(body.nextWaitToken);
+        // TODO: Handle the case when body is undefined
+        assert.ok((body as any).nextWaitToken);
         done();
       });
     });
@@ -104,16 +106,17 @@ describe('Controller', function() {
         // TODO: Only 1 parameter is expected.  Fix this.
         (assert as any).ifError(err, 'should successfully list breakpoints');
         assert.ok(body);
-        assert.ok(body.nextWaitToken);
+        // TODO: Handle the case when body is undefined
+        assert.ok((body as any).nextWaitToken);
         // Second list should block until the wait timeout
         // TODO: Determine if the response parameter should be used.
         controller.listBreakpoints(debuggee, function(err, _response, body) {
           // TODO: Only 1 parameter is expected.  Fix this.
           (assert as any).ifError(err, 'should successfully list breakpoints');
           assert.ok(body);
-          assert.ok(body.nextWaitToken);
+          assert.ok((body as any).nextWaitToken);
           // waitExpired will only be set if successOnTimeout was given correctly
-          assert.ok(body.waitExpired);
+          assert.ok((body as any).waitExpired);
           done();
         });
       });
