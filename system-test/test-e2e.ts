@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import * as apiTypes from '../src/types/api-types';
+
 import * as assert from 'assert';
 import * as util from 'util';
 import * as _ from 'lodash'; // for _.find. Can't use ES6 yet.
@@ -21,6 +23,7 @@ import * as cp from 'child_process';
 import * as semver from 'semver';
 const promisifyAll = require('@google-cloud/common').util.promisifyAll;
 import {Debug} from '../src/debug';
+import {Debuggee} from '../src/debuggee';
 import {Debugger} from '../test/debugger';
 
 const CLUSTER_WORKERS = 3;
@@ -35,13 +38,18 @@ const delay = function(delayTimeMS: number): Promise<void> {
   });
 };
 
+interface Child {
+  transcript: string;
+  process?: cp.ChildProcess;
+}
+
 // This test could take up to 70 seconds.
 describe('@google-cloud/debug end-to-end behavior', function () {
   let api: Debugger;
 
   let debuggeeId: string;
   let projectId: string;
-  let children = [];
+  let children: Child[] = [];
 
   before(function() {
     promisifyAll(Debugger);
@@ -54,7 +62,8 @@ describe('@google-cloud/debug end-to-end behavior', function () {
       let numChildrenReady = 0;
 
       // Process a status message sent from a child process.
-      const handler = function(c) {
+      // TODO: Determine if this type signature is correct
+      const handler = function(c: { error: Error|null, debuggeeId: string, projectId: string}) {
         console.log(c);
         if (c.error) {
           reject(new Error('A child reported the following error: ' + c.error));
@@ -81,8 +90,8 @@ describe('@google-cloud/debug end-to-end behavior', function () {
       // Handle stdout/stderr output from a child process. More specifically,
       // write the child process's output to a transcript.
       // Each child has its own transcript.
-      const stdoutHandler = function(index) {
-        return function(chunk) {
+      const stdoutHandler = function(index: number) {
+        return function(chunk: string) {
           children[index].transcript += chunk;
         };
       };
@@ -135,39 +144,41 @@ describe('@google-cloud/debug end-to-end behavior', function () {
     this.timeout(90 * 1000);
     // Kick off promise chain by getting a list of debuggees
     // TODO: Determine how to properly specify the signature of listDebuggees
-    return (api as any).listDebuggees(projectId).then(function(results) {
+    // TODO: Determine if this is the correct signature for `then`
+    return (api as any).listDebuggees(projectId).then(function(results: { [index: number]: Debuggee[] }) {
       // Check that the debuggee created in this test is among the list of
       // debuggees, then list its breakpoints
-      
-      const debuggees = results[0];
+
+      const debuggees: Debuggee[] = results[0];
 
       console.log('-- List of debuggees\n',
         util.inspect(debuggees, { depth: null}));
       assert.ok(debuggees, 'should get a valid ListDebuggees response');
-      // TODO: Fix this cast to any.
-      const result = _.find(debuggees, function(d: any) {
+      const result = _.find(debuggees, function(d: Debuggee) {
         return d.id === debuggeeId;
       });
       assert.ok(result, 'should find the debuggee we just registered');
       // TODO: Determine how to properly specify the signature of listDebuggees
       return (api as any).listBreakpoints(debuggeeId);
-    }).then(function(results) {
+      // TODO: Determine if this type signature is correct.
+    }).then(function(results: { [index: number]: apiTypes.Breakpoint[]}) {
       // Delete every breakpoint
 
-      const breakpoints = results[0];
+      const breakpoints: apiTypes.Breakpoint[] = results[0];
 
       console.log('-- List of breakpoints\n', breakpoints);
 
-      const promises = breakpoints.map(function(breakpoint) {
+      const promises = breakpoints.map(function(breakpoint: apiTypes.Breakpoint) {
         // TODO: Determine how to properly specify the signature of listDebuggees
         return (api as any).deleteBreakpoint(debuggeeId, breakpoint.id);
       });
 
       return Promise.all(promises);
-    }).then(function(results) {
+      // TODO: Determine if this type signature is correct
+    }).then(function(results: apiTypes.Breakpoint[]) {
       // Set a breakpoint at which the debugger should write to a log
 
-      results.map(function(result) {
+      results.map(function(result: apiTypes.Breakpoint) {
         assert.equal(result, '');
       });
       console.log('-- deleted');
@@ -182,7 +193,8 @@ describe('@google-cloud/debug end-to-end behavior', function () {
         expressions: ['o'],
         log_message_format: 'o is: $0'
       });
-    }).then(function(results) {
+      // TODO: Determine if this type signature is correct.
+    }).then(function(results: apiTypes.Breakpoint[]) {
       // Check that the breakpoint was set, and then wait for the log to be
       // written to
 
@@ -195,8 +207,8 @@ describe('@google-cloud/debug end-to-end behavior', function () {
 
       console.log('-- waiting before checking if the log was written');
       return Promise.all([breakpoint, delay(10 * 1000)]);
-    }).then(function(_results) {
       // TODO: Determine if the results parameter should be used.
+    }).then(function(_results: apiTypes.Breakpoint[]) {
 
       // Check the contents of the log, but keep the original breakpoint.
 
@@ -220,7 +232,7 @@ describe('@google-cloud/debug end-to-end behavior', function () {
         expressions: ['process'], // Process for large variable
         condition: 'n === 10'
       });
-    }).then(function(results) {
+    }).then(function(results: apiTypes.Breakpoint[]) {
       // Check that the breakpoint was set, and then wait for the breakpoint to
       // be hit
 
@@ -234,7 +246,7 @@ describe('@google-cloud/debug end-to-end behavior', function () {
 
       console.log('-- waiting before checking if breakpoint was hit');
       return Promise.all([breakpoint, delay(10 * 1000)]);
-    }).then(function(results) {
+    }).then(function(results: apiTypes.Breakpoint[]) {
       // Get the breakpoint
 
       const breakpoint = results[0];
@@ -242,7 +254,7 @@ describe('@google-cloud/debug end-to-end behavior', function () {
       console.log('-- now checking if the breakpoint was hit');
       // TODO: Determine how to properly specify the signature of listDebuggees
       return (api as any).getBreakpoint(debuggeeId, breakpoint.id);
-    }).then(function(results) {
+    }).then(function(results: apiTypes.Breakpoint[]) {
       // Check that the breakpoint was hit and contains the correct information,
       // which ends the test
 
@@ -295,7 +307,8 @@ describe('@google-cloud/debug end-to-end behavior', function () {
     this.timeout(15 * 1000);
     // Kick off promise chain by getting a list of debuggees
     // TODO: Determine how to properly specify the signature of listDebuggees
-    return (api as any).listDebuggees(projectId).then(function(results) {
+    // TODO: Determine if this is the correct signature for then
+    return (api as any).listDebuggees(projectId).then(function(results: { [index: number]: Debuggee[] }) {
       // Check that the debuggee created in this test is among the list of
       // debuggees, then list its breakpoints
 
@@ -312,10 +325,10 @@ describe('@google-cloud/debug end-to-end behavior', function () {
 
       // TODO: Determine how to properly specify the signature of listDebuggees
       return (api as any).listBreakpoints(debuggeeId);
-    }).then(function(results) {
+    }).then(function(results: { [index: number]: apiTypes.Breakpoint[] }) {
       // Delete every breakpoint
 
-      const breakpoints = results[0];
+      const breakpoints: apiTypes.Breakpoint[] = results[0];
 
       console.log('-- List of breakpoints\n', breakpoints);
 
@@ -325,7 +338,7 @@ describe('@google-cloud/debug end-to-end behavior', function () {
       });
 
       return Promise.all(promises);
-    }).then(function(results) {
+    }).then(function(results: Promise<void>[]) {
       // Set a breakpoint at which the debugger should write to a log
 
       results.map(function(result) {
@@ -343,7 +356,7 @@ describe('@google-cloud/debug end-to-end behavior', function () {
         expressions: ['o'],
         log_message_format: 'o is: $0'
       });
-    }).then(function(results) {
+    }).then(function(results: apiTypes.Breakpoint[]) {
       // Check that the breakpoint was set, and then wait for the log to be
       // written to
       const breakpoint = results[0];
@@ -355,7 +368,7 @@ describe('@google-cloud/debug end-to-end behavior', function () {
 
       console.log('-- waiting before checking if the log was written');
       return Promise.all([breakpoint, delay(10 * 1000)]);
-    }).then(function(results) {
+    }).then(function(results: apiTypes.Breakpoint[]) {
       // Check that the contents of the log is correct
 
       const breakpoint = results[0];
