@@ -82,7 +82,8 @@ describe('Debuglet', function() {
     it('should resolve true if metadata service is resolveable', (done) => {
       // TODO: Fix this cast to any that is caused by the fact that `lookup`
       //       is a readonly property.
-      (dns as any).lookup = (hostname, cb) => {
+      // TODO: Determine if the hostname parameter should be used.
+      (dns as any).lookup = (_hostname, cb) => {
         setImmediate(() => {
           cb(null, { address: '700.800.900.fake', family: 'Addams'});
         });
@@ -97,7 +98,8 @@ describe('Debuglet', function() {
     it('should resolve false if metadata service not resolveable', (done) => {
       // TODO: Fix this cast to any that is caused by the fact that `lookup`
       //       is a readonly property.
-      (dns as any).lookup = (hostname, cb) => {
+      // TODO: Determine if the hostname parameter should be used.
+      (dns as any).lookup = (_hostname, cb) => {
         setImmediate(() => {
           cb(new Error('resolution error'));
         });
@@ -123,10 +125,13 @@ describe('Debuglet', function() {
       const FAKE_PROJECT_ID = 'fake-project-id-from-metadata';
       // TODO: Determine if the options to Debug should be optional so that
       //       new Debug() can be used instead of new Debug({}).
-      const debug = new Debug({});
-      const debuglet = new Debuglet(debug, defaultConfig);
+      // TODO: This is never used.  Determine if it should be used.
+      //const debug = new Debug({});
+      // TODO: This is never used.  Determine if it should be used.
+      //const debuglet = new Debuglet(debug, defaultConfig);
 
-      metadata.project = (path, cb) => {
+      // TODO: Determine if the path parameter should be used.
+      metadata.project = (_path, cb) => {
         setImmediate(() => { 
           cb(null, {}, FAKE_PROJECT_ID);
         });
@@ -139,14 +144,18 @@ describe('Debuglet', function() {
     });
 
     it('should return null on error', (done) => {
-      const debug = new Debug({});
-      const debuglet = new Debuglet(debug, defaultConfig);
+      // TODO: This is never used.  Determine if it should be used.
+      //const debug = new Debug({});
+      // TODO: This is never used.  Determine if it should be used.
+      //const debuglet = new Debuglet(debug, defaultConfig);
 
-      metadata.project = (path, cb) => {
+      // TODO: Determine if the path parameter should be used.
+      metadata.project = (_path, cb) => {
         setImmediate(() => { cb(new Error()); });
       }
 
-      Debuglet.getProjectIdFromMetadata().catch((err) => {
+      // TODO: Determine if the err parameter should be used.
+      Debuglet.getProjectIdFromMetadata().catch((_err) => {
         done();
       });
     });
@@ -163,10 +172,13 @@ describe('Debuglet', function() {
 
     it('should return project retrived from metadata', (done) => {
       const FAKE_CLUSTER_NAME = 'fake-cluster-name-from-metadata';
-      const debug = new Debug({});
-      const debuglet = new Debuglet(debug, defaultConfig);
+      // TODO: This is never used.  Determine if it should be used.
+      //const debug = new Debug({});
+      // TODO: This is never used.  Determine if it should be used.
+      //const debuglet = new Debuglet(debug, defaultConfig);
 
-      metadata.instance = (path, cb) => {
+      // TODO: Determine if the path parameter should be used.
+      metadata.instance = (_path, cb) => {
         setImmediate(() => { 
           cb(null, {}, FAKE_CLUSTER_NAME);
         });
@@ -179,14 +191,18 @@ describe('Debuglet', function() {
     });
 
     it('should return null on error', (done) => {
-      const debug = new Debug({});
-      const debuglet = new Debuglet(debug, defaultConfig);
+      // TODO: This is never used.  Determine if it should be used.
+      //const debug = new Debug({});
+      // TODO: This is never used.  Determine if it should be used.
+      //const debuglet = new Debuglet(debug, defaultConfig);
 
-      metadata.instance = (path, cb) => {
+      // TODO: Determine if the path parameter should be used.
+      metadata.instance = (_path, cb) => {
         setImmediate(() => { cb(new Error()); });
       }
 
-      Debuglet.getClusterNameFromMetadata().catch((err) => {
+      // TODO: Determine if the err parameter should be used.
+      Debuglet.getClusterNameFromMetadata().catch((_err) => {
         done();
       });
     });
@@ -257,7 +273,8 @@ describe('Debuglet', function() {
       Debuglet.getProjectIdFromMetadata = () => {
         return Promise.reject(new Error('rejection'));
       };
-      Debuglet.getProjectId({}).catch((err) => {
+      // TODO: Determine if the err parameter should be used.
+      Debuglet.getProjectId({}).catch((_err) => {
         // restore environment variables.
         process.env = envs;
         done();
@@ -546,7 +563,8 @@ describe('Debuglet', function() {
                           return true;
                         }).once().reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
-           debuglet.once('registered', function(id) {
+           // TODO: Determine if the id parameter should be used.
+           debuglet.once('registered', function(_id) {
              debuglet.stop();
              scope.done();
              done();
@@ -568,7 +586,8 @@ describe('Debuglet', function() {
                        return true;
                      }).once().reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
-        debuglet.once('registered', function(id) {
+        // TODO: Determine if the response parameter should be used.
+        debuglet.once('registered', function(_id) {
           debuglet.stop();
           scope.done();
           done();

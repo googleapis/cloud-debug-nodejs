@@ -1319,7 +1319,8 @@ describe('v8debugapi', function() {
       const bp: apiTypes.Breakpoint = {id: breakpointInFoo.id, location: breakpointInFoo.location} as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {
         assert.ifError(err);
-        api.wait(bp, function(err) {
+        // TODO: Determine if the err parameter should be used.
+        api.wait(bp, function(_err) {
           api.clear(bp);
           throw new Error(message);
         });

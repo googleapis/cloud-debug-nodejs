@@ -66,11 +66,13 @@ describe('Controller', function() {
           // TODO: Determine if statusMessage should be made optional.
           statusMessage: null
         });
-    controller.register(debuggee, function(err, body) {
+    // TODO: Determine if the body parameter should be used.
+    controller.register(debuggee, function(err, _body) {
       // TODO: Only 1 parameter is expected.  Fix this.
       (assert as any).ifError(err, 'should be able to register successfully');
 
-      controller.listBreakpoints(debuggee, function(err, response, body) {
+      // TODO: Determine if the response parameter should be used.
+      controller.listBreakpoints(debuggee, function(err, _response, body) {
         // TODO: Only 1 parameter is expected.  Fix this.
         (assert as any).ifError(err, 'should successfully list breakpoints');
         assert.ok(body);
@@ -91,18 +93,21 @@ describe('Controller', function() {
           // TODO: Determine if statusMessage should be made optional.
           statusMessage: null
         });
-    controller.register(debuggee, function(err, body) {
+    // TODO: Determine if the body parameter should be used.
+    controller.register(debuggee, function(err, _body) {
       // TODO: Only 1 parameter is expected.  Fix this.
       (assert as any).ifError(err, 'should be able to register successfully');
 
       // First list should set the wait token
-      controller.listBreakpoints(debuggee, function(err, response, body) {
+      // TODO: Determine if the response parameter should be used.
+      controller.listBreakpoints(debuggee, function(err, _response, body) {
         // TODO: Only 1 parameter is expected.  Fix this.
         (assert as any).ifError(err, 'should successfully list breakpoints');
         assert.ok(body);
         assert.ok(body.nextWaitToken);
         // Second list should block until the wait timeout
-        controller.listBreakpoints(debuggee, function(err, response, body) {
+        // TODO: Determine if the response parameter should be used.
+        controller.listBreakpoints(debuggee, function(err, _response, body) {
           // TODO: Only 1 parameter is expected.  Fix this.
           (assert as any).ifError(err, 'should successfully list breakpoints');
           assert.ok(body);

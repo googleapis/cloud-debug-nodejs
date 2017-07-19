@@ -27,7 +27,6 @@ import * as v8debugapi from '../src/agent/v8debugapi';
 import * as SourceMapper from '../src/agent/sourcemapper';
 import * as scanner from '../src/agent/scanner';
 import defaultConfig from '../src/agent/config';
-import * as path from 'path';
 const foo = require('./test-max-data-size-code.js');
 let api: V8DebugApi;
 

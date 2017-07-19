@@ -56,7 +56,8 @@ describe(__filename, function() {
         .then(function (fileStats) {
           const jsStats = fileStats.selectStats(/.js$/);
           const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
-          SourceMapper.create(mapFiles, function (err, mapper) {
+          // TODO: Determine if the err parameter should be used.
+          SourceMapper.create(mapFiles, function (_err, mapper) {
             api = v8debugapi.create(logger, config, jsStats, mapper);
             assert.ok(api, 'should be able to create the api');
             done();
