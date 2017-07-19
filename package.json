@@ -30,6 +30,7 @@
     "@types/mocha": "^2.2.41",
     "@types/nock": "^8.2.1",
     "@types/node": "^7.0.18",
+    "@types/request": "^2.0.0",
     "@types/semver": "^5.3.32",
     "@types/source-map": "^0.5.0",
     "changelog-maker": "^2.2.2",

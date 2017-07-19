@@ -79,9 +79,9 @@ describe(__filename, function() {
       api.wait(breakpointInFoo, function(err) {
         assert.ifError(err);
         // TODO: Determine how to remove this cast to any.
-        const frames = (breakpointInFoo as any).stackFrames[0];
+        const frames = breakpointInFoo.stackFrames[0];
         const exprs = frames.arguments.concat(frames.locals);
-        const varTableIndicesSeen = [];
+        const varTableIndicesSeen: number[] = [];
         exprs.forEach(function(expr) {
           assert.equal(varTableIndicesSeen.indexOf(expr.varTableIndex), -1);
           varTableIndicesSeen.push(expr.varTableIndex);

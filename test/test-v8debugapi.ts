@@ -181,10 +181,10 @@ describe('v8debugapi', function() {
         'key-bad.json')}} as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {
         assert.ok(err, 'should return an error');
-        assert.ok((bp as any).status);
-        assert.ok((bp as any).status instanceof StatusMessage);
-        assert.equal((bp as any).status.refersTo, 'BREAKPOINT_SOURCE_LOCATION');
-        assert.ok((bp as any).status.isError);
+        assert.ok(bp.status);
+        assert.ok(bp.status instanceof StatusMessage);
+        assert.equal(bp.status.refersTo, 'BREAKPOINT_SOURCE_LOCATION');
+        assert.ok(bp.status.isError);
         done();
       });
     });
@@ -231,9 +231,9 @@ describe('v8debugapi', function() {
       it('should reject breakpoint ' + bp.id, function(done) {
         api.set(bp, function(err) {
           assert.ok(err, 'should return an error');
-          assert.ok((bp as any).status);
-          assert.ok((bp as any).status instanceof StatusMessage);
-          assert.ok((bp as any).status.isError);
+          assert.ok(bp.status);
+          assert.ok(bp.status instanceof StatusMessage);
+          assert.ok(bp.status.isError);
           done();
         });
 
@@ -247,10 +247,10 @@ describe('v8debugapi', function() {
       const bp: apiTypes.Breakpoint = {id: 'ambiguous', location: {line: 1, path: 'hello.js'}} as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {
         assert.ok(err);
-        assert.ok((bp as any).status);
-        assert.ok((bp as any).status instanceof StatusMessage);
-        assert.ok((bp as any).status.isError);
-        assert((bp as any).status.description.format ===
+        assert.ok(bp.status);
+        assert.ok(bp.status instanceof StatusMessage);
+        assert.ok(bp.status.isError);
+        assert(bp.status.description.format ===
           api.messages.SOURCE_FILE_AMBIGUOUS);
         done();
       });
@@ -265,10 +265,10 @@ describe('v8debugapi', function() {
       } as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {
         assert.ok(err);
-        assert.ok((bp as any).status);
-        assert.ok((bp as any).status instanceof StatusMessage);
-        assert.ok((bp as any).status.isError);
-        assert((bp as any).status.description.format.match(
+        assert.ok(bp.status);
+        assert.ok(bp.status instanceof StatusMessage);
+        assert.ok(bp.status.isError);
+        assert(bp.status.description.format.match(
           `${api.messages.INVALID_LINE_NUMBER}.*foo.js:500`));
         done();
       });
@@ -276,7 +276,7 @@ describe('v8debugapi', function() {
 
   });
 
-  function conditionTests(subject, test, expressions) {
+  function conditionTests(subject: string, test: (err: Error) => void, expressions: Array<string|null>) {
     describe(subject, function() {
       expressions.forEach(function(expr) {
         it('should validate breakpoint with condition "'+expr+'"', function(done) {
@@ -528,10 +528,10 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          assert.ok((bp as any).stackFrames);
-          assert.ok((bp as any).variableTable);
+          assert.ok(bp.stackFrames);
+          assert.ok(bp.variableTable);
 
-          const topFrame = (bp as any).stackFrames[0];
+          const topFrame = bp.stackFrames[0];
           assert.ok(topFrame);
           assert.equal(topFrame['function'], 'foo');
           assert.equal(topFrame.locals[0].name, 'n');
@@ -555,19 +555,19 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          assert.ok((bp as any).stackFrames);
-          assert.ok((bp as any).variableTable);
-          const topFrame = (bp as any).stackFrames[0];
+          assert.ok(bp.stackFrames);
+          assert.ok(bp.variableTable);
+          const topFrame = bp.stackFrames[0];
           assert.ok(topFrame);
           assert.equal(topFrame['function'], 'foo');
           assert.equal(topFrame.arguments.length, 1);
-          const argsVal = (bp as any).variableTable[topFrame.arguments[0].varTableIndex];
+          const argsVal = bp.variableTable[topFrame.arguments[0].varTableIndex];
           assert(argsVal.status.isError);
           assert(argsVal.status.description.format.match(
             'Locals and arguments are only displayed.*config.capture.maxExpandFrames=0'
             ));
           assert.equal(topFrame.locals.length, 1);
-          const localsVal = (bp as any).variableTable[topFrame.locals[0].varTableIndex];
+          const localsVal = bp.variableTable[topFrame.locals[0].varTableIndex];
           assert(localsVal.status.isError);
           assert(localsVal.status.description.format.match(
             'Locals and arguments are only displayed.*config.capture.maxExpandFrames=0'
@@ -590,9 +590,9 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          assert.ok((bp as any).stackFrames);
-          assert.equal((bp as any).stackFrames.length, config.capture.maxFrames);
-          const topFrame = (bp as any).stackFrames[0];
+          assert.ok(bp.stackFrames);
+          assert.equal(bp.stackFrames.length, config.capture.maxFrames);
+          const topFrame = bp.stackFrames[0];
           assert.ok(topFrame);
           assert.equal(topFrame['function'], 'foo');
           assert.equal(topFrame.locals[0].name, 'n');
@@ -621,28 +621,32 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          assert.ok((bp as any).stackFrames);
-          assert.ok((bp as any).variableTable);
-          assert.ok((bp as any).evaluatedExpressions);
+          assert.ok(bp.stackFrames);
+          assert.ok(bp.variableTable);
+          assert.ok(bp.evaluatedExpressions);
 
-          const topFrame = (bp as any).stackFrames[0];
+          const topFrame = bp.stackFrames[0];
           assert.equal(topFrame['function'], 'foo');
           assert.equal(topFrame.locals[0].name, 'n');
           assert.equal(topFrame.locals[0].value, '3');
 
-          const watch = (bp as any).evaluatedExpressions[0];
+          const watch = bp.evaluatedExpressions[0];
           assert.equal(watch.name, 'process');
           assert.ok(watch.varTableIndex);
 
           // Make sure the process object looks sensible.
-          const processVal = (bp as any).variableTable[watch.varTableIndex];
+          const processVal = bp.variableTable[watch.varTableIndex];
           assert.ok(processVal);
-          assert.ok(processVal.members.some(function(m) {
+          // TODO: The function supplied to the `some` function is of the
+          //       wrong type.  Fix this.
+          assert.ok(processVal.members.some(function(m: apiTypes.Variable) {
             return m.name === 'nextTick' && m.value.match('function.*');
-          }));
-          assert.ok(processVal.members.some(function(m) {
+          } as any));
+          // TODO: The function supplied to the `some` function is of the
+          //       wrong type.  Fix this.
+          assert.ok(processVal.members.some(function(m: apiTypes.Variable) {
             return m.name === 'versions' && m.varTableIndex;
-          }));
+          } as any));
 
           api.clear(bp);
           config.capture.maxDataSize = oldMaxData;
@@ -669,21 +673,21 @@ describe('v8debugapi', function() {
         api.wait(bp, function(err) {
           assert.ifError(err);
 
-          const procEnv = (bp as any).evaluatedExpressions[0];
+          const procEnv = bp.evaluatedExpressions[0];
           assert.equal(procEnv.name, 'process.env');
-          const envVal = (bp as any).variableTable[procEnv.varTableIndex];
+          const envVal = bp.variableTable[procEnv.varTableIndex];
           envVal.members.forEach(function(member) {
             if (member.hasOwnProperty('varTableIndex')) {
-               assert((bp as any).variableTable[member.varTableIndex].status.isError);
+               assert(bp.variableTable[member.varTableIndex].status.isError);
             }
           });
-          const hasGetter = (bp as any).evaluatedExpressions[1];
-          const getterVal = (bp as any).variableTable[hasGetter.varTableIndex];
+          const hasGetter = bp.evaluatedExpressions[1];
+          const getterVal = bp.variableTable[hasGetter.varTableIndex];
           assert(getterVal.members.some(function(m) {
             return m.value === '5';
           }));
           assert(getterVal.members.some(function(m) {
-            const resolved = (bp as any).variableTable[m.varTableIndex];
+            const resolved = bp.variableTable[m.varTableIndex];
             return resolved && resolved.status.isError;
           }));
 
@@ -709,9 +713,9 @@ describe('v8debugapi', function() {
         api.wait(bp, function(err) {
           assert.ifError(err);
 
-          const arrEnv = (bp as any).evaluatedExpressions[0];
+          const arrEnv = bp.evaluatedExpressions[0];
           assert.equal(arrEnv.name, 'A');
-          const envVal = (bp as any).variableTable[arrEnv.varTableIndex];
+          const envVal = bp.variableTable[arrEnv.varTableIndex];
           let found = false;
           envVal.members.forEach(function(member) {
             if (member.name === 'length') {
@@ -745,10 +749,10 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          const hasGetter = (bp as any).stackFrames[0].locals.filter(function(value) {
+          const hasGetter = bp.stackFrames[0].locals.filter(function(value) {
             return value.name === 'hasGetter';
           });
-          const getterVal = (bp as any).variableTable[hasGetter[0].varTableIndex];
+          const getterVal = bp.variableTable[hasGetter[0].varTableIndex];
           const stringItems = getterVal.members.filter(function(m) {
             return m.value === 'hel...';
           });
@@ -780,10 +784,10 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          const aResults = (bp as any).stackFrames[0].locals.filter(function(value) {
+          const aResults = bp.stackFrames[0].locals.filter(function(value) {
             return value.name === 'A';
           });
-          const aVal = (bp as any).variableTable[aResults[0].varTableIndex];
+          const aVal = bp.variableTable[aResults[0].varTableIndex];
           // should have 1 element + truncation message.
           assert.equal(aVal.members.length, 2);
           assert(aVal.members[1].name.match(
@@ -811,10 +815,10 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          const bResults = (bp as any).stackFrames[0].locals.filter(function(value) {
+          const bResults = bp.stackFrames[0].locals.filter(function(value) {
             return value.name === 'B';
           });
-          const bVal = (bp as any).variableTable[bResults[0].varTableIndex];
+          const bVal = bp.variableTable[bResults[0].varTableIndex];
           // should have 1 element + truncation message
           assert.equal(bVal.members.length, 2);
           assert(bVal.members[1].name.match(
@@ -846,8 +850,8 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          const hasGetter = (bp as any).evaluatedExpressions[0];
-          const getterVal = (bp as any).variableTable[hasGetter.varTableIndex];
+          const hasGetter = bp.evaluatedExpressions[0];
+          const getterVal = bp.variableTable[hasGetter.varTableIndex];
           const stringItems = getterVal.members.filter(function(m) {
             return m.value === 'hello world';
           });
@@ -882,8 +886,8 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            const foo = (bp as any).evaluatedExpressions[0];
-            const fooVal = (bp as any).variableTable[foo.varTableIndex];
+            const foo = bp.evaluatedExpressions[0];
+            const fooVal = bp.variableTable[foo.varTableIndex];
             // '1', '2', '3', and 'length'
             assert.equal(fooVal.members.length, 4);
             assert.strictEqual(foo.status, undefined);
@@ -915,8 +919,8 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            const foo = (bp as any).evaluatedExpressions[0];
-            const fooVal = (bp as any).variableTable[foo.varTableIndex];
+            const foo = bp.evaluatedExpressions[0];
+            const fooVal = bp.variableTable[foo.varTableIndex];
             assert.equal(fooVal.members.length, 3);
             assert.strictEqual(foo.status, undefined);
 
@@ -947,8 +951,8 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            const foo = (bp as any).evaluatedExpressions[0];
-            const fooVal = (bp as any).variableTable[foo.varTableIndex];
+            const foo = bp.evaluatedExpressions[0];
+            const fooVal = bp.variableTable[foo.varTableIndex];
             assert(fooVal.status.description.format.match(
               'Max data size reached'));
             assert(fooVal.status.isError);
@@ -980,8 +984,8 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            const foo = (bp as any).evaluatedExpressions[0];
-            const fooVal = (bp as any).variableTable[foo.varTableIndex];
+            const foo = bp.evaluatedExpressions[0];
+            const fooVal = bp.variableTable[foo.varTableIndex];
             assert(fooVal.status.description.format.match(
               'Max data size reached'));
             assert(fooVal.status.isError);
@@ -1014,7 +1018,7 @@ describe('v8debugapi', function() {
           api.wait(bp, function(err) {
             assert.ifError(err);
 
-            const bResults = (bp as any).stackFrames[0].locals.filter(function(value) {
+            const bResults = bp.stackFrames[0].locals.filter(function(value) {
               return value.name === 'B';
             });
             assert(bResults);
@@ -1047,12 +1051,12 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          assert.ok((bp as any).stackFrames);
-          assert.ok((bp as any).variableTable);
-          assert.ok((bp as any).evaluatedExpressions);
+          assert.ok(bp.stackFrames);
+          assert.ok(bp.variableTable);
+          assert.ok(bp.evaluatedExpressions);
 
-          for (const i in (bp as any).evaluatedExpressions) {
-            const expr = (bp as any).evaluatedExpressions[i];
+          for (const i in bp.evaluatedExpressions) {
+            const expr = bp.evaluatedExpressions[i];
             assert(expr.status && expr.status.isError);
           }
 
@@ -1076,9 +1080,9 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          assert.ok((bp as any).stackFrames);
+          assert.ok(bp.stackFrames);
 
-          const topFrame = (bp as any).stackFrames[0];
+          const topFrame = bp.stackFrames[0];
           assert.equal(topFrame.locals[0].name, 'n');
           assert.equal(topFrame.locals[0].value, '5');
           api.clear(bp);
@@ -1104,9 +1108,9 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            assert.ok((bp as any).stackFrames);
+            assert.ok(bp.stackFrames);
 
-            const topFrame = (bp as any).stackFrames[0];
+            const topFrame = bp.stackFrames[0];
             assert.equal(topFrame['function'], 'foo');
             assert.equal(topFrame.locals[0].name, 'n');
             assert.equal(topFrame.locals[0].value, '3');
@@ -1148,9 +1152,9 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            assert.ok((bp as any).stackFrames);
+            assert.ok(bp.stackFrames);
 
-            const topFrame = (bp as any).stackFrames[0];
+            const topFrame = bp.stackFrames[0];
             assert.equal(topFrame.locals[0].name, 'j');
             assert.equal(topFrame.locals[0].value, '2');
             assert.equal(topFrame['function'], 'foo');
@@ -1176,12 +1180,12 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            assert.ok((bp as any).stackFrames);
-            assert.ok((bp as any).variableTable);
-            assert.ok((bp as any).evaluatedExpressions);
+            assert.ok(bp.stackFrames);
+            assert.ok(bp.variableTable);
+            assert.ok(bp.evaluatedExpressions);
 
-            for (const i in (bp as any).evaluatedExpressions) {
-              const expr = (bp as any).evaluatedExpressions[i];
+            for (const i in bp.evaluatedExpressions) {
+              const expr = bp.evaluatedExpressions[i];
               assert(expr.value === String(Math.PI * 3));
             }
 
@@ -1208,12 +1212,12 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            assert.ok((bp as any).stackFrames);
-            assert.ok((bp as any).variableTable);
-            assert.ok((bp as any).evaluatedExpressions);
+            assert.ok(bp.stackFrames);
+            assert.ok(bp.variableTable);
+            assert.ok(bp.evaluatedExpressions);
 
-            for (const i in (bp as any).evaluatedExpressions) {
-              const expr = (bp as any).evaluatedExpressions[i];
+            for (const i in bp.evaluatedExpressions) {
+              const expr = bp.evaluatedExpressions[i];
               assert(expr.status && expr.status.isError);
               if (expr.name === ':)' ||
                   expr.name === 'process=this' ||
@@ -1290,7 +1294,7 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          assert.ok((bp as any).stackFrames);
+          assert.ok(bp.stackFrames);
 
           api.clear(bp);
           done();
@@ -1306,7 +1310,7 @@ describe('v8debugapi', function() {
       assert.equal(listeners.length, 1);
       const originalListener = listeners[0];
       process.removeListener('uncaughtException', originalListener);
-      process.once('uncaughtException', function(err) {
+      process.once('uncaughtException', function(err: Error) {
         assert.ok(err);
         assert.equal(err.message, message);
         // Restore the mocha listener.
@@ -1342,9 +1346,9 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, (err) => {
           assert.ifError(err);
-          assert.ok((bp as any).stackFrames);
+          assert.ok(bp.stackFrames);
 
-          const topFrame = (bp as any).stackFrames[0];
+          const topFrame = bp.stackFrames[0];
           assert.ok(topFrame.locals.some((local) => (local.name === '_a')));
           assert.ok(topFrame.locals.some((local) => (local.name === 'res')));
           api.clear(bp);

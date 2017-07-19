@@ -132,7 +132,7 @@ describe('Controller API', function() {
     });
 
     describe('invalid responses', function() {
-      const tests = [ '', 'JSON, this is not', []];
+      const tests: string| Array<any> = [ '', 'JSON, this is not', []];
       tests.forEach(function(invalidResponse, index) {
         it('should pass test ' + index, function(done) {
           const scope = nock(url)

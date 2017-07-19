@@ -17,7 +17,7 @@
 import * as assert from 'assert';
 import * as path from 'path';
 
-import * as SourceMapper from '../src/agent/sourcemapper';
+import * as sm from '../src/agent/sourcemapper';
 
 const BASE_PATH = path.join(__dirname, 'fixtures', 'sourcemapper');
 
@@ -44,7 +44,7 @@ function testTool(tool: string, relativeMapFilePath: string, relativeInputFilePa
   const outputFilePath = path.join(BASE_PATH, relativeOutputFilePath);
 
   describe('sourcemapper for tool ' + tool, function() {
-    let sourcemapper;
+    let sourcemapper: sm.SourceMapper;
 
     it('for tool ' + tool,
       function(done) {
@@ -53,7 +53,7 @@ function testTool(tool: string, relativeMapFilePath: string, relativeInputFilePa
           done();
         }, 300);
 
-        SourceMapper.create([mapFilePath], function(err, mapper) {
+        sm.create([mapFilePath], function(err, mapper) {
           assert.ifError(err);
           sourcemapper = mapper;
         });
@@ -84,7 +84,7 @@ function testTool(tool: string, relativeMapFilePath: string, relativeInputFilePa
         done();
     });
 
-    const testLineMapping = function(inputLine, expectedOutputLine) {
+    const testLineMapping = function(inputLine: number, expectedOutputLine: number) {
       const info = sourcemapper.mappingInfo(inputFilePath, inputLine, 0);
       assert.notEqual(info, null,
         'The mapping info for file ' + inputFilePath + ' must be non-null');
