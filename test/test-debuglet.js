@@ -31,7 +31,7 @@ var BPS_PATH = '/v2/controller/debuggees/' + DEBUGGEE_ID + '/breakpoints';
 var EXPRESSIONS_REGEX =
     /Expressions and conditions are not allowed.*https:\/\/goo\.gl\/ShSm6r/;
 
-var fakeCredentials = require('./fixtures/gcloud-credentials.json');
+var fakeCredentials = require('../fixtures/gcloud-credentials.json');
 
 var nock = require('nock');
 var nocks = require('./nocks.js');

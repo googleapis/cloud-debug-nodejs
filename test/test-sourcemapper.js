@@ -21,7 +21,7 @@ var path = require('path');
 
 var SourceMapper = require('../build/src/agent/sourcemapper.js');
 
-var BASE_PATH = path.join(__dirname, 'fixtures', 'sourcemapper');
+var BASE_PATH = path.join(__dirname, '..', 'fixtures', 'sourcemapper');
 
 /**
  * @param {string} tool The name of the tool that was used to generate the

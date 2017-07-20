@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-process.env.GCLOUD_DIAGNOSTICS_CONFIG = 'test/fixtures/test-config.js';
+process.env.GCLOUD_DIAGNOSTICS_CONFIG = 'fixtures/test-config.js';
 
 var assert = require('assert');
 var extend = require('extend');

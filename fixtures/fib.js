@@ -21,10 +21,10 @@ function fib(n) {
  * limitations under the License.
  */
 
-const nocks = require('../nocks.js');
+const nocks = require('../test/nocks.js');
 nocks.projectId('fake-project-id');
 
-var debuglet = require('../..').start({
+var debuglet = require('..').start({
   debug: {
     logLevel: 2,
     maxLogsPerSecond: 2,
