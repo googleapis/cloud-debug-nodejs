@@ -30,7 +30,7 @@ function run {
 }
 
 # Run test/coverage
-run test
+run build/test
 
 # Conditionally publish coverage
 if [ "$cover" ]; then
