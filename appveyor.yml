@@ -18,7 +18,7 @@ install:
 # Post-install test scripts.
 test_script:
   # run tests
-  - ps: gulp test
+  - ps: node_modules\.bin\gulp test
 
 # Don't actually build using MSBuild
 build: off
