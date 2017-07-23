@@ -33,12 +33,12 @@ var MAX_INT = 2147483647; // Max signed int32.
 
 var assert = require('assert');
 var extend = require('extend');
-var v8debugapi = require('../build/src/agent/v8debugapi.js');
+var v8debugapi = require('../src/agent/v8debugapi.js');
 var common = require('@google-cloud/common');
-var defaultConfig = require('../build/src/agent/config.js').default;
-var StatusMessage = require('../build/src/status-message.js').StatusMessage;
-var scanner = require('../build/src/agent/scanner.js');
-var SourceMapper = require('../build/src/agent/sourcemapper.js');
+var defaultConfig = require('../src/agent/config.js').default;
+var StatusMessage = require('../src/status-message.js').StatusMessage;
+var scanner = require('../src/agent/scanner.js');
+var SourceMapper = require('../src/agent/sourcemapper.js');
 var path = require('path');
 var semver = require('semver');
 
@@ -1036,7 +1036,8 @@ describe('v8debugapi', function() {
       function (done) {
         var bp = {
           id: 'coffee-id-1729',
-          location: { path: path.join('.', 'test', 'fixtures', 'coffee',
+          // TODO: Determine if this path should contain 'build'
+          location: { path: path.join('.', 'build', 'test', 'fixtures', 'coffee',
             'transpile.coffee'), line: 3 },
           condition: 'if n == 3 then true else false'
         };
@@ -1077,7 +1078,8 @@ describe('v8debugapi', function() {
       function (done) {
         var bp = {
           id: 'babel-id-1729',
-          location: { path: path.join('.', 'test', 'fixtures', 'es6', 'transpile.es6'),
+          // TODO: Determine if this path should contain 'build'
+          location: { path: path.join('.', 'build', 'test', 'fixtures', 'es6', 'transpile.es6'),
             line: 3 },
           condition: 'i + j === 3'
         };
@@ -1103,7 +1105,8 @@ describe('v8debugapi', function() {
       function(done) {
         var bp = {
             id: 'coffee-id-1729',
-            location: { path: path.join('.', 'test', 'fixtures', 'coffee',
+            // TODO: Determine if this path should contain 'build'
+            location: { path: path.join('.', 'build', 'test', 'fixtures', 'coffee',
               'transpile.coffee'), line: 3 },
             expressions: ['if n == 3 then Math.PI * n else n']
           };
@@ -1132,7 +1135,8 @@ describe('v8debugapi', function() {
       function(done) {
         var bp = {
             id: 'coffee-id-1729',
-            location: { path: path.join('.', 'test', 'fixtures',
+            // TODO: Determine if this path should contain 'build'
+            location: { path: path.join('.', 'build', 'test', 'fixtures',
               'coffee', 'transpile.coffee'),
               line: 3 },
             expressions: [':)', 'n n, n', 'process=this', '((x) -> x x) n', 'return']

@@ -21,8 +21,8 @@
  */
 
 
-var v8debugapi = require('../build/src/v8debugapi.js');
-var Logger = require('../build/src/logger.js');
+var v8debugapi = require('../src/v8debugapi.js');
+var Logger = require('../src/logger.js');
 var config = require('../config.js').default;
 var assert = require('assert');
 var pretty = require('pretty-hrtime');

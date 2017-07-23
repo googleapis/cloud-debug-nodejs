@@ -17,7 +17,7 @@
 'use strict';
 
 var assert = require('assert');
-var module = require('..');
+var module = require('../..');
 var nock = require('nock');
 var nocks = require('./nocks.js');
 

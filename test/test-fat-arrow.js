@@ -17,11 +17,11 @@
 
 var assert = require('assert');
 var extend = require('extend');
-var v8debugapi = require('../build/src/agent/v8debugapi.js');
+var v8debugapi = require('../src/agent/v8debugapi.js');
 var common = require('@google-cloud/common');
-var defaultConfig = require('../build/src/agent/config.js').default;
-var SourceMapper = require('../build/src/agent/sourcemapper.js');
-var scanner = require('../build/src/agent/scanner.js');
+var defaultConfig = require('../src/agent/config.js').default;
+var SourceMapper = require('../src/agent/sourcemapper.js');
+var scanner = require('../src/agent/scanner.js');
 
 process.env.GCLOUD_PROJECT = 0;
 

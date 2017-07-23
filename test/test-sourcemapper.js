@@ -19,7 +19,7 @@
 var assert = require('assert');
 var path = require('path');
 
-var SourceMapper = require('../build/src/agent/sourcemapper.js');
+var SourceMapper = require('../src/agent/sourcemapper.js');
 
 var BASE_PATH = path.join(__dirname, 'fixtures', 'sourcemapper');
 

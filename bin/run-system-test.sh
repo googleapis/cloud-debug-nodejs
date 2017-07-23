@@ -9,4 +9,4 @@ if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then
     -out node-team-debug-test-dfc747dacb5b.json -d
 fi
 
-mocha system-test/test-*.js
+mocha build/system-test/test-*.js
