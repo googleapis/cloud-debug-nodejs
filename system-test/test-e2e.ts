@@ -22,14 +22,14 @@ import * as cp from 'child_process';
 import * as semver from 'semver';
 const promisifyAll = require('@google-cloud/common').util.promisifyAll;
 import {Debug} from '../src/debug';
-var Debugger = require('../test/debugger.js');
+const Debugger = require('../test/debugger.js');
 
-var CLUSTER_WORKERS = 3;
+const CLUSTER_WORKERS = 3;
 
 // TODO: Determine if this path should contain 'build'
-var FILENAME = 'build/test/fixtures/fib.js';
+const FILENAME = 'build/test/fixtures/fib.js';
 
-var delay = function(delayTimeMS) {
+const delay = function(delayTimeMS) {
   return new Promise(function(resolve, reject) {
     setTimeout(resolve, delayTimeMS);
   });
@@ -37,11 +37,11 @@ var delay = function(delayTimeMS) {
 
 // This test could take up to 70 seconds.
 describe('@google-cloud/debug end-to-end behavior', function () {
-  var api;
+  let api;
 
-  var debuggeeId;
-  var projectId;
-  var children = [];
+  let debuggeeId;
+  let projectId;
+  let children = [];
 
   before(function() {
     promisifyAll(Debugger);
@@ -51,10 +51,10 @@ describe('@google-cloud/debug end-to-end behavior', function () {
   beforeEach(function() {
     this.timeout(10 * 1000);
     return new Promise(function(resolve, reject) {
-      var numChildrenReady = 0;
+      let numChildrenReady = 0;
 
       // Process a status message sent from a child process.
-      var handler = function(c) {
+      const handler = function(c) {
         console.log(c);
         if (c.error) {
           reject(new Error('A child reported the following error: ' + c.error));
@@ -81,16 +81,16 @@ describe('@google-cloud/debug end-to-end behavior', function () {
       // Handle stdout/stderr output from a child process. More specifically,
       // write the child process's output to a transcript.
       // Each child has its own transcript.
-      var stdoutHandler = function(index) {
+      const stdoutHandler = function(index) {
         return function(chunk) {
           children[index].transcript += chunk;
         };
       };
 
-      for (var i = 0; i < CLUSTER_WORKERS; i++) {
+      for (let i = 0; i < CLUSTER_WORKERS; i++) {
         // TODO: Determine how to have this not of type `any`.
         // Fork child processes that sned messages to this process with IPC.
-        var child: any = { transcript: '' };
+        const child: any = { transcript: '' };
         // TODO: Fix this cast to any.
         child.process = cp.fork(FILENAME, {
           execArgv: [],
@@ -110,11 +110,11 @@ describe('@google-cloud/debug end-to-end behavior', function () {
   afterEach(function() {
     this.timeout(5 * 1000);
     // Create a promise for each child that resolves when that child exits.
-    var childExitPromises = children.map(function (child) {
+    const childExitPromises = children.map(function (child) {
       console.log(child.transcript);
       child.process.kill();
       return new Promise(function(resolve, reject) {
-        var timeout = setTimeout(function() {
+        const timeout = setTimeout(function() {
           reject(new Error('A child process failed to exit.'));
         }, 3000);
         child.process.on('exit', function() {
@@ -138,13 +138,13 @@ describe('@google-cloud/debug end-to-end behavior', function () {
       // Check that the debuggee created in this test is among the list of
       // debuggees, then list its breakpoints
       
-      var debuggees = results[0];
+      const debuggees = results[0];
 
       console.log('-- List of debuggees\n',
         util.inspect(debuggees, { depth: null}));
       assert.ok(debuggees, 'should get a valid ListDebuggees response');
       // TODO: Fix this cast to any.
-      var result = _.find(debuggees, function(d: any) {
+      const result = _.find(debuggees, function(d: any) {
         return d.id === debuggeeId;
       });
       assert.ok(result, 'should find the debuggee we just registered');
@@ -152,11 +152,11 @@ describe('@google-cloud/debug end-to-end behavior', function () {
     }).then(function(results) {
       // Delete every breakpoint
 
-      var breakpoints = results[0];
+      const breakpoints = results[0];
 
       console.log('-- List of breakpoints\n', breakpoints);
 
-      var promises = breakpoints.map(function(breakpoint) {
+      const promises = breakpoints.map(function(breakpoint) {
         return api.deleteBreakpoint(debuggeeId, breakpoint.id);
       });
 
@@ -182,7 +182,7 @@ describe('@google-cloud/debug end-to-end behavior', function () {
       // Check that the breakpoint was set, and then wait for the log to be
       // written to
 
-      var breakpoint = results[0];
+      const breakpoint = results[0];
 
       assert.ok(breakpoint, 'should have set a breakpoint');
       assert.ok(breakpoint.id, 'breakpoint should have an id');
@@ -194,7 +194,7 @@ describe('@google-cloud/debug end-to-end behavior', function () {
     }).then(function(results) {
       // Check the contents of the log, but keep the original breakpoint.
 
-      var breakpoint = results[0];
+      const breakpoint = results[0];
 
       children.forEach(function(child, index) {
         assert(child.transcript.indexOf('o is: {"a":[1,"hi",true]}') !== -1,
@@ -216,7 +216,7 @@ describe('@google-cloud/debug end-to-end behavior', function () {
       // Check that the breakpoint was set, and then wait for the breakpoint to
       // be hit
 
-      var breakpoint = results[0];
+      const breakpoint = results[0];
 
       console.log('-- resolution of setBreakpoint', breakpoint);
       assert.ok(breakpoint, 'should have set a breakpoint');
@@ -229,7 +229,7 @@ describe('@google-cloud/debug end-to-end behavior', function () {
     }).then(function(results) {
       // Get the breakpoint
 
-      var breakpoint = results[0];
+      const breakpoint = results[0];
 
       console.log('-- now checking if the breakpoint was hit');
       return api.getBreakpoint(debuggeeId, breakpoint.id);
@@ -237,14 +237,14 @@ describe('@google-cloud/debug end-to-end behavior', function () {
       // Check that the breakpoint was hit and contains the correct information,
       // which ends the test
 
-      var breakpoint = results[0];
+      const breakpoint = results[0];
 
-      var arg;
+      let arg;
       console.log('-- results of get breakpoint\n', breakpoint);
       assert.ok(breakpoint, 'should have a breakpoint in the response');
       assert.ok(breakpoint.isFinalState, 'breakpoint should have been hit');
       assert.ok(Array.isArray(breakpoint.stackFrames), 'should have stack ');
-      var top = breakpoint.stackFrames[0];
+      const top = breakpoint.stackFrames[0];
       assert.ok(top, 'should have a top entry');
       assert.ok(top.function, 'frame should have a function property');
       assert.strictEqual(top.function, 'fib');
@@ -288,13 +288,13 @@ describe('@google-cloud/debug end-to-end behavior', function () {
       // Check that the debuggee created in this test is among the list of
       // debuggees, then list its breakpoints
 
-      var debuggees = results[0];
+      const debuggees = results[0];
 
       console.log('-- List of debuggees\n',
         util.inspect(debuggees, { depth: null}));
       assert.ok(debuggees, 'should get a valid ListDebuggees response');
       // TODO: Fix this cast to any.
-      var result = _.find(debuggees, function(d: any) {
+      const result = _.find(debuggees, function(d: any) {
         return d.id === debuggeeId;
       });
       assert.ok(result, 'should find the debuggee we just registered');
@@ -303,11 +303,11 @@ describe('@google-cloud/debug end-to-end behavior', function () {
     }).then(function(results) {
       // Delete every breakpoint
 
-      var breakpoints = results[0];
+      const breakpoints = results[0];
 
       console.log('-- List of breakpoints\n', breakpoints);
 
-      var promises = breakpoints.map(function(breakpoint) {
+      const promises = breakpoints.map(function(breakpoint) {
         return api.deleteBreakpoint(debuggeeId, breakpoint.id);
       });
 
@@ -332,7 +332,7 @@ describe('@google-cloud/debug end-to-end behavior', function () {
     }).then(function(results) {
       // Check that the breakpoint was set, and then wait for the log to be
       // written to
-      var breakpoint = results[0];
+      const breakpoint = results[0];
 
       assert.ok(breakpoint, 'should have set a breakpoint');
       assert.ok(breakpoint.id, 'breakpoint should have an id');
@@ -344,7 +344,7 @@ describe('@google-cloud/debug end-to-end behavior', function () {
     }).then(function(results) {
       // Check that the contents of the log is correct
 
-      var breakpoint = results[0];
+      const breakpoint = results[0];
 
       // If no throttling occurs, we expect ~20 logs since we are logging
       // 2x per second over a 10 second period.

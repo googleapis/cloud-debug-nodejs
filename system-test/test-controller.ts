@@ -38,8 +38,8 @@ describe('Controller', function() {
   this.timeout(60 * 1000);
 
   it('should register successfully', function(done) {
-    var controller = new Controller(debug);
-    var debuggee =
+    const controller = new Controller(debug);
+    const debuggee =
         new Debuggee({
           project: process.env.GCLOUD_PROJECT,
           uniquifier: 'test-uid-' + Date.now(),
@@ -59,8 +59,8 @@ describe('Controller', function() {
   });
 
   it('should list breakpoints', function(done) {
-    var controller = new Controller(debug);
-    var debuggee =
+    const controller = new Controller(debug);
+    const debuggee =
         new Debuggee({
           project: process.env.GCLOUD_PROJECT,
           uniquifier: 'test-uid-' + Date.now(),
@@ -84,8 +84,8 @@ describe('Controller', function() {
 
   it('should pass success on timeout', function(done) {
     this.timeout(100000);
-    var controller = new Controller(debug);
-    var debuggee =
+    const controller = new Controller(debug);
+    const debuggee =
         new Debuggee({
           project: process.env.GCLOUD_PROJECT,
           uniquifier: 'test-uid-' + Date.now(),
