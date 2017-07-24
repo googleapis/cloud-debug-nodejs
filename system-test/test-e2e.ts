@@ -88,8 +88,9 @@ describe('@google-cloud/debug end-to-end behavior', function () {
       };
 
       for (var i = 0; i < CLUSTER_WORKERS; i++) {
+        // TODO: Determine how to have this not of type `any`.
         // Fork child processes that sned messages to this process with IPC.
-        var child = { transcript: '' };
+        var child: any = { transcript: '' };
         child.process = cp.fork(FILENAME, {
           execArgv: [],
           env: process.env,
