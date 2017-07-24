@@ -22,7 +22,7 @@
 
 import * as commonTypes from '../src/types/common-types';
 
-var pjson = require('../../package.json');
+const pjson = require('../../package.json');
 const common: commonTypes.Common = require('@google-cloud/common');
 // TODO: Verify these types are correct.
 const qs: { parse: (qs: any, sep?: string, eq?: string,
@@ -32,7 +32,7 @@ const qs: { parse: (qs: any, sep?: string, eq?: string,
 import * as util from 'util';
 
 /** @const {string} Cloud Debug API endpoint */
-var API = 'https://clouddebugger.googleapis.com/v2/debugger';
+const API = 'https://clouddebugger.googleapis.com/v2/debugger';
 
 /**
  * @constructor
@@ -68,13 +68,13 @@ Debugger.prototype.listDebuggees = function(projectId, includeInactive, callback
     includeInactive = false;
   }
 
-  var query = {
+  const query = {
     clientVersion: this.clientVersion_,
     includeInactive: includeInactive,
     project: projectId
   };
 
-  var uri = API + '/debuggees?' + qs.stringify(query);
+  const uri = API + '/debuggees?' + qs.stringify(query);
   this.request({uri: uri, json: true}, function(err, body, response) {
     if (err) {
       callback(err);
@@ -121,7 +121,7 @@ Debugger.prototype.listBreakpoints = function(debuggeeId, options, callback) {
   }
 
   // TODO: Remove this cast as `any`
-  var query: any = {
+  const query: any = {
     clientVersion: this.clientVersion_,
     includeAllUsers: !!options.includeAllUsers,
     includeInactive: !!options.includeInactive,
@@ -134,7 +134,7 @@ Debugger.prototype.listBreakpoints = function(debuggeeId, options, callback) {
     query.waitToken = this.nextWaitToken_;
   }
 
-  var uri = API + '/debuggees/' + encodeURIComponent(debuggeeId) +
+  const uri = API + '/debuggees/' + encodeURIComponent(debuggeeId) +
             '/breakpoints?' + qs.stringify(query);
   this.request({uri: uri, json: true}, function(err, body, response) {
     if (err) {
@@ -167,11 +167,11 @@ Debugger.prototype.listBreakpoints = function(debuggeeId, options, callback) {
  *     if an error occurred in obtaining its information.
  */
 Debugger.prototype.getBreakpoint = function(debuggeeId, breakpointId, callback) {
-  var query = {
+  const query = {
     clientVersion: this.clientVersion_
   };
 
-  var uri = API + '/debuggees/' + encodeURIComponent(debuggeeId) +
+  const uri = API + '/debuggees/' + encodeURIComponent(debuggeeId) +
             '/breakpoints/' + encodeURIComponent(breakpointId) +
             '?' + qs.stringify(query);
   this.request({uri: uri, json: true}, function(err, body, response) {
@@ -203,10 +203,10 @@ Debugger.prototype.getBreakpoint = function(debuggeeId, breakpointId, callback) 
  *     that its id field will be set.
  */
 Debugger.prototype.setBreakpoint = function(debuggeeId, breakpoint, callback) {
-  var query = {
+  const query = {
     clientVersion: this.clientVersion_
   };
-  var options = {
+  const options = {
     uri: API + '/debuggees/' + encodeURIComponent(debuggeeId) +
          '/breakpoints/set?' + qs.stringify(query),
     method: 'POST',
@@ -241,10 +241,10 @@ Debugger.prototype.setBreakpoint = function(debuggeeId, breakpoint, callback) {
  *     set to null.
  */
 Debugger.prototype.deleteBreakpoint = function(debuggeeId, breakpointId, callback) {
-  var query = {
+  const query = {
     clientVersion: this.clientVersion_
   };
-  var options = {
+  const options = {
     uri: API + '/debuggees/' + encodeURIComponent(debuggeeId) +
          '/breakpoints/' + encodeURIComponent(breakpointId) + '?' +
          qs.stringify(query),

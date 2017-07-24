@@ -19,8 +19,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as assert from 'assert';
 
-var fixtureDir = path.join(__dirname, './fixtures');
-var fixture = function(file) {
+const fixtureDir = path.join(__dirname, './fixtures');
+const fixture = function(file) {
   return path.join(fixtureDir, file);
 };
 
@@ -44,7 +44,7 @@ describe('scanner', function() {
     it('should be able to return all file stats directly', function(done) {
       scanner.scan(true, fixture('coffee'), /.*$/)
       .then((fileStats) => {
-        var files = Object.keys(fileStats.all());
+        const files = Object.keys(fileStats.all());
         assert.strictEqual(files.length, 3);
         done();
       });
@@ -52,7 +52,7 @@ describe('scanner', function() {
 
     it('should be able to filter to return all file stats', function(done) {
       scanner.scan(true, fixture('coffee'), /.*$/).then(function(fileStats) {
-        var files = fileStats.selectFiles(/.*$/, '');
+        const files = fileStats.selectFiles(/.*$/, '');
         assert.strictEqual(files.length, 3);
         done();
       });
@@ -63,7 +63,7 @@ describe('scanner', function() {
         // TODO: `selectFiles` expects two parameters.  Determine if the
         //       the second parameter should be optional or (if not) the
         //       correct value is used here.
-        var files = fileStats.selectFiles(/.js$/, '.');
+        const files = fileStats.selectFiles(/.js$/, '.');
         assert.strictEqual(files.length, 1);
         assert.ok(files[0], path.join(fixtureDir, 'coffee', 'transpile.js'));
         done();
@@ -72,11 +72,11 @@ describe('scanner', function() {
 
     it('should be able to filter file stats', function(done) {
       scanner.scan(true, fixture('coffee'), /.*$/).then(function(fileStats) {
-        var stats = fileStats.selectStats(/.js$/);
-        var keys = Object.keys(stats);
+        const stats = fileStats.selectStats(/.js$/);
+        const keys = Object.keys(stats);
         assert.strictEqual(keys.length, 1);
 
-        var first = stats[keys[0]];
+        const first = stats[keys[0]];
         assert.ok(first.hash);
         assert.ok(first.lines);
         done();
@@ -86,9 +86,9 @@ describe('scanner', function() {
     it('should return the same hash if the files don\'t change',
      function(done) {
        scanner.scan(true, process.cwd(), /.js$/).then(function(fileStats1) {
-         var files1 = Object.keys(fileStats1.all());
+         const files1 = Object.keys(fileStats1.all());
          scanner.scan(true, process.cwd(), /.js$/).then(function(fileStats2) {
-          var files2 = Object.keys(fileStats2.all());
+          const files2 = Object.keys(fileStats2.all());
           assert.deepEqual(files1.sort(), files2.sort());
           assert.strictEqual(fileStats1.hash, fileStats2.hash);
           done();
@@ -106,7 +106,7 @@ describe('scanner', function() {
 
     it('should work with relative paths', function(done) {
       scanner.scan(true, fixtureDir, /.js$/).then(function(fileStats) {
-        var files = Object.keys(fileStats.all());
+        const files = Object.keys(fileStats.all());
         assert.ok(fileStats.hash);
         assert.ok(files.length !== 0);
         done();
@@ -116,7 +116,7 @@ describe('scanner', function() {
     it('should return a valid hash even when there are no javascript files',
       function(done) {
         scanner.scan(true, fixture('nojs'), /.js$/).then(function(fileStats) {
-          var files = Object.keys(fileStats.all());
+          const files = Object.keys(fileStats.all());
           assert.ok(fileStats.hash);
           assert.ok(files.length === 0);
           done();
@@ -127,11 +127,11 @@ describe('scanner', function() {
       function(done) {
         fs.writeFileSync(fixture('tmp.js'), '1 + 1');
         scanner.scan(true, fixtureDir, /.js$/).then(function(fileStats1) {
-          var files1 = Object.keys(fileStats1.all());
+          const files1 = Object.keys(fileStats1.all());
           assert.ok(fileStats1.hash);
           fs.writeFileSync(fixture('tmp.js'), '1 + 2');
           scanner.scan(true, fixtureDir, /.js$/).then(function(fileStats2) {
-            var files2 = Object.keys(fileStats2.all());
+            const files2 = Object.keys(fileStats2.all());
             assert.ok(fileStats2.hash);
             assert.notStrictEqual(fileStats1.hash, fileStats2.hash);
             assert.deepEqual(files1.sort(), files2.sort());
@@ -144,17 +144,17 @@ describe('scanner', function() {
     it('should return an updated file list when file list changes',
       function(done) {
         scanner.scan(true, fixtureDir, /.js$/).then(function(fileStats1) {
-          var files1 = Object.keys(fileStats1.all());
+          const files1 = Object.keys(fileStats1.all());
           assert.ok(fileStats1.hash);
           fs.writeFileSync(fixture('tmp.js'), ''); // empty.
           scanner.scan(true, fixtureDir, /.js$/).then(function(fileStats2) {
-            var files2 = Object.keys(fileStats2.all());
+            const files2 = Object.keys(fileStats2.all());
             assert.ok(fileStats2.hash);
             assert.notStrictEqual(fileStats1.hash, fileStats2.hash);
             assert.ok(files1.length === files2.length - 1);
             fs.unlinkSync(fixture('tmp.js'));
             scanner.scan(true, fixtureDir, /.js$/).then(function(fileStats3) {
-              var files3 = Object.keys(fileStats3.all());
+              const files3 = Object.keys(fileStats3.all());
               assert.ok(fileStats2.hash);
               assert.strictEqual(fileStats1.hash, fileStats3.hash);
               assert.deepEqual(files1.sort(), files3.sort());

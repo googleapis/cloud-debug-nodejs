@@ -23,7 +23,7 @@ const common: commonTypes.Common = require('@google-cloud/common');
 import defaultConfig from '../src/agent/config';
 import * as SourceMapper from '../src/agent/sourcemapper';
 import * as scanner from '../src/agent/scanner';
-var code = require('./test-this-context-code.js');
+const code = require('./test-this-context-code.js');
 
 function stateIsClean(api) {
   assert.equal(api.numBreakpoints_(), 0,
@@ -34,21 +34,21 @@ function stateIsClean(api) {
 }
 
 describe(__filename, function() {
-  var config = extend({}, defaultConfig, {
+  const config = extend({}, defaultConfig, {
     workingDirectory: __dirname,
     forceNewAgent_: true
   });
   // TODO: It appears `logLevel` is a typo and should be `level`.  However,
   //       with this change, the tests fail.  Resolve this.
-  var logger = new common.logger({ levelLevel: config.logLevel } as any as commonTypes.LoggerOptions);
-  var api = null;
+  const logger = new common.logger({ levelLevel: config.logLevel } as any as commonTypes.LoggerOptions);
+  let api = null;
 
   beforeEach(function(done) {
     if (!api) {
       scanner.scan(true, config.workingDirectory, /.js$/)
         .then(function (fileStats) {
-          var jsStats = fileStats.selectStats(/.js$/);
-          var mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
+          const jsStats = fileStats.selectStats(/.js$/);
+          const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
           SourceMapper.create(mapFiles, function (err, mapper) {
             assert(!err);
 
@@ -64,19 +64,19 @@ describe(__filename, function() {
   });
   afterEach(function() { assert(stateIsClean(api)); });
   it('Should be able to read the argument and the context', function(done) {
-      var brk = {
+      const brk = {
         id: 'fake-id-123',
         location: { path: 'test-this-context-code.js', line: 5 }
       };
-      var ctxMembers;
+      let ctxMembers;
     api.set(brk, function(err) {
       assert.ifError(err);
       api.wait(brk, function(err) {
         assert.ifError(err);
         // TODO: Determine how to remove this cast to any.
-        var frame = (brk as any).stackFrames[0];
-        var args = frame.arguments;
-        var locals = frame.locals;
+        const frame = (brk as any).stackFrames[0];
+        const args = frame.arguments;
+        const locals = frame.locals;
         // TODO: Determine how to remove these casts to any.
         ctxMembers = (brk as any).variableTable.slice((brk as any).variableTable.length-1)[0]
           .members;
@@ -94,7 +94,7 @@ describe(__filename, function() {
     });
   });
   it('Should be able to read the argument and deny the context', function(done) {
-      var brk = {
+      const brk = {
         id: 'fake-id-123',
         location: { path: 'test-this-context-code.js', line: 9 }
       };
@@ -103,9 +103,9 @@ describe(__filename, function() {
       api.wait(brk, function(err) {
         assert.ifError(err);
         // TODO: Determine how to remove this cast to any.
-        var frame = (brk as any).stackFrames[0];
-        var args = frame.arguments;
-        var locals = frame.locals;
+        const frame = (brk as any).stackFrames[0];
+        const args = frame.arguments;
+        const locals = frame.locals;
         assert.equal(args.length, 0, 'There should be zero arguments');
         assert.equal(locals.length, 1, 'There should be one local');
         assert.deepEqual(locals[0], {name: 'j', value: '1'});

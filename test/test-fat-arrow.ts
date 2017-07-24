@@ -37,15 +37,15 @@ function stateIsClean(api) {
 }
 
 describe(__filename, function() {
-  var config = extend({}, defaultConfig, {
+  const config = extend({}, defaultConfig, {
     workingDirectory: __dirname,
     forceNewAgent_: true
   });
   // TODO: It appears `logLevel` is a typo and should be `level`.  However,
   //       with this change, the tests fail.  Resolve this.
-  var logger = new common.logger({ levelLevel: config.logLevel } as any as commonTypes.LoggerOptions);
-  var api = null;
-  var foo;
+  const logger = new common.logger({ levelLevel: config.logLevel } as any as commonTypes.LoggerOptions);
+  let api = null;
+  let foo;
   before(function () {
     foo = require('./fixtures/fat-arrow.js');
   });
@@ -53,8 +53,8 @@ describe(__filename, function() {
     if (!api) {
       scanner.scan(true, config.workingDirectory, /.js$/)
         .then(function (fileStats) {
-          var jsStats = fileStats.selectStats(/.js$/);
-          var mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
+          const jsStats = fileStats.selectStats(/.js$/);
+          const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
           SourceMapper.create(mapFiles, function (err, mapper) {
             api = v8debugapi.create(logger, config, jsStats, mapper);
             assert.ok(api, 'should be able to create the api');
@@ -68,7 +68,7 @@ describe(__filename, function() {
   });
   afterEach(function() { assert(stateIsClean(api)); });
   it('Should read the argument value of the fat arrow', function(done) {
-      var brk = {
+      const brk = {
         id: 'fake-id-123',
         location: { path: 'fixtures/fat-arrow.js', line: 5 }
       };
@@ -77,9 +77,9 @@ describe(__filename, function() {
       api.wait(brk, function(err) {
         assert.ifError(err);
         // TODO: Fix this explicit cast.
-        var frame = (brk as any).stackFrames[0];
-        var args = frame.arguments;
-        var locals = frame.locals;
+        const frame = (brk as any).stackFrames[0];
+        const args = frame.arguments;
+        const locals = frame.locals;
         assert.equal(args.length, 0, 'There should be zero arguments');
         assert.equal(locals.length, 1, 'There should be one local');
         assert.deepEqual(
@@ -93,7 +93,7 @@ describe(__filename, function() {
     });
   });
    it('Should process the argument value change of the fat arrow', function(done) {
-      var brk = {
+      const brk = {
         id: 'fake-id-123',
         location: { path: 'fixtures/fat-arrow.js', line: 6 }
       };
@@ -102,9 +102,9 @@ describe(__filename, function() {
       api.wait(brk, function(err) {
         assert.ifError(err);
         // TODO: Fix this explicit cast.
-        var frame = (brk as any).stackFrames[0];
-        var args = frame.arguments;
-        var locals = frame.locals;
+        const frame = (brk as any).stackFrames[0];
+        const args = frame.arguments;
+        const locals = frame.locals;
         assert.equal(args.length, 0, 'There should be zero arguments');
         assert.equal(locals.length, 1, 'There should be one local');
         assert.deepEqual(

@@ -21,7 +21,7 @@ import {Debuggee} from '../src/debuggee';
 describe('Debuggee', function() {
 
   it('should create a Debuggee instance on valid input', function() {
-    var debuggee = new Debuggee(
+    const debuggee = new Debuggee(
         {project: 'project', uniquifier: 'uid', description: 'unit test',
          // TODO: Determine if statusMessage should be optional.
          statusMessage: null});
@@ -29,7 +29,7 @@ describe('Debuggee', function() {
   });
 
   it('should create a Debuggee on a call without new', function() {
-    var debuggee = new Debuggee(
+    const debuggee = new Debuggee(
         {project: 'project', uniquifier: 'uid', description: 'unit test',
          // TODO: Determine if statusMessage should be optional.
          statusMessage: null});

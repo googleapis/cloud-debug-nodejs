@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-var breakpointInFoo = {
+const breakpointInFoo = {
   id: 'fake-id-123',
   // TODO: Determine if we should be restricting to only the build directory.
   location: { path: 'build/test/test-v8debugapi-code.js', line: 4 }
 };
 
-var MAX_INT = 2147483647; // Max signed int32.
+const MAX_INT = 2147483647; // Max signed int32.
 
 import * as commonTypes from '../src/types/common-types';
 
@@ -34,7 +34,7 @@ import * as scanner from '../src/agent/scanner';
 import * as SourceMapper from '../src/agent/sourcemapper';
 import * as path from 'path';
 import * as semver from 'semver';
-var code = require('./test-v8debugapi-code.js');
+const code = require('./test-v8debugapi-code.js');
 
 function stateIsClean(api) {
   assert.equal(api.numBreakpoints_(), 0,
@@ -106,21 +106,21 @@ function validateBreakpoint(breakpoint) {
 }
 
 describe('v8debugapi', function() {
-  var config = extend({}, defaultConfig, {
+  const config = extend({}, defaultConfig, {
     workingDirectory: __dirname,
     forceNewAgent_: true
   });
   // TODO: It appears `logLevel` is a typo and should be `level`.  However,
   //       with this change, the tests fail.  Resolve this.
-  var logger = new common.logger({ levelLevel: config.logLevel } as any as commonTypes.LoggerOptions);
-  var api = null;
+  const logger = new common.logger({ levelLevel: config.logLevel } as any as commonTypes.LoggerOptions);
+  let api = null;
 
   beforeEach(function(done) {
     if (!api) {
       scanner.scan(true, config.workingDirectory, /.js$|.map$/)
         .then(function (fileStats) {
-          var jsStats = fileStats.selectStats(/.js$/);
-          var mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
+          const jsStats = fileStats.selectStats(/.js$/);
+          const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
           SourceMapper.create(mapFiles, function (err, mapper) {
             assert(!err);
 
@@ -128,7 +128,7 @@ describe('v8debugapi', function() {
             assert.ok(api, 'should be able to create the api');
 
             // monkey-patch wait to add validation of the breakpoints.
-            var origWait = api.wait;
+            const origWait = api.wait;
             api.wait = function (bp, callback) {
               origWait(bp, function (err) {
                 validateBreakpoint(bp);
@@ -147,7 +147,7 @@ describe('v8debugapi', function() {
 
   it('should be able to set and remove breakpoints', function(done) {
     // clone a clean breakpointInFoo
-    var bp = {id: breakpointInFoo.id, location: breakpointInFoo.location};
+    const bp = {id: breakpointInFoo.id, location: breakpointInFoo.location};
     api.set(bp, function(err) {
       assert.ifError(err);
       assert.equal(api.numBreakpoints_(), 1);
@@ -158,7 +158,7 @@ describe('v8debugapi', function() {
 
   it('should accept breakpoint with ids 0 as a valid breakpoint',
     function(done) {
-      var bp = { id: 0, location: breakpointInFoo.location};
+      const bp = { id: 0, location: breakpointInFoo.location};
       api.set(bp, function(err) {
         assert.ifError(err);
         api.clear(bp);
@@ -169,7 +169,7 @@ describe('v8debugapi', function() {
   it('should set error for breakpoint in non-js files',
     function(done) {
       require('./fixtures/key-bad.json');
-      var bp = { id: 0, location: {line: 1, path: path.join('fixtures',
+      const bp = { id: 0, location: {line: 1, path: path.join('fixtures',
         'key-bad.json')}};
       api.set(bp, function(err) {
         assert.ok(err, 'should return an error');
@@ -184,7 +184,7 @@ describe('v8debugapi', function() {
   it('should disambiguate incorrect path if filename is unique',
     function(done) {
       require('./fixtures/foo.js');
-      var bp = { id: 0, location: {line: 1, path: path.join(path.sep, 'test',
+      const bp = { id: 0, location: {line: 1, path: path.join(path.sep, 'test',
         'foo.js')}};
       api.set(bp, function(err) {
         assert.ifError(err);
@@ -197,7 +197,7 @@ describe('v8debugapi', function() {
     function(done) {
       require('./fixtures/foo.js');
       // hello.js is not unique but a/hello.js is.
-      var bp = { id: 0, location: {line: 1, path: path.join(path.sep, 'Server',
+      const bp = { id: 0, location: {line: 1, path: path.join(path.sep, 'Server',
         'a', 'hello.js')}};
       api.set(bp, function(err) {
         assert.ifError(err);
@@ -207,7 +207,7 @@ describe('v8debugapi', function() {
     });
 
   describe('invalid breakpoints', function() {
-    var badBreakpoints = [
+    const badBreakpoints = [
       {},
       { id: 'with no location'},
       { id: 'with bad location', location: {}},
@@ -232,7 +232,7 @@ describe('v8debugapi', function() {
     it('should reject breakpoint when filename is ambiguous', function(done) {
       require('./fixtures/a/hello.js');
       require('./fixtures/b/hello.js');
-      var bp = {id: 'ambiguous', location: {line: 1, path: 'hello.js'}};
+      const bp = {id: 'ambiguous', location: {line: 1, path: 'hello.js'}};
       api.set(bp, function(err) {
         assert.ok(err);
         assert.ok((bp as any).status);
@@ -246,7 +246,7 @@ describe('v8debugapi', function() {
 
     it('should reject breakpoint on non-existent line', function(done) {
       require('./fixtures/foo.js');
-      var bp = {
+      const bp = {
         id: 'non-existent line',
         location: {path: path.join('fixtures', 'foo.js'), line: 500}
       };
@@ -268,7 +268,7 @@ describe('v8debugapi', function() {
       expressions.forEach(function(expr) {
         it('should validate breakpoint with condition "'+expr+'"', function(done) {
           // make a clean copy of breakpointInFoo
-          var bp = {
+          const bp = {
             id: breakpointInFoo.id,
             location: breakpointInFoo.location,
             condition: expr
@@ -291,7 +291,7 @@ describe('v8debugapi', function() {
 
     // mutability
     'x = 1',
-    'var x = 1;',
+    'const x = 1;',
     'console.log(1)',
     'while (true) ;',
     'return 3',
@@ -360,7 +360,7 @@ describe('v8debugapi', function() {
   }
 
   describe('path normalization', function() {
-    var breakpoints = [
+    const breakpoints = [
       { id: 'path0', location: {line: 4, path: path.join(path.sep, 'test',
         'test-v8debugapi-code.js')}},
       { id: 'path1', location: {line: 4, path: path.join('test',
@@ -395,8 +395,8 @@ describe('v8debugapi', function() {
   });
 
   describe('log', function() {
-    var oldLPS;
-    var oldDS;
+    let oldLPS;
+    let oldDS;
 
     before(function() {
       oldLPS = config.log.maxLogsPerSecond;
@@ -412,20 +412,20 @@ describe('v8debugapi', function() {
     });
 
     it('should throttle correctly', function(done) {
-      var completed = false;
-      var bp = {
+      let completed = false;
+      const bp = {
         id: breakpointInFoo.id,
         location: breakpointInFoo.location,
         action: 'LOG',
         logMessageFormat: 'cat'
       };
       api.set(bp, function(err) {
-        var transcript = '';
-        var runCount = 0;
+        let transcript = '';
+        let runCount = 0;
         assert.ifError(err);
         api.log(bp, function(fmt) { transcript += fmt; },
           function() { return completed; });
-        var interval = setInterval(function() {
+        const interval = setInterval(function() {
           code.foo(1);
           runCount++;
         }, 100);
@@ -445,7 +445,7 @@ describe('v8debugapi', function() {
 
     it('should be possible to wait on a breakpoint', function(done) {
       // clone a clean breakpointInFoo
-      var bp = {id: breakpointInFoo.id, location: breakpointInFoo.location};
+      const bp = {id: breakpointInFoo.id, location: breakpointInFoo.location};
       api.set(bp, function(err) {
         assert.ifError(err);
         api.wait(bp, function(err) {
@@ -459,12 +459,12 @@ describe('v8debugapi', function() {
     });
 
     it('should work with multiply hit breakpoints', function(done) {
-      var oldWarn = logger.warn;
-      var logCount = 0;
+      const oldWarn = logger.warn;
+      let logCount = 0;
       // If an exception is thrown we will log
       logger.warn = function() { logCount++; };
       // clone a clean breakpointInFoo
-      var bp = {id: breakpointInFoo.id, location: breakpointInFoo.location};
+      const bp = {id: breakpointInFoo.id, location: breakpointInFoo.location};
       api.set(bp, function(err) {
         assert.ifError(err);
         api.wait(bp, function(err) {
@@ -483,7 +483,7 @@ describe('v8debugapi', function() {
 
     it('should be possible to wait on a logpoint without expressions',
         function(done) {
-      var bp = {
+      const bp = {
         id: breakpointInFoo.id,
         action: 'LOG',
         logMessageFormat: 'Hello World',
@@ -503,7 +503,7 @@ describe('v8debugapi', function() {
 
     it('should capture state', function(done) {
       // clone a clean breakpointInFoo
-      var bp  = {id: breakpointInFoo.id, location: breakpointInFoo.location};
+      const bp  = {id: breakpointInFoo.id, location: breakpointInFoo.location};
       api.set(bp, function(err) {
         assert.ifError(err);
         api.wait(bp, function(err) {
@@ -511,7 +511,7 @@ describe('v8debugapi', function() {
           assert.ok((bp as any).stackFrames);
           assert.ok((bp as any).variableTable);
 
-          var topFrame = (bp as any).stackFrames[0];
+          const topFrame = (bp as any).stackFrames[0];
           assert.ok(topFrame);
           assert.equal(topFrame['function'], 'foo');
           assert.equal(topFrame.locals[0].name, 'n');
@@ -527,8 +527,8 @@ describe('v8debugapi', function() {
 
     it('should resolve correct frame count', function(done) {
       // clone a clean breakpointInFoo
-      var bp  = {id: breakpointInFoo.id, location: breakpointInFoo.location};
-      var oldCount = config.capture.maxExpandFrames;
+      const bp  = {id: breakpointInFoo.id, location: breakpointInFoo.location};
+      const oldCount = config.capture.maxExpandFrames;
       config.capture.maxExpandFrames = 0;
       api.set(bp, function(err) {
         assert.ifError(err);
@@ -536,17 +536,17 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           assert.ok((bp as any).stackFrames);
           assert.ok((bp as any).variableTable);
-          var topFrame = (bp as any).stackFrames[0];
+          const topFrame = (bp as any).stackFrames[0];
           assert.ok(topFrame);
           assert.equal(topFrame['function'], 'foo');
           assert.equal(topFrame.arguments.length, 1);
-          var argsVal = (bp as any).variableTable[topFrame.arguments[0].varTableIndex];
+          const argsVal = (bp as any).variableTable[topFrame.arguments[0].varTableIndex];
           assert(argsVal.status.isError);
           assert(argsVal.status.description.format.match(
             'Locals and arguments are only displayed.*config.capture.maxExpandFrames=0'
             ));
           assert.equal(topFrame.locals.length, 1);
-          var localsVal = (bp as any).variableTable[topFrame.locals[0].varTableIndex];
+          const localsVal = (bp as any).variableTable[topFrame.locals[0].varTableIndex];
           assert(localsVal.status.isError);
           assert(localsVal.status.description.format.match(
             'Locals and arguments are only displayed.*config.capture.maxExpandFrames=0'
@@ -561,8 +561,8 @@ describe('v8debugapi', function() {
 
     it('should capture correct frame count', function(done) {
       // clone a clean breakpointInFoo
-      var bp  = {id: breakpointInFoo.id, location: breakpointInFoo.location};
-      var oldMax = config.capture.maxFrames;
+      const bp  = {id: breakpointInFoo.id, location: breakpointInFoo.location};
+      const oldMax = config.capture.maxFrames;
       config.capture.maxFrames = 1;
       api.set(bp, function(err) {
         assert.ifError(err);
@@ -570,7 +570,7 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           assert.ok((bp as any).stackFrames);
           assert.equal((bp as any).stackFrames.length, config.capture.maxFrames);
-          var topFrame = (bp as any).stackFrames[0];
+          const topFrame = (bp as any).stackFrames[0];
           assert.ok(topFrame);
           assert.equal(topFrame['function'], 'foo');
           assert.equal(topFrame.locals[0].name, 'n');
@@ -585,13 +585,13 @@ describe('v8debugapi', function() {
 
     it('should capture state with watch expressions', function(done) {
       // clone a clean breakpointInFoo
-      var bp  = {
+      const bp  = {
         id: breakpointInFoo.id,
         location: breakpointInFoo.location,
         expressions: ['process']
       };
-      var oldMaxProps = config.capture.maxProperties;
-      var oldMaxData = config.capture.maxDataSize;
+      const oldMaxProps = config.capture.maxProperties;
+      const oldMaxData = config.capture.maxDataSize;
       config.capture.maxProperties = 0;
       config.capture.maxDataSize = 20000;
       api.set(bp, function(err) {
@@ -602,17 +602,17 @@ describe('v8debugapi', function() {
           assert.ok((bp as any).variableTable);
           assert.ok((bp as any).evaluatedExpressions);
 
-          var topFrame = (bp as any).stackFrames[0];
+          const topFrame = (bp as any).stackFrames[0];
           assert.equal(topFrame['function'], 'foo');
           assert.equal(topFrame.locals[0].name, 'n');
           assert.equal(topFrame.locals[0].value, '3');
 
-          var watch = (bp as any).evaluatedExpressions[0];
+          const watch = (bp as any).evaluatedExpressions[0];
           assert.equal(watch.name, 'process');
           assert.ok(watch.varTableIndex);
 
           // Make sure the process object looks sensible.
-          var processVal = (bp as any).variableTable[watch.varTableIndex];
+          const processVal = (bp as any).variableTable[watch.varTableIndex];
           assert.ok(processVal);
           assert.ok(processVal.members.some(function(m) {
             return m.name === 'nextTick' && m.value.match('function.*');
@@ -631,35 +631,35 @@ describe('v8debugapi', function() {
     });
 
     it('should report error for native prop or getter', function(done) {
-      var bp = {
+      const bp = {
         id: 'fake-id-124',
         // TODO: This path can be lest strict when this file has been
         //       converted to Typescript.
         location: { path: 'build/test/test-v8debugapi-code.js', line: 9 },
         expressions: ['process.env', 'hasGetter']
       };
-      var oldMaxData = config.capture.maxDataSize;
+      const oldMaxData = config.capture.maxDataSize;
       config.capture.maxDataSize = 20000;
       api.set(bp, function(err) {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
 
-          var procEnv = (bp as any).evaluatedExpressions[0];
+          const procEnv = (bp as any).evaluatedExpressions[0];
           assert.equal(procEnv.name, 'process.env');
-          var envVal = (bp as any).variableTable[procEnv.varTableIndex];
+          const envVal = (bp as any).variableTable[procEnv.varTableIndex];
           envVal.members.forEach(function(member) {
             if (member.hasOwnProperty('varTableIndex')) {
                assert((bp as any).variableTable[member.varTableIndex].status.isError);
             }
           });
-          var hasGetter = (bp as any).evaluatedExpressions[1];
-          var getterVal = (bp as any).variableTable[hasGetter.varTableIndex];
+          const hasGetter = (bp as any).evaluatedExpressions[1];
+          const getterVal = (bp as any).variableTable[hasGetter.varTableIndex];
           assert(getterVal.members.some(function(m) {
             return m.value === '5';
           }));
           assert(getterVal.members.some(function(m) {
-            var resolved = (bp as any).variableTable[m.varTableIndex];
+            const resolved = (bp as any).variableTable[m.varTableIndex];
             return resolved && resolved.status.isError;
           }));
 
@@ -672,7 +672,7 @@ describe('v8debugapi', function() {
     });
 
     it('should work with array length despite being native', function(done) {
-      var bp  = {
+      const bp  = {
         id: breakpointInFoo.id,
         // TODO: This path can be lest strict when this file has been
         //       converted to Typescript.
@@ -684,10 +684,10 @@ describe('v8debugapi', function() {
         api.wait(bp, function(err) {
           assert.ifError(err);
 
-          var arrEnv = (bp as any).evaluatedExpressions[0];
+          const arrEnv = (bp as any).evaluatedExpressions[0];
           assert.equal(arrEnv.name, 'A');
-          var envVal = (bp as any).variableTable[arrEnv.varTableIndex];
-          var found = false;
+          const envVal = (bp as any).variableTable[arrEnv.varTableIndex];
+          let found = false;
           envVal.members.forEach(function(member) {
             if (member.name === 'length') {
               assert(!member.varTableIndex);
@@ -705,30 +705,30 @@ describe('v8debugapi', function() {
     });
 
     it('should limit string length', function(done) {
-      var bp = {
+      const bp = {
         id: 'fake-id-124',
         // TODO: This path can be lest strict when this file has been
         //       converted to Typescript.
         location: { path: 'build/test/test-v8debugapi-code.js', line: 9 }
       };
-      var oldMaxLength = config.capture.maxStringLength;
-      var oldMaxData = config.capture.maxDataSize;
+      const oldMaxLength = config.capture.maxStringLength;
+      const oldMaxData = config.capture.maxDataSize;
       config.capture.maxStringLength = 3;
       config.capture.maxDataSize = 20000;
       api.set(bp, function(err) {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          var hasGetter = (bp as any).stackFrames[0].locals.filter(function(value) {
+          const hasGetter = (bp as any).stackFrames[0].locals.filter(function(value) {
             return value.name === 'hasGetter';
           });
-          var getterVal = (bp as any).variableTable[hasGetter[0].varTableIndex];
-          var stringItems = getterVal.members.filter(function(m) {
+          const getterVal = (bp as any).variableTable[hasGetter[0].varTableIndex];
+          const stringItems = getterVal.members.filter(function(m) {
             return m.value === 'hel...';
           });
           assert(stringItems.length === 1);
 
-          var item = stringItems[0];
+          const item = stringItems[0];
           assert(item.status.description.format.match(
             'Only first.*config.capture.maxStringLength=3.*of length 11.'));
           api.clear(bp);
@@ -741,22 +741,22 @@ describe('v8debugapi', function() {
     });
 
     it('should limit array length', function(done) {
-      var bp = {
+      const bp = {
         id: 'fake-id-124',
         // TODO: This path can be lest strict when this file has been
         //       converted to Typescript.
         location: { path: 'build/test/test-v8debugapi-code.js', line: 5 }
       };
-      var oldMax = config.capture.maxProperties;
+      const oldMax = config.capture.maxProperties;
       config.capture.maxProperties = 1;
       api.set(bp, function(err) {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          var aResults = (bp as any).stackFrames[0].locals.filter(function(value) {
+          const aResults = (bp as any).stackFrames[0].locals.filter(function(value) {
             return value.name === 'A';
           });
-          var aVal = (bp as any).variableTable[aResults[0].varTableIndex];
+          const aVal = (bp as any).variableTable[aResults[0].varTableIndex];
           // should have 1 element + truncation message.
           assert.equal(aVal.members.length, 2);
           assert(aVal.members[1].name.match(
@@ -771,22 +771,22 @@ describe('v8debugapi', function() {
     });
 
     it('should limit object length', function(done) {
-      var bp = {
+      const bp = {
         id: 'fake-id-124',
         // TODO: This path can be lest strict when this file has been
         //       converted to Typescript.
         location: { path: 'build/test/test-v8debugapi-code.js', line: 5 }
       };
-      var oldMax = config.capture.maxProperties;
+      const oldMax = config.capture.maxProperties;
       config.capture.maxProperties = 1;
       api.set(bp, function(err) {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          var bResults = (bp as any).stackFrames[0].locals.filter(function(value) {
+          const bResults = (bp as any).stackFrames[0].locals.filter(function(value) {
             return value.name === 'B';
           });
-          var bVal = (bp as any).variableTable[bResults[0].varTableIndex];
+          const bVal = (bp as any).variableTable[bResults[0].varTableIndex];
           // should have 1 element + truncation message
           assert.equal(bVal.members.length, 2);
           assert(bVal.members[1].name.match(
@@ -802,24 +802,24 @@ describe('v8debugapi', function() {
 
     it('should not limit the length of an evaluated string based on maxStringLength',
         function(done) {
-      var bp = {
+      const bp = {
         id: 'fake-id-124',
         // TODO: This path can be lest strict when this file has been
         //       converted to Typescript.
         location: { path: 'build/test/test-v8debugapi-code.js', line: 9 },
         expressions: ['hasGetter']
       };
-      var oldMaxLength = config.capture.maxStringLength;
-      var oldMaxData = config.capture.maxDataSize;
+      const oldMaxLength = config.capture.maxStringLength;
+      const oldMaxData = config.capture.maxDataSize;
       config.capture.maxStringLength = 3;
       config.capture.maxDataSize = 20000;
       api.set(bp, function(err) {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          var hasGetter = (bp as any).evaluatedExpressions[0];
-          var getterVal = (bp as any).variableTable[hasGetter.varTableIndex];
-          var stringItems = getterVal.members.filter(function(m) {
+          const hasGetter = (bp as any).evaluatedExpressions[0];
+          const getterVal = (bp as any).variableTable[hasGetter.varTableIndex];
+          const stringItems = getterVal.members.filter(function(m) {
             return m.value === 'hello world';
           });
           // The property would have value 'hel...' if truncation occured
@@ -837,23 +837,23 @@ describe('v8debugapi', function() {
 
     it('should not limit the length of an evaluated array based on maxProperties',
       function(done) {
-        var bp = {
+        const bp = {
           id: 'fake-id-124',
           // TODO: This path can be lest strict when this file has been
           //       converted to Typescript.
           location: { path: 'build/test/test-v8debugapi-code.js', line: 5 },
           expressions: ['A']
         };
-        var oldMaxProps = config.capture.maxProperties;
-        var oldMaxData = config.capture.maxDataSize;
+        const oldMaxProps = config.capture.maxProperties;
+        const oldMaxData = config.capture.maxDataSize;
         config.capture.maxProperties = 1;
         config.capture.maxDataSize = 20000;
         api.set(bp, function(err) {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            var foo = (bp as any).evaluatedExpressions[0];
-            var fooVal = (bp as any).variableTable[foo.varTableIndex];
+            const foo = (bp as any).evaluatedExpressions[0];
+            const fooVal = (bp as any).variableTable[foo.varTableIndex];
             // '1', '2', '3', and 'length'
             assert.equal(fooVal.members.length, 4);
             assert.strictEqual(foo.status, undefined);
@@ -869,23 +869,23 @@ describe('v8debugapi', function() {
 
     it('should not limit the length of an evaluated object based on maxProperties',
       function(done) {
-        var bp = {
+        const bp = {
           id: 'fake-id-124',
           // TODO: This path can be lest strict when this file has been
           //       converted to Typescript.
           location: { path: 'build/test/test-v8debugapi-code.js', line: 5 },
           expressions: ['B']
         };
-        var oldMaxProps = config.capture.maxProperties;
-        var oldMaxData = config.capture.maxDataSize;
+        const oldMaxProps = config.capture.maxProperties;
+        const oldMaxData = config.capture.maxDataSize;
         config.capture.maxProperties = 1;
         config.capture.maxDataSize = 20000;
         api.set(bp, function(err) {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            var foo = (bp as any).evaluatedExpressions[0];
-            var fooVal = (bp as any).variableTable[foo.varTableIndex];
+            const foo = (bp as any).evaluatedExpressions[0];
+            const fooVal = (bp as any).variableTable[foo.varTableIndex];
             assert.equal(fooVal.members.length, 3);
             assert.strictEqual(foo.status, undefined);
 
@@ -900,23 +900,23 @@ describe('v8debugapi', function() {
 
     it('should display an error for an evaluated array beyond maxDataSize',
       function(done) {
-        var bp = {
+        const bp = {
           id: 'fake-id-124',
           // TODO: This path can be lest strict when this file has been
           //       converted to Typescript.
           location: { path: 'build/test/test-v8debugapi-code.js', line: 5 },
           expressions: ['A']
         };
-        var oldMaxProps = config.capture.maxProperties;
-        var oldMaxData = config.capture.maxDataSize;
+        const oldMaxProps = config.capture.maxProperties;
+        const oldMaxData = config.capture.maxDataSize;
         config.capture.maxProperties = 5;
         config.capture.maxDataSize = 1;
         api.set(bp, function(err) {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            var foo = (bp as any).evaluatedExpressions[0];
-            var fooVal = (bp as any).variableTable[foo.varTableIndex];
+            const foo = (bp as any).evaluatedExpressions[0];
+            const fooVal = (bp as any).variableTable[foo.varTableIndex];
             assert(fooVal.status.description.format.match(
               'Max data size reached'));
             assert(fooVal.status.isError);
@@ -932,23 +932,23 @@ describe('v8debugapi', function() {
 
     it('should display an error for an evaluated object beyond maxDataSize',
       function(done) {
-        var bp = {
+        const bp = {
           id: 'fake-id-124',
           // TODO: This path can be lest strict when this file has been
           //       converted to Typescript.
           location: { path: 'build/test/test-v8debugapi-code.js', line: 5 },
           expressions: ['B']
         };
-        var oldMaxProps = config.capture.maxProperties;
-        var oldMaxData = config.capture.maxDataSize;
+        const oldMaxProps = config.capture.maxProperties;
+        const oldMaxData = config.capture.maxDataSize;
         config.capture.maxProperties = 5;
         config.capture.maxDataSize = 1;
         api.set(bp, function(err) {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            var foo = (bp as any).evaluatedExpressions[0];
-            var fooVal = (bp as any).variableTable[foo.varTableIndex];
+            const foo = (bp as any).evaluatedExpressions[0];
+            const fooVal = (bp as any).variableTable[foo.varTableIndex];
             assert(fooVal.status.description.format.match(
               'Max data size reached'));
             assert(fooVal.status.isError);
@@ -964,15 +964,15 @@ describe('v8debugapi', function() {
 
     it('should set the correct status messages if maxDataSize is reached',
       function(done) {
-        var bp = {
+        const bp = {
           id: 'fake-id-124',
           // TODO: This path can be lest strict when this file has been
           //       converted to Typescript.
           location: { path: 'build/test/test-v8debugapi-code.js', line: 5 },
           expressions: ['A']
         };
-        var oldMaxProps = config.capture.maxProperties;
-        var oldMaxData = config.capture.maxDataSize;
+        const oldMaxProps = config.capture.maxProperties;
+        const oldMaxData = config.capture.maxDataSize;
         config.capture.maxProperties = 1;
         config.capture.maxDataSize = 1;
         api.set(bp, function(err) {
@@ -980,13 +980,13 @@ describe('v8debugapi', function() {
           api.wait(bp, function(err) {
             assert.ifError(err);
 
-            var bResults = (bp as any).stackFrames[0].locals.filter(function(value) {
+            const bResults = (bp as any).stackFrames[0].locals.filter(function(value) {
               return value.name === 'B';
             });
             assert(bResults);
             assert.strictEqual(bResults.length, 1);
 
-            var bArray = bResults[0];
+            const bArray = bResults[0];
             assert(bArray);
             assert(bArray.status.description.format.match(
               'Max data size reached'));
@@ -1003,7 +1003,7 @@ describe('v8debugapi', function() {
 
     it('should capture without values for invalid watch expressions', function(done) {
       // clone a clean breakpointInFoo
-      var bp  = {
+      const bp  = {
         id: breakpointInFoo.id,
         location: breakpointInFoo.location,
         expressions: [':)', 'process()', 'process=this', 'i', 'process._not._def']
@@ -1016,8 +1016,8 @@ describe('v8debugapi', function() {
           assert.ok((bp as any).variableTable);
           assert.ok((bp as any).evaluatedExpressions);
 
-          for (var i in (bp as any).evaluatedExpressions) {
-            var expr = (bp as any).evaluatedExpressions[i];
+          for (const i in (bp as any).evaluatedExpressions) {
+            const expr = (bp as any).evaluatedExpressions[i];
             assert(expr.status && expr.status.isError);
           }
 
@@ -1031,7 +1031,7 @@ describe('v8debugapi', function() {
 
     it('should be possible to set conditional breakpoints', function (done) {
       // clone a clean breakpointInFoo
-      var bp  = {
+      const bp  = {
         id: breakpointInFoo.id,
         location: breakpointInFoo.location,
         condition: 'n===5'
@@ -1042,7 +1042,7 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           assert.ok((bp as any).stackFrames);
 
-          var topFrame = (bp as any).stackFrames[0];
+          const topFrame = (bp as any).stackFrames[0];
           assert.equal(topFrame.locals[0].name, 'n');
           assert.equal(topFrame.locals[0].value, '5');
           api.clear(bp);
@@ -1055,21 +1055,21 @@ describe('v8debugapi', function() {
 
     it('should be possible to set conditional breakpoints in coffeescript',
       function (done) {
-        var bp = {
+        const bp = {
           id: 'coffee-id-1729',
           // TODO: Determine if this path should contain 'build'
           location: { path: path.join('.', 'build', 'test', 'fixtures', 'coffee',
             'transpile.coffee'), line: 3 },
           condition: 'if n == 3 then true else false'
         };
-        var tt = require('./fixtures/coffee/transpile');
+        const tt = require('./fixtures/coffee/transpile');
         api.set(bp, function(err) {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
             assert.ok((bp as any).stackFrames);
 
-            var topFrame = (bp as any).stackFrames[0];
+            const topFrame = (bp as any).stackFrames[0];
             assert.equal(topFrame['function'], 'foo');
             assert.equal(topFrame.locals[0].name, 'n');
             assert.equal(topFrame.locals[0].value, '3');
@@ -1082,7 +1082,7 @@ describe('v8debugapi', function() {
 
     it('should show error for invalid conditions in coffeescript',
       function (done) {
-        var bp = {
+        const bp = {
           id: 'coffee-id-1729',
           location: { path: path.join('.', 'test', 'fixtures', 'coffee',
             'transpile.coffee'), line: 3 },
@@ -1097,21 +1097,21 @@ describe('v8debugapi', function() {
 
     it('should be possible to set conditional breakpoints with babel',
       function (done) {
-        var bp = {
+        const bp = {
           id: 'babel-id-1729',
           // TODO: Determine if this path should contain 'build'
           location: { path: path.join('.', 'build', 'test', 'fixtures', 'es6', 'transpile.es6'),
             line: 3 },
           condition: 'i + j === 3'
         };
-        var tt = require('./fixtures/es6/transpile');
+        const tt = require('./fixtures/es6/transpile');
         api.set(bp, function(err) {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
             assert.ok((bp as any).stackFrames);
 
-            var topFrame = (bp as any).stackFrames[0];
+            const topFrame = (bp as any).stackFrames[0];
             assert.equal(topFrame.locals[0].name, 'j');
             assert.equal(topFrame.locals[0].value, '2');
             assert.equal(topFrame['function'], 'foo');
@@ -1124,14 +1124,14 @@ describe('v8debugapi', function() {
 
     it('should be possible to view watch expressions in coffeescript',
       function(done) {
-        var bp = {
+        const bp = {
             id: 'coffee-id-1729',
             // TODO: Determine if this path should contain 'build'
             location: { path: path.join('.', 'build', 'test', 'fixtures', 'coffee',
               'transpile.coffee'), line: 3 },
             expressions: ['if n == 3 then Math.PI * n else n']
           };
-        var tt = require('./fixtures/coffee/transpile');
+        const tt = require('./fixtures/coffee/transpile');
         api.set(bp, function(err) {
           assert.ifError(err);
           api.wait(bp, function(err) {
@@ -1140,8 +1140,8 @@ describe('v8debugapi', function() {
             assert.ok((bp as any).variableTable);
             assert.ok((bp as any).evaluatedExpressions);
 
-            for (var i in (bp as any).evaluatedExpressions) {
-              var expr = (bp as any).evaluatedExpressions[i];
+            for (const i in (bp as any).evaluatedExpressions) {
+              const expr = (bp as any).evaluatedExpressions[i];
               assert(expr.value === String(Math.PI * 3));
             }
 
@@ -1154,7 +1154,7 @@ describe('v8debugapi', function() {
 
     it('should capture without values for invalid watch expressions in coffeescript',
       function(done) {
-        var bp = {
+        const bp = {
             id: 'coffee-id-1729',
             // TODO: Determine if this path should contain 'build'
             location: { path: path.join('.', 'build', 'test', 'fixtures',
@@ -1162,7 +1162,7 @@ describe('v8debugapi', function() {
               line: 3 },
             expressions: [':)', 'n n, n', 'process=this', '((x) -> x x) n', 'return']
           };
-        var tt = require('./fixtures/coffee/transpile');
+        const tt = require('./fixtures/coffee/transpile');
         api.set(bp, function(err) {
           assert.ifError(err);
           api.wait(bp, function(err) {
@@ -1171,8 +1171,8 @@ describe('v8debugapi', function() {
             assert.ok((bp as any).variableTable);
             assert.ok((bp as any).evaluatedExpressions);
 
-            for (var i in (bp as any).evaluatedExpressions) {
-              var expr = (bp as any).evaluatedExpressions[i];
+            for (const i in (bp as any).evaluatedExpressions) {
+              const expr = (bp as any).evaluatedExpressions[i];
               assert(expr.status && expr.status.isError);
               if (expr.name === ':)' ||
                   expr.name === 'process=this' ||
@@ -1194,7 +1194,7 @@ describe('v8debugapi', function() {
 
     it('should remove listener when breakpoint is cleared before hitting',
       function(done) {
-        var bp  = {
+        const bp  = {
           id: breakpointInFoo.id,
           location: breakpointInFoo.location,
           condition: 'n===447'
@@ -1217,8 +1217,8 @@ describe('v8debugapi', function() {
 
     it('should be possible to set multiple breakpoints at once',
       function(done) {
-        var bp1 = { id: 'bp1', location: { path: __filename, line: 4 }};
-        var bp2 = { id: 'bp2', location: { path: __filename, line: 5 }};
+        const bp1 = { id: 'bp1', location: { path: __filename, line: 4 }};
+        const bp2 = { id: 'bp2', location: { path: __filename, line: 5 }};
         api.set(bp1, function(err) {
           assert.ifError(err);
           api.set(bp2, function(err) {
@@ -1235,8 +1235,8 @@ describe('v8debugapi', function() {
 
 
     it('should correctly stop on line-1 breakpoints', function(done) {
-      var foo = require('./fixtures/foo.js');
-      var bp = { id: 'bp-line-1', location: {
+      const foo = require('./fixtures/foo.js');
+      const bp = { id: 'bp-line-1', location: {
         path: 'foo.js',
         line: 1,
         column: 45
@@ -1255,11 +1255,11 @@ describe('v8debugapi', function() {
     });
 
     it('should not silence errors thrown in the wait callback', function(done) {
-      var message = 'This exception should not be silenced';
+      const message = 'This exception should not be silenced';
       // Remove the mocha listener.
-      var listeners = process.listeners('uncaughtException');
+      const listeners = process.listeners('uncaughtException');
       assert.equal(listeners.length, 1);
-      var originalListener = listeners[0];
+      const originalListener = listeners[0];
       process.removeListener('uncaughtException', originalListener);
       process.once('uncaughtException', function(err) {
         assert.ok(err);
@@ -1270,7 +1270,7 @@ describe('v8debugapi', function() {
       });
 
       // clone a clean breakpointInFoo
-      var bp = {id: breakpointInFoo.id, location: breakpointInFoo.location};
+      const bp = {id: breakpointInFoo.id, location: breakpointInFoo.location};
       api.set(bp, function(err) {
         assert.ifError(err);
         api.wait(bp, function(err) {
@@ -1313,25 +1313,29 @@ describe('v8debugapi', function() {
 
 describe('v8debugapi.findScripts', function() {
   it('should properly handle appPathRelativeToRepository', function() {
-    var config = extend(true, {}, config, {
+    // TODO: `config` was used before it was defined and passed as the third
+    //       parameter below.  This was a Typescript compile error.  The
+    //       value of `undefined` should be functionally equivalent.
+    //       Make sure that is the case.
+    const config = extend(true, {}, undefined, {
       workingDirectory: '/some/strange/directory',
       appPathRelativeToRepository: '/my/project/root'
     });
 
-    var fakeFileStats = {
+    const fakeFileStats = {
       '/some/strange/directory/test/fixtures/a/hello.js':
           {hash: 'fake', lines: 5},
       '/my/project/root/test/fixtures/a/hello.js': {hash: 'fake', lines: 50}
     };
-    var scriptPath = '/my/project/root/test/fixtures/a/hello.js';
-    var result = v8debugapi.findScripts(scriptPath, config, fakeFileStats);
+    const scriptPath = '/my/project/root/test/fixtures/a/hello.js';
+    const result = v8debugapi.findScripts(scriptPath, config, fakeFileStats);
     assert.deepEqual(
         result, ['/some/strange/directory/test/fixtures/a/hello.js']);
   });
 });
 
 describe('v8debugapi.findScriptsFuzzy', function() {
-  var fuzzy = v8debugapi.findScriptsFuzzy;
+  const fuzzy = v8debugapi.findScriptsFuzzy;
 
   it('should not confuse . as a regexp pattern', function() {
     assert.deepEqual(fuzzy('foo.js', ['/fooXjs']), []);
@@ -1339,7 +1343,7 @@ describe('v8debugapi.findScriptsFuzzy', function() {
 
   it('should do suffix matches correctly', function() {
 
-    var TESTS = [
+    const TESTS = [
       // Exact match.
       {scriptPath: 'foo.js', fileList: ['/foo.js'], result: ['/foo.js']},
       // Non-exact but unique matches.
@@ -1369,9 +1373,9 @@ describe('v8debugapi.findScriptsFuzzy', function() {
     ];
 
     TESTS.forEach(function(test) {
-      var scriptPath = path.normalize(test.scriptPath);
-      var fileList = test.fileList.map(path.normalize);
-      var result = test.result.map(path.normalize);
+      const scriptPath = path.normalize(test.scriptPath);
+      const fileList = test.fileList.map(path.normalize);
+      const result = test.result.map(path.normalize);
       assert.deepEqual(fuzzy(scriptPath, fileList), result);
     });
   });
