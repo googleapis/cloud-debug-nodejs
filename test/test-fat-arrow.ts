@@ -25,7 +25,6 @@ const common: commonTypes.Common = require('@google-cloud/common');
 import defaultConfig from '../src/agent/config';
 import * as SourceMapper from '../src/agent/sourcemapper';
 import * as scanner from '../src/agent/scanner';
-import * as path from 'path';
 
 process.env.GCLOUD_PROJECT = 0;
 
