@@ -131,7 +131,7 @@ gulp.task('test.unit.compile', ['test.unit.copy', 'test.packagejson.copy', 'comp
 });
 
 function runTests(withCoverage, cb) {
-  var args = ['./bin/run-test.sh'];
+  var args = [path.join('.', 'bin', 'run-test.sh')];
   if (withCoverage) {
     args = args.concat('-c');
   }
