@@ -64,7 +64,7 @@
     "util.promisify": "^1.0.0"
   },
   "scripts": {
-    "build": "gulp compile",
+    "build": "gulp",
     "changelog": "npm run build && ./bin/run-changelog.sh",
     "coverage": "npm run build && ./bin/run-test.sh -c",
     "prepare": "npm run build",

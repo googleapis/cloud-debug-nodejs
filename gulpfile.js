@@ -33,6 +33,9 @@ const tsconfigPath = path.join(__dirname, 'tsconfig.json');
 const tslintPath = path.join(__dirname, 'tslint.json');
 const outDir = 'build';
 const sources = ['src/**/*.ts'];
+const unitTests = ['test/**/*.ts'];
+const systemTests = ['system-test/**/*.ts'];
+const allFiles = sources.concat(unitTests).concat(systemTests);
 
 let exitOnError = true;
 function onError() {
@@ -84,15 +87,65 @@ gulp.task('compile', () => {
   ]);
 });
 
-gulp.task('test.compile', ['compile'], () => {
-  // TODO: Complete this when the test files have been converted
-  //       to Typescript.
+gulp.task('test.system.copy', () => {
+  return gulp.src(['system-test/**/*'])
+             .pipe(gulp.dest(`${outDir}/system-test`));
 });
 
-gulp.task('test.unit', ['compile'], cb => {
-  spawn('bash', ['./bin/run-test.sh'], {
+gulp.task('test.system.compile', ['compile', 'test.system.copy'], () => {
+  const tsResult = gulp.src(systemTests)
+                       .pipe(sourcemaps.init())
+                       .pipe(ts.createProject(tsconfigPath)())
+                       .on('error', onError);
+  return merge([
+    tsResult.js
+        .pipe(sourcemaps.write(
+            '.', {includeContent: false, sourceRoot: '../../system-test'}))
+        .pipe(gulp.dest(`${outDir}/system-test`)),
+    tsResult.js.pipe(gulp.dest(`${outDir}/system-test`))
+  ]);
+});
+
+gulp.task('test.packagejson.copy', () => {
+  return gulp.src(['package.json'])
+             .pipe(gulp.dest(`${outDir}`));
+});
+
+gulp.task('test.unit.copy', () => {
+  return gulp.src(['test/**/*'])
+             .pipe(gulp.dest(`${outDir}/test`));
+});
+
+gulp.task('test.unit.compile', ['test.unit.copy', 'test.packagejson.copy', 'compile'], () => {
+  const tsResult = gulp.src(unitTests)
+                       .pipe(sourcemaps.init())
+                       .pipe(ts.createProject(tsconfigPath)())
+                       .on('error', onError);
+  return merge([
+    tsResult.js
+        .pipe(sourcemaps.write(
+            '.', {includeContent: false, sourceRoot: '../../test'}))
+        .pipe(gulp.dest(`${outDir}/test`)),
+    tsResult.js.pipe(gulp.dest(`${outDir}/test`))
+  ]);
+});
+
+function runTests(withCoverage, cb) {
+  var args = [path.join('.', 'bin', 'run-test.sh')];
+  if (withCoverage) {
+    args = args.concat('-c');
+  }
+  spawn('bash', args, {
     stdio : 'inherit'
   }).on('close', cb);
+}
+
+gulp.task('test.run', ['test.unit.compile', 'test.system.compile'], cb => {
+  runTests(false, cb);
+});
+
+gulp.task('test.coverage.run', ['test.unit.compile', 'test.system.compile'], cb => {
+  runTests(true, cb);
 });
 
 gulp.task('watch', () => {
@@ -102,5 +155,8 @@ gulp.task('watch', () => {
   return gulp.watch(sources, ['test.compile']);
 });
 
-gulp.task('test', ['test.unit', 'test.check-format', 'test.check-lint']);
-gulp.task('default', ['compile']);
+// TODO: Enable linting and checking format after the conversion to
+//       Typescript is complete.
+gulp.task('test', ['test.run']);//, 'test.check-format', 'test.check-lint']);
+gulp.task('test.coverage', ['test.coverage.run']);//, 'test.check-format', 'test.check-lint']);
+gulp.task('default', ['compile', 'test.unit.compile', 'test.system.compile']);

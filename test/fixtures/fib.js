@@ -24,7 +24,7 @@ function fib(n) {
 const nocks = require('../nocks.js');
 nocks.projectId('fake-project-id');
 
-var debuglet = require('../..').start({
+var debuglet = require('../../..').start({
   debug: {
     logLevel: 2,
     maxLogsPerSecond: 2,

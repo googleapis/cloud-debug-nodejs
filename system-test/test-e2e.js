@@ -21,12 +21,13 @@ var _ = require('lodash'); // for _.find. Can't use ES6 yet.
 var cp = require('child_process');
 var semver = require('semver');
 var promisifyAll = require('@google-cloud/common').util.promisifyAll;
-var Debug = require('../build/src/debug.js').Debug;
+var Debug = require('../src/debug.js').Debug;
 var Debugger = require('../test/debugger.js');
 
 var CLUSTER_WORKERS = 3;
 
-var FILENAME = 'test/fixtures/fib.js';
+// TODO: Determine if this path should contain 'build'
+var FILENAME = 'build/test/fixtures/fib.js';
 
 var delay = function(delayTimeMS) {
   return new Promise(function(resolve, reject) {
