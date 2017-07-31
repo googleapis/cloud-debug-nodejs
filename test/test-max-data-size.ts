@@ -1,8 +1,3 @@
-/*1* KEEP THIS CODE AT THE TOP TO AVOID LINE NUMBER CHANGES */
-/*2*/'use strict';
-/*3*/function foo(n) {
-/*4*/  var A = new Array(3); return n+42+A[0];
-/*5*/}
 /**
  * Copyright 2015 Google Inc. All Rights Reserved.
  *
@@ -21,18 +16,21 @@
 
 process.env.GCLOUD_DIAGNOSTICS_CONFIG = 'test/fixtures/test-config.js';
 
-var assert = require('assert');
+import * as assert from 'assert';
 var extend = require('extend');
 var common = require('@google-cloud/common');
 var v8debugapi = require('../src/agent/v8debugapi.js');
 var SourceMapper = require('../src/agent/sourcemapper.js');
 var scanner = require('../src/agent/scanner.js');
 var defaultConfig = require('../src/agent/config.js').default;
-var api;
+var path = require('path');
+var foo = require('./test-max-data-size-code.js');
+// TODO: Determine why the compiler says this must be of type 'string'.
+var api: string;
 
 var breakpointInFoo = {
   id: 'fake-id-123',
-  location: { path: 'test-max-data-size.js', line: 4 }
+  location: { path: 'test-max-data-size-code.js', line: 4 }
 };
 
 describe('maxDataSize', function() {
@@ -63,14 +61,18 @@ describe('maxDataSize', function() {
     config.capture.maxDataSize = 5;
     // clone a clean breakpointInFoo
     var bp  = {id: breakpointInFoo.id, location: breakpointInFoo.location};
-    api.set(bp, function(err) {
+    // TODO: Determine how to remove this cast to any.
+    (api as any).set(bp, function(err) {
       assert.ifError(err);
-      api.wait(bp, function(err) {
+      // TODO: Determine how to remove this cast to any.
+      (api as any).wait(bp, function(err) {
         assert.ifError(err);
-        assert(bp.variableTable.some(function(v) {
+        // TODO: Determine how to remove this cast to any.
+        assert((bp as any).variableTable.some(function(v) {
           return v.status.description.format === 'Max data size reached';
         }));
-        api.clear(bp);
+        // TODO: Determine how to remove this cast to any.
+        (api as any).clear(bp);
         done();
       });
       process.nextTick(function() {foo(2);});
@@ -81,16 +83,21 @@ describe('maxDataSize', function() {
     config.capture.maxDataSize = 0;
     // clone a clean breakpointInFoo
     var bp  = {id: breakpointInFoo.id, location: breakpointInFoo.location};
-    api.set(bp, function(err) {
+    // TODO: Determine how to remove this cast to any.
+    (api as any).set(bp, function(err) {
       assert.ifError(err);
-      api.wait(bp, function(err) {
+      // TODO: Determine how to remove this cast to any.
+      (api as any).wait(bp, function(err) {
         assert.ifError(err);
-        assert(bp.variableTable.reduce(function(acc, elem) {
+        // TODO: Determine how to remove this cast to any.
+        assert((bp as any).variableTable.reduce(function(acc, elem) {
           return acc &&
                  (!elem.status ||
                    elem.status.description.format !== 'Max data size reached');
-        }), true);
-        api.clear(bp);
+        // TODO: Fix this incorrect method signature.
+        }), true as any as string);
+        // TODO: Determine how to remove this cast to any.
+        (api as any).clear(bp);
         done();
       });
       process.nextTick(function() {foo(2);});

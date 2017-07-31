@@ -16,8 +16,9 @@
 
 'use strict';
 
-var assert = require('assert');
-var module = require('../..');
+import * as assert from 'assert';
+// TODO: Determine how to not have a type declaration here.
+var module: NodeModule = require('../..');
 var nock = require('nock');
 var nocks = require('./nocks.js');
 
@@ -26,7 +27,8 @@ nock.disableNetConnect();
 describe('Debug module', function() {
   before(function(done) {
     nocks.projectId('project-via-metadata');
-    var debuglet = module.start(
+    // TODO: Determine how to remove this cast to any.
+    var debuglet = (module as any).start(
         {projectId: '0', debug: {forceNewAgent_: true, testMode_: true}});
     debuglet.on('started', function() {
       debuglet.stop();
@@ -35,7 +37,8 @@ describe('Debug module', function() {
   });
 
   it('should throw on attempt to start a new agent', function() {
-    assert.throws(function() { module.start(); });
+    // TODO: Determine how to remove this cast to any.
+    assert.throws(function() { (module as any).start(); });
   });
 
 });

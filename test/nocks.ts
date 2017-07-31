@@ -13,16 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
-var nock = require('nock');
+ var nock = require('nock');
 
 // In the future _=>true.
 function accept() {
   return true;
 }
 
-function nockOAuth2(validator) {
+export function oauth2(validator) {
   validator = validator || accept;
   return nock('https://accounts.google.com')
       .post('/o/oauth2/token', validator)
@@ -34,7 +33,7 @@ function nockOAuth2(validator) {
       });
 }
 
-function nockRegister(validator) {
+export function register(validator) {
   validator = validator || accept;
   return nock('https://clouddebugger.googleapis.com')
       .post('/v2/controller/debuggees/register', validator)
@@ -42,15 +41,9 @@ function nockRegister(validator) {
       .reply(200);
 }
 
-function nockProjectId(reply) {
+export function projectId(reply) {
   return nock('http://metadata.google.internal')
     .get('/computeMetadata/v1/project/project-id')
     .once()
     .reply(200, reply);
 }
-
-module.exports = {
-  oauth2: nockOAuth2,
-  projectId: nockProjectId,
-  register: nockRegister
-};

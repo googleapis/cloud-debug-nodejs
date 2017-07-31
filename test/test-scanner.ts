@@ -17,7 +17,7 @@
 
 var fs = require('fs');
 var path = require('path');
-var assert = require('assert');
+import * as assert from 'assert';
 
 var fixtureDir = path.join(__dirname, './fixtures');
 var fixture = function(file) {

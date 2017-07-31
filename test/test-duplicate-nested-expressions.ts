@@ -1,13 +1,3 @@
-/*1* KEEP THIS CODE AT THE TOP TO AVOID LINE NUMBER CHANGES */ /* jshint shadow:true */
-/*2*/'use strict';
-/*3*/function foo(a) {
-/*4*/ var a = 10;
-/*5*/ a += 1;
-/*6*/ return (function (b) {
-/*7*/   var a = true;
-/*8*/   return a;
-/*9*/ }());
-/*10*/}
 /**
  * Copyright 2015 Google Inc. All Rights Reserved.
  *
@@ -24,15 +14,17 @@
  * limitations under the License.
  */
 
-var assert = require('assert');
+import * as assert from 'assert';
 var extend = require('extend');
 var v8debugapi = require('../src/agent/v8debugapi.js');
 var common = require('@google-cloud/common');
 var defaultConfig = require('../src/agent/config.js').default;
 var SourceMapper = require('../src/agent/sourcemapper.js');
 var scanner = require('../src/agent/scanner.js');
+var foo = require('./test-duplicate-nested-expressions-code.js');
 
-function stateIsClean(api) {
+// TODO: Determine why this must be named `_stateIsClean`.
+function stateIsClean2(api) {
   assert.equal(api.numBreakpoints_(), 0,
     'there should be no breakpoints active');
   assert.equal(api.numListeners_(), 0,
@@ -63,21 +55,22 @@ describe(__filename, function() {
           });
         });
     } else {
-      assert(stateIsClean(api));
+      assert(stateIsClean2(api));
       done();
     }
   });
-  afterEach(function() { assert(stateIsClean(api)); });
+  afterEach(function() { assert(stateIsClean2(api)); });
   it('Should read the argument before the name is confounded', function(done) {
       var brk = {
         id: 'fake-id-123',
-        location: { path: 'test-duplicate-nested-expressions.js', line: 4 }
+        location: { path: 'test-duplicate-nested-expressions-code.js', line: 4 }
       };
     api.set(brk, function(err) {
       assert.ifError(err);
       api.wait(brk, function(err) {
         assert.ifError(err);
-        var frame = brk.stackFrames[0];
+        // TODO: Determine how to remove this cast to any.
+        var frame = (brk as any).stackFrames[0];
         var args = frame.arguments;
         var locals = frame.locals;
         assert.equal(args.length, 0, 'There should be zero arguments');
@@ -96,13 +89,14 @@ describe(__filename, function() {
   it('Should read an argument after the name is confounded', function(done) {
     var brk = {
       id: 'fake-id-1234',
-      location: { path: 'test-duplicate-nested-expressions.js', line: 5 }
+      location: { path: 'test-duplicate-nested-expressions-code.js', line: 5 }
     };
     api.set(brk, function(err) {
       assert.ifError(err);
       api.wait(brk, function(err) {
         assert.ifError(err);
-        var frame = brk.stackFrames[0];
+        // TODO: Determine how to remove this cast to any.
+        var frame = (brk as any).stackFrames[0];
         var args = frame.arguments;
         var locals = frame.locals;
         assert.equal(args.length, 0, 'There should be zero arguments');
@@ -121,13 +115,14 @@ describe(__filename, function() {
   it('Should read an argument value after its value is modified', function(done) {
     var brk = {
       id: 'fake-id-1234',
-      location: { path: 'test-duplicate-nested-expressions.js', line: 6 }
+      location: { path: 'test-duplicate-nested-expressions-code.js', line: 6 }
     };
     api.set(brk, function(err) {
       assert.ifError(err);
       api.wait(brk, function(err) {
         assert.ifError(err);
-        var frame = brk.stackFrames[0];
+        // TODO: Determine how to remove this cast to any.
+        var frame = (brk as any).stackFrames[0];
         var args = frame.arguments;
         var locals = frame.locals;
         assert.equal(args.length, 0, 'There should be zero arguments');
@@ -146,13 +141,14 @@ describe(__filename, function() {
   it('Should represent a var name at its local-scope when clearly defined', function(done) {
     var brk = {
       id: 'fake-id-1234',
-      location: { path: 'test-duplicate-nested-expressions.js', line: 8 }
+      location: { path: 'test-duplicate-nested-expressions-code.js', line: 8 }
     };
     api.set(brk, function(err) {
       assert.ifError(err);
       api.wait(brk, function(err) {
         assert.ifError(err);
-        var frame = brk.stackFrames[0];
+        // TODO: Determine how to remove this cast to any.
+        var frame = (brk as any).stackFrames[0];
         var args = frame.arguments;
         var locals = frame.locals;
         assert.equal(args.length, 0, 'There should be zero arguments');

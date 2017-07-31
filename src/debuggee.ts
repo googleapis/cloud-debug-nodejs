@@ -79,7 +79,9 @@ export class Debuggee {
       return new Debuggee(properties);
     }
 
-    properties = properties || {};
+    // TODO: Determine if `statusMessage` should be optional or be required
+    //       and be explicitly set to `null`.
+    properties = properties || { statusMessage: null };
 
     if (!_.isString(properties.project)) {
       throw new Error('properties.project must be a string');

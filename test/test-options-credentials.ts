@@ -16,7 +16,7 @@
 'use strict';
 
 var path = require('path');
-var assert = require('assert');
+import * as assert from 'assert';
 var nock = require('nock');
 var nocks = require('./nocks.js');
 var extend = require('extend');

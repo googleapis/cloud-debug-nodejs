@@ -16,8 +16,8 @@
 'use strict';
 
 var _ = require('lodash');
-var assert = require('assert');
 var path = require('path');
+import * as assert from 'assert';
 var DEFAULT_CONFIG = require('../src/agent/config.js').default;
 DEFAULT_CONFIG.allowExpressions = true;
 DEFAULT_CONFIG.workingDirectory = path.join(__dirname, '..');
@@ -191,7 +191,8 @@ describe('Debuglet', function() {
 
     it('should not query metadata if local config.projectId is set', (done) => {
       Debuglet.getProjectIdFromMetadata = () => {
-        assert.fail();
+        // TODO: Fix this invalid method signature.
+        (assert as any).fail();
       };
       Debuglet.getProjectId({ projectId: 'from-config' }).then((projectId) => {
         assert.strictEqual(projectId, 'from-config');
@@ -205,7 +206,8 @@ describe('Debuglet', function() {
       process.env.GCLOUD_PROJECT = 'from-env-var';
 
       Debuglet.getProjectIdFromMetadata = () => {
-        assert.fail();
+        // TODO: Fix this invalid method signature.
+        (assert as any).fail();
       };
       Debuglet.getProjectId({}).then((projectId) => {
         assert.strictEqual(projectId, 'from-env-var');
@@ -284,7 +286,10 @@ describe('Debuglet', function() {
         Debuglet.getProjectId = savedGetProjectId;
         done();
       });
-      debuglet.once('started', function() { assert.fail(); });
+      debuglet.once('started', function() {
+        // TODO: Fix this invalid method signature.
+        (assert as any).fail();
+      });
       debuglet.start();
     });
 
@@ -297,7 +302,10 @@ describe('Debuglet', function() {
       var debug = require('../src/debug.js').Debug();
       var debuglet = new Debuglet(debug, defaultConfig);
 
-      debuglet.once('started', function() { assert.fail(); });
+      debuglet.once('started', function() {
+        // TODO: Fix this invalid method signature.
+        (assert as any).fail();
+      });
       debuglet.once('initError', function() {
         Debuglet.getProjectId = savedGetProjectId;
         done();

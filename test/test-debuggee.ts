@@ -15,7 +15,7 @@
  */
 'use strict';
 
-var assert = require('assert');
+import * as assert from 'assert';
 var Debuggee = require('../src/debuggee.js').Debuggee;
 
 describe('Debuggee', function() {

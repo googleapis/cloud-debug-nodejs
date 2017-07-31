@@ -1,4 +1,3 @@
-'use strict';
 /**
  * Copyright 2015 Google Inc. All Rights Reserved.
  *
@@ -15,17 +14,22 @@
  * limitations under the License.
  */
 
-var assert = require('assert');
+var breakpointInFoo = {
+  id: 'fake-id-123',
+  location: { path: 'test-duplicate-expressions-code.js', line: 4 }
+};
+
+import * as assert from 'assert';
 var extend = require('extend');
 var v8debugapi = require('../src/agent/v8debugapi.js');
 var common = require('@google-cloud/common');
 var defaultConfig = require('../src/agent/config.js').default;
 var SourceMapper = require('../src/agent/sourcemapper.js');
 var scanner = require('../src/agent/scanner.js');
+var foo = require('./test-duplicate-expressions-code.js');
 
-process.env.GCLOUD_PROJECT = 0;
-
-function stateIsClean(api) {
+// TODO: Determine why this must be named `stateIsClean1`.
+function stateIsClean1(api) {
   assert.equal(api.numBreakpoints_(), 0,
     'there should be no breakpoints active');
   assert.equal(api.numListeners_(), 0,
@@ -40,10 +44,7 @@ describe(__filename, function() {
   });
   var logger = common.logger({ logLevel: config.logLevel });
   var api = null;
-  var foo;
-  before(function () {
-    foo = require('./fixtures/fat-arrow.js');
-  });
+
   beforeEach(function(done) {
     if (!api) {
       scanner.scan(true, config.workingDirectory, /.js$/)
@@ -51,63 +52,37 @@ describe(__filename, function() {
           var jsStats = fileStats.selectStats(/.js$/);
           var mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
           SourceMapper.create(mapFiles, function (err, mapper) {
+            assert(!err);
+
             api = v8debugapi.create(logger, config, jsStats, mapper);
             assert.ok(api, 'should be able to create the api');
             done();
           });
         });
     } else {
-      assert(stateIsClean(api));
+      assert(stateIsClean1(api));
       done();
     }
   });
-  afterEach(function() { assert(stateIsClean(api)); });
-  it('Should read the argument value of the fat arrow', function(done) {
-      var brk = {
-        id: 'fake-id-123',
-        location: { path: 'fixtures/fat-arrow.js', line: 5 }
-      };
-    api.set(brk, function(err) {
+  afterEach(function() { assert(stateIsClean1(api)); });
+
+  it('should not duplicate expressions', function(done) {
+    api.set(breakpointInFoo, function(err) {
       assert.ifError(err);
-      api.wait(brk, function(err) {
+      api.wait(breakpointInFoo, function(err) {
         assert.ifError(err);
-        var frame = brk.stackFrames[0];
-        var args = frame.arguments;
-        var locals = frame.locals;
-        assert.equal(args.length, 0, 'There should be zero arguments');
-        assert.equal(locals.length, 1, 'There should be one local');
-        assert.deepEqual(
-          locals[0],
-          {name: 'b', value: '1'}
-        );
-        api.clear(brk);
+        // TODO: Determine how to remove this cast to any.
+        var frames = (breakpointInFoo as any).stackFrames[0];
+        var exprs = frames.arguments.concat(frames.locals);
+        var varTableIndicesSeen = [];
+        exprs.forEach(function(expr) {
+          assert.equal(varTableIndicesSeen.indexOf(expr.varTableIndex), -1);
+          varTableIndicesSeen.push(expr.varTableIndex);
+        });
+        api.clear(breakpointInFoo);
         done();
       });
-      process.nextTick(foo.bind(null, 'test'));
-    });
-  });
-   it('Should process the argument value change of the fat arrow', function(done) {
-      var brk = {
-        id: 'fake-id-123',
-        location: { path: 'fixtures/fat-arrow.js', line: 6 }
-      };
-    api.set(brk, function(err) {
-      assert.ifError(err);
-      api.wait(brk, function(err) {
-        assert.ifError(err);
-        var frame = brk.stackFrames[0];
-        var args = frame.arguments;
-        var locals = frame.locals;
-        assert.equal(args.length, 0, 'There should be zero arguments');
-        assert.equal(locals.length, 1, 'There should be one local');
-        assert.deepEqual(
-          locals[0],
-          {name: 'b', value: '2'}
-        );
-        api.clear(brk);
-        done();
-      });
-      process.nextTick(foo.bind(null, 'test'));
+      process.nextTick(foo);
     });
   });
 });

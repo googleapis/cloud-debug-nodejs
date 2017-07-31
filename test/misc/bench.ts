@@ -1,9 +1,3 @@
-/*1* KEEP THIS CODE AT THE TOP TO AVOID LINE NUMBER CHANGES */
-/*2*/'use strict';
-/*3*/function fib(n) {
-/*4*/  return n < 2 ? n : fib(n-2) + fib(n-1);
-/*5*/}
-
 /**
  * Copyright 2015 Google Inc. All Rights Reserved.
  *
@@ -24,9 +18,10 @@
 var v8debugapi = require('../src/v8debugapi.js');
 var Logger = require('../src/logger.js');
 var config = require('../config.js').default;
-var assert = require('assert');
+import * as assert from 'assert';
 var pretty = require('pretty-hrtime');
 //var util = require('util');
+var fib = require('./bench-code.js');
 
 var logger = new Logger(config.logLevel);
 assert.ok(v8debugapi.init(logger, config));
