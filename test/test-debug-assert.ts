@@ -15,11 +15,10 @@
  */
 'use strict';
 
-const realAssert = require('assert');
+import * as realAssert from 'assert';
+import {debugAssert} from '../src/agent/debug-assert';
 
 describe('debug-assert', () => {
-  const debugAssert = require('../src/agent/debug-assert.js').debugAssert;
-
   it('should fire assertions when enabled', () => {
     realAssert.throws(() => {
       const assert = debugAssert(true);

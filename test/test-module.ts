@@ -19,8 +19,8 @@
 import * as assert from 'assert';
 // TODO: Determine how to not have a type declaration here.
 var module: NodeModule = require('../..');
-var nock = require('nock');
-var nocks = require('./nocks.js');
+import * as nock from 'nock';
+import * as nocks from './nocks';
 
 nock.disableNetConnect();
 

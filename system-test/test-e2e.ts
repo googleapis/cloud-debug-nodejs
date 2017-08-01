@@ -15,13 +15,13 @@
  */
 
 'use strict';
-var assert = require('assert');
-var util = require('util');
-var _ = require('lodash'); // for _.find. Can't use ES6 yet.
-var cp = require('child_process');
-var semver = require('semver');
-var promisifyAll = require('@google-cloud/common').util.promisifyAll;
-var Debug = require('../src/debug.js').Debug;
+import * as assert from 'assert';
+import * as util from 'util';
+import * as _ from 'lodash'; // for _.find. Can't use ES6 yet.
+import * as cp from 'child_process';
+import * as semver from 'semver';
+const promisifyAll = require('@google-cloud/common').util.promisifyAll;
+import {Debug} from '../src/debug';
 var Debugger = require('../test/debugger.js');
 
 var CLUSTER_WORKERS = 3;
@@ -91,11 +91,12 @@ describe('@google-cloud/debug end-to-end behavior', function () {
         // TODO: Determine how to have this not of type `any`.
         // Fork child processes that sned messages to this process with IPC.
         var child: any = { transcript: '' };
+        // TODO: Fix this cast to any.
         child.process = cp.fork(FILENAME, {
           execArgv: [],
           env: process.env,
           silent: true
-        });
+        } as any);
         child.process.on('message', handler);
 
         children.push(child);
@@ -142,7 +143,8 @@ describe('@google-cloud/debug end-to-end behavior', function () {
       console.log('-- List of debuggees\n',
         util.inspect(debuggees, { depth: null}));
       assert.ok(debuggees, 'should get a valid ListDebuggees response');
-      var result = _.find(debuggees, function(d) {
+      // TODO: Fix this cast to any.
+      var result = _.find(debuggees, function(d: any) {
         return d.id === debuggeeId;
       });
       assert.ok(result, 'should find the debuggee we just registered');
@@ -291,7 +293,8 @@ describe('@google-cloud/debug end-to-end behavior', function () {
       console.log('-- List of debuggees\n',
         util.inspect(debuggees, { depth: null}));
       assert.ok(debuggees, 'should get a valid ListDebuggees response');
-      var result = _.find(debuggees, function(d) {
+      // TODO: Fix this cast to any.
+      var result = _.find(debuggees, function(d: any) {
         return d.id === debuggeeId;
       });
       assert.ok(result, 'should find the debuggee we just registered');

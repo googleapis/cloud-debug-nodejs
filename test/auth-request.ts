@@ -15,8 +15,9 @@
  */
 'use strict';
 
-var request = require('request');
-module.exports = function(options, callback) {
+import * as request from 'request';
+
+export default function(options, callback) {
   request(options, function(err, response, body) {
     callback(err, body, response);
   });

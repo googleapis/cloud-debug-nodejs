@@ -16,7 +16,7 @@
 
 'use strict';
 
-var assert = require('assert');
+import * as assert from 'assert';
 
 assert.ok(
     process.env.GCLOUD_PROJECT,
@@ -26,9 +26,12 @@ assert.ok(
     'Need to have GOOGLE_APPLICATION_CREDENTIALS defined to be able to run ' +
     'this test');
 
-var Controller = require('../src/controller.js').Controller;
-var Debuggee = require('../src/debuggee.js').Debuggee;
-var debug = require('../src/debug.js').Debug();
+import {Controller} from '../src/controller';
+import {Debuggee} from '../src/debuggee';
+import {Debug} from '../src/debug';
+// TODO: Determine if Debug should be updated so that its only parameter is
+//       optional.
+const debug = new Debug({});
 
 
 describe('Controller', function() {
@@ -40,11 +43,14 @@ describe('Controller', function() {
         new Debuggee({
           project: process.env.GCLOUD_PROJECT,
           uniquifier: 'test-uid-' + Date.now(),
-          description: 'this is a system test'
+          description: 'this is a system test',
+          // TODO: Determine if statusMessage should be made optional.
+          statusMessage: null
         });
 
     controller.register(debuggee, function(err, body) {
-      assert.ifError(err, 'should be able to register successfully');
+      // TODO: Only 1 parameter is expected.  Fix this.
+      (assert as any).ifError(err, 'should be able to register successfully');
       assert.ok(body);
       assert.ok(body.debuggee);
       assert.ok(body.debuggee.id);
@@ -56,15 +62,19 @@ describe('Controller', function() {
     var controller = new Controller(debug);
     var debuggee =
         new Debuggee({
-          project: process.env.GCLOUD_PROJECT, 
+          project: process.env.GCLOUD_PROJECT,
           uniquifier: 'test-uid-' + Date.now(),
-          description: 'this is a system test'
+          description: 'this is a system test',
+          // TODO: Determine if statusMessage should be made optional.
+          statusMessage: null
         });
     controller.register(debuggee, function(err, body) {
-      assert.ifError(err, 'should be able to register successfully');
+      // TODO: Only 1 parameter is expected.  Fix this.
+      (assert as any).ifError(err, 'should be able to register successfully');
 
       controller.listBreakpoints(debuggee, function(err, response, body) {
-        assert.ifError(err, 'should successfully list breakpoints');
+        // TODO: Only 1 parameter is expected.  Fix this.
+        (assert as any).ifError(err, 'should successfully list breakpoints');
         assert.ok(body);
         assert.ok(body.nextWaitToken);
         done();
@@ -79,19 +89,24 @@ describe('Controller', function() {
         new Debuggee({
           project: process.env.GCLOUD_PROJECT,
           uniquifier: 'test-uid-' + Date.now(),
-          description: 'this is a system test'
+          description: 'this is a system test',
+          // TODO: Determine if statusMessage should be made optional.
+          statusMessage: null
         });
     controller.register(debuggee, function(err, body) {
-      assert.ifError(err, 'should be able to register successfully');
+      // TODO: Only 1 parameter is expected.  Fix this.
+      (assert as any).ifError(err, 'should be able to register successfully');
 
       // First list should set the wait token
       controller.listBreakpoints(debuggee, function(err, response, body) {
-        assert.ifError(err, 'should successfully list breakpoints');
+        // TODO: Only 1 parameter is expected.  Fix this.
+        (assert as any).ifError(err, 'should successfully list breakpoints');
         assert.ok(body);
         assert.ok(body.nextWaitToken);
         // Second list should block until the wait timeout
         controller.listBreakpoints(debuggee, function(err, response, body) {
-          assert.ifError(err, 'should successfully list breakpoints');
+          // TODO: Only 1 parameter is expected.  Fix this.
+          (assert as any).ifError(err, 'should successfully list breakpoints');
           assert.ok(body);
           assert.ok(body.nextWaitToken);
           // waitExpired will only be set if successOnTimeout was given correctly

@@ -17,9 +17,9 @@
 'use strict';
 
 import * as assert from 'assert';
-var path = require('path');
+import * as path from 'path';
 
-var SourceMapper = require('../src/agent/sourcemapper.js');
+import * as SourceMapper from '../src/agent/sourcemapper';
 
 var BASE_PATH = path.join(__dirname, 'fixtures', 'sourcemapper');
 

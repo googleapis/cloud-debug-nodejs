@@ -15,13 +15,15 @@
  */
 'use strict';
 
-var path = require('path');
+import {DebugAgentConfig} from '../src/agent/config';
+
+import * as path from 'path';
 import * as assert from 'assert';
-var nock = require('nock');
-var nocks = require('./nocks.js');
-var extend = require('extend');
-var config = require('../src/agent/config.js').default;
-var Debuglet = require('../src/agent/debuglet.js').Debuglet;
+import * as nock from 'nock';
+import * as nocks from './nocks';
+import * as extend from 'extend';
+import * as config from '../src/agent/config';
+import {Debuglet} from '../src/agent/debuglet';
 
 var envProject = process.env.GCLOUD_PROJECT;
 
@@ -62,7 +64,8 @@ describe('test-options-credentials', function() {
       return true;
     });
     nocks.projectId('project-via-metadata');
-    debuglet = new Debuglet(debug, config);
+    // TODO: Determine how to remove this cast.
+    debuglet = new Debuglet(debug, config as any as DebugAgentConfig);
     debuglet.start();
   });
 
@@ -85,7 +88,8 @@ describe('test-options-credentials', function() {
       return true;
     });
     nocks.projectId('project-via-metadata');
-    debuglet = new Debuglet(debug, config);
+    // TODO: Determine how to remove this cast.
+    debuglet = new Debuglet(debug, config as any as DebugAgentConfig);
     debuglet.start();
   });
 
@@ -121,7 +125,8 @@ describe('test-options-credentials', function() {
       assert(options.credentials.hasOwnProperty(field));
       assert.notEqual(options.credentials[field], fileCredentials[field]);
     });
-    debuglet = new Debuglet(debug, config);
+    // TODO: Determine how to remove this cast.
+    debuglet = new Debuglet(debug, config as any as DebugAgentConfig);
     debuglet.start();
   });
 });

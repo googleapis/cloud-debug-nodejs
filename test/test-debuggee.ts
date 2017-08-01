@@ -16,31 +16,38 @@
 'use strict';
 
 import * as assert from 'assert';
-var Debuggee = require('../src/debuggee.js').Debuggee;
+import {Debuggee} from '../src/debuggee';
 
 describe('Debuggee', function() {
 
   it('should create a Debuggee instance on valid input', function() {
     var debuggee = new Debuggee(
-        {project: 'project', uniquifier: 'uid', description: 'unit test'});
+        {project: 'project', uniquifier: 'uid', description: 'unit test',
+         // TODO: Determine if statusMessage should be optional.
+         statusMessage: null});
     assert.ok(debuggee instanceof Debuggee);
   });
 
   it('should create a Debuggee on a call without new', function() {
     var debuggee = new Debuggee(
-        {project: 'project', uniquifier: 'uid', description: 'unit test'});
+        {project: 'project', uniquifier: 'uid', description: 'unit test',
+         // TODO: Determine if statusMessage should be optional.
+         statusMessage: null});
     assert.ok(debuggee instanceof Debuggee);
   });
 
   it('should throw on invalid input', function() {
-    assert.throws(function() { new Debuggee({}); });
-    assert.throws(function() { new Debuggee({project: 5}); });
-    assert.throws(function() { new Debuggee({project: undefined}); });
-    assert.throws(function() { new Debuggee({project: 'test'}); });
+    // TODO: Determine if statusMessage should be optional in all of these.
+    assert.throws(function() { new Debuggee({statusMessage: null}); });
+    // TODO: Determine if the `project` property should be required to be a
+    //       string or if it should be `number|string`.
+    assert.throws(function() { new Debuggee({project: 5 as any as string, statusMessage: null}); });
+    assert.throws(function() { new Debuggee({project: undefined, statusMessage: null}); });
+    assert.throws(function() { new Debuggee({project: 'test', statusMessage: null}); });
     assert.throws(function() {
-      new Debuggee({project: 'test', uniquifier: null});
+      new Debuggee({project: 'test', uniquifier: null, statusMessage: null});
       assert.throws(function() {
-        new Debuggee({project: 'test', uniquifier: 'uid'});
+        new Debuggee({project: 'test', uniquifier: 'uid', statusMessage: null});
       });
     });
   });

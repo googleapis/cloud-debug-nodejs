@@ -16,17 +16,19 @@
 
 process.env.GCLOUD_DIAGNOSTICS_CONFIG = 'test/fixtures/test-config.js';
 
+import * as commonTypes from '../src/types/common-types';
+import {V8DebugApi} from '../src/agent/v8debugapi';
+
 import * as assert from 'assert';
-var extend = require('extend');
-var common = require('@google-cloud/common');
-var v8debugapi = require('../src/agent/v8debugapi.js');
-var SourceMapper = require('../src/agent/sourcemapper.js');
-var scanner = require('../src/agent/scanner.js');
-var defaultConfig = require('../src/agent/config.js').default;
-var path = require('path');
+import * as extend from 'extend';
+const common: commonTypes.Common = require('@google-cloud/common');
+import * as v8debugapi from '../src/agent/v8debugapi';
+import * as SourceMapper from '../src/agent/sourcemapper';
+import * as scanner from '../src/agent/scanner';
+import defaultConfig from '../src/agent/config';
+import * as path from 'path';
 var foo = require('./test-max-data-size-code.js');
-// TODO: Determine why the compiler says this must be of type 'string'.
-var api: string;
+var api: V8DebugApi;
 
 var breakpointInFoo = {
   id: 'fake-id-123',
@@ -40,7 +42,9 @@ describe('maxDataSize', function() {
 
   before(function(done) {
     if (!api) {
-      var logger = common.logger({ logLevel: config.logLevel });
+      // TODO: It appears `logLevel` is a typo and should be `level`.  However,
+      //       with this change, the tests fail.  Resolve this.
+      var logger = new common.logger({ levelLevel: config.logLevel } as any as commonTypes.LoggerOptions);
       scanner.scan(true, config.workingDirectory, /.js$/)
         .then(function (fileStats) {
           var jsStats = fileStats.selectStats(/.js$/);

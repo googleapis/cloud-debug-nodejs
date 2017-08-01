@@ -20,10 +20,16 @@
  * @module debug/debugger
  */
 
-var pjson = require('../package.json');
-var common = require('@google-cloud/common');
-var qs = require('querystring');
-var util = require('util');
+import * as commonTypes from '../src/types/common-types';
+
+var pjson = require('../../package.json');
+const common: commonTypes.Common = require('@google-cloud/common');
+// TODO: Verify these types are correct.
+const qs: { parse: (qs: any, sep?: string, eq?: string,
+  options?: { maxKeys?: number }) => any,
+  stringify: (obj: object|string|boolean|number, sep?: string,
+    eq?: string, name?: string) => string} = require('querystring');
+import * as util from 'util';
 
 /** @const {string} Cloud Debug API endpoint */
 var API = 'https://clouddebugger.googleapis.com/v2/debugger';

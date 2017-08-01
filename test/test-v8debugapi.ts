@@ -22,16 +22,18 @@ var breakpointInFoo = {
 
 var MAX_INT = 2147483647; // Max signed int32.
 
+import * as commonTypes from '../src/types/common-types';
+
 import * as assert from 'assert';
-var extend = require('extend');
-var v8debugapi = require('../src/agent/v8debugapi.js');
-var common = require('@google-cloud/common');
-var defaultConfig = require('../src/agent/config.js').default;
-var StatusMessage = require('../src/status-message.js').StatusMessage;
-var scanner = require('../src/agent/scanner.js');
-var SourceMapper = require('../src/agent/sourcemapper.js');
-var path = require('path');
-var semver = require('semver');
+import * as extend from 'extend';
+import * as v8debugapi from '../src/agent/v8debugapi';
+const common: commonTypes.Common = require('@google-cloud/common');
+import defaultConfig from '../src/agent/config';
+import {StatusMessage} from '../src/status-message';
+import * as scanner from '../src/agent/scanner';
+import * as SourceMapper from '../src/agent/sourcemapper';
+import * as path from 'path';
+import * as semver from 'semver';
 var code = require('./test-v8debugapi-code.js');
 
 function stateIsClean(api) {
@@ -108,7 +110,9 @@ describe('v8debugapi', function() {
     workingDirectory: __dirname,
     forceNewAgent_: true
   });
-  var logger = common.logger({ logLevel: config.logLevel });
+  // TODO: It appears `logLevel` is a typo and should be `level`.  However,
+  //       with this change, the tests fail.  Resolve this.
+  var logger = new common.logger({ levelLevel: config.logLevel } as any as commonTypes.LoggerOptions);
   var api = null;
 
   beforeEach(function(done) {

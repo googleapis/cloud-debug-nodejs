@@ -108,16 +108,21 @@ const formatBreakpoints = function(
 };
 
 export class Debuglet extends EventEmitter {
-  private config_: DebugAgentConfig;
+  // TODO: Determine how to update the tests so that this can be private.
+  config_: DebugAgentConfig;
   private debug_: Debug;
   private v8debug_: V8DebugApi|null;
   private running_: boolean;
   private project_: string|null;
-  private fetcherActive_: boolean;
-  private logger_: Logger;
+  // TODO: Determine how to update the tests so that this can be private.
+  fetcherActive_: boolean;
+  // TODO: Determine how to update the tests so that this can be private.
+  logger_: Logger;
   private debugletApi_: Controller;
-  private debuggee_: Debuggee|null;
-  private activeBreakpointMap_: {[key: string]: Breakpoint};
+  // TODO: Determine how to update the tests so that this can be private.
+  debuggee_: Debuggee|null;
+  // TODO: Determine how to update the tests so that this can be private.
+  activeBreakpointMap_: {[key: string]: Breakpoint};
   private completedBreakpointMap_: {[key: string]: boolean};
 
   /**

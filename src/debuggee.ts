@@ -36,15 +36,18 @@ export interface DebuggeeProperties {
 }
 
 export class Debuggee {
-  private project: string;
+  // TODO: Determine how to update the tests so that this can be private.
+  project: string;
   private uniquifier: string;
   private description: string;
   private agentVersion?: string;
-  private labels?: {
+  // TODO: Determine how to update the tests so that this can be private.
+  labels?: {
     [key: string]: string,
   };
   private sourceContexts?: Array<{[key: string]: any}>;
-  private statusMessage?: StatusMessage;
+  // TODO: Determine how to update the tests so that this can be private.
+  statusMessage?: StatusMessage;
   id: string;
   // TODO: This doesn't seem to ever be set but is referenced in the
   //       debuglet.ts file.

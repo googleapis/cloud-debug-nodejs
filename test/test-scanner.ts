@@ -15,8 +15,8 @@
  */
  'use strict';
 
-var fs = require('fs');
-var path = require('path');
+import * as fs from 'fs';
+import * as path from 'path';
 import * as assert from 'assert';
 
 var fixtureDir = path.join(__dirname, './fixtures');
@@ -24,7 +24,7 @@ var fixture = function(file) {
   return path.join(fixtureDir, file);
 };
 
-var scanner = require('../src/agent/scanner.js');
+import * as scanner from '../src/agent/scanner';
 
 describe('scanner', function() {
 
@@ -60,7 +60,10 @@ describe('scanner', function() {
 
     it('should be able to filter filenames', function(done) {
       scanner.scan(true, fixture('coffee'), /.*$/).then(function(fileStats) {
-        var files = fileStats.selectFiles(/.js$/);
+        // TODO: `selectFiles` expects two parameters.  Determine if the
+        //       the second parameter should be optional or (if not) the
+        //       correct value is used here.
+        var files = fileStats.selectFiles(/.js$/, '.');
         assert.strictEqual(files.length, 1);
         assert.ok(files[0], path.join(fixtureDir, 'coffee', 'transpile.js'));
         done();
