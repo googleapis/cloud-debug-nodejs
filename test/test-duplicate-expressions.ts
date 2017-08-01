@@ -50,7 +50,7 @@ describe(__filename, function() {
   // TODO: It appears `logLevel` is a typo and should be `level`.  However,
   //       with this change, the tests fail.  Resolve this.
   const logger = new common.logger({ logLevel: config.logLevel } as any as commonTypes.LoggerOptions);
-  let api: V8DebugApi|null = null;
+  let api: V8DebugApi;
 
   beforeEach(function(done) {
     if (!api) {
@@ -61,7 +61,9 @@ describe(__filename, function() {
           SourceMapper.create(mapFiles, function (err, mapper) {
             assert(!err);
 
-            api = v8debugapi.create(logger, config, jsStats, mapper);
+            // TODO: Handle the case when mapper is undefined
+            // TODO: Handle the case when v8debugapi.create returns null
+            api = v8debugapi.create(logger, config, jsStats, mapper as SourceMapper.SourceMapper) as V8DebugApi;
             assert.ok(api, 'should be able to create the api');
             done();
           });
@@ -79,12 +81,13 @@ describe(__filename, function() {
       api.wait(breakpointInFoo, function(err) {
         assert.ifError(err);
         // TODO: Determine how to remove this cast to any.
-        const frames = (breakpointInFoo as any).stackFrames[0];
+        const frames = breakpointInFoo.stackFrames[0];
         const exprs = frames.arguments.concat(frames.locals);
-        const varTableIndicesSeen = [];
+        const varTableIndicesSeen: number[] = [];
         exprs.forEach(function(expr) {
-          assert.equal(varTableIndicesSeen.indexOf(expr.varTableIndex), -1);
-          varTableIndicesSeen.push(expr.varTableIndex);
+          // TODO: Handle the case when expr.varTableIndex is undefined
+          assert.equal(varTableIndicesSeen.indexOf(expr.varTableIndex as number), -1);
+          varTableIndicesSeen.push(expr.varTableIndex as number);
         });
         api.clear(breakpointInFoo);
         done();

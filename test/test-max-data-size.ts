@@ -27,7 +27,6 @@ import * as v8debugapi from '../src/agent/v8debugapi';
 import * as SourceMapper from '../src/agent/sourcemapper';
 import * as scanner from '../src/agent/scanner';
 import defaultConfig from '../src/agent/config';
-import * as path from 'path';
 const foo = require('./test-max-data-size-code.js');
 let api: V8DebugApi;
 
@@ -54,7 +53,9 @@ describe('maxDataSize', function() {
           SourceMapper.create(mapFiles, function (err, mapper) {
             assert(!err);
 
-            api = v8debugapi.create(logger, config, jsStats, mapper);
+            // TODO: Handle the case when mapper is undefined
+            // TODO: Handle the case when v8debugapi.create returns null
+            api = v8debugapi.create(logger, config, jsStats, mapper as SourceMapper.SourceMapper) as V8DebugApi;
             done();
           });
         });
@@ -66,16 +67,19 @@ describe('maxDataSize', function() {
   it('should limit data reported', function(done) {
     config.capture.maxDataSize = 5;
     // clone a clean breakpointInFoo
-    const bp  = {id: breakpointInFoo.id, location: breakpointInFoo.location};
+    // TODO: Have this actually implement Breakpoint.
+    const bp: apiTypes.Breakpoint = {id: breakpointInFoo.id, location: breakpointInFoo.location} as apiTypes.Breakpoint;
     // TODO: Determine how to remove this cast to any.
-    (api as any).set(bp, function(err) {
+    (api as any).set(bp, function(err: Error) {
       assert.ifError(err);
       // TODO: Determine how to remove this cast to any.
-      (api as any).wait(bp, function(err) {
+      (api as any).wait(bp, function(err: Error) {
         assert.ifError(err);
         // TODO: Determine how to remove this cast to any.
-        assert((bp as any).variableTable.some(function(v) {
-          return v.status.description.format === 'Max data size reached';
+        assert(bp.variableTable.some(function(v) {
+          // TODO: Handle the case when v is undefined
+          // TODO: Handle the case when v.status is undefined
+          return ((v as any).status as any).description.format === 'Max data size reached';
         }));
         // TODO: Determine how to remove this cast to any.
         (api as any).clear(bp);
@@ -88,20 +92,23 @@ describe('maxDataSize', function() {
   it('should be unlimited if 0', function(done) {
     config.capture.maxDataSize = 0;
     // clone a clean breakpointInFoo
-    const bp  = {id: breakpointInFoo.id, location: breakpointInFoo.location};
+    // TODO: Have this actually implement breakpoint
+    const bp: apiTypes.Breakpoint = {id: breakpointInFoo.id, location: breakpointInFoo.location} as apiTypes.Breakpoint;
     // TODO: Determine how to remove this cast to any.
-    (api as any).set(bp, function(err) {
+    (api as any).set(bp, function(err: Error) {
       assert.ifError(err);
       // TODO: Determine how to remove this cast to any.
-      (api as any).wait(bp, function(err) {
+      (api as any).wait(bp, function(err: Error) {
         assert.ifError(err);
         // TODO: Determine how to remove this cast to any.
-        assert((bp as any).variableTable.reduce(function(acc, elem) {
+        // TODO: The function supplied to reduce is of the wrong type.
+        //       Fix this.
+        assert(bp.variableTable.reduce(function(acc: Function, elem: apiTypes.Variable) {
           return acc &&
                  (!elem.status ||
                    elem.status.description.format !== 'Max data size reached');
         // TODO: Fix this incorrect method signature.
-        }), true as any as string);
+        } as any), true as any as string);
         // TODO: Determine how to remove this cast to any.
         (api as any).clear(bp);
         done();

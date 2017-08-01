@@ -30,7 +30,6 @@ const qs: { parse: (qs: any, sep?: string, eq?: string,
   options?: { maxKeys?: number }) => any,
   stringify: (obj: object|string|boolean|number, sep?: string,
     eq?: string, name?: string) => string} = require('querystring');
-import * as util from 'util';
 
 /** @const {string} Cloud Debug API endpoint */
 const API = 'https://clouddebugger.googleapis.com/v2/debugger';

@@ -29,13 +29,15 @@ describe('scanner', function() {
 
   describe('scan', function() {
     it('should complain when called without a path', function(done) {
-      scanner.scan(true, null, /.js$/).catch(() => {
+      // TODO: The second argument must be a string.  Fix that.
+      scanner.scan(true, null as any as string, /.js$/).catch(() => {
         done();
       });
     });
 
     it('should error when called on a bad path', function(done) {
-      scanner.scan(true, './this directory does not exist', /.js$/).catch((err) => {
+      // TODO: Determine if the err parameter should be used.
+      scanner.scan(true, './this directory does not exist', /.js$/).catch((_err) => {
         done();
       }); 
     });
@@ -76,8 +78,9 @@ describe('scanner', function() {
         assert.strictEqual(keys.length, 1);
 
         const first = stats[keys[0]];
-        assert.ok(first.hash);
-        assert.ok(first.lines);
+        // TODO: Handle the case when first is undefined
+        assert.ok((first as any).hash);
+        assert.ok((first as any).lines);
         done();
       });
     });

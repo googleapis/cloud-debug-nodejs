@@ -44,7 +44,7 @@ describe('Debuggee', function() {
     assert.throws(function() { new Debuggee({project: undefined, statusMessage: null}); });
     assert.throws(function() { new Debuggee({project: 'test', statusMessage: null}); });
     assert.throws(function() {
-      new Debuggee({project: 'test', uniquifier: null, statusMessage: null});
+      new Debuggee({project: 'test', uniquifier: undefined, statusMessage: null});
       assert.throws(function() {
         new Debuggee({project: 'test', uniquifier: 'uid', statusMessage: null});
       });

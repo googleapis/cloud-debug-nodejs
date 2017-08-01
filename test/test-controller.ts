@@ -15,6 +15,7 @@
  */
 
 import * as apiTypes from '../src/types/api-types';
+import * as http from 'http';
 
 import * as assert from 'assert';
 import * as nock from 'nock';
@@ -54,7 +55,8 @@ describe('Controller API', function() {
         statusMessage: null
       });
       const controller = new Controller(fakeDebug);
-      controller.register(debuggee, function(err, result) {
+      // TODO: Determine if this type signature is correct.
+      controller.register(debuggee, function(err: Error|null, result: { debuggee: Debuggee }) {
         assert(!err, 'not expecting an error');
         assert.equal(result.debuggee.id, 'fake-debuggee');
         scope.done();
@@ -122,16 +124,18 @@ describe('Controller API', function() {
       const debuggee = { id: 'fake-debuggee' };
       const controller = new Controller(fakeDebug);
       // TODO: Fix debuggee to actually implement Debuggee
-      controller.listBreakpoints(debuggee as Debuggee, function(err, response, result) {
+      // TODO: Determine if the response parameter should be used.
+      controller.listBreakpoints(debuggee as Debuggee, function(err: Error|null, _response?: http.ServerResponse, result?: apiTypes.ListBreakpointsResponse) {
         assert(!err, 'not expecting an error');
-        assert(!result.breakpoints, 'should not have a breakpoints property');
+        // TODO: Handle the case where result is undefined
+        assert(!(result as any).breakpoints, 'should not have a breakpoints property');
         scope.done();
         done();
       });
     });
 
     describe('invalid responses', function() {
-      const tests = [ '', 'JSON, this is not', []];
+      const tests: string| Array<any> = [ '', 'JSON, this is not', []];
       tests.forEach(function(invalidResponse, index) {
         it('should pass test ' + index, function(done) {
           const scope = nock(url)
@@ -140,9 +144,11 @@ describe('Controller API', function() {
           const debuggee = { id: 'fake-debuggee' };
           const controller = new Controller(fakeDebug);
           // TODO: Fix debuggee to actually implement Debuggee
-          controller.listBreakpoints(debuggee as Debuggee, function(err, response, result) {
+          // TODO: Determine if the response parameter should be used.
+          controller.listBreakpoints(debuggee as Debuggee, function(err: Error|null, _response?: http.ServerResponse, result?: apiTypes.ListBreakpointsResponse) {
             assert(!err, 'not expecting an error');
-            assert(!result.breakpoints, 'should not have breakpoints property');
+            // TODO: Handle the case where result is undefined
+            assert(!(result as any).breakpoints, 'should not have breakpoints property');
             scope.done();
             done();
           });
@@ -157,7 +163,8 @@ describe('Controller API', function() {
       // TODO: Fix debuggee to actually implement Debuggee
       const debuggee: Debuggee = { id: 'fake-debuggee' } as Debuggee;
       const controller = new Controller(fakeDebug);
-      controller.listBreakpoints(debuggee, function(err, response, result) {
+      // TODO: Determine if the response parameter should be used.
+      controller.listBreakpoints(debuggee, function(err, _response, result) {
         assert(err instanceof Error, 'expecting an error');
         assert(!result, 'should not have a result');
         scope.done();
@@ -174,7 +181,8 @@ describe('Controller API', function() {
       // TODO: Fix debuggee to actually implement Debuggee
       const debuggee: Debuggee = { id: 'fake-debuggee' } as Debuggee;
       const controller = new Controller(fakeDebug);
-      controller.listBreakpoints(debuggee, function(err, response, result) {
+      // TODO: Determine if the result parameter should be used.
+      controller.listBreakpoints(debuggee, function(err, response, _result) {
         // TODO: Fix this incorrect method signature.
         (assert as any).ifError(err, 'not expecting an error');
         // TODO: Fix this error that states `body` is not a property
@@ -202,7 +210,8 @@ describe('Controller API', function() {
         // TODO: Fix debuggee to actually implement Debuggee
         const debuggee: Debuggee = { id: 'fake-debuggee' } as Debuggee;
         const controller = new Controller(fakeDebug);
-        controller.listBreakpoints(debuggee, function(err, response, result) {
+        // TODO: Determine if the response parameter should be used.
+        controller.listBreakpoints(debuggee, function(err: Error|null, _response: http.ServerResponse, result: apiTypes.ListBreakpointsResponse) {
           assert(!err, 'not expecting an error');
           assert(result.breakpoints, 'should have a breakpoints property');
           const bps = result.breakpoints;

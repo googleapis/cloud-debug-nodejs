@@ -118,18 +118,21 @@ describe('v8debugapi', function() {
   // TODO: It appears `logLevel` is a typo and should be `level`.  However,
   //       with this change, the tests fail.  Resolve this.
   const logger = new common.logger({ levelLevel: config.logLevel } as any as commonTypes.LoggerOptions);
-  let api: V8DebugApi|null = null;
+  let api: V8DebugApi;
 
   beforeEach(function(done) {
     if (!api) {
-      scanner.scan(true, config.workingDirectory, /.js$|.map$/)
+      // TODO: Handle the case when config.workingDirectory is null
+      scanner.scan(true, config.workingDirectory as string, /.js$|.map$/)
         .then(function (fileStats) {
           const jsStats = fileStats.selectStats(/.js$/);
           const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
           SourceMapper.create(mapFiles, function (err, mapper) {
             assert(!err);
 
-            api = v8debugapi.create(logger, config, jsStats, mapper);
+            // TODO: Handle the case when mapper is undefined.
+            // TODO: Handle the case when v8debugapi.create returns null
+            api = v8debugapi.create(logger, config, jsStats, mapper as SourceMapper.SourceMapper) as V8DebugApi;
             assert.ok(api, 'should be able to create the api');
 
             // monkey-patch wait to add validation of the breakpoints.
@@ -181,10 +184,12 @@ describe('v8debugapi', function() {
         'key-bad.json')}} as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {
         assert.ok(err, 'should return an error');
-        assert.ok((bp as any).status);
-        assert.ok((bp as any).status instanceof StatusMessage);
-        assert.equal((bp as any).status.refersTo, 'BREAKPOINT_SOURCE_LOCATION');
-        assert.ok((bp as any).status.isError);
+        assert.ok(bp.status);
+        assert.ok(bp.status instanceof StatusMessage);
+        // TODO: Handle the case where bp.status is undefined
+        assert.equal((bp.status as any).refersTo, 'BREAKPOINT_SOURCE_LOCATION');
+        // TODO: Handle the case where bp.status is undefined
+        assert.ok((bp.status as any).isError);
         done();
       });
     });
@@ -231,9 +236,10 @@ describe('v8debugapi', function() {
       it('should reject breakpoint ' + bp.id, function(done) {
         api.set(bp, function(err) {
           assert.ok(err, 'should return an error');
-          assert.ok((bp as any).status);
-          assert.ok((bp as any).status instanceof StatusMessage);
-          assert.ok((bp as any).status.isError);
+          assert.ok(bp.status);
+          assert.ok(bp.status instanceof StatusMessage);
+          // TODO: Handle the case where bp.status is undefined
+          assert.ok((bp.status as any).isError);
           done();
         });
 
@@ -247,10 +253,11 @@ describe('v8debugapi', function() {
       const bp: apiTypes.Breakpoint = {id: 'ambiguous', location: {line: 1, path: 'hello.js'}} as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {
         assert.ok(err);
-        assert.ok((bp as any).status);
-        assert.ok((bp as any).status instanceof StatusMessage);
-        assert.ok((bp as any).status.isError);
-        assert((bp as any).status.description.format ===
+        assert.ok(bp.status);
+        assert.ok(bp.status instanceof StatusMessage);
+        // TODO: Handle the case where bp.status is undefined
+        assert.ok((bp.status as any).isError);
+        assert((bp.status as any).description.format ===
           api.messages.SOURCE_FILE_AMBIGUOUS);
         done();
       });
@@ -265,10 +272,11 @@ describe('v8debugapi', function() {
       } as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {
         assert.ok(err);
-        assert.ok((bp as any).status);
-        assert.ok((bp as any).status instanceof StatusMessage);
-        assert.ok((bp as any).status.isError);
-        assert((bp as any).status.description.format.match(
+        assert.ok(bp.status);
+        assert.ok(bp.status instanceof StatusMessage);
+        // TODO: Handle the case where bp.status is undefined
+        assert.ok((bp.status as any).isError);
+        assert((bp.status as any).description.format.match(
           `${api.messages.INVALID_LINE_NUMBER}.*foo.js:500`));
         done();
       });
@@ -276,7 +284,7 @@ describe('v8debugapi', function() {
 
   });
 
-  function conditionTests(subject, test, expressions) {
+  function conditionTests(subject: string, test: (err: Error|null) => void, expressions: Array<string|null>) {
     describe(subject, function() {
       expressions.forEach(function(expr) {
         it('should validate breakpoint with condition "'+expr+'"', function(done) {
@@ -395,7 +403,8 @@ describe('v8debugapi', function() {
     ];
 
     breakpoints.forEach(function(bp: apiTypes.Breakpoint) {
-      it('should handle breakpoint as ' + bp.location.path, function(done) {
+      // TODO: Handle the case where bp.location is undefined
+      it('should handle breakpoint as ' + (bp.location as any).path, function(done) {
         api.set(bp, function(err) {
           assert.ifError(err);
           api.wait(bp, function(err) {
@@ -528,10 +537,10 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          assert.ok((bp as any).stackFrames);
-          assert.ok((bp as any).variableTable);
+          assert.ok(bp.stackFrames);
+          assert.ok(bp.variableTable);
 
-          const topFrame = (bp as any).stackFrames[0];
+          const topFrame = bp.stackFrames[0];
           assert.ok(topFrame);
           assert.equal(topFrame['function'], 'foo');
           assert.equal(topFrame.locals[0].name, 'n');
@@ -555,21 +564,29 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          assert.ok((bp as any).stackFrames);
-          assert.ok((bp as any).variableTable);
-          const topFrame = (bp as any).stackFrames[0];
+          assert.ok(bp.stackFrames);
+          assert.ok(bp.variableTable);
+          const topFrame = bp.stackFrames[0];
           assert.ok(topFrame);
           assert.equal(topFrame['function'], 'foo');
           assert.equal(topFrame.arguments.length, 1);
-          const argsVal = (bp as any).variableTable[topFrame.arguments[0].varTableIndex];
-          assert(argsVal.status.isError);
-          assert(argsVal.status.description.format.match(
+          // TODO: Handle the case when topFrame.arguments[0].varTableIndex
+          //       is undefined.
+          const argsVal = bp.variableTable[topFrame.arguments[0].varTableIndex as number];
+          // TODO: Handle the case when argsVal is null
+          // TODO: Handle the case when argsVal.status is undefined
+          assert(((argsVal as any).status as any).isError);
+          assert(((argsVal as any).status as any).description.format.match(
             'Locals and arguments are only displayed.*config.capture.maxExpandFrames=0'
             ));
           assert.equal(topFrame.locals.length, 1);
-          const localsVal = (bp as any).variableTable[topFrame.locals[0].varTableIndex];
-          assert(localsVal.status.isError);
-          assert(localsVal.status.description.format.match(
+          // TODO: Handle the case when topFrame.locals[0].varTableIndex is
+          //       undefined.
+          const localsVal = bp.variableTable[topFrame.locals[0].varTableIndex as number];
+          // TODO: Handle the case when localsVal is undefined
+          // TODO: Handle the case when localsVal.status is undefined
+          assert(((localsVal as any).status as any).isError);
+          assert(((localsVal as any).status as any).description.format.match(
             'Locals and arguments are only displayed.*config.capture.maxExpandFrames=0'
             ));
           api.clear(bp);
@@ -590,9 +607,9 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          assert.ok((bp as any).stackFrames);
-          assert.equal((bp as any).stackFrames.length, config.capture.maxFrames);
-          const topFrame = (bp as any).stackFrames[0];
+          assert.ok(bp.stackFrames);
+          assert.equal(bp.stackFrames.length, config.capture.maxFrames);
+          const topFrame = bp.stackFrames[0];
           assert.ok(topFrame);
           assert.equal(topFrame['function'], 'foo');
           assert.equal(topFrame.locals[0].name, 'n');
@@ -621,28 +638,37 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          assert.ok((bp as any).stackFrames);
-          assert.ok((bp as any).variableTable);
-          assert.ok((bp as any).evaluatedExpressions);
+          assert.ok(bp.stackFrames);
+          assert.ok(bp.variableTable);
+          assert.ok(bp.evaluatedExpressions);
 
-          const topFrame = (bp as any).stackFrames[0];
+          const topFrame = bp.stackFrames[0];
           assert.equal(topFrame['function'], 'foo');
           assert.equal(topFrame.locals[0].name, 'n');
           assert.equal(topFrame.locals[0].value, '3');
 
-          const watch = (bp as any).evaluatedExpressions[0];
-          assert.equal(watch.name, 'process');
-          assert.ok(watch.varTableIndex);
+          const watch = bp.evaluatedExpressions[0];
+          // TODO: Handle the case when watch is null
+          assert.equal((watch as any).name, 'process');
+          assert.ok((watch as any).varTableIndex);
 
           // Make sure the process object looks sensible.
-          const processVal = (bp as any).variableTable[watch.varTableIndex];
+          // TODO: Handle the case when watch.varTableIndex is undefined
+          const processVal = bp.variableTable[(watch as any).varTableIndex as number];
           assert.ok(processVal);
-          assert.ok(processVal.members.some(function(m) {
-            return m.name === 'nextTick' && m.value.match('function.*');
-          }));
-          assert.ok(processVal.members.some(function(m) {
+          // TODO: The function supplied to the `some` function is of the
+          //       wrong type.  Fix this.
+          // TODO: Handle the case when processVal is undefined
+          // TODO: Handle the case when processVal.members is undefined
+          // TODO: Handle the case when m.value is undefined
+          assert.ok(((processVal as any).members as any).some(function(m: apiTypes.Variable) {
+            return m.name === 'nextTick' && (m.value as any).match('function.*');
+          } as any));
+          // TODO: The function supplied to the `some` function is of the
+          //       wrong type.  Fix this.
+          assert.ok(((processVal as any).members as any).some(function(m: apiTypes.Variable) {
             return m.name === 'versions' && m.varTableIndex;
-          }));
+          } as any));
 
           api.clear(bp);
           config.capture.maxDataSize = oldMaxData;
@@ -669,22 +695,32 @@ describe('v8debugapi', function() {
         api.wait(bp, function(err) {
           assert.ifError(err);
 
-          const procEnv = (bp as any).evaluatedExpressions[0];
-          assert.equal(procEnv.name, 'process.env');
-          const envVal = (bp as any).variableTable[procEnv.varTableIndex];
-          envVal.members.forEach(function(member) {
+          const procEnv = bp.evaluatedExpressions[0];
+          // TODO: Handle the case when procEnv is undefined
+          assert.equal((procEnv as any).name, 'process.env');
+          const envVal = bp.variableTable[(procEnv as any).varTableIndex];
+          // TODO: Determine the correct type for `member`
+          (envVal as any).members.forEach(function(member: any) {
             if (member.hasOwnProperty('varTableIndex')) {
-               assert((bp as any).variableTable[member.varTableIndex].status.isError);
+               // TODO: Fix the casts to `any` below by addressing the times
+               //       when the expression can be undefined.
+               assert(((bp.variableTable[member.varTableIndex] as any).status as any).isError);
             }
           });
-          const hasGetter = (bp as any).evaluatedExpressions[1];
-          const getterVal = (bp as any).variableTable[hasGetter.varTableIndex];
-          assert(getterVal.members.some(function(m) {
+          const hasGetter = bp.evaluatedExpressions[1];
+          // TODO: Handle the case when hasGetter is undefined
+          // TODO: Handle the case when hasGetter.varTableIndex is undefined
+          const getterVal = bp.variableTable[(hasGetter as any).varTableIndex as number];
+          // TODO: Handle the case when getterVal is undefined
+          // TODO: Handle the case when getterVal.members is undefined
+          // TODO: Determine the type of `m`
+          assert(((getterVal as any).members as any).some(function(m: any) {
             return m.value === '5';
           }));
-          assert(getterVal.members.some(function(m) {
-            const resolved = (bp as any).variableTable[m.varTableIndex];
-            return resolved && resolved.status.isError;
+          assert(((getterVal as any).members as any).some(function(m: any) {
+            const resolved = bp.variableTable[m.varTableIndex];
+            // TODO: Handle the case when resolved.status is undefined
+            return resolved && (resolved.status as any).isError;
           }));
 
           api.clear(bp);
@@ -709,11 +745,16 @@ describe('v8debugapi', function() {
         api.wait(bp, function(err) {
           assert.ifError(err);
 
-          const arrEnv = (bp as any).evaluatedExpressions[0];
-          assert.equal(arrEnv.name, 'A');
-          const envVal = (bp as any).variableTable[arrEnv.varTableIndex];
+          const arrEnv = bp.evaluatedExpressions[0];
+          // TODO: Handle the case when arrEnv is undefined
+          assert.equal((arrEnv as any).name, 'A');
+          // TODO: Handle the case when arrEnv.varTableIndex is undefined
+          const envVal = bp.variableTable[(arrEnv as any).varTableIndex as number];
           let found = false;
-          envVal.members.forEach(function(member) {
+          // TODO: Handle the case when envVal is undefined
+          // TODO: Handle the case when envVal.members is undefined
+          // TODO: Determine the type of `member`
+          ((envVal as any).members as any).forEach(function(member: any) {
             if (member.name === 'length') {
               assert(!member.varTableIndex);
               assert.equal(member.value, 3);
@@ -745,11 +786,15 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          const hasGetter = (bp as any).stackFrames[0].locals.filter(function(value) {
+          const hasGetter = bp.stackFrames[0].locals.filter(function(value) {
             return value.name === 'hasGetter';
           });
-          const getterVal = (bp as any).variableTable[hasGetter[0].varTableIndex];
-          const stringItems = getterVal.members.filter(function(m) {
+          // TODO: Handle the case when hasGetter[0].varTableIndex is undefined
+          const getterVal = bp.variableTable[hasGetter[0].varTableIndex as number];
+          // TODO: Handle the case when getterVal is undefined
+          // TODO: Handle the case when getterVal.members is undefined
+          // TODO: Determine the correct type for m
+          const stringItems = ((getterVal as any).members as any).filter(function(m: any) {
             return m.value === 'hel...';
           });
           assert(stringItems.length === 1);
@@ -780,13 +825,16 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          const aResults = (bp as any).stackFrames[0].locals.filter(function(value) {
+          const aResults = bp.stackFrames[0].locals.filter(function(value) {
             return value.name === 'A';
           });
-          const aVal = (bp as any).variableTable[aResults[0].varTableIndex];
+          // TODO: Handle the case when aResults[0].varTableIndex is undefined
+          const aVal = bp.variableTable[aResults[0].varTableIndex as number];
           // should have 1 element + truncation message.
-          assert.equal(aVal.members.length, 2);
-          assert(aVal.members[1].name.match(
+          // TODO: Handle the case when aVal is undefined
+          // TODO: Handle the case when aVal.members is undefined
+          assert.equal(((aVal as any).members as any).length, 2);
+          assert((aVal as any).members[1].name.match(
             'Only first.*config.capture.maxProperties=1'));
 
           api.clear(bp);
@@ -811,13 +859,15 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          const bResults = (bp as any).stackFrames[0].locals.filter(function(value) {
+          const bResults = bp.stackFrames[0].locals.filter(function(value) {
             return value.name === 'B';
           });
-          const bVal = (bp as any).variableTable[bResults[0].varTableIndex];
+          // TODO: Handle the case when bResults[0].varTableIndex is undefined
+          const bVal = bp.variableTable[bResults[0].varTableIndex as number];
           // should have 1 element + truncation message
-          assert.equal(bVal.members.length, 2);
-          assert(bVal.members[1].name.match(
+          // TODO: Handle the case when bVal is undefined
+          assert.equal((bVal as any).members.length, 2);
+          assert((bVal as any).members[1].name.match(
             'Only first.*config.capture.maxProperties=1'));
 
           api.clear(bp);
@@ -846,9 +896,13 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          const hasGetter = (bp as any).evaluatedExpressions[0];
-          const getterVal = (bp as any).variableTable[hasGetter.varTableIndex];
-          const stringItems = getterVal.members.filter(function(m) {
+          const hasGetter = bp.evaluatedExpressions[0];
+          // TODO: Handle the case when hasGetter.varTableIndex is undefined
+          // TODO: Handle the case when hasGetter is undefined
+          const getterVal = bp.variableTable[(hasGetter as any).varTableIndex as number];
+          // TODO: Handle the case when getterVal is undefined
+          // TODO: Determine the correct type for m
+          const stringItems = (getterVal as any).members.filter(function(m: any) {
             return m.value === 'hello world';
           });
           // The property would have value 'hel...' if truncation occured
@@ -882,11 +936,15 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            const foo = (bp as any).evaluatedExpressions[0];
-            const fooVal = (bp as any).variableTable[foo.varTableIndex];
+            const foo = bp.evaluatedExpressions[0];
+            // TODO: Handle the case when foo is undefined
+            // TODO: Handle the case when foo.varTableIndex is undefined
+            const fooVal = bp.variableTable[(foo as any).varTableIndex as number];
             // '1', '2', '3', and 'length'
-            assert.equal(fooVal.members.length, 4);
-            assert.strictEqual(foo.status, undefined);
+            // TODO: Handle the case when fooVal is undefined
+            // TODO: Handle the case when fooVal.members is undefined
+            assert.equal(((fooVal as any).members as any).length, 4);
+            assert.strictEqual((foo as any).status, undefined);
 
             api.clear(bp);
             config.capture.maxDataSize = oldMaxData;
@@ -915,10 +973,14 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            const foo = (bp as any).evaluatedExpressions[0];
-            const fooVal = (bp as any).variableTable[foo.varTableIndex];
-            assert.equal(fooVal.members.length, 3);
-            assert.strictEqual(foo.status, undefined);
+            const foo = bp.evaluatedExpressions[0];
+            // TODO: Handle the case when foo is undefined
+            // TODO: Handle the case when foo.varTableIndex is undefined
+            const fooVal = bp.variableTable[(foo as any).varTableIndex as number];
+            // TODO: Handle the case when fooVal is undefined
+            // TODO: Handle the case when fooVal.members is undefined
+            assert.equal(((fooVal as any).members as any).length, 3);
+            assert.strictEqual((foo as any).status, undefined);
 
             api.clear(bp);
             config.capture.maxDataSize = oldMaxData;
@@ -947,11 +1009,15 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            const foo = (bp as any).evaluatedExpressions[0];
-            const fooVal = (bp as any).variableTable[foo.varTableIndex];
-            assert(fooVal.status.description.format.match(
+            const foo = bp.evaluatedExpressions[0];
+            // TODO: Handle the case when foo is undefined
+            // TODO: Handle the case when foo.varTableIndex is undefined
+            const fooVal = bp.variableTable[(foo as any).varTableIndex as any];
+            // TODO: Handle the case when fooVal is undefined
+            // TODO: Handle the case when fooVal.status is undefined
+            assert(((fooVal as any).status as any).description.format.match(
               'Max data size reached'));
-            assert(fooVal.status.isError);
+            assert(((fooVal as any).status as any).isError);
 
             api.clear(bp);
             config.capture.maxDataSize = oldMaxData;
@@ -980,11 +1046,15 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            const foo = (bp as any).evaluatedExpressions[0];
-            const fooVal = (bp as any).variableTable[foo.varTableIndex];
-            assert(fooVal.status.description.format.match(
+            const foo = bp.evaluatedExpressions[0];
+            // TODO: Handle the case when foo is undefined
+            // TODO: Handle the case when foo.varTableIndex is undefined
+            const fooVal = bp.variableTable[(foo as any).varTableIndex as number];
+            // TODO: Handle the case when fooVal is undefined
+            // TODO: Handle the case when fooVal.status is undefined
+            assert(((fooVal as any).status as any).description.format.match(
               'Max data size reached'));
-            assert(fooVal.status.isError);
+            assert(((fooVal as any).status as any).isError);
 
             api.clear(bp);
             config.capture.maxDataSize = oldMaxData;
@@ -1014,7 +1084,7 @@ describe('v8debugapi', function() {
           api.wait(bp, function(err) {
             assert.ifError(err);
 
-            const bResults = (bp as any).stackFrames[0].locals.filter(function(value) {
+            const bResults = bp.stackFrames[0].locals.filter(function(value) {
               return value.name === 'B';
             });
             assert(bResults);
@@ -1022,9 +1092,10 @@ describe('v8debugapi', function() {
 
             const bArray = bResults[0];
             assert(bArray);
-            assert(bArray.status.description.format.match(
+            // TODO: Handle the case when bArray.status is undefined
+            assert((bArray.status as any).description.format.match(
               'Max data size reached'));
-            assert(bArray.status.isError);
+            assert((bArray.status as any).isError);
 
             api.clear(bp);
             config.capture.maxDataSize = oldMaxData;
@@ -1047,13 +1118,14 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          assert.ok((bp as any).stackFrames);
-          assert.ok((bp as any).variableTable);
-          assert.ok((bp as any).evaluatedExpressions);
+          assert.ok(bp.stackFrames);
+          assert.ok(bp.variableTable);
+          assert.ok(bp.evaluatedExpressions);
 
-          for (const i in (bp as any).evaluatedExpressions) {
-            const expr = (bp as any).evaluatedExpressions[i];
-            assert(expr.status && expr.status.isError);
+          for (const i in bp.evaluatedExpressions) {
+            const expr = bp.evaluatedExpressions[i];
+            // TODO: Handle the case when expr is undefined
+            assert((expr as any).status && (expr as any).status.isError);
           }
 
           api.clear(bp);
@@ -1076,9 +1148,9 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          assert.ok((bp as any).stackFrames);
+          assert.ok(bp.stackFrames);
 
-          const topFrame = (bp as any).stackFrames[0];
+          const topFrame = bp.stackFrames[0];
           assert.equal(topFrame.locals[0].name, 'n');
           assert.equal(topFrame.locals[0].value, '5');
           api.clear(bp);
@@ -1104,9 +1176,9 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            assert.ok((bp as any).stackFrames);
+            assert.ok(bp.stackFrames);
 
-            const topFrame = (bp as any).stackFrames[0];
+            const topFrame = bp.stackFrames[0];
             assert.equal(topFrame['function'], 'foo');
             assert.equal(topFrame.locals[0].name, 'n');
             assert.equal(topFrame.locals[0].value, '3');
@@ -1128,7 +1200,8 @@ describe('v8debugapi', function() {
         } as any as apiTypes.Breakpoint;
         api.set(bp, function(err) {
           assert(err);
-          assert.equal(err.message, 'Error compiling condition.');
+          // TODO: Handle the case when err is undefined
+          assert.equal((err as any).message, 'Error compiling condition.');
           done();
         });
     });
@@ -1148,9 +1221,9 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            assert.ok((bp as any).stackFrames);
+            assert.ok(bp.stackFrames);
 
-            const topFrame = (bp as any).stackFrames[0];
+            const topFrame = bp.stackFrames[0];
             assert.equal(topFrame.locals[0].name, 'j');
             assert.equal(topFrame.locals[0].value, '2');
             assert.equal(topFrame['function'], 'foo');
@@ -1176,13 +1249,14 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            assert.ok((bp as any).stackFrames);
-            assert.ok((bp as any).variableTable);
-            assert.ok((bp as any).evaluatedExpressions);
+            assert.ok(bp.stackFrames);
+            assert.ok(bp.variableTable);
+            assert.ok(bp.evaluatedExpressions);
 
-            for (const i in (bp as any).evaluatedExpressions) {
-              const expr = (bp as any).evaluatedExpressions[i];
-              assert(expr.value === String(Math.PI * 3));
+            for (const i in bp.evaluatedExpressions) {
+              const expr = bp.evaluatedExpressions[i];
+              // TODO: Handle the case when expr is undefined
+              assert((expr as any).value === String(Math.PI * 3));
             }
 
             api.clear(bp);
@@ -1208,21 +1282,22 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            assert.ok((bp as any).stackFrames);
-            assert.ok((bp as any).variableTable);
-            assert.ok((bp as any).evaluatedExpressions);
+            assert.ok(bp.stackFrames);
+            assert.ok(bp.variableTable);
+            assert.ok(bp.evaluatedExpressions);
 
-            for (const i in (bp as any).evaluatedExpressions) {
-              const expr = (bp as any).evaluatedExpressions[i];
-              assert(expr.status && expr.status.isError);
-              if (expr.name === ':)' ||
-                  expr.name === 'process=this' ||
-                  expr.name === 'return') {
-                assert.equal(expr.status.description.format,
+            for (const i in bp.evaluatedExpressions) {
+              const expr = bp.evaluatedExpressions[i];
+              // TODO: Handle the case when expr is undefined
+              assert((expr as any).status && (expr as any).status.isError);
+              if ((expr as any).name === ':)' ||
+                  (expr as any).name === 'process=this' ||
+                  (expr as any).name === 'return') {
+                assert.equal((expr as any).status.description.format,
                   'Error Compiling Expression');
               } else {
                 assert(
-                  expr.status.description.format.match('Unexpected token'));
+                  (expr as any).status.description.format.match('Unexpected token'));
               }
             }
 
@@ -1290,7 +1365,7 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          assert.ok((bp as any).stackFrames);
+          assert.ok(bp.stackFrames);
 
           api.clear(bp);
           done();
@@ -1306,7 +1381,7 @@ describe('v8debugapi', function() {
       assert.equal(listeners.length, 1);
       const originalListener = listeners[0];
       process.removeListener('uncaughtException', originalListener);
-      process.once('uncaughtException', function(err) {
+      process.once('uncaughtException', function(err: Error) {
         assert.ok(err);
         assert.equal(err.message, message);
         // Restore the mocha listener.
@@ -1319,7 +1394,8 @@ describe('v8debugapi', function() {
       const bp: apiTypes.Breakpoint = {id: breakpointInFoo.id, location: breakpointInFoo.location} as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {
         assert.ifError(err);
-        api.wait(bp, function(err) {
+        // TODO: Determine if the err parameter should be used.
+        api.wait(bp, function(_err) {
           api.clear(bp);
           throw new Error(message);
         });
@@ -1341,9 +1417,9 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, (err) => {
           assert.ifError(err);
-          assert.ok((bp as any).stackFrames);
+          assert.ok(bp.stackFrames);
 
-          const topFrame = (bp as any).stackFrames[0];
+          const topFrame = bp.stackFrames[0];
           assert.ok(topFrame.locals.some((local) => (local.name === '_a')));
           assert.ok(topFrame.locals.some((local) => (local.name === 'res')));
           api.clear(bp);
@@ -1363,7 +1439,9 @@ describe('v8debugapi.findScripts', function() {
     //       parameter below.  This was a Typescript compile error.  The
     //       value of `undefined` should be functionally equivalent.
     //       Make sure that is the case.
-    const config = extend(true, {}, undefined, {
+    // TODO: The third argument should be of type Object (not undefined).
+    //       Fix this.
+    const config = extend(true, {}, undefined as any, {
       workingDirectory: '/some/strange/directory',
       appPathRelativeToRepository: '/my/project/root'
     });

@@ -25,7 +25,6 @@ const common: commonTypes.Common = require('@google-cloud/common');
 import defaultConfig from '../src/agent/config';
 import * as SourceMapper from '../src/agent/sourcemapper';
 import * as scanner from '../src/agent/scanner';
-import * as path from 'path';
 
 process.env.GCLOUD_PROJECT = 0;
 
@@ -45,7 +44,7 @@ describe(__filename, function() {
   // TODO: It appears `logLevel` is a typo and should be `level`.  However,
   //       with this change, the tests fail.  Resolve this.
   const logger = new common.logger({ levelLevel: config.logLevel } as any as commonTypes.LoggerOptions);
-  let api: V8DebugApi|null = null;
+  let api: V8DebugApi;
   let foo: () => number;
   before(function () {
     foo = require('./fixtures/fat-arrow.js');
@@ -56,8 +55,11 @@ describe(__filename, function() {
         .then(function (fileStats) {
           const jsStats = fileStats.selectStats(/.js$/);
           const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
-          SourceMapper.create(mapFiles, function (err, mapper) {
-            api = v8debugapi.create(logger, config, jsStats, mapper);
+          // TODO: Determine if the err parameter should be used.
+          SourceMapper.create(mapFiles, function (_err, mapper) {
+            // TODO: Handle the case when mapper is undefined
+            // TODO: Handle the case when v8debugapi.create returns null
+            api = v8debugapi.create(logger, config, jsStats, mapper as SourceMapper.SourceMapper) as V8DebugApi;
             assert.ok(api, 'should be able to create the api');
             done();
           });
