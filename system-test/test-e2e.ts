@@ -22,7 +22,7 @@ import * as cp from 'child_process';
 import * as semver from 'semver';
 const promisifyAll = require('@google-cloud/common').util.promisifyAll;
 import {Debug} from '../src/debug';
-const Debugger = require('../test/debugger.js');
+import {Debugger} from '../test/debugger';
 
 const CLUSTER_WORKERS = 3;
 
