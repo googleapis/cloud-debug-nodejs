@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
 import * as assert from 'assert';
 import * as state from '../src/agent/state';
