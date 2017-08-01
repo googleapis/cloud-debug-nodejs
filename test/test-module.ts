@@ -18,7 +18,7 @@
 
 import * as assert from 'assert';
 // TODO: Determine how to not have a type declaration here.
-var module: NodeModule = require('../..');
+const module: NodeModule = require('../..');
 import * as nock from 'nock';
 import * as nocks from './nocks';
 
@@ -28,7 +28,7 @@ describe('Debug module', function() {
   before(function(done) {
     nocks.projectId('project-via-metadata');
     // TODO: Determine how to remove this cast to any.
-    var debuglet = (module as any).start(
+    const debuglet = (module as any).start(
         {projectId: '0', debug: {forceNewAgent_: true, testMode_: true}});
     debuglet.on('started', function() {
       debuglet.stop();

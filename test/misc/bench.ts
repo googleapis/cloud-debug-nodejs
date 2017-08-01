@@ -15,27 +15,27 @@
  */
 
 
-var v8debugapi = require('../src/v8debugapi.js');
-var Logger = require('../src/logger.js');
-var config = require('../config.js').default;
+const v8debugapi = require('../src/v8debugapi.js');
+const Logger = require('../src/logger.js');
+const config = require('../config.js').default;
 import * as assert from 'assert';
-var pretty = require('pretty-hrtime');
-//var util = require('util');
-var fib = require('./bench-code.js');
+const pretty = require('pretty-hrtime');
+//const util = require('util');
+const fib = require('./bench-code.js');
 
-var logger = new Logger(config.logLevel);
+const logger = new Logger(config.logLevel);
 assert.ok(v8debugapi.init(logger, config));
 
 function bench(message, f) {
-  var t = process.hrtime();
+  let t = process.hrtime();
   f();
   t = process.hrtime(t);
   console.log(message + ': ' + pretty(t));
 }
 
 bench('100x set', function() {
-  for (var i = 0; i < 100; i++) {
-    var bp = {
+  for (let i = 0; i < 100; i++) {
+    const bp = {
     id: 'fake-breakpoint',
     location: { path: __filename, line: 4}
     };
@@ -45,8 +45,8 @@ bench('100x set', function() {
 });
 
 bench('100x set + validate', function() {
-  for (var i = 0; i < 100; i++) {
-    var bp = {
+  for (let i = 0; i < 100; i++) {
+    const bp = {
       id: 'breakpoint1',
       location: {path: __filename, line: 4},
       condition: 'x === 1, 2, {f: 2}, process.env, (this ? this : this)'
@@ -60,7 +60,7 @@ bench('fib(29)', function() {fib(29);});
 
 // FIXME: the following test isn't really working because of a V8 bug.
 (function() {
-  var bp = {
+  const bp = {
     id: 'breakpoint1',
     location: {path: __filename, line: 4},
     condition: 'n > 50000' 

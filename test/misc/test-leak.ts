@@ -1,20 +1,20 @@
 'use strict';
 
-var v8debugapi = require('../src/v8debugapi.js');
-var Logger = require('../src/logger.js');
-var config = require('../config.js').default;
+const v8debugapi = require('../src/v8debugapi.js');
+const Logger = require('../src/logger.js');
+const config = require('../config.js').default;
 import * as assert from 'assert';
 import * as util from 'util';
-var logger = new Logger(config.logLevel);
+const logger = new Logger(config.logLevel);
 
 assert.ok(v8debugapi.init(logger, config));
 
-var iters = 0;
+let iters = 0;
 
 function test() {
   iters++;
   
-  var bp = {
+  const bp = {
     id: 'fake-breakpoint',
     location: { path: __filename, line: 4}
   };

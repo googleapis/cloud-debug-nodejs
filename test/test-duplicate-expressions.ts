@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-var breakpointInFoo = {
+const breakpointInFoo = {
   id: 'fake-id-123',
   location: { path: 'test-duplicate-expressions-code.js', line: 4 }
 };
@@ -28,7 +28,7 @@ const common: commonTypes.Common = require('@google-cloud/common');
 import defaultConfig from '../src/agent/config';
 import * as SourceMapper from '../src/agent/sourcemapper';
 import * as scanner from '../src/agent/scanner';
-var foo = require('./test-duplicate-expressions-code.js');
+const foo = require('./test-duplicate-expressions-code.js');
 
 // TODO: Determine why this must be named `stateIsClean1`.
 function stateIsClean1(api) {
@@ -40,21 +40,21 @@ function stateIsClean1(api) {
 }
 
 describe(__filename, function() {
-  var config = extend({}, defaultConfig, {
+  const config = extend({}, defaultConfig, {
     workingDirectory: __dirname,
     forceNewAgent_: true
   });
   // TODO: It appears `logLevel` is a typo and should be `level`.  However,
   //       with this change, the tests fail.  Resolve this.
-  var logger = new common.logger({ logLevel: config.logLevel } as any as commonTypes.LoggerOptions);
-  var api = null;
+  const logger = new common.logger({ logLevel: config.logLevel } as any as commonTypes.LoggerOptions);
+  let api = null;
 
   beforeEach(function(done) {
     if (!api) {
       scanner.scan(true, config.workingDirectory, /.js$/)
         .then(function (fileStats) {
-          var jsStats = fileStats.selectStats(/.js$/);
-          var mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
+          const jsStats = fileStats.selectStats(/.js$/);
+          const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
           SourceMapper.create(mapFiles, function (err, mapper) {
             assert(!err);
 
@@ -76,9 +76,9 @@ describe(__filename, function() {
       api.wait(breakpointInFoo, function(err) {
         assert.ifError(err);
         // TODO: Determine how to remove this cast to any.
-        var frames = (breakpointInFoo as any).stackFrames[0];
-        var exprs = frames.arguments.concat(frames.locals);
-        var varTableIndicesSeen = [];
+        const frames = (breakpointInFoo as any).stackFrames[0];
+        const exprs = frames.arguments.concat(frames.locals);
+        const varTableIndicesSeen = [];
         exprs.forEach(function(expr) {
           assert.equal(varTableIndicesSeen.indexOf(expr.varTableIndex), -1);
           varTableIndicesSeen.push(expr.varTableIndex);

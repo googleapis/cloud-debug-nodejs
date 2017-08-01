@@ -21,7 +21,7 @@ import * as path from 'path';
 
 import * as SourceMapper from '../src/agent/sourcemapper';
 
-var BASE_PATH = path.join(__dirname, 'fixtures', 'sourcemapper');
+const BASE_PATH = path.join(__dirname, 'fixtures', 'sourcemapper');
 
 /**
  * @param {string} tool The name of the tool that was used to generate the
@@ -41,12 +41,12 @@ var BASE_PATH = path.join(__dirname, 'fixtures', 'sourcemapper');
  *  Note: The line numbers are zero-based
  */
 function testTool(tool, relativeMapFilePath, relativeInputFilePath, relativeOutputFilePath, inToOutLineNums) {
-  var mapFilePath = path.join(BASE_PATH, relativeMapFilePath);
-  var inputFilePath = path.join(BASE_PATH, relativeInputFilePath);
-  var outputFilePath = path.join(BASE_PATH, relativeOutputFilePath);
+  const mapFilePath = path.join(BASE_PATH, relativeMapFilePath);
+  const inputFilePath = path.join(BASE_PATH, relativeInputFilePath);
+  const outputFilePath = path.join(BASE_PATH, relativeOutputFilePath);
 
   describe('sourcemapper for tool ' + tool, function() {
-    var sourcemapper;
+    let sourcemapper;
 
     it('for tool ' + tool,
       function(done) {
@@ -73,7 +73,7 @@ function testTool(tool, relativeMapFilePath, relativeInputFilePath, relativeOutp
       ' similar to a path it knows about',
       function(done) {
         assert.equal(sourcemapper.hasMappingInfo(relativeInputFilePath), true);
-        var movedPath = path.join('/some/other/base/dir/', relativeInputFilePath);
+        const movedPath = path.join('/some/other/base/dir/', relativeInputFilePath);
         assert.equal(sourcemapper.hasMappingInfo(movedPath), true);
         done();
     });
@@ -86,8 +86,8 @@ function testTool(tool, relativeMapFilePath, relativeInputFilePath, relativeOutp
         done();
     });
 
-    var testLineMapping = function(inputLine, expectedOutputLine) {
-      var info = sourcemapper.mappingInfo(inputFilePath, inputLine, 0);
+    const testLineMapping = function(inputLine, expectedOutputLine) {
+      const info = sourcemapper.mappingInfo(inputFilePath, inputLine, 0);
       assert.notEqual(info, null,
         'The mapping info for file ' + inputFilePath + ' must be non-null');
       assert.equal(info.file, outputFilePath);

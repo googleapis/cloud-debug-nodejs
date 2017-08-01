@@ -27,16 +27,16 @@ import * as SourceMapper from '../src/agent/sourcemapper';
 import * as scanner from '../src/agent/scanner';
 import defaultConfig from '../src/agent/config';
 import * as path from 'path';
-var foo = require('./test-max-data-size-code.js');
-var api: V8DebugApi;
+const foo = require('./test-max-data-size-code.js');
+let api: V8DebugApi;
 
-var breakpointInFoo = {
+const breakpointInFoo = {
   id: 'fake-id-123',
   location: { path: 'test-max-data-size-code.js', line: 4 }
 };
 
 describe('maxDataSize', function() {
-  var config = extend({}, defaultConfig, {
+  const config = extend({}, defaultConfig, {
     forceNewAgent_: true
   });
 
@@ -44,11 +44,11 @@ describe('maxDataSize', function() {
     if (!api) {
       // TODO: It appears `logLevel` is a typo and should be `level`.  However,
       //       with this change, the tests fail.  Resolve this.
-      var logger = new common.logger({ levelLevel: config.logLevel } as any as commonTypes.LoggerOptions);
+      const logger = new common.logger({ levelLevel: config.logLevel } as any as commonTypes.LoggerOptions);
       scanner.scan(true, config.workingDirectory, /.js$/)
         .then(function (fileStats) {
-          var jsStats = fileStats.selectStats(/.js$/);
-          var mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
+          const jsStats = fileStats.selectStats(/.js$/);
+          const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
           SourceMapper.create(mapFiles, function (err, mapper) {
             assert(!err);
 
@@ -64,7 +64,7 @@ describe('maxDataSize', function() {
   it('should limit data reported', function(done) {
     config.capture.maxDataSize = 5;
     // clone a clean breakpointInFoo
-    var bp  = {id: breakpointInFoo.id, location: breakpointInFoo.location};
+    const bp  = {id: breakpointInFoo.id, location: breakpointInFoo.location};
     // TODO: Determine how to remove this cast to any.
     (api as any).set(bp, function(err) {
       assert.ifError(err);
@@ -86,7 +86,7 @@ describe('maxDataSize', function() {
   it('should be unlimited if 0', function(done) {
     config.capture.maxDataSize = 0;
     // clone a clean breakpointInFoo
-    var bp  = {id: breakpointInFoo.id, location: breakpointInFoo.location};
+    const bp  = {id: breakpointInFoo.id, location: breakpointInFoo.location};
     // TODO: Determine how to remove this cast to any.
     (api as any).set(bp, function(err) {
       assert.ifError(err);
