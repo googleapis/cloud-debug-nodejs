@@ -16,8 +16,10 @@
 'use strict';
 
 import * as request from 'request';
+import * as http from 'http';
 
-export default function(options, callback) {
+// TODO: Make the type of `options` more precise
+export default function(options: any, callback: (err: Error, body: any, response: http.ServerResponse) => void) {
   request(options, function(err, response, body) {
     callback(err, body, response);
   });

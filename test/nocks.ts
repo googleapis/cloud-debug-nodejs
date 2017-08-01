@@ -17,11 +17,12 @@
 import * as nock from 'nock';
 
 // In the future _=>true.
-function accept() {
+function accept(): true {
   return true;
 }
 
-export function oauth2(validator) {
+// TODO: Determine if the type of `validator` is correct.
+export function oauth2(validator?: (body: any) => boolean): nock.Scope {
   validator = validator || accept;
   return nock('https://accounts.google.com')
       .post('/o/oauth2/token', validator)
@@ -33,7 +34,8 @@ export function oauth2(validator) {
       });
 }
 
-export function register(validator) {
+// TODO: Determine if the type of `validator` is correct.
+export function register(validator?: (body: any) => boolean): nock.Scope {
   validator = validator || accept;
   return nock('https://clouddebugger.googleapis.com')
       .post('/v2/controller/debuggees/register', validator)
@@ -41,7 +43,7 @@ export function register(validator) {
       .reply(200);
 }
 
-export function projectId(reply) {
+export function projectId(reply: string): nock.Scope {
   return nock('http://metadata.google.internal')
     .get('/computeMetadata/v1/project/project-id')
     .once()

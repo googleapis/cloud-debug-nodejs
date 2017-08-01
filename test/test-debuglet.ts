@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import * as apiTypes from '../src/types/api-types';
 import {DebugAgentConfig} from '../src/agent/config';
 
 import * as _ from 'lodash';
@@ -37,26 +38,28 @@ const EXPRESSIONS_REGEX =
 
 const fakeCredentials = require('./fixtures/gcloud-credentials.json');
 
-const nock = require('nock');
-const nocks = require('./nocks.js');
+import * as nock from 'nock';
+import * as nocks from './nocks';
 nock.disableNetConnect();
 
 const defaultConfig = extend(true, {}, DEFAULT_CONFIG, {logLevel: 0});
 
-let oldGP;
+let oldGP: string;
 
-const bp = {
+// TODO: Have this actually implement Breakpoint.
+const bp: apiTypes.Breakpoint = {
   id: 'test',
   action: 'CAPTURE',
   location: {path: 'fixtures/foo.js', line: 2}
-};
-const errorBp = {
+} as apiTypes.Breakpoint;
+// TODO: Have this actually implement Breakpoint.
+const errorBp: apiTypes.Breakpoint = {
   id: 'testLog',
   action: 'FOO',
   location: {path: 'fixtures/foo.js', line: 2}
-};
+} as any as apiTypes.Breakpoint;
 
-function verifyBreakpointRejection(re, body) {
+function verifyBreakpointRejection(re: RegExp, body: {breakpoint: any}) {
   const status = body.breakpoint.status;
   const hasCorrectDescription = status.description.format.match(re);
   return status.isError && hasCorrectDescription;
@@ -64,7 +67,8 @@ function verifyBreakpointRejection(re, body) {
 
 describe('Debuglet', function() {
   describe('runningOnGCP', () => {
-    let savedLookup;
+    // TODO: Make this more precise.
+    let savedLookup: Function;
     before(() => {
       savedLookup = dns.lookup;
     });

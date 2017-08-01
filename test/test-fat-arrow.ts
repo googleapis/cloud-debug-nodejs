@@ -15,6 +15,8 @@
  */
 
 import * as commonTypes from '../src/types/common-types';
+import * as apiTypes from '../src/types/api-types';
+import {V8DebugApi} from '../src/agent/v8debugapi';
 
 import * as assert from 'assert';
 import * as extend from 'extend';
@@ -27,7 +29,7 @@ import * as path from 'path';
 
 process.env.GCLOUD_PROJECT = 0;
 
-function stateIsClean(api) {
+function stateIsClean(api: V8DebugApi): boolean {
   assert.equal(api.numBreakpoints_(), 0,
     'there should be no breakpoints active');
   assert.equal(api.numListeners_(), 0,
@@ -43,8 +45,8 @@ describe(__filename, function() {
   // TODO: It appears `logLevel` is a typo and should be `level`.  However,
   //       with this change, the tests fail.  Resolve this.
   const logger = new common.logger({ levelLevel: config.logLevel } as any as commonTypes.LoggerOptions);
-  let api = null;
-  let foo;
+  let api: V8DebugApi|null = null;
+  let foo: () => number;
   before(function () {
     foo = require('./fixtures/fat-arrow.js');
   });
@@ -67,16 +69,16 @@ describe(__filename, function() {
   });
   afterEach(function() { assert(stateIsClean(api)); });
   it('Should read the argument value of the fat arrow', function(done) {
-      const brk = {
-        id: 'fake-id-123',
-        location: { path: 'fixtures/fat-arrow.js', line: 5 }
-      };
+    // TODO: Have this implement Breakpoint
+    const brk: apiTypes.Breakpoint = {
+      id: 'fake-id-123',
+      location: { path: 'fixtures/fat-arrow.js', line: 5 }
+    } as apiTypes.Breakpoint;
     api.set(brk, function(err) {
       assert.ifError(err);
       api.wait(brk, function(err) {
         assert.ifError(err);
-        // TODO: Fix this explicit cast.
-        const frame = (brk as any).stackFrames[0];
+        const frame = brk.stackFrames[0];
         const args = frame.arguments;
         const locals = frame.locals;
         assert.equal(args.length, 0, 'There should be zero arguments');
@@ -92,16 +94,17 @@ describe(__filename, function() {
     });
   });
    it('Should process the argument value change of the fat arrow', function(done) {
-      const brk = {
-        id: 'fake-id-123',
-        location: { path: 'fixtures/fat-arrow.js', line: 6 }
-      };
+    // TODO: Have this implement Breakpoint
+    const brk: apiTypes.Breakpoint = {
+      id: 'fake-id-123',
+      location: { path: 'fixtures/fat-arrow.js', line: 6 }
+    } as apiTypes.Breakpoint;
     api.set(brk, function(err) {
       assert.ifError(err);
       api.wait(brk, function(err) {
         assert.ifError(err);
         // TODO: Fix this explicit cast.
-        const frame = (brk as any).stackFrames[0];
+        const frame = brk.stackFrames[0];
         const args = frame.arguments;
         const locals = frame.locals;
         assert.equal(args.length, 0, 'There should be zero arguments');
