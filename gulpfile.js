@@ -155,8 +155,6 @@ gulp.task('watch', () => {
   return gulp.watch(sources, ['test.compile']);
 });
 
-// TODO: Enable linting and checking format after the conversion to
-//       Typescript is complete.
-gulp.task('test', ['test.run']);//, 'test.check-format', 'test.check-lint']);
-gulp.task('test.coverage', ['test.coverage.run']);//, 'test.check-format', 'test.check-lint']);
+gulp.task('test', ['test.run', 'test.check-format', 'test.check-lint']);
+gulp.task('test.coverage', ['test.coverage.run', 'test.check-format', 'test.check-lint']);
 gulp.task('default', ['compile', 'test.unit.compile', 'test.system.compile']);
