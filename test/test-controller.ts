@@ -50,9 +50,7 @@ describe('Controller API', function() {
       const debuggee = new Debuggee({
         project: 'fake-project',
         uniquifier: 'fake-id',
-        description: 'unit test',
-        // TODO: Determine if statusMessage should be optional.
-        statusMessage: null
+        description: 'unit test'
       });
       const controller = new Controller(fakeDebug);
       // TODO: Determine if this type signature is correct.
@@ -75,9 +73,7 @@ describe('Controller API', function() {
          const debuggee = new Debuggee({
            project: 'fake-project',
            uniquifier: 'fake-id',
-           description: 'unit test',
-           // TODO: Determine if statusMessage should be optional.
-          statusMessage: null
+           description: 'unit test'
          });
          const controller = new Controller(fakeDebug);
          controller.register(debuggee, function(err: Error, result: {debuggee: Debuggee}) {
@@ -105,9 +101,7 @@ describe('Controller API', function() {
       const debuggee = new Debuggee({
         project: 'fake-project',
         uniquifier: 'fake-id',
-        description: 'unit test',
-        // TODO: Determine if statusMessage should be optional.
-        statusMessage: null
+        description: 'unit test'
       });
       const controller = new Controller(fakeDebug);
       controller.register(debuggee, function(err/*, result*/) {

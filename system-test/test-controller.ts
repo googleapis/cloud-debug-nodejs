@@ -41,9 +41,7 @@ describe('Controller', function() {
         new Debuggee({
           project: process.env.GCLOUD_PROJECT,
           uniquifier: 'test-uid-' + Date.now(),
-          description: 'this is a system test',
-          // TODO: Determine if statusMessage should be made optional.
-          statusMessage: null
+          description: 'this is a system test'
         });
 
     controller.register(debuggee, function(err, body) {
@@ -63,9 +61,7 @@ describe('Controller', function() {
         new Debuggee({
           project: process.env.GCLOUD_PROJECT,
           uniquifier: 'test-uid-' + Date.now(),
-          description: 'this is a system test',
-          // TODO: Determine if statusMessage should be made optional.
-          statusMessage: null
+          description: 'this is a system test'
         });
     // TODO: Determine if the body parameter should be used.
     controller.register(debuggee, function(err, _body) {
@@ -91,9 +87,7 @@ describe('Controller', function() {
         new Debuggee({
           project: process.env.GCLOUD_PROJECT,
           uniquifier: 'test-uid-' + Date.now(),
-          description: 'this is a system test',
-          // TODO: Determine if statusMessage should be made optional.
-          statusMessage: null
+          description: 'this is a system test'
         });
     // TODO: Determine if the body parameter should be used.
     controller.register(debuggee, function(err, _body) {

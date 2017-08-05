@@ -376,7 +376,7 @@ export class Debuglet extends EventEmitter {
 
     const statusMessage = errorMessage ?
         new StatusMessage(StatusMessage.UNSPECIFIED, errorMessage, true) :
-        null;
+        undefined;
 
     const properties = {
       project: projectId,
