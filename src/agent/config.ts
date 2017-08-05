@@ -17,12 +17,12 @@
 import {AuthenticationConfig} from '../types/common-types';
 
 export interface DebugAgentConfig extends AuthenticationConfig {
-  workingDirectory: string|null;
+  workingDirectory?: string;
 
   /**
    * A user specified way of identifying the service
    */
-  description: string|null;
+  description?: string;
 
   /**
    * Whether or not it is permitted to evaluate expressions.
@@ -44,17 +44,17 @@ export interface DebugAgentConfig extends AuthenticationConfig {
     /**
      * The service name.
      */
-    service: string | null;
+    service?: string;
 
     /**
      * The service version.
      */
-    version: string | null;
+    version?: string;
 
     /**
      * A unique deployment identifier. This is used internally only.
      */
-    minorVersion_: string | null;
+    minorVersion_?: string;
   };
 
   /**
@@ -65,7 +65,7 @@ export interface DebugAgentConfig extends AuthenticationConfig {
    * cases where the debug agent is unable to resolve breakpoint locations
    * unambiguously.
    */
-  appPathRelativeToRepository: string|null;
+  appPathRelativeToRepository?: string;
 
   /**
    * agent log level 0-disabled, 1-error, 2-warn, 3-info, 4-debug
@@ -170,14 +170,15 @@ const defaultConfig: DebugAgentConfig = {
   // FIXME(ofrobots): presently this is dependent what cwd() is at the time this
   // file is first required. We should make the default config static.
   workingDirectory: process.cwd(),
-  description: null,
+  description: undefined,
   allowExpressions: false,
 
   // FIXME(ofrobots): today we prioritize GAE_MODULE_NAME/GAE_MODULE_VERSION
   // over the user specified config. We should reverse that.
-  serviceContext: {service: null, version: null, minorVersion_: null},
+  serviceContext:
+      {service: undefined, version: undefined, minorVersion_: undefined},
 
-  appPathRelativeToRepository: null,
+  appPathRelativeToRepository: undefined,
   logLevel: 1,
   breakpointUpdateIntervalSec: 10,
   breakpointExpirationSec: 60 * 60 * 24,  // 24 hours

@@ -1077,10 +1077,10 @@ describe('Debuglet', function() {
           'some project', 'id',
           // TODO: Verify that `null` for minorVersion_ should be used here
           //       or if minorVersion_ should be optional.
-          {service: 'some-service', version: 'production', minorVersion_: null},
+          {service: 'some-service', version: 'production', minorVersion_: undefined},
           // TODO: Determine if these are the correct values that should be
           //       use here.
-          {}, null, null, false);
+          {}, false, undefined, undefined);
       assert.ok(debuggee);
       assert.ok(debuggee.labels);
       // TODO: Handle the case where debuggee.labels is undefined
@@ -1093,10 +1093,10 @@ describe('Debuglet', function() {
           Debuglet.createDebuggee('fancy-project', 'very-unique',
                                   // TODO: Verify that `null` for minorVersion_ should be used here
                                   //       or if minorVersion_ should be optional.
-                                  {service: 'default', version: 'yellow.5', minorVersion_: null},
+                                  {service: 'default', version: 'yellow.5', minorVersion_: undefined},
                                   // TODO: Determine if these are the correct values that should be
                                   //       use here.
-                                  {}, null, null, false);
+                                  {}, false, undefined, undefined);
       assert.ok(debuggee);
       assert.ok(debuggee.labels);
       // TODO: Handle the case where debuggee.labels is undefined
@@ -1110,9 +1110,8 @@ describe('Debuglet', function() {
          //       fourth, or fifth parameters to be undefined.  Determine if
          //       this is correct.
          const debuggee = Debuglet.createDebuggee(
-             'a', 'b', undefined as any, undefined as any, undefined as any, 'Some Error Message',
              // TODO: Determine if this value for onGCP is correct.
-             false);
+             'a', 'b', undefined as any, undefined as any, false, undefined as any, 'Some Error Message');
          assert.ok(debuggee);
          assert.ok(debuggee.statusMessage);
        });

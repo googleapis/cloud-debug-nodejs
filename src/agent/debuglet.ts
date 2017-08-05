@@ -278,7 +278,7 @@ export class Debuglet extends EventEmitter {
           that.config_.serviceContext = {
             service: clusterName,
             version: 'unversioned',
-            minorVersion_: null
+            minorVersion_: undefined
           };
         } catch (err) {
           /* we are not running on GKE - Ignore error. */
@@ -308,7 +308,7 @@ export class Debuglet extends EventEmitter {
         that.debuggee_ = Debuglet.createDebuggee(
             // TODO: Address the case when `id` is `undefined`.
             project, id as string, that.config_.serviceContext, sourceContext,
-            that.config_.description, null, onGCP);
+            onGCP, that.config_.description, undefined);
         that.scheduleRegistration_(0 /* immediately */);
         that.emit('started');
       });
@@ -321,13 +321,11 @@ export class Debuglet extends EventEmitter {
    */
   // TODO: Determine the type of sourceContext
   static createDebuggee(
-      projectId: string, uid: string, serviceContext: {
-        service: string | null,
-        version: string|null,
-        minorVersion_: string|null
-      },
-      sourceContext: {[key: string]: string}, description: string|null,
-      errorMessage: string|null, onGCP: boolean): Debuggee {
+      projectId: string, uid: string,
+      serviceContext:
+          {service?: string, version?: string, minorVersion_?: string},
+      sourceContext: {[key: string]: string}, onGCP: boolean,
+      description?: string, errorMessage?: string): Debuggee {
     const cwd = process.cwd();
     const mainScript = path.relative(cwd, process.argv[1]);
 
