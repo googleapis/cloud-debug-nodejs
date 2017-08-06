@@ -33,9 +33,7 @@ describe('Debuggee', function() {
 
   it('should throw on invalid input', function() {
     assert.throws(function() { new Debuggee({}); });
-    // TODO: Determine if the `project` property should be required to be a
-    //       string or if it should be `number|string`.
-    assert.throws(function() { new Debuggee({project: 5 as any as string}); });
+    assert.throws(function() { new Debuggee({project: '5'}); });
     assert.throws(function() { new Debuggee({project: undefined}); });
     assert.throws(function() { new Debuggee({project: 'test'}); });
     assert.throws(function() {

@@ -27,7 +27,6 @@ export interface DebuggeeProperties {
   uniquifier?: string;
   description?: string;
   agentVersion?: string;
-  // TODO: Verify that this type is correct.
   labels?: {
     [key: string]: string,
   };
@@ -36,17 +35,16 @@ export interface DebuggeeProperties {
 }
 
 export class Debuggee {
-  // TODO: Determine how to update the tests so that this can be private.
-  project: string;
   private uniquifier: string;
   private description: string;
   private agentVersion?: string;
-  // TODO: Determine how to update the tests so that this can be private.
+  private sourceContexts?: Array<{[key: string]: any}>;
+
+  // Public to allow for testing
+  project: string;
   labels?: {
     [key: string]: string,
   };
-  private sourceContexts?: Array<{[key: string]: any}>;
-  // TODO: Determine how to update the tests so that this can be private.
   statusMessage?: StatusMessage;
   id: string;
   // TODO: This doesn't seem to ever be set but is referenced in the
