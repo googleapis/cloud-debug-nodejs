@@ -177,8 +177,8 @@ export function create(
             breakpoint.condition = compile(breakpoint.condition);
           } catch (e) {
             logger.info(
-                    'Unable to compile condition >> ' + breakpoint.condition +
-                    ' <<');
+                'Unable to compile condition >> ' + breakpoint.condition +
+                ' <<');
             return setErrorStatusAndCallback(
                 cb, breakpoint, StatusMessage.BREAKPOINT_CONDITION,
                 messages.ERROR_COMPILING_CONDITION);
@@ -572,8 +572,8 @@ export function create(
                    string)(breakpoint.expressions[i]);
         } catch (e) {
           logger.info(
-                  'Unable to compile watch expression >> ' +
-                  breakpoint.expressions[i] + ' <<');
+              'Unable to compile watch expression >> ' +
+              breakpoint.expressions[i] + ' <<');
           expressionErrors.push({
             name: breakpoint.expressions[i],
             status: new StatusMessage(
@@ -602,8 +602,7 @@ export function create(
     } else {
       // TODO: Address the case where `breakpoint.expression` is `undefined`.
       const captured = state.capture(
-          execState, breakpoint.expressions as string[],
-          config, v8);
+          execState, breakpoint.expressions as string[], config, v8);
       breakpoint.stackFrames = captured.stackFrames;
       // TODO: This suggests the Status type and Variable type are the same.
       //       Determine if that is the case.
