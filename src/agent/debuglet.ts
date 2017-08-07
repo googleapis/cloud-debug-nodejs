@@ -108,22 +108,19 @@ const formatBreakpoints = function(
 };
 
 export class Debuglet extends EventEmitter {
-  // TODO: Determine how to update the tests so that this can be private.
-  config_: DebugAgentConfig;
   private debug_: Debug;
   private v8debug_: V8DebugApi|null;
   private running_: boolean;
   private project_: string|null;
-  // TODO: Determine how to update the tests so that this can be private.
-  fetcherActive_: boolean;
-  // TODO: Determine how to update the tests so that this can be private.
-  logger_: Logger;
   private debugletApi_: Controller;
-  // TODO: Determine how to update the tests so that this can be private.
-  debuggee_: Debuggee|null;
-  // TODO: Determine how to update the tests so that this can be private.
-  activeBreakpointMap_: {[key: string]: Breakpoint};
   private completedBreakpointMap_: {[key: string]: boolean};
+
+  // Exposed for testing
+  config_: DebugAgentConfig;
+  fetcherActive_: boolean;
+  logger_: Logger;
+  debuggee_: Debuggee|null;
+  activeBreakpointMap_: {[key: string]: Breakpoint};
 
   /**
    * @param {Debug} debug - A Debug instance.
@@ -241,17 +238,18 @@ export class Debuglet extends EventEmitter {
 
     const jsStats = fileStats.selectStats(/.js$/);
     const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
-    SourceMapper.create(mapFiles, async function(err3, mapper) {
+    SourceMapper.create(mapFiles, async function(err3, sourcemapper) {
       if (err3) {
         that.logger_.error('Error processing the sourcemaps.', err3);
         that.emit('initError', err3);
         return;
       }
 
-      that.v8debug_ = v8debugapi.create(
-          // TODO: Handle the case where `mapper` is `undefined`.
-          that.logger_, that.config_, jsStats,
-          mapper as SourceMapper.SourceMapper);
+      // At this point err3 being falsy implies sourcemapper is defined
+      const mapper = sourcemapper as SourceMapper.SourceMapper;
+
+      that.v8debug_ =
+          v8debugapi.create(that.logger_, that.config_, jsStats, mapper);
 
       id = id || fileStats.hash;
 
