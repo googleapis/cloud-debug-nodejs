@@ -1075,12 +1075,8 @@ describe('Debuglet', function() {
     it('should have sensible labels', function() {
       const debuggee = Debuglet.createDebuggee(
           'some project', 'id',
-          // TODO: Verify that `null` for minorVersion_ should be used here
-          //       or if minorVersion_ should be optional.
-          {service: 'some-service', version: 'production', minorVersion_: undefined},
-          // TODO: Determine if these are the correct values that should be
-          //       use here.
-          {}, false, undefined, undefined);
+          {service: 'some-service', version: 'production'},
+          {}, false);
       assert.ok(debuggee);
       assert.ok(debuggee.labels);
       // TODO: Handle the case where debuggee.labels is undefined
@@ -1091,12 +1087,8 @@ describe('Debuglet', function() {
     it('should not add a module label when service is default', function() {
       const debuggee =
           Debuglet.createDebuggee('fancy-project', 'very-unique',
-                                  // TODO: Verify that `null` for minorVersion_ should be used here
-                                  //       or if minorVersion_ should be optional.
-                                  {service: 'default', version: 'yellow.5', minorVersion_: undefined},
-                                  // TODO: Determine if these are the correct values that should be
-                                  //       use here.
-                                  {}, false, undefined, undefined);
+                                  {service: 'default', version: 'yellow.5'},
+                                  {}, false);
       assert.ok(debuggee);
       assert.ok(debuggee.labels);
       // TODO: Handle the case where debuggee.labels is undefined
@@ -1106,12 +1098,8 @@ describe('Debuglet', function() {
 
     it('should have an error statusMessage with the appropriate arg',
        function() {
-         // TODO: The createDebuggee function doesn't allow the third,
-         //       fourth, or fifth parameters to be undefined.  Determine if
-         //       this is correct.
          const debuggee = Debuglet.createDebuggee(
-             // TODO: Determine if this value for onGCP is correct.
-             'a', 'b', undefined as any, undefined as any, false, undefined as any, 'Some Error Message');
+             'a', 'b', {}, {}, false, undefined, 'Some Error Message');
          assert.ok(debuggee);
          assert.ok(debuggee.statusMessage);
        });
