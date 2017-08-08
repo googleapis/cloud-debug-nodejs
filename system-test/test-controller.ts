@@ -24,11 +24,10 @@ assert.ok(
     'Need to have GOOGLE_APPLICATION_CREDENTIALS defined to be able to run ' +
     'this test');
 
+import * as apiTypes from '../src/types/api-types';
 import {Controller} from '../src/controller';
 import {Debuggee} from '../src/debuggee';
 import {Debug} from '../src/debug';
-// TODO: Determine if Debug should be updated so that its only parameter is
-//       optional.
 const debug = new Debug({});
 
 
@@ -44,13 +43,12 @@ describe('Controller', function() {
           description: 'this is a system test'
         });
 
-    controller.register(debuggee, function(err, body) {
-      // TODO: Only 1 parameter is expected.  Fix this.
-      (assert as any).ifError(err, 'should be able to register successfully');
-      assert.ok(body);
-      // TODO: Handle the case when body is undefined
-      assert.ok((body as any).debuggee);
-      assert.ok((body as any).debuggee.id);
+    controller.register(debuggee, function(err, maybeBody) {
+      assert.ifError(err);
+      assert.ok(maybeBody);
+      const body = maybeBody as { debuggee: Debuggee };
+      assert.ok(body.debuggee);
+      assert.ok(body.debuggee.id);
       done();
     });
   });
@@ -65,16 +63,14 @@ describe('Controller', function() {
         });
     // TODO: Determine if the body parameter should be used.
     controller.register(debuggee, function(err, _body) {
-      // TODO: Only 1 parameter is expected.  Fix this.
-      (assert as any).ifError(err, 'should be able to register successfully');
+      assert.ifError(err);
 
       // TODO: Determine if the response parameter should be used.
-      controller.listBreakpoints(debuggee, function(err, _response, body) {
-        // TODO: Only 1 parameter is expected.  Fix this.
-        (assert as any).ifError(err, 'should successfully list breakpoints');
-        assert.ok(body);
-        // TODO: Handle the case when body is undefined
-        assert.ok((body as any).nextWaitToken);
+      controller.listBreakpoints(debuggee, function(err, _response, maybeBody) {
+        assert.ifError(err);
+        assert.ok(maybeBody);
+        const body = maybeBody as apiTypes.ListBreakpointsResponse;
+        assert.ok(body.nextWaitToken);
         done();
       });
     });
@@ -91,26 +87,24 @@ describe('Controller', function() {
         });
     // TODO: Determine if the body parameter should be used.
     controller.register(debuggee, function(err, _body) {
-      // TODO: Only 1 parameter is expected.  Fix this.
-      (assert as any).ifError(err, 'should be able to register successfully');
+      assert.ifError(err);
 
       // First list should set the wait token
       // TODO: Determine if the response parameter should be used.
-      controller.listBreakpoints(debuggee, function(err, _response, body) {
-        // TODO: Only 1 parameter is expected.  Fix this.
-        (assert as any).ifError(err, 'should successfully list breakpoints');
-        assert.ok(body);
-        // TODO: Handle the case when body is undefined
-        assert.ok((body as any).nextWaitToken);
+      controller.listBreakpoints(debuggee, function(err, _response, maybeBody) {
+        assert.ifError(err);
+        assert.ok(maybeBody);
+        const body = maybeBody as apiTypes.ListBreakpointsResponse;
+        assert.ok(body.nextWaitToken);
         // Second list should block until the wait timeout
         // TODO: Determine if the response parameter should be used.
-        controller.listBreakpoints(debuggee, function(err, _response, body) {
-          // TODO: Only 1 parameter is expected.  Fix this.
-          (assert as any).ifError(err, 'should successfully list breakpoints');
-          assert.ok(body);
-          assert.ok((body as any).nextWaitToken);
+        controller.listBreakpoints(debuggee, function(err, _response, maybeBody) {
+          assert.ifError(err);
+          assert.ok(maybeBody);
+          const body = maybeBody as apiTypes.ListBreakpointsResponse;
+          assert.ok(body.nextWaitToken);
           // waitExpired will only be set if successOnTimeout was given correctly
-          assert.ok((body as any).waitExpired);
+          assert.ok(body.waitExpired);
           done();
         });
       });

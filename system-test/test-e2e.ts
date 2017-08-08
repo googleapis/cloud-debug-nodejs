@@ -32,7 +32,6 @@ const CLUSTER_WORKERS = 3;
 const FILENAME = 'build/test/fixtures/fib.js';
 
 const delay = function(delayTimeMS: number): Promise<void> {
-  // TODO: Determine if the reject parameter should be used.
   return new Promise(function(resolve, _reject) {
     setTimeout(resolve, delayTimeMS);
   });
@@ -62,7 +61,6 @@ describe('@google-cloud/debug end-to-end behavior', function () {
       let numChildrenReady = 0;
 
       // Process a status message sent from a child process.
-      // TODO: Determine if this type signature is correct
       const handler = function(c: { error: Error|null, debuggeeId: string, projectId: string}) {
         console.log(c);
         if (c.error) {
@@ -97,15 +95,13 @@ describe('@google-cloud/debug end-to-end behavior', function () {
       };
 
       for (let i = 0; i < CLUSTER_WORKERS; i++) {
-        // TODO: Determine how to have this not of type `any`.
         // Fork child processes that sned messages to this process with IPC.
-        const child: any = { transcript: '' };
-        // TODO: Fix this cast to any.
-        child.process = cp.fork(FILENAME, {
+        const child: Child = { transcript: '' };
+        child.process = cp.fork(FILENAME, /* args */ [], {
           execArgv: [],
           env: process.env,
           silent: true
-        } as any);
+        });
         child.process.on('message', handler);
 
         children.push(child);
@@ -121,13 +117,14 @@ describe('@google-cloud/debug end-to-end behavior', function () {
     // Create a promise for each child that resolves when that child exits.
     const childExitPromises = children.map(function (child) {
       console.log(child.transcript);
-      // TODO: Handle the case when child.process is undefined
-      (child.process as any).kill();
+      assert(child.process);
+      const childProcess = child.process as cp.ChildProcess;
+      childProcess.kill();
       return new Promise(function(resolve, reject) {
         const timeout = setTimeout(function() {
           reject(new Error('A child process failed to exit.'));
         }, 3000);
-        (child.process as any).on('exit', function() {
+        childProcess.on('exit', function() {
           clearTimeout(timeout);
           resolve();
         });
@@ -321,8 +318,7 @@ describe('@google-cloud/debug end-to-end behavior', function () {
       console.log('-- List of debuggees\n',
         util.inspect(debuggees, { depth: null}));
       assert.ok(debuggees, 'should get a valid ListDebuggees response');
-      // TODO: Fix this cast to any.
-      const result = _.find(debuggees, function(d: any) {
+      const result = _.find(debuggees, function(d: Debuggee) {
         return d.id === debuggeeId;
       });
       assert.ok(result, 'should find the debuggee we just registered');
