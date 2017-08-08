@@ -29,7 +29,9 @@ import * as v8Types from '../types/v8-types';
 import * as apiTypes from '../types/api-types';
 import {DebugAgentConfig} from './config';
 
-const scopeType = vm.runInDebugContext('ScopeType');
+// TODO: Determine if `ScopeType` should be named `scopeType`.
+// tslint:disable-next-line:variable-name
+const ScopeType = vm.runInDebugContext('ScopeType');
 const assert = debugAssert(process.env.CLOUD_DEBUG_ASSERTIONS);
 
 // Error message indices into the resolved variable table.
@@ -383,17 +385,17 @@ class StateResolver {
     // For top-level breakpoints: [local, script, global]
     // Other: [..., closure (module IIFE), script, global]
     assert(count >= 3);
-    assert.strictEqual(allScopes[count - 1].scopeType(), scopeType.Global);
-    assert.strictEqual(allScopes[count - 2].scopeType(), scopeType.Script);
+    assert.strictEqual(allScopes[count - 1].scopeType(), ScopeType.Global);
+    assert.strictEqual(allScopes[count - 2].scopeType(), ScopeType.Script);
 
     // We find the top-level (module global) variable pollute the local
     // variables we omit them by default, unless the breakpoint itself is
     // top-level. The last two scopes are always omitted.
     let scopes: v8Types.ScopeMirror[];
-    if (allScopes[count - 3].scopeType() === scopeType.Closure) {
+    if (allScopes[count - 3].scopeType() === ScopeType.Closure) {
       scopes = allScopes.slice(0, -3);
     } else {
-      assert(allScopes[count - 3].scopeType() === scopeType.Local);
+      assert(allScopes[count - 3].scopeType() === ScopeType.Local);
       scopes = allScopes.slice(0, -2);
     }
 
