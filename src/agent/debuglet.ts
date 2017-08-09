@@ -108,22 +108,19 @@ const formatBreakpoints = function(
 };
 
 export class Debuglet extends EventEmitter {
-  // TODO: Determine how to update the tests so that this can be private.
-  config_: DebugAgentConfig;
   private debug_: Debug;
   private v8debug_: V8DebugApi|null;
   private running_: boolean;
   private project_: string|null;
-  // TODO: Determine how to update the tests so that this can be private.
-  fetcherActive_: boolean;
-  // TODO: Determine how to update the tests so that this can be private.
-  logger_: Logger;
   private debugletApi_: Controller;
-  // TODO: Determine how to update the tests so that this can be private.
-  debuggee_: Debuggee|null;
-  // TODO: Determine how to update the tests so that this can be private.
-  activeBreakpointMap_: {[key: string]: Breakpoint};
   private completedBreakpointMap_: {[key: string]: boolean};
+
+  // Exposed for testing
+  config_: DebugAgentConfig;
+  fetcherActive_: boolean;
+  logger_: Logger;
+  debuggee_: Debuggee|null;
+  activeBreakpointMap_: {[key: string]: Breakpoint};
 
   /**
    * @param {Debug} debug - A Debug instance.
@@ -241,17 +238,18 @@ export class Debuglet extends EventEmitter {
 
     const jsStats = fileStats.selectStats(/.js$/);
     const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
-    SourceMapper.create(mapFiles, async function(err3, mapper) {
+    SourceMapper.create(mapFiles, async function(err3, sourcemapper) {
       if (err3) {
         that.logger_.error('Error processing the sourcemaps.', err3);
         that.emit('initError', err3);
         return;
       }
 
-      that.v8debug_ = v8debugapi.create(
-          // TODO: Handle the case where `mapper` is `undefined`.
-          that.logger_, that.config_, jsStats,
-          mapper as SourceMapper.SourceMapper);
+      // At this point err3 being falsy implies sourcemapper is defined
+      const mapper = sourcemapper as SourceMapper.SourceMapper;
+
+      that.v8debug_ =
+          v8debugapi.create(that.logger_, that.config_, jsStats, mapper);
 
       id = id || fileStats.hash;
 
@@ -278,7 +276,7 @@ export class Debuglet extends EventEmitter {
           that.config_.serviceContext = {
             service: clusterName,
             version: 'unversioned',
-            minorVersion_: null
+            minorVersion_: undefined
           };
         } catch (err) {
           /* we are not running on GKE - Ignore error. */
@@ -308,7 +306,7 @@ export class Debuglet extends EventEmitter {
         that.debuggee_ = Debuglet.createDebuggee(
             // TODO: Address the case when `id` is `undefined`.
             project, id as string, that.config_.serviceContext, sourceContext,
-            that.config_.description, null, onGCP);
+            onGCP, that.config_.description, undefined);
         that.scheduleRegistration_(0 /* immediately */);
         that.emit('started');
       });
@@ -321,13 +319,11 @@ export class Debuglet extends EventEmitter {
    */
   // TODO: Determine the type of sourceContext
   static createDebuggee(
-      projectId: string, uid: string, serviceContext: {
-        service: string | null,
-        version: string|null,
-        minorVersion_: string|null
-      },
-      sourceContext: {[key: string]: string}, description: string|null,
-      errorMessage: string|null, onGCP: boolean): Debuggee {
+      projectId: string, uid: string,
+      serviceContext:
+          {service?: string, version?: string, minorVersion_?: string},
+      sourceContext: {[key: string]: string}, onGCP: boolean,
+      description?: string, errorMessage?: string): Debuggee {
     const cwd = process.cwd();
     const mainScript = path.relative(cwd, process.argv[1]);
 
@@ -378,7 +374,7 @@ export class Debuglet extends EventEmitter {
 
     const statusMessage = errorMessage ?
         new StatusMessage(StatusMessage.UNSPECIFIED, errorMessage, true) :
-        null;
+        undefined;
 
     const properties = {
       project: projectId,

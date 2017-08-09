@@ -98,12 +98,12 @@ export function create(
     return singleton;
   }
 
-  let v8: v8Types.Debug|null = null;
-  let logger: Logger|null = null;
-  let config: DebugAgentConfig|null = null;
-  let fileStats: ScanStats|null = null;
+  let v8: v8Types.Debug;
+  let logger: Logger;
+  let config: DebugAgentConfig;
+  let fileStats: ScanStats;
   let breakpoints: {[id: string]: BreakpointData} = {};
-  let sourcemapper: SourceMapper|null = null;
+  let sourcemapper: SourceMapper;
   // Entries map breakpoint id to { enabled: <bool>, listener: <function> }
   // TODO: Determine if the listener type is correct
   const listeners:
@@ -135,8 +135,7 @@ export function create(
 
   if (usePermanentListener) {
     logger.info('activating v8 breakpoint listener (permanent)');
-    // TODO: Address the case where `v8` is `null`.
-    (v8 as v8Types.Debug).setListener(handleDebugEvents);
+    v8.setListener(handleDebugEvents);
   }
 
   /* -- Public Interface -- */
@@ -159,8 +158,7 @@ export function create(
       }
 
       const baseScriptPath = path.normalize(breakpoint.location.path);
-      // TODO: Address the case where `sourcemapper` is `null`.
-      if (!(sourcemapper as SourceMapper).hasMappingInfo(baseScriptPath)) {
+      if (!sourcemapper.hasMappingInfo(baseScriptPath)) {
         if (!_.endsWith(baseScriptPath, '.js')) {
           return setErrorStatusAndCallback(
               cb, breakpoint, StatusMessage.BREAKPOINT_SOURCE_LOCATION,
@@ -171,20 +169,16 @@ export function create(
       } else {
         const line = breakpoint.location.line;
         const column = 0;
-        // TODO: Address the case where `sourcemapper` is `null`.
-        const mapInfo = (sourcemapper as SourceMapper)
-                            .mappingInfo(baseScriptPath, line, column);
+        const mapInfo = sourcemapper.mappingInfo(baseScriptPath, line, column);
 
         const compile = getBreakpointCompiler(breakpoint);
         if (breakpoint.condition && compile) {
           try {
             breakpoint.condition = compile(breakpoint.condition);
           } catch (e) {
-            // TODO: Address the case where `Logger` is `null`.
-            (logger as Logger)
-                .info(
-                    'Unable to compile condition >> ' + breakpoint.condition +
-                    ' <<');
+            logger.info(
+                'Unable to compile condition >> ' + breakpoint.condition +
+                ' <<');
             return setErrorStatusAndCallback(
                 cb, breakpoint, StatusMessage.BREAKPOINT_CONDITION,
                 messages.ERROR_COMPILING_CONDITION);
@@ -205,17 +199,14 @@ export function create(
       }
       const v8bp = breakpointData.v8Breakpoint;
 
-      // TODO: Address the case where `v8` is `null`.
-      (v8 as v8Types.Debug).clearBreakPoint(v8bp.number());
+      v8.clearBreakPoint(v8bp.number());
       delete breakpoints[breakpoint.id];
       delete listeners[v8bp.number()];
       numBreakpoints--;
       if (numBreakpoints === 0 && !usePermanentListener) {
         // removed last breakpoint
-        // TODO: Address the case where `logger` is `null`.
-        (logger as Logger).info('deactivating v8 breakpoint listener');
-        // TODO: Address the case where `v8` is `null`.
-        (v8 as v8Types.Debug).setListener(null);
+        logger.info('deactivating v8 breakpoint listener');
+        v8.setListener(null);
       }
       return true;
     },
@@ -274,9 +265,7 @@ export function create(
             if (shouldStop()) {
               listeners[num].enabled = false;
             } else {
-              // TODO: Address the case where `DebugAgentConfig` is `null`.
-              if (logsThisSecond >=
-                  (config as DebugAgentConfig).log.maxLogsPerSecond) {
+              if (logsThisSecond >= config.log.maxLogsPerSecond) {
                 listeners[num].enabled = false;
                 setTimeout(function() {
                   // listeners[num] may have been deleted by `clear` during the
@@ -285,8 +274,7 @@ export function create(
                   if (!shouldStop() && listeners[num]) {
                     listeners[num].enabled = true;
                   }
-                  // TODO: Address the case where `config` is `null`.
-                }, (config as DebugAgentConfig).log.logDelaySeconds * 1000);
+                }, config.log.logDelaySeconds * 1000);
               }
             }
           });
@@ -356,13 +344,11 @@ export function create(
     // working directory.
     let matchingScript;
     // TODO: Address the case where `breakpoint.location` is `null`.
-    // TODO: Address the case where `config` is `null`.
-    // TODO: Address the case where `fileStats` is `null`.
     const scripts = findScripts(
         mapInfo ? mapInfo.file :
                   path.normalize(
                       (breakpoint.location as apiTypes.SourceLocation).path),
-        config as DebugAgentConfig, fileStats as ScanStats);
+        config, fileStats);
     if (scripts.length === 0) {
       return setErrorStatusAndCallback(
           cb, breakpoint, StatusMessage.BREAKPOINT_SOURCE_LOCATION,
@@ -377,16 +363,15 @@ export function create(
     }
 
     // TODO: Address the case where `breakpoint.location` is `null`.
-    // TODO: Address the case where `fileStats` is `null`.
     // TODO: Address the case where `fileStats[matchingScript]` is `null`.
     if ((breakpoint.location as apiTypes.SourceLocation).line >=
-        ((fileStats as ScanStats)[matchingScript] as FileStats).lines) {
+        (fileStats[matchingScript] as FileStats).lines) {
       return setErrorStatusAndCallback(
           cb, breakpoint, StatusMessage.BREAKPOINT_SOURCE_LOCATION,
           messages.INVALID_LINE_NUMBER + matchingScript + ':' +
               (breakpoint.location as apiTypes.SourceLocation).line +
               '. Loaded script contained ' +
-              ((fileStats as ScanStats)[matchingScript] as FileStats).lines +
+              (fileStats[matchingScript] as FileStats).lines +
               ' lines. Please ensure' +
               ' that the snapshot was set in the same code version as the' +
               ' deployed source.');
@@ -418,10 +403,8 @@ export function create(
 
     if (numBreakpoints === 0 && !usePermanentListener) {
       // added first breakpoint
-      // TODO: Address the case where `logger` is `null`.
-      (logger as Logger).info('activating v8 breakpoint listener');
-      // TODO: Address the case where `v8` is `null`.
-      (v8 as v8Types.Debug).setListener(handleDebugEvents);
+      logger.info('activating v8 breakpoint listener');
+      v8.setListener(handleDebugEvents);
     }
 
     // TODO: Address the case whree `breakpoint.id` is `null`.
@@ -479,10 +462,8 @@ export function create(
   function setByRegExp(
       scriptPath: string, line: number, column: number): v8Types.BreakPoint {
     const regexp = pathToRegExp(scriptPath);
-    // TODO: Address the case where `v8` is a `null`.
-    const num = (v8 as v8Types.Debug)
-                    .setScriptBreakPointByRegExp(regexp, line - 1, column - 1);
-    const v8bp = (v8 as v8Types.Debug).findBreakPoint(num);
+    const num = v8.setScriptBreakPointByRegExp(regexp, line - 1, column - 1);
+    const v8bp = v8.findBreakPoint(num);
     return v8bp;
   }
 
@@ -530,8 +511,7 @@ export function create(
           messages.ERROR_EVALUATING_CONDITION + result.error);
     } else if (!result.value) {
       // Check again next time
-      // TODO: Address the point where `logger` is `null`.
-      (logger as Logger).info('\tthe breakpoint condition wasn\'t met');
+      logger.info('\tthe breakpoint condition wasn\'t met');
       return;
     }
 
@@ -545,8 +525,7 @@ export function create(
           messages.CAPTURE_BREAKPOINT_DATA + err);
     }
     const end = process.hrtime(start);
-    // TODO: Address the point where `logger` is `null`.
-    (logger as Logger).info(formatInterval('capture time: ', end));
+    logger.info(formatInterval('capture time: ', end));
     callback(null);
   }
 
@@ -561,12 +540,11 @@ export function create(
     try {
       switch (evt) {
         // TODO: Address the case where `v8` is `null`.
-        case (v8 as v8Types.Debug).DebugEvent.Break:
+        case v8.DebugEvent.Break:
           eventData.breakPointsHit().forEach(function(hit) {
             const num = hit.script_break_point().number();
             if (listeners[num].enabled) {
-              // TODO: Address the case where `logger` is `null`.
-              (logger as Logger).info('>>>V8 breakpoint hit<<< number: ' + num);
+              logger.info('>>>V8 breakpoint hit<<< number: ' + num);
               listeners[num].listener(execState, eventData);
             }
           });
@@ -574,8 +552,7 @@ export function create(
         default:
       }
     } catch (e) {
-      // TODO: Address the case where `logger` is `null`.
-      (logger as Logger).warn('Internal V8 error on breakpoint event: ' + e);
+      logger.warn('Internal V8 error on breakpoint event: ' + e);
     }
   }
 
@@ -594,11 +571,9 @@ export function create(
               (breakpoints[breakpoint.id as string].compile as (text: string) =>
                    string)(breakpoint.expressions[i]);
         } catch (e) {
-          // TODO: Address the case where `logger` is `null`.
-          (logger as Logger)
-              .info(
-                  'Unable to compile watch expression >> ' +
-                  breakpoint.expressions[i] + ' <<');
+          logger.info(
+              'Unable to compile watch expression >> ' +
+              breakpoint.expressions[i] + ' <<');
           expressionErrors.push({
             name: breakpoint.expressions[i],
             status: new StatusMessage(
@@ -626,11 +601,8 @@ export function create(
       }
     } else {
       // TODO: Address the case where `breakpoint.expression` is `undefined`.
-      // TODO: Address the case where `config` is `undefined`.
-      // TODO: Address the case whre `v8` is `undefined`.
       const captured = state.capture(
-          execState, breakpoint.expressions as string[],
-          config as DebugAgentConfig, v8 as v8Types.Debug);
+          execState, breakpoint.expressions as string[], config, v8);
       breakpoint.stackFrames = captured.stackFrames;
       // TODO: This suggests the Status type and Variable type are the same.
       //       Determine if that is the case.

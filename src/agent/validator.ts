@@ -94,7 +94,6 @@ export function isValid(node: estree.Node): boolean {
     case 'TemplateLiteral':
       return node.quasis.every(isValid) && node.expressions.every(isValid);
     case 'TaggedTemplateExpression':
-      // TODO: Check if node.quasi is a type
       return isValid(node.tag) && isValid(node.quasi);
     case 'TemplateElement':
       return true;

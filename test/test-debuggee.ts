@@ -21,32 +21,25 @@ describe('Debuggee', function() {
 
   it('should create a Debuggee instance on valid input', function() {
     const debuggee = new Debuggee(
-        {project: 'project', uniquifier: 'uid', description: 'unit test',
-         // TODO: Determine if statusMessage should be optional.
-         statusMessage: null});
+        {project: 'project', uniquifier: 'uid', description: 'unit test'});
     assert.ok(debuggee instanceof Debuggee);
   });
 
   it('should create a Debuggee on a call without new', function() {
     const debuggee = new Debuggee(
-        {project: 'project', uniquifier: 'uid', description: 'unit test',
-         // TODO: Determine if statusMessage should be optional.
-         statusMessage: null});
+        {project: 'project', uniquifier: 'uid', description: 'unit test'});
     assert.ok(debuggee instanceof Debuggee);
   });
 
   it('should throw on invalid input', function() {
-    // TODO: Determine if statusMessage should be optional in all of these.
-    assert.throws(function() { new Debuggee({statusMessage: null}); });
-    // TODO: Determine if the `project` property should be required to be a
-    //       string or if it should be `number|string`.
-    assert.throws(function() { new Debuggee({project: 5 as any as string, statusMessage: null}); });
-    assert.throws(function() { new Debuggee({project: undefined, statusMessage: null}); });
-    assert.throws(function() { new Debuggee({project: 'test', statusMessage: null}); });
+    assert.throws(function() { new Debuggee({}); });
+    assert.throws(function() { new Debuggee({project: '5'}); });
+    assert.throws(function() { new Debuggee({project: undefined}); });
+    assert.throws(function() { new Debuggee({project: 'test'}); });
     assert.throws(function() {
-      new Debuggee({project: 'test', uniquifier: undefined, statusMessage: null});
+      new Debuggee({project: 'test', uniquifier: undefined});
       assert.throws(function() {
-        new Debuggee({project: 'test', uniquifier: 'uid', statusMessage: null});
+        new Debuggee({project: 'test', uniquifier: 'uid'});
       });
     });
   });

@@ -354,20 +354,6 @@ class StateResolver {
     };
   }
 
-  // TODO: This method doesn't appear to be used.  Determine if it can be
-  //       removed.
-  extractArgumentsList_(frame: v8Types.FrameDetails): apiTypes.Variable[] {
-    const args: apiTypes.Variable[] = [];
-    for (let i = 0; i < frame.argumentCount(); i++) {
-      // Don't resolve unnamed arguments.
-      if (!frame.argumentName(i)) {
-        continue;
-      }
-      args.push({name: frame.argumentName(i), value: frame.argumentValue(i)});
-    }
-    return args;
-  }
-
   /**
    * Iterates and returns variable information for all scopes (excluding global)
    * in a given frame. FrameMirrors should return their scope object list with
