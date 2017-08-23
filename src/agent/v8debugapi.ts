@@ -16,15 +16,13 @@
 
 import * as acorn from 'acorn';
 import * as estree from 'estree';
+import * as inspector from 'inspector';
 import * as _ from 'lodash';
 import * as path from 'path';
-import * as semver from 'semver';
-import * as vm from 'vm';
 
 import {StatusMessage} from '../status-message';
 import * as apiTypes from '../types/api-types';
 import {Logger} from '../types/common-types';
-import * as v8Types from '../types/v8-types';
 
 import {DebugAgentConfig} from './config';
 import {FileStats, ScanStats} from './scanner';
@@ -50,6 +48,19 @@ const messages = {
       'Could not determine the output file associated with the transpiled input file'
 };
 
+const scriptmapper: {[id: string]: any} = {};
+
+// Initialize the inspector session.
+// See:
+// https://nodejs.org/api/inspector.html
+const session = new inspector.Session();
+session.connect();
+session.on('Debugger.scriptParsed', (script) => {
+  scriptmapper[script.params.scriptId] = script.params;
+});
+session.post('Debugger.enable');
+session.post('Debugger.setBreakpointsActive', {active: true});
+
 const MODULE_WRAP_PREFIX_LENGTH = require('module').wrap('☃').indexOf('☃');
 
 export interface V8DebugApi {
@@ -69,18 +80,21 @@ export interface V8DebugApi {
 
 class BreakpointData {
   constructor(
+      public id: string, public active: boolean,
       public apiBreakpoint: apiTypes.Breakpoint,
-      public v8Breakpoint: v8Types.BreakPoint,
       public parsedCondition: estree.Node,
-      // TODO: The code in this method assumes that `compile` exists.  Verify
-      // that is correct.
-      // TODO: Update this so that `null|` is not needed for `compile`.
-      public compile: null|((src: string) => string)) {}
+      public compile: null|((src: string) => string)) {
+    this.id = id;
+    this.active = active;
+    this.apiBreakpoint = apiBreakpoint;
+    this.parsedCondition = parsedCondition;
+    this.compile = compile;
+  }
 }
 
 /**
  * Formats a provided message and a high-resolution interval of the format
- * [seconds, nanoseconds] (for example, from process.hrtime()) prefixed with a
+ * [seconds, nanoseconds] (for example, from process.hrtime()) prefixed with
  * provided message as a string intended for logging.
  * @param {string} msg The mesage that prefixes the formatted interval.
  * @param {number[]} interval The interval to format.
@@ -98,7 +112,6 @@ export function create(
     return singleton;
   }
 
-  let v8: v8Types.Debug;
   let logger: Logger;
   let config: DebugAgentConfig;
   let fileStats: ScanStats;
@@ -110,33 +123,15 @@ export function create(
       {[id: string]:
            {enabled: boolean; listener: (...args: any[]) => any;}} = {};
   let numBreakpoints = 0;
-  // Before V8 4.5, having a debug listener active disables optimization. To
-  // deal with this we only activate the listener when there is a breakpoint
-  // active, and remote it as soon as the snapshot is taken. Furthermore, 4.5
-  // changes the API such that Debug.scripts() crashes unless a listener is
-  // active. We use a permanent listener on V8 4.5+.
-  const v8Version = /(\d+\.\d+\.\d+)\.\d+/.exec(process.versions.v8);
-  if (!v8Version || v8Version.length < 2) {
-    return null;
-  }
-  const usePermanentListener = semver.satisfies(v8Version[1], '>=4.5');
 
-  // Node.js v0.11+ have the runInDebugContext method that can be used to fetch
-  // the API object.
-  if (!vm.runInDebugContext) {
-    return null;
-  }
-
-  v8 = vm.runInDebugContext('Debug');
   logger = logger_;
   config = config_;
   fileStats = jsFiles_;
   sourcemapper = sourcemapper_;
 
-  if (usePermanentListener) {
-    logger.info('activating v8 breakpoint listener (permanent)');
-    v8.setListener(handleDebugEvents);
-  }
+  session.on('Debugger.paused', (params: any) => {
+    handleDebugPausedEvent(params);
+  });
 
   /* -- Public Interface -- */
 
@@ -148,7 +143,7 @@ export function create(
      */
     set: function(
         breakpoint: apiTypes.Breakpoint, cb: (err: Error|null) => void): void {
-      if (!v8 || !breakpoint ||
+      if (!breakpoint ||
           typeof breakpoint.id === 'undefined' ||  // 0 is a valid id
           !breakpoint.location || !breakpoint.location.path ||
           !breakpoint.location.line) {
@@ -156,7 +151,6 @@ export function create(
             cb, breakpoint, StatusMessage.UNSPECIFIED,
             messages.INVALID_BREAKPOINT);
       }
-
       const baseScriptPath = path.normalize(breakpoint.location.path);
       if (!sourcemapper.hasMappingInfo(baseScriptPath)) {
         if (!_.endsWith(baseScriptPath, '.js')) {
@@ -197,17 +191,12 @@ export function create(
       if (!breakpointData) {
         return false;
       }
-      const v8bp = breakpointData.v8Breakpoint;
-
-      v8.clearBreakPoint(v8bp.number());
+      session.post(
+          'Debugger.removeBreakpoint', {breakpointId: breakpointData.id});
+      let breakpointId: string = breakpoints[breakpoint.id].id;
       delete breakpoints[breakpoint.id];
-      delete listeners[v8bp.number()];
+      delete listeners[breakpointId];
       numBreakpoints--;
-      if (numBreakpoints === 0 && !usePermanentListener) {
-        // removed last breakpoint
-        logger.info('deactivating v8 breakpoint listener');
-        v8.setListener(null);
-      }
       return true;
     },
 
@@ -216,23 +205,22 @@ export function create(
      * @param {Function} callback
      */
     wait: function(
-        breakpoint: apiTypes.Breakpoint,
-        callback: (err?: Error) => void): void {
-      // TODO: Address the case whree `breakpoint.id` is `null`.
-      const num = breakpoints[breakpoint.id as string].v8Breakpoint.number();
-      const listener =
-          onBreakpointHit.bind(null, breakpoint, function(err: Error) {
-            listeners[num].enabled = false;
-            // This method is called from the debug event listener, which
-            // swallows all exception. We defer the callback to make sure the
-            // user errors aren't silenced.
-            setImmediate(function() {
-              callback(err);
-            });
-          });
-
-      listeners[num] = {enabled: true, listener: listener};
-    },
+        breakpoint: apiTypes.Breakpoint, callback: (err?: Error) => void):
+        void {
+          // TODO: Address the case whree `breakpoint.id` is `null`.
+          const bp = breakpoints[breakpoint.id as string];
+          const listener =
+              onBreakpointHit.bind(null, breakpoint, function(err: Error) {
+                listeners[bp.id].enabled = false;
+                // This method is called from the debug event listener, which
+                // swallows all exception. We defer the callback to make sure
+                // the user errors aren't silenced.
+                setImmediate(function() {
+                  callback(err);
+                });
+              });
+          listeners[bp.id] = {enabled: true, listener: listener};
+        },
 
     /**
      * @param {Breakpoint} breakpoint
@@ -243,7 +231,7 @@ export function create(
         print: (format: string, exps: string[]) => void,
         shouldStop: () => boolean): void {
       // TODO: Address the case whree `breakpoint.id` is `null`.
-      const num = breakpoints[breakpoint.id as string].v8Breakpoint.number();
+      const bpId = breakpoints[breakpoint.id as string].id;
       let logsThisSecond = 0;
       let timesliceEnd = Date.now() + 1000;
       // TODO: Determine why the Error argument is not used.
@@ -263,22 +251,22 @@ export function create(
                     JSON.stringify as (ob: any) => string));
             logsThisSecond++;
             if (shouldStop()) {
-              listeners[num].enabled = false;
+              listeners[bpId].enabled = false;
             } else {
               if (logsThisSecond >= config.log.maxLogsPerSecond) {
-                listeners[num].enabled = false;
+                listeners[bpId].enabled = false;
                 setTimeout(function() {
                   // listeners[num] may have been deleted by `clear` during the
                   // async hop. Make sure it is valid before setting a property
                   // on it.
-                  if (!shouldStop() && listeners[num]) {
-                    listeners[num].enabled = true;
+                  if (!shouldStop() && listeners[bpId]) {
+                    listeners[bpId].enabled = true;
                   }
                 }, config.log.logDelaySeconds * 1000);
               }
             }
           });
-      listeners[num] = {enabled: true, listener: listener};
+      listeners[bpId] = {enabled: true, listener: listener};
     },
 
     // The following are for testing:
@@ -310,7 +298,7 @@ export function create(
       cb: (err: Error|null) => void): void {
     // Parse and validate conditions and watch expressions for correctness and
     // immutability
-    let ast = null;
+    let ast: any = null;
     if (breakpoint.condition) {
       try {
         // We parse as ES6; even though the underlying V8 version may only
@@ -326,8 +314,8 @@ export function create(
               cb, breakpoint, StatusMessage.BREAKPOINT_CONDITION,
               messages.DISALLOWED_EXPRESSION);
         }
-      } catch (err) {
-        const message = messages.SYNTAX_ERROR_IN_CONDITION + err.message;
+      } catch (e) {
+        const message = messages.SYNTAX_ERROR_IN_CONDITION + e.message;
         return setErrorStatusAndCallback(
             cb, breakpoint, StatusMessage.BREAKPOINT_CONDITION, message);
       }
@@ -362,8 +350,8 @@ export function create(
           messages.SOURCE_FILE_AMBIGUOUS);
     }
 
-    // TODO: Address the case where `breakpoint.location` is `null`.
-    // TODO: Address the case where `fileStats[matchingScript]` is `null`.
+    // // TODO: Address the case where `breakpoint.location` is `null`.
+    // // TODO: Address the case where `fileStats[matchingScript]` is `null`.
     if ((breakpoint.location as apiTypes.SourceLocation).line >=
         (fileStats[matchingScript] as FileStats).lines) {
       return setErrorStatusAndCallback(
@@ -386,7 +374,6 @@ export function create(
     const line = mapInfo ?
         mapInfo.line :
         (breakpoint.location as apiTypes.SourceLocation).line;
-
     // We need to special case breakpoints on the first line. Since Node.js
     // wraps modules with a function expression, we adjust
     // to deal with that.
@@ -394,29 +381,27 @@ export function create(
       column += MODULE_WRAP_PREFIX_LENGTH - 1;
     }
 
-    const v8bp = setByRegExp(matchingScript, line, column);
-    if (!v8bp) {
-      return setErrorStatusAndCallback(
-          cb, breakpoint, StatusMessage.BREAKPOINT_SOURCE_LOCATION,
-          messages.V8_BREAKPOINT_ERROR);
-    }
+    session.post(
+        'Debugger.setBreakpointByUrl',
+        {url: matchingScript, lineNumber: line - 1, columnNumber: column - 1},
+        (error: Error | null, result: any) => {
+          if (error) {
+            return setErrorStatusAndCallback(
+                cb, breakpoint, StatusMessage.BREAKPOINT_SOURCE_LOCATION,
+                messages.V8_BREAKPOINT_ERROR);
+          }
 
-    if (numBreakpoints === 0 && !usePermanentListener) {
-      // added first breakpoint
-      logger.info('activating v8 breakpoint listener');
-      v8.setListener(handleDebugEvents);
-    }
+          breakpoints[breakpoint.id as string] = new BreakpointData(
+              result.breakpointId, true, breakpoint, ast as estree.Program,
+              compile);
+          numBreakpoints++;
 
-    // TODO: Address the case whree `breakpoint.id` is `null`.
-    breakpoints[breakpoint.id as string] =
-        // TODO: Address the case where `ast` is `null`.
-        new BreakpointData(breakpoint, v8bp, ast as estree.Program, compile);
-    numBreakpoints++;
-
-    setImmediate(function() {
-      cb(null);
-    });  // success.
+          setImmediate(function() {
+            cb(null);
+          });  // success.
+        });
   }
+
 
   /**
    * Produces a compilation function based on the file extension of the
@@ -435,7 +420,7 @@ export function create(
         return function(uncompiled) {
           const comp = require('coffee-script');
           const compiled = comp.compile('0 || (' + uncompiled + ')');
-          // Strip out coffeescript scoping wrapper to get translated condition
+          // Strip out coffeescript scoping wrapper to get translated
           const re =
               /\(function\(\) {\s*0 \|\| \((.*)\);\n\n\}\)\.call\(this\);/;
           const match = re.exec(compiled);
@@ -459,43 +444,13 @@ export function create(
     }
   }
 
-  function setByRegExp(
-      scriptPath: string, line: number, column: number): v8Types.BreakPoint {
-    const regexp = pathToRegExp(scriptPath);
-    const num = v8.setScriptBreakPointByRegExp(regexp, line - 1, column - 1);
-    const v8bp = v8.findBreakPoint(num);
-    return v8bp;
-  }
-
-  // function setById(scriptPath, line) {
-  //   const script = findScript(scriptPath);
-  //   if (!script) {
-  //     return null;
-  //   }
-
-  //   // v8 uses 0-based line numbers                     ----v
-  //   const position = v8.findScriptSourcePosition(script, line - 1, 0);
-  //   if (!position) {
-  //     return null;
-  //   }
-
-  //   const v8bp = v8.setBreakPointByScriptIdAndPosition(
-  //     script.id, position, null /* condition */, true /*enabled*/
-  //   );
-  //   if (!v8bp) {
-  //     return null;
-  //   }
-
-  //   return v8bp;
-  // }
-
   function onBreakpointHit(
       breakpoint: apiTypes.Breakpoint, callback: (err: Error|null) => void,
-      execState: v8Types.ExecutionState): void {
+      callFrames: inspector.Debugger.CallFrame[]): void {
     // TODO: Address the situation where `breakpoint.id` is `null`.
-    const v8bp = breakpoints[breakpoint.id as string].v8Breakpoint;
+    const bp = breakpoints[breakpoint.id as string];
 
-    if (!v8bp.active()) {
+    if (!bp.active) {
       // Breakpoint exists, but not active. We never disable breakpoints, so
       // this is theoretically not possible. Perhaps this is possible if there
       // is a second debugger present? Regardless, report the error.
@@ -504,52 +459,75 @@ export function create(
           messages.V8_BREAKPOINT_DISABLED);
     }
 
-    const result = checkCondition(breakpoint, execState);
-    if (result.error) {
-      return setErrorStatusAndCallback(
-          callback, breakpoint, StatusMessage.BREAKPOINT_CONDITION,
-          messages.ERROR_EVALUATING_CONDITION + result.error);
-    } else if (!result.value) {
-      // Check again next time
-      logger.info('\tthe breakpoint condition wasn\'t met');
-      return;
-    }
-
-    // Breakpoint Hit
-    const start = process.hrtime();
-    try {
-      captureBreakpointData(breakpoint, execState);
-    } catch (err) {
-      return setErrorStatusAndCallback(
-          callback, breakpoint, StatusMessage.BREAKPOINT_SOURCE_LOCATION,
-          messages.CAPTURE_BREAKPOINT_DATA + err);
-    }
-    const end = process.hrtime(start);
-    logger.info(formatInterval('capture time: ', end));
-    callback(null);
-  }
-
-  /**
-   * @param {Debug.DebugEvent} evt
-   * @param {Debug#ExecutionState} execState
-   * @param {Debug#BreakEvent} eventData
-   */
-  function handleDebugEvents(
-      evt: v8Types.DebugEvent, execState: v8Types.ExecutionState,
-      eventData: v8Types.BreakEvent): void {
-    try {
-      switch (evt) {
-        // TODO: Address the case where `v8` is `null`.
-        case v8.DebugEvent.Break:
-          eventData.breakPointsHit().forEach(function(hit) {
-            const num = hit.script_break_point().number();
-            if (listeners[num].enabled) {
-              logger.info('>>>V8 breakpoint hit<<< number: ' + num);
-              listeners[num].listener(execState, eventData);
+    // Breakpoint Condition Check
+    if (breakpoint.condition) {
+      try {
+        const ast =
+            acorn.parse(breakpoint.condition as string, {sourceType: 'script'});
+        const validator = require('./validator');
+        if (!validator.isValid(ast)) {
+          return setErrorStatusAndCallback(
+              callback, breakpoint, StatusMessage.BREAKPOINT_CONDITION,
+              messages.ERROR_EVALUATING_CONDITION + '. expression not allowed');
+        }
+      } catch (e) {
+        return setErrorStatusAndCallback(
+            callback, breakpoint, StatusMessage.BREAKPOINT_CONDITION,
+            messages.ERROR_EVALUATING_CONDITION + e);
+      }
+      session.post(
+          'Debugger.evaluateOnCallFrame', {
+            callFrameId: callFrames[0].callFrameId,
+            expression: breakpoint.condition as string
+          },
+          (error: Error | null, response: any) => {
+            if (error || response.exceptionDetails !== undefined) {
+              return setErrorStatusAndCallback(
+                  callback, breakpoint, StatusMessage.BREAKPOINT_CONDITION,
+                  messages.ERROR_EVALUATING_CONDITION +
+                      String(response.exceptionDetails));
+            } else if (!response.result.value) {
+              // Check again next time
+              logger.info('\tthe breakpoint condition wasn\'t met');
+              return;
+            } else {
+              // Breakpoint Hit
+              const start = process.hrtime();
+              try {
+                captureBreakpointData(breakpoint, callFrames);
+              } catch (e) {
+                return setErrorStatusAndCallback(
+                    callback, breakpoint,
+                    StatusMessage.BREAKPOINT_SOURCE_LOCATION,
+                    messages.CAPTURE_BREAKPOINT_DATA + e);
+              }
+              const end = process.hrtime(start);
+              logger.info(formatInterval('capture time: ', end));
+              callback(null);
             }
           });
-          break;
-        default:
+    } else {
+      // Breakpoint Hit
+      const start = process.hrtime();
+      try {
+        captureBreakpointData(breakpoint, callFrames);
+      } catch (e) {
+        return setErrorStatusAndCallback(
+            callback, breakpoint, StatusMessage.BREAKPOINT_SOURCE_LOCATION,
+            messages.CAPTURE_BREAKPOINT_DATA + e);
+      }
+      const end = process.hrtime(start);
+      logger.info(formatInterval('capture time: ', end));
+      callback(null);
+    }
+  }
+
+  function handleDebugPausedEvent(params: any): void {
+    try {
+      let bpId: string = params.params.hitBreakpoints[0];
+      if (listeners[bpId].enabled) {
+        logger.info('>>>breakpoint hit<<< number: ' + bpId);
+        listeners[bpId].listener(params.params.callFrames);
       }
     } catch (e) {
       logger.warn('Internal V8 error on breakpoint event: ' + e);
@@ -558,7 +536,7 @@ export function create(
 
   function captureBreakpointData(
       breakpoint: apiTypes.Breakpoint,
-      execState: v8Types.ExecutionState): void {
+      callFrames: inspector.Debugger.CallFrame[]): void {
     const expressionErrors: Array<apiTypes.Variable|null> = [];
     // TODO: Address the case where `breakpoint.id` is `null`.
     if (breakpoint.expressions &&
@@ -590,48 +568,34 @@ export function create(
       if (!breakpoint.expressions) {
         breakpoint.evaluatedExpressions = [];
       } else {
-        const frame = execState.frame(0);
+        const frame = callFrames[0];
         const evaluatedExpressions = breakpoint.expressions.map(function(exp) {
-          const result = state.evaluate(exp, frame);
-          // TODO: Address the case where `result.mirror` is `undefined`.
-          return result.error ? result.error :
-                                (result.mirror as v8Types.ValueMirror).value();
+          try {
+            const ast = acorn.parse(exp, {sourceType: 'script'});
+            const validator = require('./validator');
+            if (!validator.isValid(ast)) {
+              return 'expression not allowed';
+            }
+          } catch (e) {
+            return e.message;
+          }
+          session.post(
+              'Debugger.evaluateOnCallFrame',
+              {callFrameId: frame.callFrameId, expression: exp},
+              (error: Error | null, response: any) => {
+                if (error) console.error(error);
+                if (response.exceptionDetails !== undefined) {
+                  return String(response.exceptionDetails);
+                } else {
+                  return response.result;
+                }
+              });
         });
         breakpoint.evaluatedExpressions = evaluatedExpressions;
       }
     } else {
-      // TODO: Address the case where `breakpoint.expression` is `undefined`.
-      const captured = state.capture(
-          execState, breakpoint.expressions as string[], config, v8);
-      breakpoint.stackFrames = captured.stackFrames;
-      // TODO: This suggests the Status type and Variable type are the same.
-      //       Determine if that is the case.
-      breakpoint.variableTable = captured.variableTable as apiTypes.Variable[];
-      breakpoint.evaluatedExpressions =
-          expressionErrors.concat(captured.evaluatedExpressions);
+      state.capture(callFrames, breakpoint, config, scriptmapper, session);
     }
-  }
-
-  /**
-   * Evaluates the breakpoint condition, if present.
-   * @return object with either a boolean value or an error property
-   */
-  function checkCondition(
-      breakpoint: apiTypes.Breakpoint,
-      execState: v8Types.ExecutionState): {value?: boolean, error?: string} {
-    if (!breakpoint.condition) {
-      return {value: true};
-    }
-
-    const result = state.evaluate(breakpoint.condition, execState.frame(0));
-
-    if (result.error) {
-      return {error: result.error};
-    }
-    // TODO: Address the case where `result.mirror` is `null`.
-    return {
-      value: !!((result.mirror as v8Types.ValueMirror).value())
-    };  // intentional !!
   }
 
   function setErrorStatusAndCallback(

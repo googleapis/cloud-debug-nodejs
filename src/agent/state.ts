@@ -13,25 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import * as inspector from 'inspector';
 import * as lodash from 'lodash';
 import * as util from 'util';
-import * as vm from 'vm';
 
 import {debugAssert} from './debug-assert';
 
-const transform = lodash.transform;
-const flatten = lodash.flatten;
 const isEmpty = lodash.isEmpty;
 
 import {StatusMessage} from '../status-message';
 
-import * as v8Types from '../types/v8-types';
 import * as apiTypes from '../types/api-types';
 import {DebugAgentConfig} from './config';
 
 // TODO: Determine if `ScopeType` should be named `scopeType`.
 // tslint:disable-next-line:variable-name
-const ScopeType = vm.runInDebugContext('ScopeType');
+// const ScopeType = vm.runInDebugContext('ScopeType');
 const assert = debugAssert(process.env.CLOUD_DEBUG_ASSERTIONS);
 
 // Error message indices into the resolved variable table.
@@ -40,59 +37,35 @@ const NATIVE_PROPERTY_MESSAGE_INDEX = 1;
 const GETTER_MESSAGE_INDEX = 2;
 const ARG_LOCAL_LIMIT_MESSAGE_INDEX = 3;
 
-/**
- * Checks that the provided expressions will not have side effects and
- * then evaluates the expression in the current execution context.
- *
- * @return an object with error and mirror fields.
- */
-export function evaluate(expression: string, frame: v8Types.FrameMirror):
-    {error: string | null, mirror?: v8Types.ValueMirror} {
-  // First validate the expression to make sure it doesn't mutate state
-  const acorn = require('acorn');
-  try {
-    const ast = acorn.parse(expression, {sourceType: 'script'});
-    const validator = require('./validator');
-    if (!validator.isValid(ast)) {
-      return {error: 'expression not allowed'};
-    }
-  } catch (err) {
-    return {error: err.message};
-  }
-
-  // Now actually ask V8 to evaluate the expression
-  try {
-    const mirror = frame.evaluate(expression);
-    return {error: null, mirror: mirror};
-  } catch (error) {
-    return {error: error};
-  }
-}
-
 class StateResolver {
-  private state_: v8Types.ExecutionState;
+  private callFrames_: Array<inspector.Debugger.CallFrame>;
   private expressions_: string[];
   private config_: DebugAgentConfig;
-  private ctx_: v8Types.Debug;
+  private scriptmapper_: {[id: string]: any};
+  private breakpoint_: apiTypes.Breakpoint;
+  private session_: inspector.Session;
   private evaluatedExpressions_: apiTypes.Variable[];
   private totalSize_: number;
   private messageTable_: apiTypes.Variable[];
   private resolvedVariableTable_: apiTypes.Variable[];
-  private rawVariableTable_: Array<v8Types.ValueMirror|null>;
+  private rawVariableTable_: Array<any>;
 
   /**
-   * @param {!Object} execState
+   * @param {Array<!Object>} callFrames
    * @param {Array<string>} expressions
    * @param {!Object} config
    * @constructor
    */
   constructor(
-      execState: v8Types.ExecutionState, expressions: string[],
-      config: DebugAgentConfig, v8: v8Types.Debug) {
-    this.state_ = execState;
-    this.expressions_ = expressions;
+      callFrames: Array<inspector.Debugger.CallFrame>,
+      breakpoint: apiTypes.Breakpoint, config: DebugAgentConfig,
+      scriptmapper: {[id: string]: any}, session: inspector.Session) {
+    this.callFrames_ = callFrames;
+    this.breakpoint_ = breakpoint;
+    this.expressions_ = breakpoint.expressions as string[];
     this.config_ = config;
-    this.ctx_ = v8;
+    this.scriptmapper_ = scriptmapper;
+    this.session_ = session;
 
     this.evaluatedExpressions_ = [];
     this.totalSize_ = 0;
@@ -135,41 +108,65 @@ class StateResolver {
    * @return an object with stackFrames, variableTable, and
    *         evaluatedExpressions fields
    */
-  capture_(): apiTypes.Breakpoint {
+  capture_(): void {
     const that = this;
 
     // Evaluate the watch expressions
+    that.breakpoint_.evaluatedExpressions = [];
     const evalIndexSet = new Set();
     if (that.expressions_) {
       that.expressions_.forEach(function(expression, index2) {
-        const result = evaluate(expression, that.state_.frame(0));
-        let evaluated;
-
-        if (result.error) {
-          evaluated = {
+        const acorn = require('acorn');
+        try {
+          const ast = acorn.parse(expression, {sourceType: 'script'});
+          const validator = require('./validator');
+          if (!validator.isValid(ast)) {
+            that.breakpoint_.evaluatedExpressions[index2] = {
+              name: expression,
+              status: new StatusMessage(
+                  StatusMessage.VARIABLE_VALUE, 'expression not allowed', true)
+            };
+            return;
+          }
+        } catch (err) {
+          that.breakpoint_.evaluatedExpressions[index2] = {
             name: expression,
             status: new StatusMessage(
-                StatusMessage.VARIABLE_VALUE, result.error, true)
+                StatusMessage.VARIABLE_VALUE, err.message, true)
           };
-        } else {
-          // TODO: Determine how to not downcast this to v8Types.ValueMirror
-          // TODO: Handle the case where `result.mirror` is `undefined`.
-          evaluated = that.resolveVariable_(
-              expression, result.mirror as v8Types.ValueMirror, true);
-          const varTableIdx = evaluated.varTableIndex;
-          if (typeof varTableIdx !== 'undefined') {
-            evalIndexSet.add(varTableIdx);
-          }
+          return;
         }
-        that.evaluatedExpressions_[index2] = evaluated;
+        that.session_.post(
+            'Debugger.evaluateOnCallFrame', {
+              callFrameId: that.callFrames_[0].callFrameId,
+              expression: expression
+            },
+            (error: Error | null, response: any) => {
+              if (error) console.error(error);
+              if (response.exceptionDetails !== undefined) {
+                that.breakpoint_.evaluatedExpressions[index2] = {
+                  name: expression,
+                  status: new StatusMessage(
+                      StatusMessage.VARIABLE_VALUE,
+                      String(response.exceptionDetails), true)
+                };
+              } else {
+                let evaluated =
+                    that.resolveVariable_(expression, response.result, true);
+                const varTableIdx = evaluated.varTableIndex;
+                if (typeof varTableIdx !== 'undefined') {
+                  evalIndexSet.add(varTableIdx);
+                }
+                that.breakpoint_.evaluatedExpressions[index2] = evaluated;
+              }
+            });
       });
     }
 
     // The frames are resolved after the evaluated expressions so that
     // evaluated expressions can be evaluated as much as possible within
     // the max data size limits
-    const frames = that.resolveFrames_();
-
+    that.resolveFrames_();
     // Now resolve the variables
     let index = this.messageTable_.length;  // skip the sentinel values
     const noLimit = that.config_.capture.maxDataSize === 0;
@@ -181,21 +178,16 @@ class StateResolver {
       const isEvaluated = evalIndexSet.has(index);
       // TODO: This code suggests that an ObjectMirror and Stutus are the
       //       same.  Resolve this.
-      that.resolvedVariableTable_[index] = that.resolveMirror_(
-          that.rawVariableTable_[index] as v8Types.ObjectMirror, isEvaluated);
+      that.resolveVariableTable_(
+          that.rawVariableTable_[index], isEvaluated, index);
       index++;
     }
 
     // If we filled up the buffer already, we need to trim the remainder
     if (index < that.rawVariableTable_.length) {
-      that.trimVariableTable_(index, frames);
+      that.trimVariableTable_(index);
     }
-
-    return {
-      stackFrames: frames,
-      variableTable: that.resolvedVariableTable_,
-      evaluatedExpressions: that.evaluatedExpressions_
-    };
+    this.breakpoint_.variableTable = that.resolvedVariableTable_;
   }
 
   /**
@@ -207,7 +199,8 @@ class StateResolver {
    * @param {Object} frames Frames associated with the current execution
    *                        environment.
    */
-  trimVariableTable_(fromIndex: number, frames: apiTypes.StackFrame[]): void {
+  trimVariableTable_(fromIndex: number): void {
+    let frames: apiTypes.StackFrame[] = this.breakpoint_.stackFrames;
     this.resolvedVariableTable_.splice(
         fromIndex);  // remove the remaining entries
 
@@ -230,26 +223,26 @@ class StateResolver {
       processBufferFull(frame.arguments);
       processBufferFull(frame.locals);
     });
-    processBufferFull(this.evaluatedExpressions_);
+    processBufferFull(
+        this.breakpoint_.evaluatedExpressions as apiTypes.Variable[]);
     processBufferFull(this.resolvedVariableTable_);
   }
 
-  resolveFrames_(): apiTypes.StackFrame[] {
+  resolveFrames_(): void {
     const frames: apiTypes.StackFrame[] = [];
+    this.breakpoint_.stackFrames = frames;
     const frameCount =
-        Math.min(this.state_.frameCount(), this.config_.capture.maxFrames);
+        Math.min(this.callFrames_.length, this.config_.capture.maxFrames);
 
     for (let i = 0; i < frameCount; i++) {
-      const frame = this.state_.frame(i);
+      const frame = this.callFrames_[i];
       if (this.shouldFrameBeResolved_(frame)) {
-        frames.push(this.resolveFrame_(
-            frame, (i < this.config_.capture.maxExpandFrames)));
+        this.resolveFrame_(frame, (i < this.config_.capture.maxExpandFrames));
       }
     }
-    return frames;
   }
 
-  shouldFrameBeResolved_(frame: v8Types.FrameMirror): boolean {
+  shouldFrameBeResolved_(frame: inspector.Debugger.CallFrame): boolean {
     // Only capture data from the frames for which we can link the data back
     // to the source files.
 
@@ -268,21 +261,18 @@ class StateResolver {
     return true;
   }
 
-  resolveFullPath_(frame: v8Types.FrameMirror): string {
-    const func = frame.func();
-    if (!func.resolved()) {
+  resolveFullPath_(frame: inspector.Debugger.CallFrame): string {
+    let scriptId: string = frame.location.scriptId;
+    if (this.scriptmapper_[scriptId] === undefined) {
       return '';
     }
-
-    const script = func.script();
-    if (!script) {
+    if (this.scriptmapper_[scriptId].url === undefined) {
       return '';
     }
-
-    return script.name();
+    return this.scriptmapper_[scriptId].url;
   }
 
-  resolveRelativePath_(frame: v8Types.FrameMirror): string {
+  resolveRelativePath_(frame: inspector.Debugger.CallFrame): string {
     const fullPath = this.resolveFullPath_(frame);
     return this.stripCurrentWorkingDirectory_(fullPath);
   }
@@ -303,8 +293,8 @@ class StateResolver {
     return path.indexOf('node_modules') === 0;
   }
 
-  resolveFrame_(frame: v8Types.FrameMirror, underFrameCap: boolean):
-      apiTypes.StackFrame {
+  resolveFrame_(frame: inspector.Debugger.CallFrame, underFrameCap: boolean):
+      void {
     let args: Array<apiTypes.Variable> = [];
     // TODO: `locals` should be of type v8Types.ScopeMirror[]
     //       Resolve conflicts so that it can be specified of that type.
@@ -312,12 +302,19 @@ class StateResolver {
     // Locals and arguments are safe to collect even when
     // `config.allowExpressions=false` since we properly avoid inspecting
     // interceptors and getters by default.
+    this.breakpoint_.stackFrames.push({
+      function: this.resolveFunctionName_(frame),
+      location: this.resolveLocation_(frame),
+      arguments: args,
+      locals: locals,
+    });
+    let stackFramesLength = this.breakpoint_.stackFrames.length;
     if (!underFrameCap) {
-      args.push({
+      this.breakpoint_.stackFrames[stackFramesLength - 1].arguments.push({
         name: 'arguments_not_available',
         varTableIndex: ARG_LOCAL_LIMIT_MESSAGE_INDEX
       });
-      locals.push({
+      this.breakpoint_.stackFrames[stackFramesLength - 1].locals.push({
         name: 'locals_not_available',
         varTableIndex: ARG_LOCAL_LIMIT_MESSAGE_INDEX
       });
@@ -325,32 +322,26 @@ class StateResolver {
       // We will use the values aggregated from the ScopeMirror traversal stored
       // in locals which will include any applicable arguments from the
       // invocation.
-      args = [];
-      locals = this.resolveLocalsList_(frame, args);
-      if (isEmpty(locals)) {
-        locals = [];
-      }
+      this.breakpoint_.stackFrames[stackFramesLength - 1].arguments = [];
+      this.resolveLocalsList_(frame, args, stackFramesLength);
     }
-    return {
-      function: this.resolveFunctionName_(frame.func()),
-      location: this.resolveLocation_(frame),
-      arguments: args,
-      locals: locals
-    };
   }
 
-  resolveFunctionName_(func: v8Types.FunctionMirror): string {
-    if (!func || !func.isFunction()) {
+  resolveFunctionName_(frame: inspector.Debugger.CallFrame): string {
+    if (!frame) {
       return '';
     }
-    return func.name() || func.inferredName() || '(anonymous function)';
+    if (frame.functionName === '') {
+      return '(anonymous function)';
+    }
+    return frame.functionName;
   }
 
-  resolveLocation_(frame: v8Types.FrameMirror): apiTypes.SourceLocation {
+  resolveLocation_(frame: inspector.Debugger.CallFrame):
+      apiTypes.SourceLocation {
     return {
       path: this.resolveRelativePath_(frame),
-      // V8 uses 0-based line numbers but Debuglet API uses 1-based numbers.
-      line: frame.sourceLine() + 1
+      line: frame.location.lineNumber
     };
   }
 
@@ -370,69 +361,47 @@ class StateResolver {
    * @returns {Array<Object>} - returns an array containing data about selected
    *  variables
    */
-  resolveLocalsList_(frame: v8Types.FrameMirror, args: any):
-      v8Types.ScopeMirror[] {
+  resolveLocalsList_(
+      frame: inspector.Debugger.CallFrame, args: any,
+      stackFramesLength: number): void {
     // TODO: Determine why `args` is never used in this function
     args = args;
 
-    const self = this;
+    // const self = this;
     const usedNames: {[name: string]: boolean} = {};
-    const makeMirror = this.ctx_.MakeMirror;
-    const allScopes = frame.allScopes();
-    const count = allScopes.length;
-
-    // There will always be at least 3 scopes.
-    // For top-level breakpoints: [local, script, global]
-    // Other: [..., closure (module IIFE), script, global]
-    assert(count >= 3);
-    assert.strictEqual(allScopes[count - 1].scopeType(), ScopeType.Global);
-    assert.strictEqual(allScopes[count - 2].scopeType(), ScopeType.Script);
+    // const makeMirror = this.ctx_.MakeMirror;
+    const allScopes = frame.scopeChain;
+    let count = allScopes.length;
 
     // We find the top-level (module global) variable pollute the local
     // variables we omit them by default, unless the breakpoint itself is
-    // top-level. The last two scopes are always omitted.
-    let scopes: v8Types.ScopeMirror[];
-    if (allScopes[count - 3].scopeType() === ScopeType.Closure) {
-      scopes = allScopes.slice(0, -3);
-    } else {
-      assert(allScopes[count - 3].scopeType() === ScopeType.Local);
-      scopes = allScopes.slice(0, -2);
+    // top-level. The last scope is always omitted.
+    if (frame.scopeChain[count - 2].type === 'closure')
+      count -= 2;
+    else
+      count -= 1;
+    for (let i = 0; i < count; ++i) {
+      this.session_.post(
+          'Runtime.getProperties',
+          {objectId: frame.scopeChain[i].object.objectId as string},
+          (error: Error | null, response: any) => {
+            if (error) console.error('e1', error);
+            if (isEmpty(response.result)) {
+              this.breakpoint_.stackFrames[stackFramesLength - 1].locals = [];
+            }
+            for (let j = 0; j < response.result.length; ++j) {
+              if (!usedNames[response.result[j].name]) {
+                // It's a valid variable that belongs in the locals list
+                // and wasn't discovered at a lower-scope
+                usedNames[response.result[j].name] = true;
+                this.breakpoint_.stackFrames[stackFramesLength - 1].locals.push(
+                    this.resolveVariable_(
+                        response.result[j].name, response.result[j].value,
+                        false));
+              }
+            }
+          });
     }
-
-    return flatten(scopes.map(function(scope: v8Types.ScopeMirror) {
-             return transform(
-                 // TODO: Update this so that `locals` is not of type `any[]`.
-                 scope.details().object(),
-                 function(locals: any[], value, name: string) {
-                   const trg = makeMirror(value);
-                   if (!usedNames[name]) {
-                     // It's a valid variable that belongs in the locals list
-                     // and wasn't discovered at a lower-scope
-                     usedNames[name] = true;
-                     // TODO: Determine how to not have an explicit down cast to
-                     // ValueMirror
-                     locals.push(self.resolveVariable_(
-                         name, trg as v8Types.ValueMirror, false));
-                   }  // otherwise another same-named variable occured at a
-                      // lower scope
-                   return locals;
-                 },
-                 []);
-           }))
-        .concat((function() {
-          // The frame receiver is the 'this' context that is present during
-          // invocation. Check to see whether a receiver context is substantive,
-          // (invocations may be bound to null) if so: store in the locals list
-          // under the name 'context' which is used by the Chrome DevTools.
-          const ctx = frame.details().receiver();
-          if (ctx) {
-            // TODO: Determine how to not have an explicit down cast to
-            // ValueMirror
-            return [self.resolveVariable_(
-                'context', makeMirror(ctx) as v8Types.ValueMirror, false)];
-          }
-          return [];
-        }()));
   }
 
   /**
@@ -445,16 +414,13 @@ class StateResolver {
    * @param {boolean} isEvaluated Specifies if the variable is from a watched
    *                              expression.
    */
-  resolveVariable_(
-      name: string, value: v8Types.ValueMirror,
-      isEvaluated: boolean): apiTypes.Variable {
+  resolveVariable_(name: string, value: any, isEvaluated: boolean):
+      apiTypes.Variable {
     let size = name.length;
-
     const data: apiTypes.Variable = {name: name};
-
-    if (value.isPrimitive() || value.isRegExp()) {
+    if (this.isPrimitive_(value.type)) {
       // primitives: undefined, null, boolean, number, string, symbol
-      data.value = value.toText();
+      data.value = String(value.value);
       const maxLength = this.config_.capture.maxStringLength;
       if (!isEvaluated && maxLength && maxLength < data.value.length) {
         data.status = new StatusMessage(
@@ -467,13 +433,13 @@ class StateResolver {
             false);
         data.value = data.value.substring(0, maxLength) + '...';
       }
-
-    } else if (value.isFunction()) {
+    } else if (this.isFunction_(value.type)) {
       // TODO: Determine how to resolve this so that a ValueMirror doesn't need
       //       to be cast to a FunctionMirror.
-      data.value = 'function ' +
-          this.resolveFunctionName_(value as v8Types.FunctionMirror) + '()';
-    } else if (value.isObject()) {
+
+      data.value =
+          'function ' + (name === '' ? '(anonymous function)' : name + '()');
+    } else if (this.isObject_(value.type)) {
       data.varTableIndex = this.getVariableIndex_(value);
     } else {
       // PropertyMirror, InternalPropertyMirror, FrameMirror, ScriptMirror
@@ -485,13 +451,24 @@ class StateResolver {
     } else {
       size += 8;  // fudge-it
     }
-
     this.totalSize_ += size;
-
     return data;
   }
 
-  getVariableIndex_(value: v8Types.ValueMirror): number {
+  isPrimitive_(type: string): boolean {
+    return type === 'undefined' || type === 'boolean' || type === 'number' ||
+        type === 'string' || type === 'symbol';
+  }
+
+  isObject_(type: string): boolean {
+    return type === 'object';
+  }
+
+  isFunction_(type: string): boolean {
+    return type === 'function';
+  }
+
+  getVariableIndex_(value: any): number {
     let idx = this.rawVariableTable_.indexOf(value);
     if (idx === -1) {
       idx = this.storeObjectToVariableTable_(value);
@@ -499,7 +476,7 @@ class StateResolver {
     return idx;
   }
 
-  storeObjectToVariableTable_(obj: v8Types.ValueMirror): number {
+  storeObjectToVariableTable_(obj: any): number {
     let idx = this.rawVariableTable_.length;
     this.rawVariableTable_[idx] = obj;
     return idx;
@@ -509,45 +486,57 @@ class StateResolver {
    * Responsible for recursively resolving the properties on a
    * provided object mirror.
    */
-  resolveMirror_(mirror: v8Types.ObjectMirror, isEvaluated: boolean):
-      apiTypes.Variable {
-    let properties = mirror.properties();
+  resolveVariableTable_(mirror: any, isEvaluated: boolean, index: number):
+      void {
     const maxProps = this.config_.capture.maxProperties;
-    const truncate = maxProps && properties.length > maxProps;
-    if (!isEvaluated && truncate) {
-      properties = properties.slice(0, maxProps);
-    }
-    // TODO: It looks like `members` should be of type apiTypes.Variable[]
-    //       but is missing fields.  Determine if those fields are required or
-    //       if the type should not be apiTypes.Variable[]
-    const members =
-        properties.map(this.resolveMirrorProperty_.bind(this, isEvaluated));
-    if (!isEvaluated && truncate) {
-      // TDOO: Determine how to remove this explicit cast
-      members.push({
-        name: 'Only first `config.capture.maxProperties=' +
-            this.config_.capture.maxProperties +
-            '` properties were captured. Use in an expression' +
-            ' to see all properties.'
-      });
-    }
-    return {value: mirror.toText(), members: members};
+    if (mirror.objectId === undefined) return;
+    this.session_.post(
+        'Runtime.getProperties', {objectId: mirror.objectId as string},
+        (error: Error | null, response: any) => {
+          if (error) console.error('e', error);
+          let members: Array<any> = [];
+          let truncate = maxProps && response.result.length > maxProps;
+          let upperBound = response.result.length;
+          if (!isEvaluated && truncate) upperBound = maxProps;
+          for (let i = 0; i < upperBound; ++i) {
+            if (response.result[i].isOwn) {
+              members.push(
+                  this.resolveMirrorProperty_(isEvaluated, response.result[i]));
+            }
+          }
+          if (!isEvaluated && truncate) {
+            // TDOO: Determine how to remove this explicit cast
+            members.push({
+              name: 'Only first `config.capture.maxProperties=' +
+                  this.config_.capture.maxProperties +
+                  '` properties were captured. Use in an expression' +
+                  ' to see all properties.'
+            });
+          }
+          this.resolvedVariableTable_[index] = {
+            value: mirror.description,
+            members: members
+          };
+        });
   }
 
-  resolveMirrorProperty_(
-      isEvaluated: boolean,
-      property: v8Types.PropertyMirror): apiTypes.Variable {
-    const name = String(property.name());
+  resolveMirrorProperty_(isEvaluated: boolean, property: any):
+      apiTypes.Variable {
+    const name = String(property.name);
     // Array length must be special cased as it is a native property that
     // we know to be safe to evaluate which is not generally true.
-    const isArrayLen = property.mirror_.isArray() && name === 'length';
-    if (property.isNative() && !isArrayLen) {
-      return {name: name, varTableIndex: NATIVE_PROPERTY_MESSAGE_INDEX};
-    }
-    if (property.hasGetter()) {
+    // const isArrayLen = property.mirror_.isArray() && name === 'length';
+    // if (property.isNative() && !isArrayLen) {
+    //   return {name: name, varTableIndex: NATIVE_PROPERTY_MESSAGE_INDEX};
+    // }
+    // if (property.hasGetter()) {
+    //   return {name: name, varTableIndex: GETTER_MESSAGE_INDEX};
+    // }
+
+    if (property.get !== undefined) {
       return {name: name, varTableIndex: GETTER_MESSAGE_INDEX};
     }
-    return this.resolveVariable_(name, property.value(), isEvaluated);
+    return this.resolveVariable_(name, property.value, isEvaluated);
   }
 }
 
@@ -563,7 +552,9 @@ export function testAssert(): void {
  *         evaluatedExpressions fields
  */
 export function capture(
-    execState: v8Types.ExecutionState, expressions: string[],
-    config: DebugAgentConfig, v8: v8Types.Debug): apiTypes.Breakpoint {
-  return (new StateResolver(execState, expressions, config, v8)).capture_();
+    callFrames: Array<inspector.Debugger.CallFrame>,
+    breakpoint: apiTypes.Breakpoint, config: DebugAgentConfig,
+    scriptmapper: {[id: string]: any}, session: inspector.Session): void {
+  (new StateResolver(callFrames, breakpoint, config, scriptmapper, session))
+      .capture_();
 }
