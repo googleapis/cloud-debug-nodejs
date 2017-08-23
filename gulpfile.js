@@ -88,7 +88,7 @@ gulp.task('compile', () => {
 });
 
 gulp.task('test.system.copy', () => {
-  return gulp.src(['system-test/**/*'])
+  return gulp.src(['system-test/**/*.js'])
              .pipe(gulp.dest(`${outDir}/system-test`));
 });
 
@@ -112,7 +112,7 @@ gulp.task('test.packagejson.copy', () => {
 });
 
 gulp.task('test.unit.copy', () => {
-  return gulp.src(['test/**/*'])
+  return gulp.src(['test/**/*.js'])
              .pipe(gulp.dest(`${outDir}/test`));
 });
 
