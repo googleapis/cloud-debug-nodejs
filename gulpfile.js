@@ -34,7 +34,9 @@ const tslintPath = path.join(__dirname, 'tslint.json');
 const outDir = 'build';
 const sources = ['src/**/*.ts'];
 const unitTests = ['test/**/*.ts'];
+const unitTestsSupportFiles = ['test/**/*', '!test/**/*.ts'];
 const systemTests = ['system-test/**/*.ts'];
+const systemTestsSupportFiles = ['system-test/**/*', '!system-test/**/*.ts'];
 const allFiles = sources.concat(unitTests).concat(systemTests);
 
 let exitOnError = true;
@@ -88,7 +90,7 @@ gulp.task('compile', () => {
 });
 
 gulp.task('test.system.copy', () => {
-  return gulp.src(['system-test/**/*.js'])
+  return gulp.src(systemTestsSupportFiles)
              .pipe(gulp.dest(`${outDir}/system-test`));
 });
 
@@ -112,7 +114,7 @@ gulp.task('test.packagejson.copy', () => {
 });
 
 gulp.task('test.unit.copy', () => {
-  return gulp.src(['test/**/*.js'])
+  return gulp.src(unitTestsSupportFiles)
              .pipe(gulp.dest(`${outDir}/test`));
 });
 
