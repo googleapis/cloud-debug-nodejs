@@ -18,6 +18,9 @@
     "strictNullChecks": true,
     "module": "commonjs",
     "target": "es5",
-    "sourceMap": true
+    "sourceMap": true,
+    "typeRoots": [
+      "node_modules/@types", "node_modules/node-inspector-types"
+    ]
   }
 }
