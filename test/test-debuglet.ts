@@ -289,7 +289,7 @@ describe('Debuglet', function() {
   });
 
   describe('setup', function() {
-    before(function() { oldGP = process.env.GCLOUD_PROJECT; });
+    before(function() { oldGP = String(process.env.GCLOUD_PROJECT); });
 
     after(function() { process.env.GCLOUD_PROJECT = oldGP; });
 
@@ -436,7 +436,7 @@ describe('Debuglet', function() {
 
       it('should respect GCLOUD_DEBUG_LOGLEVEL', function(done) {
         process.env.GCLOUD_PROJECT = '11020304f2934';
-        process.env.GCLOUD_DEBUG_LOGLEVEL = 3;
+        process.env.GCLOUD_DEBUG_LOGLEVEL = '3';
         const debug = new Debug({credentials: fakeCredentials});
         const debuglet = new Debuglet(debug, defaultConfig);
 

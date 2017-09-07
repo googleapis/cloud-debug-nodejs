@@ -88,8 +88,10 @@ describe(__filename, function() {
           locals[0],
           {name: 'a', value: 'test'}
  	      );
-        api.clear(brk);
-        done();
+        api.clear(brk,function(err) {
+          assert.ifError(err);
+          done();
+        })
       });
       process.nextTick(foo.bind(null, 'test'));
     });
@@ -115,8 +117,10 @@ describe(__filename, function() {
           locals[0],
           {name: 'a', value: '10'}
         );
-        api.clear(brk);
-        done();
+        api.clear(brk, function(err) {
+          assert.ifError(err);
+          done();
+        });
       });
       process.nextTick(foo.bind(null, 'test'));
     });
@@ -142,8 +146,10 @@ describe(__filename, function() {
           locals[0],
           {name: 'a', value: '11'}
         );
-        api.clear(brk);
-        done();
+        api.clear(brk, function(err) {
+          assert.ifError(err);
+          done();
+        });
       });
       process.nextTick(foo.bind(null, 'test'));
     });
@@ -173,8 +179,10 @@ describe(__filename, function() {
           locals[1],
           {name: 'a', value: 'true'}
         );
-        api.clear(brk);
-        done();
+        api.clear(brk, function(err) {
+          assert.ifError(err);
+          done();
+        });
       });
       process.nextTick(foo.bind(null, 'test'));
     });

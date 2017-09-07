@@ -26,7 +26,7 @@ import defaultConfig from '../src/agent/config';
 import * as SourceMapper from '../src/agent/sourcemapper';
 import * as scanner from '../src/agent/scanner';
 
-process.env.GCLOUD_PROJECT = 0;
+process.env.GCLOUD_PROJECT = '0';
 
 function stateIsClean(api: V8DebugApi): boolean {
   assert.equal(api.numBreakpoints_(), 0,
@@ -89,8 +89,10 @@ describe(__filename, function() {
           locals[0],
           {name: 'b', value: '1'}
         );
-        api.clear(brk);
-        done();
+        api.clear(brk, function(err) {
+          assert.ifError(err);
+          done();
+        });
       });
       process.nextTick(foo.bind(null, 'test'));
     });
@@ -115,8 +117,10 @@ describe(__filename, function() {
           locals[0],
           {name: 'b', value: '2'}
         );
-        api.clear(brk);
-        done();
+        api.clear(brk, function(err) {
+          assert.ifError(err);
+          done();
+        });
       });
       process.nextTick(foo.bind(null, 'test'));
     });

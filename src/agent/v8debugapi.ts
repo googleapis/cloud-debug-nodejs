@@ -37,6 +37,7 @@ const messages = {
       'A script matching the source file was not found loaded on the debuggee',
   SOURCE_FILE_AMBIGUOUS: 'Multiple files match the path specified',
   V8_BREAKPOINT_ERROR: 'Unable to set breakpoint in v8',
+  V8_BREAKPOINT_CLAER_ERROR: 'Unable to clear breakpoint in v8',
   SYNTAX_ERROR_IN_CONDITION: 'Syntax error in condition: ',
   ERROR_EVALUATING_CONDITION: 'Error evaluating condition: ',
   ERROR_COMPILING_CONDITION: 'Error compiling condition.',
@@ -54,7 +55,8 @@ const MODULE_WRAP_PREFIX_LENGTH = require('module').wrap('☃').indexOf('☃');
 
 export interface V8DebugApi {
   set: (breakpoint: apiTypes.Breakpoint, cb: (err: Error|null) => void) => void;
-  clear: (breakpoint: apiTypes.Breakpoint) => boolean;
+  clear:
+      (breakpoint: apiTypes.Breakpoint, cb: (err: Error|null) => void) => void;
   wait:
       (breakpoint: apiTypes.Breakpoint,
        callback: (err?: Error) => void) => void;
@@ -189,13 +191,18 @@ export function create(
       }
     },
 
-    clear: function(breakpoint: apiTypes.Breakpoint): boolean {
+    clear: function(
+        breakpoint: apiTypes.Breakpoint, cb: (err: Error|null) => void): void {
       if (typeof breakpoint.id === 'undefined') {
-        return false;
+        return setErrorStatusAndCallback(
+            cb, breakpoint, StatusMessage.BREAKPOINT_CONDITION,
+            messages.V8_BREAKPOINT_CLAER_ERROR);
       }
       const breakpointData = breakpoints[breakpoint.id];
       if (!breakpointData) {
-        return false;
+        return setErrorStatusAndCallback(
+            cb, breakpoint, StatusMessage.BREAKPOINT_CONDITION,
+            messages.V8_BREAKPOINT_CLAER_ERROR);
       }
       const v8bp = breakpointData.v8Breakpoint;
 
@@ -208,7 +215,9 @@ export function create(
         logger.info('deactivating v8 breakpoint listener');
         v8.setListener(null);
       }
-      return true;
+      return setImmediate(function() {
+        cb(null);
+      });
     },
 
     /**
