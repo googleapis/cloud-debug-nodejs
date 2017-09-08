@@ -45,7 +45,7 @@ nock.disableNetConnect();
 
 const defaultConfig = extend(true, {}, DEFAULT_CONFIG, {logLevel: 0});
 
-let oldGP: string;
+let oldGP: string|undefined;
 
 declare type MetadataCallback = (err: Error|null, ob?: any, result?: string) => void;
 
@@ -289,7 +289,7 @@ describe('Debuglet', function() {
   });
 
   describe('setup', function() {
-    before(function() { oldGP = String(process.env.GCLOUD_PROJECT); });
+    before(function() { oldGP = process.env.GCLOUD_PROJECT; });
 
     after(function() { process.env.GCLOUD_PROJECT = oldGP; });
 

@@ -37,7 +37,7 @@ const messages = {
       'A script matching the source file was not found loaded on the debuggee',
   SOURCE_FILE_AMBIGUOUS: 'Multiple files match the path specified',
   V8_BREAKPOINT_ERROR: 'Unable to set breakpoint in v8',
-  V8_BREAKPOINT_CLAER_ERROR: 'Unable to clear breakpoint in v8',
+  V8_BREAKPOINT_CLEAR_ERROR: 'Unable to clear breakpoint in v8',
   SYNTAX_ERROR_IN_CONDITION: 'Syntax error in condition: ',
   ERROR_EVALUATING_CONDITION: 'Error evaluating condition: ',
   ERROR_COMPILING_CONDITION: 'Error compiling condition.',
@@ -196,13 +196,13 @@ export function create(
       if (typeof breakpoint.id === 'undefined') {
         return setErrorStatusAndCallback(
             cb, breakpoint, StatusMessage.BREAKPOINT_CONDITION,
-            messages.V8_BREAKPOINT_CLAER_ERROR);
+            messages.V8_BREAKPOINT_CLEAR_ERROR);
       }
       const breakpointData = breakpoints[breakpoint.id];
       if (!breakpointData) {
         return setErrorStatusAndCallback(
             cb, breakpoint, StatusMessage.BREAKPOINT_CONDITION,
-            messages.V8_BREAKPOINT_CLAER_ERROR);
+            messages.V8_BREAKPOINT_CLEAR_ERROR);
       }
       const v8bp = breakpointData.v8Breakpoint;
 

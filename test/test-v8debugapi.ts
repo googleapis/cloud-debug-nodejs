@@ -305,8 +305,8 @@ describe('v8debugapi', function() {
           } as any as apiTypes.Breakpoint;
           api.set(bp, function(err) {
             test(err);
-            api.clear(bp, function(err1) {
-              test(err1);
+            api.clear(bp, function(err) {
+              test(err);
               done();
             });
           });
@@ -611,8 +611,8 @@ describe('v8debugapi', function() {
           assert(((localsVal as any).status as any).description.format.match(
             'Locals and arguments are only displayed.*config.capture.maxExpandFrames=0'
             ));
-          config.capture.maxExpandFrames = oldCount;
           api.clear(bp, function(err) {
+            config.capture.maxExpandFrames = oldCount;
             assert.ifError(err);
             done();
           });
@@ -638,8 +638,8 @@ describe('v8debugapi', function() {
           assert.equal(topFrame['function'], 'foo');
           assert.equal(topFrame.locals[0].name, 'n');
           assert.equal(topFrame.locals[0].value, '2');
-          config.capture.maxFrames = oldMax;
           api.clear(bp, function(err) {
+            config.capture.maxFrames = oldMax;
             assert.ifError(err);
             done();
           });
@@ -696,12 +696,12 @@ describe('v8debugapi', function() {
             return m.name === 'versions' && m.varTableIndex;
           } as any));
 
-          config.capture.maxDataSize = oldMaxData;
-          config.capture.maxProperties = oldMaxProps;
           api.clear(bp, function(err) {
+            config.capture.maxDataSize = oldMaxData;
+            config.capture.maxProperties = oldMaxProps;
             assert.ifError(err);
-            done();
-          });
+              done();
+            });
         });
         process.nextTick(function() {code.foo(3);});
       });
@@ -751,8 +751,8 @@ describe('v8debugapi', function() {
             return resolved && (resolved.status as any).isError;
           }));
 
-          config.capture.maxDataSize = oldMaxData;
           api.clear(bp, function(err) {
+            config.capture.maxDataSize = oldMaxData;
             assert.ifError(err);
             done();
           });
@@ -834,9 +834,9 @@ describe('v8debugapi', function() {
           const item = stringItems[0];
           assert(item.status.description.format.match(
             'Only first.*config.capture.maxStringLength=3.*of length 11.'));
-          config.capture.maxDataSize = oldMaxData;
-          config.capture.maxStringLength = oldMaxLength;
           api.clear(bp, function(err) {
+            config.capture.maxDataSize = oldMaxData;
+            config.capture.maxStringLength = oldMaxLength;
             assert.ifError(err);
             done();
           });
@@ -871,8 +871,8 @@ describe('v8debugapi', function() {
           assert((aVal as any).members[1].name.match(
             'Only first.*config.capture.maxProperties=1'));
 
-          config.capture.maxProperties = oldMax;
           api.clear(bp, function(err) {
+            config.capture.maxProperties = oldMax;
             assert.ifError(err);
             done();
           });
@@ -906,8 +906,8 @@ describe('v8debugapi', function() {
           assert((bVal as any).members[1].name.match(
             'Only first.*config.capture.maxProperties=1'));
 
-          config.capture.maxProperties = oldMax;
           api.clear(bp, function(err) {
+            config.capture.maxProperties = oldMax;
             assert.ifError(err);
             done();
           });
@@ -947,9 +947,9 @@ describe('v8debugapi', function() {
           // resulting in stringItems.length being 0.
           assert(stringItems.length === 1);
 
-          config.capture.maxDataSize = oldMaxData;
-          config.capture.maxStringLength = oldMaxLength;
           api.clear(bp, function(err) {
+            config.capture.maxDataSize = oldMaxData;
+            config.capture.maxStringLength = oldMaxLength;
             assert.ifError(err);
             done();
           });
@@ -986,9 +986,9 @@ describe('v8debugapi', function() {
             assert.equal(((fooVal as any).members as any).length, 4);
             assert.strictEqual((foo as any).status, undefined);
 
-            config.capture.maxDataSize = oldMaxData;
-            config.capture.maxProperties = oldMaxProps;
             api.clear(bp, function(err) {
+              config.capture.maxDataSize = oldMaxData;
+              config.capture.maxProperties = oldMaxProps;
               assert.ifError(err);
               done();
             });
@@ -1024,9 +1024,9 @@ describe('v8debugapi', function() {
             assert.equal(((fooVal as any).members as any).length, 3);
             assert.strictEqual((foo as any).status, undefined);
 
-            config.capture.maxDataSize = oldMaxData;
-            config.capture.maxProperties = oldMaxProps;
             api.clear(bp, function(err) {
+              config.capture.maxDataSize = oldMaxData;
+              config.capture.maxProperties = oldMaxProps;
               assert.ifError(err);
               done();
             });
@@ -1063,9 +1063,9 @@ describe('v8debugapi', function() {
               'Max data size reached'));
             assert(((fooVal as any).status as any).isError);
 
-            config.capture.maxDataSize = oldMaxData;
-            config.capture.maxProperties = oldMaxProps;
             api.clear(bp, function(err) {
+              config.capture.maxDataSize = oldMaxData;
+              config.capture.maxProperties = oldMaxProps;
               assert.ifError(err);
               done();
             });
@@ -1102,9 +1102,9 @@ describe('v8debugapi', function() {
               'Max data size reached'));
             assert(((fooVal as any).status as any).isError);
 
-            config.capture.maxDataSize = oldMaxData;
-            config.capture.maxProperties = oldMaxProps;
             api.clear(bp, function(err) {
+              config.capture.maxDataSize = oldMaxData;
+              config.capture.maxProperties = oldMaxProps;
               assert.ifError(err);
               done();
             });
@@ -1145,9 +1145,9 @@ describe('v8debugapi', function() {
               'Max data size reached'));
             assert((bArray.status as any).isError);
 
-            config.capture.maxDataSize = oldMaxData;
-            config.capture.maxProperties = oldMaxProps;
             api.clear(bp, function(err) {
+              config.capture.maxDataSize = oldMaxData;
+              config.capture.maxProperties = oldMaxProps;
               assert.ifError(err);
               done();
             });

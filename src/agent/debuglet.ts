@@ -660,13 +660,12 @@ export class Debuglet extends EventEmitter {
    * @private
    */
   removeBreakpoint_(breakpoint: Breakpoint): void {
-    const that = this;
     this.logger_.info('\tdeleted breakpoint', breakpoint.id);
     // TODO: Address the case when `breakpoint.id` is `undefined`.
     delete this.activeBreakpointMap_[breakpoint.id as string];
     if (this.v8debug_) {
-      this.v8debug_.clear(breakpoint, function(err) {
-        if (err) that.logger_.error(err);
+      this.v8debug_.clear(breakpoint, (err) => {
+        if (err) this.logger_.error(err);
       });
     }
   }
