@@ -47,7 +47,7 @@ const ARG_LOCAL_LIMIT_MESSAGE_INDEX = 3;
  * @return an object with error and mirror fields.
  */
 export function evaluate(expression: string, frame: v8Types.FrameMirror):
-    {error: string | null, mirror?: v8Types.ValueMirror} {
+    {error: string|null, mirror?: v8Types.ValueMirror} {
   // First validate the expression to make sure it doesn't mutate state
   const acorn = require('acorn');
   try {

@@ -107,8 +107,8 @@ export function create(
   // Entries map breakpoint id to { enabled: <bool>, listener: <function> }
   // TODO: Determine if the listener type is correct
   const listeners:
-      {[id: string]:
-           {enabled: boolean; listener: (...args: any[]) => any;}} = {};
+      {[id: string]: {enabled: boolean;
+                      listener: (...args: any[]) => any;}} = {};
   let numBreakpoints = 0;
   // Before V8 4.5, having a debug listener active disables optimization. To
   // deal with this we only activate the listener when there is a breakpoint
