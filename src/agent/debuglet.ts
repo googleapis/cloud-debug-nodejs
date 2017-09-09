@@ -40,7 +40,7 @@ import {StatusMessage} from '../status-message';
 import defaultConfig from './config';
 import * as scanner from './scanner';
 import * as SourceMapper from './sourcemapper';
-import * as v8debugapi from './v8debugapi';
+import * as debugapi from './debugapi';
 
 const pjson = require('../../../package.json');
 
@@ -50,7 +50,7 @@ import {Breakpoint} from '../types/api-types';
 import {DebugAgentConfig} from './config';
 import {Debug} from '../debug';
 import {Logger} from '../types/common-types';
-import {V8DebugApi} from './v8debugapi';
+import {DebugApi} from './debugapi';
 
 const promisify = require('util.promisify');
 
@@ -109,7 +109,7 @@ const formatBreakpoints = function(
 
 export class Debuglet extends EventEmitter {
   private debug_: Debug;
-  private v8debug_: V8DebugApi|null;
+  private v8debug_: DebugApi|null;
   private running_: boolean;
   private project_: string|null;
   private debugletApi_: Controller;
@@ -249,7 +249,7 @@ export class Debuglet extends EventEmitter {
       const mapper = sourcemapper as SourceMapper.SourceMapper;
 
       that.v8debug_ =
-          v8debugapi.create(that.logger_, that.config_, jsStats, mapper);
+          debugapi.create(that.logger_, that.config_, jsStats, mapper);
 
       id = id || fileStats.hash;
 
@@ -701,7 +701,7 @@ export class Debuglet extends EventEmitter {
     }
 
     // TODO: Address the case when `that.v8debug_` is `null`.
-    (that.v8debug_ as V8DebugApi).set(breakpoint, function(err1) {
+    (that.v8debug_ as DebugApi).set(breakpoint, function(err1) {
       if (err1) {
         cb(err1);
         return;
@@ -713,7 +713,7 @@ export class Debuglet extends EventEmitter {
 
       if (breakpoint.action === 'LOG') {
         // TODO: Address the case when `that.v8debug_` is `null`.
-        (that.v8debug_ as V8DebugApi)
+        (that.v8debug_ as DebugApi)
             .log(
                 breakpoint,
                 function(fmt: string, exprs: string[]) {
@@ -725,7 +725,7 @@ export class Debuglet extends EventEmitter {
                 });
       } else {
         // TODO: Address the case when `that.v8debug_` is `null`.
-        (that.v8debug_ as V8DebugApi).wait(breakpoint, function(err2) {
+        (that.v8debug_ as DebugApi).wait(breakpoint, function(err2) {
           if (err2) {
             that.logger_.error(err2);
             cb(err2);
