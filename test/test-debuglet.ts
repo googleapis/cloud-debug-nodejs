@@ -45,7 +45,7 @@ nock.disableNetConnect();
 
 const defaultConfig = extend(true, {}, DEFAULT_CONFIG, {logLevel: 0});
 
-let oldGP: string;
+let oldGP: string|undefined;
 
 declare type MetadataCallback = (err: Error|null, ob?: any, result?: string) => void;
 
@@ -436,7 +436,7 @@ describe('Debuglet', function() {
 
       it('should respect GCLOUD_DEBUG_LOGLEVEL', function(done) {
         process.env.GCLOUD_PROJECT = '11020304f2934';
-        process.env.GCLOUD_DEBUG_LOGLEVEL = 3;
+        process.env.GCLOUD_DEBUG_LOGLEVEL = '3';
         const debug = new Debug({credentials: fakeCredentials});
         const debuglet = new Debuglet(debug, defaultConfig);
 

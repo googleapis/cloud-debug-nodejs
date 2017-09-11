@@ -89,8 +89,10 @@ describe(__filename, function() {
           assert.equal(varTableIndicesSeen.indexOf(expr.varTableIndex as number), -1);
           varTableIndicesSeen.push(expr.varTableIndex as number);
         });
-        api.clear(breakpointInFoo);
-        done();
+        api.clear(breakpointInFoo, function(err) {
+          assert.ifError(err);
+          done();
+        });
       });
       process.nextTick(foo);
     });

@@ -32,7 +32,7 @@ import {DebugAgentConfig} from './config';
 // TODO: Determine if `ScopeType` should be named `scopeType`.
 // tslint:disable-next-line:variable-name
 const ScopeType = vm.runInDebugContext('ScopeType');
-const assert = debugAssert(process.env.CLOUD_DEBUG_ASSERTIONS);
+const assert = debugAssert(!!process.env.CLOUD_DEBUG_ASSERTIONS);
 
 // Error message indices into the resolved variable table.
 const BUFFER_FULL_MESSAGE_INDEX = 0;

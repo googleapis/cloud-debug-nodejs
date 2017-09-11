@@ -86,9 +86,11 @@ describe(__filename, function() {
         const e = locals[0];
         assert(e.name === 'e');
         assert(Number.isInteger(e.varTableIndex));
-        assert.equal(args.length, 0, 'There should be zero arguments');     
-        api.clear(brk);
-        done();
+        assert.equal(args.length, 0, 'There should be zero arguments');
+        api.clear(brk, function(err) {
+          assert.ifError(err);
+          done();
+        });
       });
       process.nextTick(foo.bind(null, 'test'));
     });
@@ -114,8 +116,10 @@ describe(__filename, function() {
           {name: 'e', value: '2'}
         );
         assert.equal(args.length, 0, 'There should be zero arguments');
-        api.clear(brk);
-        done();
+        api.clear(brk, function(err) {
+          assert.ifError(err);
+          done();
+        });
       });
       process.nextTick(foo.bind(null, 'test'));
     });

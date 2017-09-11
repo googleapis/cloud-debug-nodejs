@@ -664,7 +664,9 @@ export class Debuglet extends EventEmitter {
     // TODO: Address the case when `breakpoint.id` is `undefined`.
     delete this.activeBreakpointMap_[breakpoint.id as string];
     if (this.v8debug_) {
-      this.v8debug_.clear(breakpoint);
+      this.v8debug_.clear(breakpoint, (err) => {
+        if (err) this.logger_.error(err);
+      });
     }
   }
 

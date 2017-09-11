@@ -85,15 +85,17 @@ describe(__filename, function() {
         // TODO: Determine how to remove these casts to any.
         ctxMembers = (brk as any).variableTable.slice((brk as any).variableTable.length-1)[0]
           .members;
-        assert.deepEqual(ctxMembers.length, 1, 
+        assert.deepEqual(ctxMembers.length, 1,
           'There should be one member in the context variable value');
         assert.deepEqual(ctxMembers[0], {name: 'a', value: '10'});
         assert.equal(args.length, 0, 'There should be zero arguments');
         assert.equal(locals.length, 2, 'There should be two locals');
         assert.deepEqual(locals[0], {name: 'b', value: '1'});
         assert.deepEqual(locals[1].name, 'context');
-        api.clear(brk);
-        done();
+        api.clear(brk, function(err) {
+          assert.ifError(err);
+          done();
+        });
       });
       process.nextTick(code.foo.bind({}, 1));
     });
@@ -115,8 +117,10 @@ describe(__filename, function() {
         assert.equal(args.length, 0, 'There should be zero arguments');
         assert.equal(locals.length, 1, 'There should be one local');
         assert.deepEqual(locals[0], {name: 'j', value: '1'});
-        api.clear(brk);
-        done();
+        api.clear(brk, function(err) {
+          assert.ifError(err);
+          done();
+        });
       });
       process.nextTick(code.bar.bind(null, 1));
     });

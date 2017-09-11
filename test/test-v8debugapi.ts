@@ -160,8 +160,10 @@ describe('v8debugapi', function() {
     api.set(bp, function(err) {
       assert.ifError(err);
       assert.equal(api.numBreakpoints_(), 1);
-      api.clear(bp);
-      done();
+      api.clear(bp, function(err) {
+        assert.ifError(err);
+        done();
+      });
     });
   });
 
@@ -171,8 +173,10 @@ describe('v8debugapi', function() {
       const bp: apiTypes.Breakpoint = { id: 0, location: breakpointInFoo.location} as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {
         assert.ifError(err);
-        api.clear(bp);
-        done();
+        api.clear(bp, function(err) {
+          assert.ifError(err);
+          done();
+        });
       });
     });
 
@@ -202,8 +206,10 @@ describe('v8debugapi', function() {
         'foo.js')}} as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {
         assert.ifError(err);
-        api.clear(bp);
-        done();
+        api.clear(bp, function(err) {
+          assert.ifError(err);
+          done();
+        });
       });
     });
 
@@ -216,8 +222,10 @@ describe('v8debugapi', function() {
         'a', 'hello.js')}} as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {
         assert.ifError(err);
-        api.clear(bp);
-        done();
+        api.clear(bp, function(err) {
+          assert.ifError(err);
+          done();
+        });
       });
     });
 
@@ -297,8 +305,10 @@ describe('v8debugapi', function() {
           } as any as apiTypes.Breakpoint;
           api.set(bp, function(err) {
             test(err);
-            api.clear(bp);
-            done();
+            api.clear(bp, function(err) {
+              test(err);
+              done();
+            });
           });
         });
       });
@@ -409,8 +419,10 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           api.wait(bp, function(err) {
             assert.ifError(err);
-            api.clear(bp);
-            done();
+            api.clear(bp, function(err) {
+              assert.ifError(err);
+              done();
+            });
           });
           process.nextTick(function() {code.foo(7);});
         });
@@ -459,8 +471,10 @@ describe('v8debugapi', function() {
           assert.equal(transcript, 'catcat');
           assert(runCount > 12);
           clearInterval(interval);
-          api.clear(bp);
-          done();
+          api.clear(bp, function(err) {
+            assert.ifError(err);
+            done();
+          });
         }, 1500);
       });
     });
@@ -476,8 +490,10 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          api.clear(bp);
-          done();
+          api.clear(bp, function(err) {
+            assert.ifError(err);
+            done();
+          });
         });
         process.nextTick(function() {code.foo(1);});
       });
@@ -499,8 +515,10 @@ describe('v8debugapi', function() {
           setTimeout(function() {
             logger.warn = oldWarn;
             assert.equal(logCount, 0);
-            api.clear(bp);
-            done();
+            api.clear(bp, function(err) {
+              assert.ifError(err);
+              done();
+            });
           }, 100);
         });
         process.nextTick(function() {code.foo(1);});
@@ -521,8 +539,10 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         api.wait(bp, function(err) {
           assert.ifError(err);
-          api.clear(bp);
-          done();
+          api.clear(bp, function(err) {
+            assert.ifError(err);
+            done();
+          });
         });
         process.nextTick(function() {code.foo(1);});
       });
@@ -547,8 +567,10 @@ describe('v8debugapi', function() {
           assert.equal(topFrame.locals[0].value, '2');
           assert.equal(topFrame.locals[1].name, 'A');
           assert.equal(topFrame.locals[2].name, 'B');
-          api.clear(bp);
-          done();
+          api.clear(bp, function(err) {
+            assert.ifError(err);
+            done();
+          });
         });
       process.nextTick(function() {code.foo(2);});
       });
@@ -589,9 +611,11 @@ describe('v8debugapi', function() {
           assert(((localsVal as any).status as any).description.format.match(
             'Locals and arguments are only displayed.*config.capture.maxExpandFrames=0'
             ));
-          api.clear(bp);
-          config.capture.maxExpandFrames = oldCount;
-          done();
+          api.clear(bp, function(err) {
+            config.capture.maxExpandFrames = oldCount;
+            assert.ifError(err);
+            done();
+          });
         });
       process.nextTick(function() {code.foo(2);});
       });
@@ -614,9 +638,11 @@ describe('v8debugapi', function() {
           assert.equal(topFrame['function'], 'foo');
           assert.equal(topFrame.locals[0].name, 'n');
           assert.equal(topFrame.locals[0].value, '2');
-          api.clear(bp);
-          config.capture.maxFrames = oldMax;
-          done();
+          api.clear(bp, function(err) {
+            config.capture.maxFrames = oldMax;
+            assert.ifError(err);
+            done();
+          });
         });
       process.nextTick(function() {code.foo(2);});
       });
@@ -670,10 +696,12 @@ describe('v8debugapi', function() {
             return m.name === 'versions' && m.varTableIndex;
           } as any));
 
-          api.clear(bp);
-          config.capture.maxDataSize = oldMaxData;
-          config.capture.maxProperties = oldMaxProps;
-          done();
+          api.clear(bp, function(err) {
+            config.capture.maxDataSize = oldMaxData;
+            config.capture.maxProperties = oldMaxProps;
+            assert.ifError(err);
+              done();
+            });
         });
         process.nextTick(function() {code.foo(3);});
       });
@@ -723,9 +751,11 @@ describe('v8debugapi', function() {
             return resolved && (resolved.status as any).isError;
           }));
 
-          api.clear(bp);
-          config.capture.maxDataSize = oldMaxData;
-          done();
+          api.clear(bp, function(err) {
+            config.capture.maxDataSize = oldMaxData;
+            assert.ifError(err);
+            done();
+          });
         });
         process.nextTick(function() {code.getterObject();});
       });
@@ -763,8 +793,10 @@ describe('v8debugapi', function() {
           });
           assert(found);
 
-          api.clear(bp);
-          done();
+          api.clear(bp, function(err) {
+            assert.ifError(err);
+            done();
+          });
         });
         process.nextTick(function() {code.foo();});
       });
@@ -802,10 +834,12 @@ describe('v8debugapi', function() {
           const item = stringItems[0];
           assert(item.status.description.format.match(
             'Only first.*config.capture.maxStringLength=3.*of length 11.'));
-          api.clear(bp);
-          config.capture.maxDataSize = oldMaxData;
-          config.capture.maxStringLength = oldMaxLength;
-          done();
+          api.clear(bp, function(err) {
+            config.capture.maxDataSize = oldMaxData;
+            config.capture.maxStringLength = oldMaxLength;
+            assert.ifError(err);
+            done();
+          });
         });
         process.nextTick(function() {code.getterObject();});
       });
@@ -837,9 +871,11 @@ describe('v8debugapi', function() {
           assert((aVal as any).members[1].name.match(
             'Only first.*config.capture.maxProperties=1'));
 
-          api.clear(bp);
-          config.capture.maxProperties = oldMax;
-          done();
+          api.clear(bp, function(err) {
+            config.capture.maxProperties = oldMax;
+            assert.ifError(err);
+            done();
+          });
         });
         process.nextTick(function() {code.foo(2);});
       });
@@ -870,9 +906,11 @@ describe('v8debugapi', function() {
           assert((bVal as any).members[1].name.match(
             'Only first.*config.capture.maxProperties=1'));
 
-          api.clear(bp);
-          config.capture.maxProperties = oldMax;
-          done();
+          api.clear(bp, function(err) {
+            config.capture.maxProperties = oldMax;
+            assert.ifError(err);
+            done();
+          });
         });
         process.nextTick(function() {code.foo(2);});
       });
@@ -909,10 +947,12 @@ describe('v8debugapi', function() {
           // resulting in stringItems.length being 0.
           assert(stringItems.length === 1);
 
-          api.clear(bp);
-          config.capture.maxDataSize = oldMaxData;
-          config.capture.maxStringLength = oldMaxLength;
-          done();
+          api.clear(bp, function(err) {
+            config.capture.maxDataSize = oldMaxData;
+            config.capture.maxStringLength = oldMaxLength;
+            assert.ifError(err);
+            done();
+          });
         });
         process.nextTick(function() {code.getterObject();});
       });
@@ -946,10 +986,12 @@ describe('v8debugapi', function() {
             assert.equal(((fooVal as any).members as any).length, 4);
             assert.strictEqual((foo as any).status, undefined);
 
-            api.clear(bp);
-            config.capture.maxDataSize = oldMaxData;
-            config.capture.maxProperties = oldMaxProps;
-            done();
+            api.clear(bp, function(err) {
+              config.capture.maxDataSize = oldMaxData;
+              config.capture.maxProperties = oldMaxProps;
+              assert.ifError(err);
+              done();
+            });
           });
           process.nextTick(function() {code.foo(2);});
         });
@@ -982,10 +1024,12 @@ describe('v8debugapi', function() {
             assert.equal(((fooVal as any).members as any).length, 3);
             assert.strictEqual((foo as any).status, undefined);
 
-            api.clear(bp);
-            config.capture.maxDataSize = oldMaxData;
-            config.capture.maxProperties = oldMaxProps;
-            done();
+            api.clear(bp, function(err) {
+              config.capture.maxDataSize = oldMaxData;
+              config.capture.maxProperties = oldMaxProps;
+              assert.ifError(err);
+              done();
+            });
           });
           process.nextTick(function() {code.foo(2);});
         });
@@ -1019,10 +1063,12 @@ describe('v8debugapi', function() {
               'Max data size reached'));
             assert(((fooVal as any).status as any).isError);
 
-            api.clear(bp);
-            config.capture.maxDataSize = oldMaxData;
-            config.capture.maxProperties = oldMaxProps;
-            done();
+            api.clear(bp, function(err) {
+              config.capture.maxDataSize = oldMaxData;
+              config.capture.maxProperties = oldMaxProps;
+              assert.ifError(err);
+              done();
+            });
           });
           process.nextTick(function() {code.foo(2);});
         });
@@ -1056,10 +1102,12 @@ describe('v8debugapi', function() {
               'Max data size reached'));
             assert(((fooVal as any).status as any).isError);
 
-            api.clear(bp);
-            config.capture.maxDataSize = oldMaxData;
-            config.capture.maxProperties = oldMaxProps;
-            done();
+            api.clear(bp, function(err) {
+              config.capture.maxDataSize = oldMaxData;
+              config.capture.maxProperties = oldMaxProps;
+              assert.ifError(err);
+              done();
+            });
           });
           process.nextTick(function() {code.foo(2);});
         });
@@ -1097,10 +1145,12 @@ describe('v8debugapi', function() {
               'Max data size reached'));
             assert((bArray.status as any).isError);
 
-            api.clear(bp);
-            config.capture.maxDataSize = oldMaxData;
-            config.capture.maxProperties = oldMaxProps;
-            done();
+            api.clear(bp, function(err) {
+              config.capture.maxDataSize = oldMaxData;
+              config.capture.maxProperties = oldMaxProps;
+              assert.ifError(err);
+              done();
+            });
           });
           process.nextTick(function() {code.foo(2);});
         });
@@ -1128,8 +1178,10 @@ describe('v8debugapi', function() {
             assert((expr as any).status && (expr as any).status.isError);
           }
 
-          api.clear(bp);
-          done();
+          api.clear(bp, function(err) {
+            assert.ifError(err);
+            done();
+          });
         });
         process.nextTick(function() {code.foo(3);});
       });
@@ -1153,8 +1205,10 @@ describe('v8debugapi', function() {
           const topFrame = bp.stackFrames[0];
           assert.equal(topFrame.locals[0].name, 'n');
           assert.equal(topFrame.locals[0].value, '5');
-          api.clear(bp);
-          done();
+          api.clear(bp, function(err) {
+            assert.ifError(err);
+            done();
+          });
         });
         process.nextTick(function() {code.foo(4); code.foo(5);});
       });
@@ -1182,8 +1236,10 @@ describe('v8debugapi', function() {
             assert.equal(topFrame['function'], 'foo');
             assert.equal(topFrame.locals[0].name, 'n');
             assert.equal(topFrame.locals[0].value, '3');
-            api.clear(bp);
-            done();
+            api.clear(bp, function(err) {
+              assert.ifError(err);
+              done();
+            });
           });
           process.nextTick(function() {tt.foo(2); tt.foo(3);});
         });
@@ -1227,8 +1283,10 @@ describe('v8debugapi', function() {
             assert.equal(topFrame.locals[0].name, 'j');
             assert.equal(topFrame.locals[0].value, '2');
             assert.equal(topFrame['function'], 'foo');
-            api.clear(bp);
-            done();
+            api.clear(bp, function(err) {
+              assert.ifError(err);
+              done();
+            });
           });
           process.nextTick(function() {tt.foo(1); tt.foo(2);});
         });
@@ -1259,8 +1317,10 @@ describe('v8debugapi', function() {
               assert((expr as any).value === String(Math.PI * 3));
             }
 
-            api.clear(bp);
-            done();
+            api.clear(bp, function(err) {
+              assert.ifError(err);
+              done();
+            });
           });
           process.nextTick(function() {tt.foo(3);});
         });
@@ -1301,8 +1361,10 @@ describe('v8debugapi', function() {
               }
             }
 
-            api.clear(bp);
-            done();
+            api.clear(bp, function(err) {
+              assert.ifError(err);
+              done();
+            });
           });
           process.nextTick(function() {tt.foo(3);});
         });
@@ -1324,9 +1386,11 @@ describe('v8debugapi', function() {
           process.nextTick(function() {
             code.foo(6);
             process.nextTick(function() {
-              api.clear(bp);
-              assert(stateIsClean(api));
-              done();
+              api.clear(bp, function(err) {
+                assert.ifError(err);
+                assert(stateIsClean(api));
+                done();
+              });
             });
           });
         });
@@ -1343,11 +1407,15 @@ describe('v8debugapi', function() {
           api.set(bp2, function(err) {
             assert.ifError(err);
             assert.equal(api.numBreakpoints_(), 2);
-            api.clear(bp1);
-            assert.equal(api.numBreakpoints_(), 1);
-            api.clear(bp2);
-            assert.equal(api.numBreakpoints_(), 0);
-            done();
+            api.clear(bp1, function(err) {
+              assert.ifError(err);
+              assert.equal(api.numBreakpoints_(), 1);
+              api.clear(bp2, function(err) {
+                assert.ifError(err);
+                assert.equal(api.numBreakpoints_(), 0);
+                done();
+              });
+            });
           });
         });
       });
@@ -1367,8 +1435,10 @@ describe('v8debugapi', function() {
           assert.ifError(err);
           assert.ok(bp.stackFrames);
 
-          api.clear(bp);
-          done();
+          api.clear(bp, function(err) {
+            assert.ifError(err);
+            done();
+          });
         });
         process.nextTick(function() {foo();});
       });
@@ -1396,8 +1466,11 @@ describe('v8debugapi', function() {
         assert.ifError(err);
         // TODO: Determine if the err parameter should be used.
         api.wait(bp, function(_err) {
-          api.clear(bp);
-          throw new Error(message);
+          api.clear(bp, function(err) {
+            assert.ifError(err);
+            throw new Error(message);
+          });
+
         });
         process.nextTick(function() {code.foo(1);});
       });
@@ -1422,8 +1495,10 @@ describe('v8debugapi', function() {
           const topFrame = bp.stackFrames[0];
           assert.ok(topFrame.locals.some((local) => (local.name === '_a')));
           assert.ok(topFrame.locals.some((local) => (local.name === 'res')));
-          api.clear(bp);
-          done();
+          api.clear(bp, function(err) {
+            assert.ifError(err);
+            done();
+          });
         });
       });
       process.nextTick(run);
