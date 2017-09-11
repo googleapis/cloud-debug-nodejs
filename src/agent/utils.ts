@@ -1,13 +1,38 @@
 import * as path from 'path';
 
+import {StatusMessage} from '../status-message';
+import * as apiTypes from '../types/api-types';
+
 import {DebugAgentConfig} from './config';
 import {ScanStats} from './scanner';
 
 
+export const messages = {
+  INVALID_BREAKPOINT: 'invalid snapshot - id or location missing',
+  SOURCE_FILE_NOT_FOUND:
+      'A script matching the source file was not found loaded on the debuggee',
+  SOURCE_FILE_AMBIGUOUS: 'Multiple files match the path specified',
+  V8_BREAKPOINT_ERROR: 'Unable to set breakpoint in v8',
+  V8_BREAKPOINT_CLEAR_ERROR: 'Unable to clear breakpoint in v8',
+  SYNTAX_ERROR_IN_CONDITION: 'Syntax error in condition: ',
+  ERROR_EVALUATING_CONDITION: 'Error evaluating condition: ',
+  ERROR_COMPILING_CONDITION: 'Error compiling condition.',
+  DISALLOWED_EXPRESSION: 'Expression not allowed',
+  SOURCE_MAP_READ_ERROR:
+      'The source map could not be read or was incorrectly formatted',
+  V8_BREAKPOINT_DISABLED: 'Internal error: V8 breakpoint externally disabled',
+  CAPTURE_BREAKPOINT_DATA: 'Error trying to capture snapshot data: ',
+  INVALID_LINE_NUMBER: 'Invalid snapshot position: ',
+  COULD_NOT_FIND_OUTPUT_FILE:
+      'Could not determine the output file associated with the transpiled input file'
+};
+
+
+
 // Exposed for unit testing.
 export function findScripts(
-  scriptPath: string, config: DebugAgentConfig,
-  fileStats: ScanStats): string[] {
+    scriptPath: string, config: DebugAgentConfig,
+    fileStats: ScanStats): string[] {
   // Use repository relative mapping if present.
   if (config.appPathRelativeToRepository) {
     const candidate = scriptPath.replace(
@@ -54,24 +79,24 @@ export function findScripts(
  * @return {array<string>} list of files that match.
  */
 export function findScriptsFuzzy(
-  scriptPath: string, fileList: string[]): string[] {
-let matches = fileList;
-const components = scriptPath.split(path.sep);
-for (let i = components.length - 1; i >= 0; i--) {
-  const regexp = pathToRegExp(components.slice(i).join(path.sep));
-  matches = matches.filter(regexp.test.bind(regexp));
-  if (matches.length <= 1) {
-    break;  // Either no matches, or we found a unique match.
+    scriptPath: string, fileList: string[]): string[] {
+  let matches = fileList;
+  const components = scriptPath.split(path.sep);
+  for (let i = components.length - 1; i >= 0; i--) {
+    const regexp = pathToRegExp(components.slice(i).join(path.sep));
+    matches = matches.filter(regexp.test.bind(regexp));
+    if (matches.length <= 1) {
+      break;  // Either no matches, or we found a unique match.
+    }
   }
-}
-return matches;
+  return matches;
 }
 
 
 /**
  * @param {!string} scriptPath path of a script
  */
-function pathToRegExp(scriptPath: string): RegExp {
+export function pathToRegExp(scriptPath: string): RegExp {
   // make sure the script path starts with a slash. This makes sure our
   // regexp doesn't match monkey.js when the user asks to set a breakpoint
   // in key.js
@@ -95,6 +120,20 @@ function pathToRegExp(scriptPath: string): RegExp {
  * @param {number[]} interval The interval to format.
  * @return {string} A formatted string.
  */
-export const formatInterval = function(msg: string, interval: number[]): string {
+export const formatInterval = function(
+    msg: string, interval: number[]): string {
   return msg + (interval[0] * 1000 + interval[1] / 1000000) + 'ms';
 };
+
+
+export function setErrorStatusAndCallback(
+    fn: (err: Error|null) => void, breakpoint: apiTypes.Breakpoint,
+    refersTo: apiTypes.Reference, message: string): void {
+  const error = new Error(message);
+  return setImmediate(function() {
+    if (breakpoint && !breakpoint.status) {
+      breakpoint.status = new StatusMessage(refersTo, message, true);
+    }
+    fn(error);
+  });
+}

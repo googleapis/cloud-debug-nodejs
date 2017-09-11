@@ -1,4 +1,4 @@
-import * as estree from 'estree'
+import * as estree from 'estree';
 
 import * as apiTypes from '../types/api-types';
 import * as v8Types from '../types/v8-types';
