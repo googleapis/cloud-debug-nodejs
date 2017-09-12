@@ -28,8 +28,6 @@ export class V8BreakpointData {
       public compile: null|((src: string) => string)) {}
 }
 
-
-
 export class V8DebugApi implements debugapi.DebugApi {
   breakpoints: {[id: string]: V8BreakpointData} = {};
   sourcemapper: SourceMapper;
@@ -57,7 +55,28 @@ export class V8DebugApi implements debugapi.DebugApi {
     this.usePermanentListener = semver.satisfies(this.v8Version[1], '>=4.5');
     if (this.usePermanentListener) {
       this.logger.info('activating v8 breakpoint listener (permanent)');
-      this.v8.setListener(this.handleDebugEvents);
+      const that = this;
+      this.v8.setListener(function(
+          evt: v8Types.DebugEvent, execState: v8Types.ExecutionState,
+          eventData: v8Types.BreakEvent): void {
+        try {
+          switch (evt) {
+            // TODO: Address the case where `v8` is `null`.
+            case that.v8.DebugEvent.Break:
+              eventData.breakPointsHit().forEach(function(hit) {
+                const num = hit.script_break_point().number();
+                if (that.listeners[num].enabled) {
+                  that.logger.info('>>>V8 breakpoint hit<<< number: ' + num);
+                  that.listeners[num].listener(execState, eventData);
+                }
+              });
+              break;
+            default:
+          }
+        } catch (e) {
+          that.logger.warn('Internal V8 error on breakpoint event: ' + e);
+        }
+      });
     }
   }
 
@@ -79,7 +98,25 @@ export class V8DebugApi implements debugapi.DebugApi {
       }
       this.setInternal(breakpoint, null /* mapInfo */, null /* compile */, cb);
     } else {
-      return;
+      const line = breakpoint.location.line;
+      const column = 0;
+      const mapInfo =
+          this.sourcemapper.mappingInfo(baseScriptPath, line, column);
+
+      const compile = this.getBreakpointCompiler(breakpoint);
+      if (breakpoint.condition && compile) {
+        try {
+          breakpoint.condition = compile(breakpoint.condition);
+        } catch (e) {
+          this.logger.info(
+              'Unable to compile condition >> ' + breakpoint.condition + ' <<');
+          return utils.setErrorStatusAndCallback(
+              cb, breakpoint, StatusMessage.BREAKPOINT_CONDITION,
+              utils.messages.ERROR_COMPILING_CONDITION);
+        }
+      }
+
+      this.setInternal(breakpoint, mapInfo, compile, cb);
     }
   }
   clear(breakpoint: apiTypes.Breakpoint, cb: (err: Error|null) => void): void {
@@ -114,7 +151,7 @@ export class V8DebugApi implements debugapi.DebugApi {
     const that = this;
     const num = that.breakpoints[breakpoint.id as string].v8Breakpoint.number();
     const listener =
-        this.onBreakpointHit.bind(null, breakpoint, function(err: Error) {
+        this.onBreakpointHit.bind(this, breakpoint, function(err: Error) {
           that.listeners[num].enabled = false;
           // This method is called from the debug event listener, which
           // swallows all exception. We defer the callback to make sure the
@@ -137,7 +174,7 @@ export class V8DebugApi implements debugapi.DebugApi {
     let timesliceEnd = Date.now() + 1000;
     // TODO: Determine why the Error argument is not used.
     const listener =
-        this.onBreakpointHit.bind(null, breakpoint, function(_err: Error) {
+        this.onBreakpointHit.bind(this, breakpoint, function(_err: Error) {
           const currTime = Date.now();
           if (currTime > timesliceEnd) {
             logsThisSecond = 0;
@@ -276,7 +313,28 @@ export class V8DebugApi implements debugapi.DebugApi {
     if (this.numBreakpoints === 0 && !this.usePermanentListener) {
       // added first breakpoint
       this.logger.info('activating v8 breakpoint listener');
-      this.v8.setListener(this.handleDebugEvents);
+      const that = this;
+      this.v8.setListener(function(
+          evt: v8Types.DebugEvent, execState: v8Types.ExecutionState,
+          eventData: v8Types.BreakEvent): void {
+        try {
+          switch (evt) {
+            // TODO: Address the case where `v8` is `null`.
+            case that.v8.DebugEvent.Break:
+              eventData.breakPointsHit().forEach(function(hit) {
+                const num = hit.script_break_point().number();
+                if (that.listeners[num].enabled) {
+                  that.logger.info('>>>V8 breakpoint hit<<< number: ' + num);
+                  that.listeners[num].listener(execState, eventData);
+                }
+              });
+              break;
+            default:
+          }
+        } catch (e) {
+          that.logger.warn('Internal V8 error on breakpoint event: ' + e);
+        }
+      });
     }
     // TODO: Address the case whree `breakpoint.id` is `null`.
     this.breakpoints[breakpoint.id as string] =
@@ -297,36 +355,52 @@ export class V8DebugApi implements debugapi.DebugApi {
     return v8bp;
   }
 
-  handleDebugEvents(
-      evt: v8Types.DebugEvent, execState: v8Types.ExecutionState,
-      eventData: v8Types.BreakEvent): void {
-    const that = this;
-    try {
-      switch (evt) {
-        // TODO: Address the case where `v8` is `null`.
-        case that.v8.DebugEvent.Break:
-          eventData.breakPointsHit().forEach(function(hit) {
-            const num = hit.script_break_point().number();
-            if (that.listeners[num].enabled) {
-              that.logger.info('>>>V8 breakpoint hit<<< number: ' + num);
-              that.listeners[num].listener(execState, eventData);
-            }
-          });
-          break;
-        default:
-      }
-    } catch (e) {
-      that.logger.warn('Internal V8 error on breakpoint event: ' + e);
+  /**
+   * Produces a compilation function based on the file extension of the
+   * script path in which the breakpoint is set.
+   *
+   * @param {Breakpoint} breakpoint
+   */
+  getBreakpointCompiler(breakpoint: apiTypes.Breakpoint):
+      ((uncompiled: string) => string)|null {
+    // TODO: Address the case where `breakpoint.location` is `null`.
+    switch (
+        path.normalize((breakpoint.location as apiTypes.SourceLocation).path)
+            .split('.')
+            .pop()) {
+      case 'coffee':
+        return function(uncompiled) {
+          const comp = require('coffee-script');
+          const compiled = comp.compile('0 || (' + uncompiled + ')');
+          // Strip out coffeescript scoping wrapper to get translated condition
+          const re =
+              /\(function\(\) {\s*0 \|\| \((.*)\);\n\n\}\)\.call\(this\);/;
+          const match = re.exec(compiled);
+          if (match && match.length > 1) {
+            return match[1].trim();
+          } else {
+            throw new Error('Compilation Error for: ' + uncompiled);
+          }
+        };
+      case 'es6':
+      case 'es':
+      case 'jsx':
+        return function(uncompiled) {
+          // If we want to support es6 watch expressions we can compile them
+          // here. Babel is a large dependency to have if we don't need it in
+          // all cases.
+          return uncompiled;
+        };
+      default:
+        return null;
     }
   }
-
 
   onBreakpointHit(
       breakpoint: apiTypes.Breakpoint, callback: (err: Error|null) => void,
       execState: v8Types.ExecutionState): void {
     // TODO: Address the situation where `breakpoint.id` is `null`.
     const v8bp = this.breakpoints[breakpoint.id as string].v8Breakpoint;
-
     if (!v8bp.active()) {
       // Breakpoint exists, but not active. We never disable breakpoints, so
       // this is theoretically not possible. Perhaps this is possible if there

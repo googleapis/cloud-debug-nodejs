@@ -18,17 +18,17 @@ process.env.GCLOUD_DIAGNOSTICS_CONFIG = 'test/fixtures/test-config.js';
 
 import * as commonTypes from '../src/types/common-types';
 import * as apiTypes from '../src/types/api-types';
-import {V8DebugApi} from '../src/agent/v8debugapi';
+import {DebugApi} from '../src/agent/debugapi';
 
 import * as assert from 'assert';
 import * as extend from 'extend';
 const common: commonTypes.Common = require('@google-cloud/common');
-import * as v8debugapi from '../src/agent/v8debugapi';
+import * as debugapi from '../src/agent/debugapi';
 import * as SourceMapper from '../src/agent/sourcemapper';
 import * as scanner from '../src/agent/scanner';
 import defaultConfig from '../src/agent/config';
 const foo = require('./test-max-data-size-code.js');
-let api: V8DebugApi;
+let api: DebugApi;
 
 // TODO: Have this actually implement Breakpoint
 const breakpointInFoo: apiTypes.Breakpoint = {
@@ -55,7 +55,7 @@ describe('maxDataSize', function() {
 
             // TODO: Handle the case when mapper is undefined
             // TODO: Handle the case when v8debugapi.create returns null
-            api = v8debugapi.create(logger, config, jsStats, mapper as SourceMapper.SourceMapper) as V8DebugApi;
+            api = debugapi.create(logger, config, jsStats, mapper as SourceMapper.SourceMapper) as DebugApi;
             done();
           });
         });
