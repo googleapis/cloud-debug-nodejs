@@ -4,6 +4,7 @@ import * as apiTypes from '../types/api-types';
 import {Logger} from '../types/common-types';
 
 import {DebugAgentConfig} from './config';
+import {InspectorDebugApi} from './inspectordebugapi';
 import {ScanStats} from './scanner';
 import {SourceMapper} from './sourcemapper';
 import {V8DebugApi} from './v8debugapi2';
@@ -59,10 +60,13 @@ export function create(
   if (singleton && !config_.forceNewAgent_) {
     return singleton;
   }
+  let debugapi: any;
   if (semver.satisfies(nodeVersion[1], '>=8')) {
     // using inspector api
+    debugapi = new InspectorDebugApi(logger_, config_, jsFiles_, sourcemapper_);
+  } else {
+    debugapi = new V8DebugApi(logger_, config_, jsFiles_, sourcemapper_);
   }
-  let v8debugapi = new V8DebugApi(logger_, config_, jsFiles_, sourcemapper_);
   singleton = {
     /**
      * @param {!Breakpoint} breakpoint Debug API Breakpoint object
@@ -71,28 +75,28 @@ export function create(
      */
     set: function(
         breakpoint: apiTypes.Breakpoint, cb: (err: Error|null) => void): void {
-      v8debugapi.set(breakpoint, cb);
+      debugapi.set(breakpoint, cb);
     },
     clear: function(
         breakpoint: apiTypes.Breakpoint, cb: (err: Error|null) => void): void {
-      v8debugapi.clear(breakpoint, cb);
+      debugapi.clear(breakpoint, cb);
     },
     wait: function(breakpoint: apiTypes.Breakpoint, cb: (err?: Error) => void):
         void {
-          v8debugapi.wait(breakpoint, cb);
+          debugapi.wait(breakpoint, cb);
         },
 
     log: function(
         breakpoint: apiTypes.Breakpoint,
         print: (format: string, exps: string[]) => void,
         shouldStop: () => boolean): void {
-      v8debugapi.log(breakpoint, print, shouldStop);
+      debugapi.log(breakpoint, print, shouldStop);
     },
     numBreakpoints_: function(): number {
-      return v8debugapi.numBreakpoints_();
+      return debugapi.numBreakpoints_();
     },
     numListeners_: function(): number {
-      return v8debugapi.numListeners_();
+      return debugapi.numListeners_();
     },
   };
   return singleton;

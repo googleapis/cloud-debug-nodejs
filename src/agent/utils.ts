@@ -137,3 +137,42 @@ export function setErrorStatusAndCallback(
     fn(error);
   });
 }
+
+/**
+ * Produces a compilation function based on the file extension of the
+ * script path in which the breakpoint is set.
+ *
+ * @param {Breakpoint} breakpoint
+ */
+export function getBreakpointCompiler(breakpoint: apiTypes.Breakpoint):
+    ((uncompiled: string) => string)|null {
+  // TODO: Address the case where `breakpoint.location` is `null`.
+  switch (path.normalize((breakpoint.location as apiTypes.SourceLocation).path)
+              .split('.')
+              .pop()) {
+    case 'coffee':
+      return function(uncompiled) {
+        const comp = require('coffee-script');
+        const compiled = comp.compile('0 || (' + uncompiled + ')');
+        // Strip out coffeescript scoping wrapper to get translated condition
+        const re = /\(function\(\) {\s*0 \|\| \((.*)\);\n\n\}\)\.call\(this\);/;
+        const match = re.exec(compiled);
+        if (match && match.length > 1) {
+          return match[1].trim();
+        } else {
+          throw new Error('Compilation Error for: ' + uncompiled);
+        }
+      };
+    case 'es6':
+    case 'es':
+    case 'jsx':
+      return function(uncompiled) {
+        // If we want to support es6 watch expressions we can compile them
+        // here. Babel is a large dependency to have if we don't need it in
+        // all cases.
+        return uncompiled;
+      };
+    default:
+      return null;
+  }
+}
