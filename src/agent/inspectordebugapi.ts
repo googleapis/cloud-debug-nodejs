@@ -200,6 +200,10 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     this.listeners[bpId] = {enabled: true, listener: listener};
   }
 
+  disconnect(): void {
+    this.session.disconnect();
+  }
+
   numBreakpoints_(): number {
     return Object.keys(this.breakpoints).length;
   }

@@ -67,7 +67,7 @@ describe(__filename, function() {
     }
   });
   afterEach(function() { assert(stateIsClean(api)); });
-  it('Should be able to read the argument and the context', function(done) {
+  it.only('Should be able to read the argument and the context', function(done) {
     // TODO: Have this actually implement Breakpoint
     const brk: apiTypes.Breakpoint = {
       id: 'fake-id-123',

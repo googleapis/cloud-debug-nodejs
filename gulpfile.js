@@ -39,7 +39,7 @@ const systemTests = ['system-test/**/*.ts'];
 const systemTestsSupportFiles = ['system-test/**/*', '!system-test/**/*.ts'];
 const allFiles = sources.concat(unitTests).concat(systemTests);
 
-let exitOnError = true;
+let exitOnError = false;
 function onError() {
   if (exitOnError) {
     process.exit(1);

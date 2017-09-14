@@ -211,6 +211,10 @@ export class V8DebugApi implements debugapi.DebugApi {
     that.listeners[num] = {enabled: true, listener: listener};
   }
 
+  disconnect(): void {
+    return;
+  }
+
   numBreakpoints_(): number {
     return Object.keys(this.breakpoints).length;
   }

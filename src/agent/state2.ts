@@ -405,7 +405,7 @@ class StateResolver {
    * @returns {Array<Object>} - returns an array containing data about selected
    *  variables
    */
-  resolveLocalsList_(frame: inspector.Debugger.CallFrame, args: any) {
+  async resolveLocalsList_(frame: inspector.Debugger.CallFrame, args: any) {
     return new Promise((resolve: (locals: Array<any>) => void, reject) => {
       let locals: Array<any> = [];
       // TODO: Determine why `args` is never used in this function
@@ -445,7 +445,16 @@ class StateResolver {
               }
               complete++;
               if (complete === count) {
-                resolve(locals);
+                this.session_.post('Runtime.getProperties',
+                {objectId: frame.this.objectId as string},
+                (error2: Error|null, res2: any) => {
+                  if(error2) reject(error2);
+                  let value = (res2 as any).result;
+                  value.type = 'object';
+                  locals.push(this.resolveVariable_('context', value, false));
+                  // console.log(locals);
+                  resolve(locals);
+                });
               }
             });
       }
@@ -538,6 +547,7 @@ class StateResolver {
     return await new Promise((resolve, reject) => {
       const maxProps = this.config_.capture.maxProperties;
       if (mirror.objectId === undefined) return resolve();
+      console.log('m', mirror);
       this.session_.post(
           'Runtime.getProperties', {objectId: mirror.objectId as string},
           (error: Error|null, response: any) => {
@@ -583,6 +593,18 @@ class StateResolver {
       return {name: name, varTableIndex: GETTER_MESSAGE_INDEX};
     }
     return this.resolveVariable_(name, property.value, isEvaluated);
+  }
+
+  async getProperties(session: inspector.Session, objectId: string) {
+    session.post(
+      'Runtime.getProperties',
+      {objectId: objectId as string},
+      (error: Error|null, response: any) => {
+        return new Promise((resolve, reject) => {
+          if (error) reject(error);
+          resolve(response);
+        });
+      });
   }
 }
 

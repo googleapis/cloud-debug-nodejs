@@ -40,6 +40,7 @@ export interface DebugApi {
       (breakpoint: apiTypes.Breakpoint,
        print: (format: string, exps: string[]) => void,
        shouldStop: () => boolean) => void;
+  disconnect: () => void;
   numBreakpoints_: () => number;
   numListeners_: () => number;
 }
@@ -59,6 +60,8 @@ export function create(
 
   if (singleton && !config_.forceNewAgent_) {
     return singleton;
+  } else if (singleton) {
+    singleton.disconnect();
   }
   let debugapi: any;
   if (semver.satisfies(nodeVersion[1], '>=8')) {
@@ -91,6 +94,9 @@ export function create(
         print: (format: string, exps: string[]) => void,
         shouldStop: () => boolean): void {
       debugapi.log(breakpoint, print, shouldStop);
+    },
+    disconnect: function() {
+      debugapi.disconnect();
     },
     numBreakpoints_: function(): number {
       return debugapi.numBreakpoints_();
