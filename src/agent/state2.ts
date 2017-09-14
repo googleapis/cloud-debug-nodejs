@@ -155,7 +155,9 @@ class StateResolver {
     if (index < this.rawVariableTable_.length) {
       this.trimVariableTable_(index, frames);
     }
-    // this.breakpoint_.variableTable = this.resolvedVariableTable_;
+    // console.log('frames', JSON.stringify(frames, null, 2));
+    // console.log('var table', JSON.stringify(this.resolvedVariableTable_,
+    // null, 2)); this.breakpoint_.variableTable = this.resolvedVariableTable_;
     return {
       stackFrames: frames,
       variableTable: this.resolvedVariableTable_,
@@ -268,9 +270,7 @@ class StateResolver {
   shouldFrameBeResolved_(frame: inspector.Debugger.CallFrame): boolean {
     // Only capture data from the frames for which we can link the data back
     // to the source files.
-
     const fullPath = this.resolveFullPath_(frame);
-
     if (!this.isPathInCurrentWorkingDirectory_(fullPath)) {
       return false;
     }
@@ -354,7 +354,6 @@ class StateResolver {
       // in locals which will include any applicable arguments from the
       // invocation.
       args = [];
-
       locals = await this.resolveLocalsList_(frame, args);
 
       if (isEmpty(locals)) {
@@ -445,16 +444,19 @@ class StateResolver {
               }
               complete++;
               if (complete === count) {
-                this.session_.post('Runtime.getProperties',
-                {objectId: frame.this.objectId as string},
-                (error2: Error|null, res2: any) => {
-                  if(error2) reject(error2);
-                  let value = (res2 as any).result;
-                  value.type = 'object';
-                  locals.push(this.resolveVariable_('context', value, false));
-                  // console.log(locals);
-                  resolve(locals);
-                });
+                // if (frame.this.type !== 'undefined') {
+                //   // let value = {type: 'object', objectId:
+                //   frame.this.objectId as string};
+                //   this.session_.post('Runtime.getProperties', {objectId:
+                //   frame.this.objectId as string}, (error2: Error|null,
+                //   response2: any) => {
+                //     if (error2) console.error(error2);
+                //     console.log(JSON.stringify(response2.result, null, 2));
+                //   });
+                //   locals.push(this.resolveVariable_('context', frame.this,
+                //   false));
+                // }
+                resolve(locals);
               }
             });
       }
@@ -547,7 +549,6 @@ class StateResolver {
     return await new Promise((resolve, reject) => {
       const maxProps = this.config_.capture.maxProperties;
       if (mirror.objectId === undefined) return resolve();
-      console.log('m', mirror);
       this.session_.post(
           'Runtime.getProperties', {objectId: mirror.objectId as string},
           (error: Error|null, response: any) => {
@@ -560,6 +561,8 @@ class StateResolver {
               if (response.result[i].isOwn) {
                 members.push(this.resolveMirrorProperty_(
                     isEvaluated, response.result[i]));
+              } else {
+                truncate = false;
               }
             }
             if (!isEvaluated && truncate) {
@@ -597,14 +600,13 @@ class StateResolver {
 
   async getProperties(session: inspector.Session, objectId: string) {
     session.post(
-      'Runtime.getProperties',
-      {objectId: objectId as string},
-      (error: Error|null, response: any) => {
-        return new Promise((resolve, reject) => {
-          if (error) reject(error);
-          resolve(response);
+        'Runtime.getProperties', {objectId: objectId as string},
+        (error: Error|null, response: any) => {
+          return new Promise((resolve, reject) => {
+            if (error) reject(error);
+            resolve(response);
+          });
         });
-      });
   }
 }
 
