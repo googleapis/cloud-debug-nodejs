@@ -325,8 +325,7 @@ class StateResolver {
       // We will use the values aggregated from the ScopeMirror traversal stored
       // in locals which will include any applicable arguments from the
       // invocation.
-      args = [];
-      locals = this.resolveLocalsList_(frame, args);
+      locals = this.resolveLocalsList_(frame);
       if (isEmpty(locals)) {
         locals = [];
       }
@@ -370,11 +369,7 @@ class StateResolver {
    * @returns {Array<Object>} - returns an array containing data about selected
    *  variables
    */
-  resolveLocalsList_(frame: v8Types.FrameMirror, args: any):
-      v8Types.ScopeMirror[] {
-    // TODO: Determine why `args` is never used in this function
-    args = args;
-
+  resolveLocalsList_(frame: v8Types.FrameMirror): v8Types.ScopeMirror[] {
     const self = this;
     const usedNames: {[name: string]: boolean} = {};
     const makeMirror = this.ctx_.MakeMirror;
