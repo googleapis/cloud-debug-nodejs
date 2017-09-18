@@ -22,7 +22,7 @@ import {DebugAgentConfig} from '../src/agent/config';
 const breakpointInFoo: apiTypes.Breakpoint = {
   id: 'fake-id-123',
   // TODO: Determine if we should be restricting to only the build directory.
-  location: { path: 'build/test/test-v8debugapi-code.js', line: 4 }
+  location: { path: 'build/test/test-v8debugapi-code.js', line: 5 }
 } as apiTypes.Breakpoint;
 
 const MAX_INT = 2147483647; // Max signed int32.
@@ -394,22 +394,22 @@ describe('v8debugapi', function() {
   describe('path normalization', function() {
     // TODO: Have this actually be a list of Breakpoints
     const breakpoints = [
-      { id: 'path0', location: {line: 4, path: path.join(path.sep, 'test',
+      { id: 'path0', location: {line: 5, path: path.join(path.sep, 'test',
         'test-v8debugapi-code.js')}} as any as apiTypes.Breakpoint,
-      { id: 'path1', location: {line: 4, path: path.join('test',
+      { id: 'path1', location: {line: 5, path: path.join('test',
         'test-v8debugapi-code.js')}} as any as apiTypes.Breakpoint,
-      { id: 'path2', location: {line: 4, path:
+      { id: 'path2', location: {line: 5, path:
         // Usage the absolute path to `test-v8debugapi-code.js`.
         __filename.split(path.sep).slice(0, -1).concat('test-v8debugapi-code.js').join(path.sep)
       }} as any as apiTypes.Breakpoint,
       { id: 'with . in path', location: {path: path.join('test', '.',
-        'test-v8debugapi-code.js'), line: 4}} as any as apiTypes.Breakpoint,
+        'test-v8debugapi-code.js'), line: 5}} as any as apiTypes.Breakpoint,
       { id: 'with . in path', location: {path: path.join('.',
-        'test-v8debugapi-code.js'), line: 4}} as any as apiTypes.Breakpoint,
+        'test-v8debugapi-code.js'), line: 5}} as any as apiTypes.Breakpoint,
       { id: 'with .. in path', location: {path: path.join('test', '..',
-        'test-v8debugapi-code.js'), line: 4}} as any as apiTypes.Breakpoint,
+        'test-v8debugapi-code.js'), line: 5}} as any as apiTypes.Breakpoint,
       { id: 'with .. in path', location: {path: path.join('..', 'test',
-        'test-v8debugapi-code.js'), line: 4}} as any as apiTypes.Breakpoint
+        'test-v8debugapi-code.js'), line: 5}} as any as apiTypes.Breakpoint
     ];
 
     breakpoints.forEach(function(bp: apiTypes.Breakpoint) {
@@ -498,6 +498,29 @@ describe('v8debugapi', function() {
         process.nextTick(function() {code.foo(1);});
       });
 
+    });
+
+    it('should resolve correct breakpoint line number', function(done) {
+      // clone a clean breakpointInFoo
+      // TODO: Have this actually implement Breakpoint
+      const bp: apiTypes.Breakpoint = {
+        id: 'fake-id-124',
+        // TODO: This path can be lest strict when this file has been
+        //       converted to Typescript.
+        location: { path: 'build/test/test-v8debugapi-code.js', line: 4 }
+      } as any as apiTypes.Breakpoint;
+      api.set(bp, function(err) {
+        assert.ifError(err);
+        api.wait(bp, function(err) {
+          assert.ifError(err);
+          assert.equal((bp.location as apiTypes.SourceLocation).line, 5);
+          api.clear(bp, function(err) {
+            assert.ifError(err);
+            done();
+          });
+        })
+        process.nextTick(function() {code.foo(1);});
+      });
     });
 
     it('should work with multiply hit breakpoints', function(done) {
@@ -713,7 +736,7 @@ describe('v8debugapi', function() {
         id: 'fake-id-124',
         // TODO: This path can be lest strict when this file has been
         //       converted to Typescript.
-        location: { path: 'build/test/test-v8debugapi-code.js', line: 9 },
+        location: { path: 'build/test/test-v8debugapi-code.js', line: 10 },
         expressions: ['process.env', 'hasGetter']
       } as any as apiTypes.Breakpoint;
       const oldMaxData = config.capture.maxDataSize;
@@ -767,7 +790,7 @@ describe('v8debugapi', function() {
         id: breakpointInFoo.id,
         // TODO: This path can be lest strict when this file has been
         //       converted to Typescript.
-        location:  { path: 'build/test/test-v8debugapi-code.js', line: 5 },
+        location:  { path: 'build/test/test-v8debugapi-code.js', line: 6 },
         expressions: ['A']
       } as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {
@@ -808,7 +831,7 @@ describe('v8debugapi', function() {
         id: 'fake-id-124',
         // TODO: This path can be lest strict when this file has been
         //       converted to Typescript.
-        location: { path: 'build/test/test-v8debugapi-code.js', line: 9 }
+        location: { path: 'build/test/test-v8debugapi-code.js', line: 10 }
       } as any as apiTypes.Breakpoint;
       const oldMaxLength = config.capture.maxStringLength;
       const oldMaxData = config.capture.maxDataSize;
@@ -851,7 +874,7 @@ describe('v8debugapi', function() {
         id: 'fake-id-124',
         // TODO: This path can be lest strict when this file has been
         //       converted to Typescript.
-        location: { path: 'build/test/test-v8debugapi-code.js', line: 5 }
+        location: { path: 'build/test/test-v8debugapi-code.js', line: 6 }
       } as any as apiTypes.Breakpoint;
       const oldMax = config.capture.maxProperties;
       config.capture.maxProperties = 1;
@@ -887,7 +910,7 @@ describe('v8debugapi', function() {
         id: 'fake-id-124',
         // TODO: This path can be lest strict when this file has been
         //       converted to Typescript.
-        location: { path: 'build/test/test-v8debugapi-code.js', line: 5 }
+        location: { path: 'build/test/test-v8debugapi-code.js', line: 6 }
       } as any as apiTypes.Breakpoint;
       const oldMax = config.capture.maxProperties;
       config.capture.maxProperties = 1;
@@ -923,7 +946,7 @@ describe('v8debugapi', function() {
         id: 'fake-id-124',
         // TODO: This path can be lest strict when this file has been
         //       converted to Typescript.
-        location: { path: 'build/test/test-v8debugapi-code.js', line: 9 },
+        location: { path: 'build/test/test-v8debugapi-code.js', line: 10 },
         expressions: ['hasGetter']
       } as any as apiTypes.Breakpoint;
       const oldMaxLength = config.capture.maxStringLength;
@@ -965,7 +988,7 @@ describe('v8debugapi', function() {
           id: 'fake-id-124',
           // TODO: This path can be lest strict when this file has been
           //       converted to Typescript.
-          location: { path: 'build/test/test-v8debugapi-code.js', line: 5 },
+          location: { path: 'build/test/test-v8debugapi-code.js', line: 6 },
           expressions: ['A']
         } as any as apiTypes.Breakpoint;
         const oldMaxProps = config.capture.maxProperties;
@@ -1004,7 +1027,7 @@ describe('v8debugapi', function() {
           id: 'fake-id-124',
           // TODO: This path can be lest strict when this file has been
           //       converted to Typescript.
-          location: { path: 'build/test/test-v8debugapi-code.js', line: 5 },
+          location: { path: 'build/test/test-v8debugapi-code.js', line: 6 },
           expressions: ['B']
         } as any as apiTypes.Breakpoint;
         const oldMaxProps = config.capture.maxProperties;
@@ -1042,7 +1065,7 @@ describe('v8debugapi', function() {
           id: 'fake-id-124',
           // TODO: This path can be lest strict when this file has been
           //       converted to Typescript.
-          location: { path: 'build/test/test-v8debugapi-code.js', line: 5 },
+          location: { path: 'build/test/test-v8debugapi-code.js', line: 6 },
           expressions: ['A']
         } as any as apiTypes.Breakpoint;
         const oldMaxProps = config.capture.maxProperties;
@@ -1081,7 +1104,7 @@ describe('v8debugapi', function() {
           id: 'fake-id-124',
           // TODO: This path can be lest strict when this file has been
           //       converted to Typescript.
-          location: { path: 'build/test/test-v8debugapi-code.js', line: 5 },
+          location: { path: 'build/test/test-v8debugapi-code.js', line: 6 },
           expressions: ['B']
         } as any as apiTypes.Breakpoint;
         const oldMaxProps = config.capture.maxProperties;
@@ -1120,7 +1143,7 @@ describe('v8debugapi', function() {
           id: 'fake-id-124',
           // TODO: This path can be lest strict when this file has been
           //       converted to Typescript.
-          location: { path: 'build/test/test-v8debugapi-code.js', line: 5 },
+          location: { path: 'build/test/test-v8debugapi-code.js', line: 6 },
           expressions: ['A']
         } as any as apiTypes.Breakpoint;
         const oldMaxProps = config.capture.maxProperties;
@@ -1399,9 +1422,9 @@ describe('v8debugapi', function() {
     it('should be possible to set multiple breakpoints at once',
       function(done) {
         // TODO: Have this actually implement Breakpoint
-        const bp1: apiTypes.Breakpoint = { id: 'bp1', location: { path: __filename, line: 4 }} as any as apiTypes.Breakpoint;
+        const bp1: apiTypes.Breakpoint = { id: 'bp1', location: { path: __filename, line: 5 }} as any as apiTypes.Breakpoint;
         // TODO: Have this actually implement Breakpoint
-        const bp2: apiTypes.Breakpoint = { id: 'bp2', location: { path: __filename, line: 5 }} as any as apiTypes.Breakpoint;
+        const bp2: apiTypes.Breakpoint = { id: 'bp2', location: { path: __filename, line: 6 }} as any as apiTypes.Breakpoint;
         api.set(bp1, function(err) {
           assert.ifError(err);
           api.set(bp2, function(err) {
