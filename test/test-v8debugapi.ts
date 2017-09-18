@@ -500,13 +500,9 @@ describe('v8debugapi', function() {
 
     });
 
-    it('should resolve correct breakpoint line number', function(done) {
-      // clone a clean breakpointInFoo
-      // TODO: Have this actually implement Breakpoint
+    it('should resolve actual line number hit rather than originally set', function(done) {
       const bp: apiTypes.Breakpoint = {
         id: 'fake-id-124',
-        // TODO: This path can be lest strict when this file has been
-        //       converted to Typescript.
         location: { path: 'build/test/test-v8debugapi-code.js', line: 4 }
       } as any as apiTypes.Breakpoint;
       api.set(bp, function(err) {

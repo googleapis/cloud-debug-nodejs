@@ -190,6 +190,8 @@ class StateResolver {
       that.trimVariableTable_(index, frames);
     }
     return {
+      // TODO (fgao): Add path attribute to avoid explicit cast to
+      // apiTypes.SourceLocation once breakpoint is passed in this class.
       location: {line: this.state_.frame(0).sourceLine()} as
           apiTypes.SourceLocation,
       stackFrames: frames,
