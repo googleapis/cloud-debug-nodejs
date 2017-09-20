@@ -413,6 +413,9 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       const captured = state.capture(
           callFrames, breakpoint, this.config, this.scriptmapper,
           this.v8Inspector);
+      if (breakpoint.location) {
+        breakpoint.location.line = callFrames[0].location.lineNumber + 1;
+      }
       breakpoint.stackFrames = captured.stackFrames;
       // TODO: This suggests the Status type and Variable type are the same.
       //       Determine if that is the case.

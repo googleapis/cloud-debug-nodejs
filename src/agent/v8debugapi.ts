@@ -466,6 +466,9 @@ export class V8DebugApi implements debugapi.DebugApi {
       // TODO: Address the case where `breakpoint.expression` is `undefined`.
       const captured = state.capture(
           execState, breakpoint.expressions as string[], this.config, this.v8);
+      if (breakpoint.location && captured.location && captured.location.line) {
+        breakpoint.location.line = captured.location.line;
+      }
       breakpoint.stackFrames = captured.stackFrames;
       // TODO: This suggests the Status type and Variable type are the same.
       //       Determine if that is the case.
