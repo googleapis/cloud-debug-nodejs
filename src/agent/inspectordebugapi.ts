@@ -1,5 +1,6 @@
 import * as acorn from 'acorn';
 import * as estree from 'estree';
+
 import * as inspector from 'inspector';
 import * as _ from 'lodash';
 import * as path from 'path';
@@ -14,6 +15,7 @@ import {FileStats, ScanStats} from './scanner';
 import {MapInfoOutput, SourceMapper} from './sourcemapper';
 import * as state from './state2';
 import * as utils from './utils';
+import {V8Inspector} from './v8inspector';
 
 export class BreakpointData {
   constructor(
@@ -37,13 +39,12 @@ export class InspectorDebugApi implements debugapi.DebugApi {
   sourcemapper: SourceMapper;
   session: inspector.Session;
   scriptmapper: {[id: string]: any} = {};
-  // Entries map breakpoint id to { enabled: <bool>, listener: <function> }
-  // TODO: Determine if the listener type is correct
+
   listeners:
       {[id: string]: {enabled: boolean;
                       listener: (...args: any[]) => any;}} = {};
   numBreakpoints = 0;
-
+  v8Inspector: V8Inspector;
   constructor(
       logger_: Logger, config_: DebugAgentConfig, jsFiles_: ScanStats,
       sourcemapper_: SourceMapper) {
@@ -65,6 +66,8 @@ export class InspectorDebugApi implements debugapi.DebugApi {
         console.error(error);
       }
     });
+    this.v8Inspector = new V8Inspector(this.session);
+    console.log('inspector');
   }
 
   set(breakpoint: apiTypes.Breakpoint, cb: (err: Error|null) => void): void {
@@ -120,25 +123,14 @@ export class InspectorDebugApi implements debugapi.DebugApi {
           utils.messages.V8_BREAKPOINT_CLEAR_ERROR);
     }
     let id = breakpoint.id;
-    this.session.post(
-        'Debugger.removeBreakpoint', {breakpointId: breakpointData.id},
-        (error: Error|null) => {
-          if (error) {
-            return utils.setErrorStatusAndCallback(
-                cb, breakpoint, StatusMessage.BREAKPOINT_CONDITION,
-                utils.messages.V8_BREAKPOINT_CLEAR_ERROR + error.message);
-          }
-          let breakpointId = this.breakpoints[id].id;
-          delete this.breakpoints[id];
-          delete this.listeners[breakpointId];
-          this.numBreakpoints--;
-          // if (this.numBreakpoints === 0) {
-          //   this.session.disconnect();
-          // }
-          setImmediate(function() {
-            cb(null);
-          });  // success.
-        });
+    this.v8Inspector.removeBreakpoint(breakpointData.id);
+    let breakpointId = this.breakpoints[id].id;
+    delete this.breakpoints[id];
+    delete this.listeners[breakpointId];
+    this.numBreakpoints--;
+    setImmediate(function() {
+      cb(null);
+    });
   }
 
   wait(breakpoint: apiTypes.Breakpoint, callback: (err?: Error) => void): void {
@@ -217,7 +209,8 @@ export class InspectorDebugApi implements debugapi.DebugApi {
    * maps (if necessary), and scriptPath happens to be a JavaScript path.
    *
    * @param {!Breakpoint} breakpoint Debug API Breakpoint object
-   * @param {!string} scriptPath path to JavaScript source file
+   * @param {!MapInfoOutput|null} mapInfo A map that has a "file" attribute for
+   *    the path of the output file associated with the given input file
    * @param {function(string)=} compile optional compile function that can be
    *    be used to compile source expressions to JavaScript
    * @param {function(?Error)} cb error-back style callback
@@ -313,50 +306,25 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     }
     let condition;
     if (breakpoint.condition) condition = breakpoint.condition;
-    this.session.post(
-        'Debugger.setBreakpointByUrl', {
-          url: matchingScript,
-          lineNumber: line - 1,
-          columnNumber: column - 1,
-          condition: condition
-        },
-        (error: Error|null, result: any) => {
-          if (error) {
-            return utils.setErrorStatusAndCallback(
-                cb, breakpoint, StatusMessage.BREAKPOINT_SOURCE_LOCATION,
-                utils.messages.V8_BREAKPOINT_ERROR);
-          }
-
-          this.breakpoints[breakpoint.id as string] = new BreakpointData(
-              result.breakpointId, true, breakpoint, ast as estree.Program,
-              compile);
-
-          // if (this.numBreakpoints === 0) {
-          //   this.session.connect();
-          //   this.session.on('Debugger.scriptParsed', (script) => {
-          //     this.scriptmapper[script.params.scriptId] = script.params;
-          //   });
-          //   this.session.post('Debugger.enable');
-          //   this.session.post('Debugger.setBreakpointsActive', {active:
-          //   true}); this.session.on('Debugger.paused', (params: any) => {
-          //     try {
-          //       this.handleDebugPausedEvent(params);
-          //     } catch (error) {
-          //       console.error(error);
-          //     }
-          //   });
-          // }
-          this.numBreakpoints++;
-
-          setImmediate(function() {
-            cb(null);
-          });  // success.
-        });
+    let res = this.v8Inspector.setBreakpointByUrl(
+        line - 1, matchingScript, undefined, column - 1, condition);
+    if (res.error) {
+      return utils.setErrorStatusAndCallback(
+          cb, breakpoint, StatusMessage.BREAKPOINT_SOURCE_LOCATION,
+          utils.messages.V8_BREAKPOINT_ERROR);
+    }
+    this.breakpoints[breakpoint.id as string] = new BreakpointData(
+        res.response.breakpointId, true, breakpoint, ast as estree.Program,
+        compile);
+    this.numBreakpoints++;
+    setImmediate(function() {
+      cb(null);
+    });  // success.
   }
 
-  async onBreakpointHit(
+  onBreakpointHit(
       breakpoint: apiTypes.Breakpoint, callback: (err: Error|null) => void,
-      callFrames: inspector.Debugger.CallFrame[]) {
+      callFrames: inspector.Debugger.CallFrame[]): void {
     // TODO: Address the situation where `breakpoint.id` is `null`.
     const bp = this.breakpoints[breakpoint.id as string];
     if (!bp.active) {
@@ -367,50 +335,23 @@ export class InspectorDebugApi implements debugapi.DebugApi {
           callback, breakpoint, StatusMessage.BREAKPOINT_SOURCE_LOCATION,
           utils.messages.V8_BREAKPOINT_DISABLED);
     }
-    // // Breakpoint Hit
-    // const start = process.hrtime();
-    // const expressionErrors: Array<apiTypes.Variable|null> = [];
-    // const that = this;
-    // // TODO: Address the case where `breakpoint.id` is `null`.
-    // if (breakpoint.expressions &&
-    //     this.breakpoints[breakpoint.id as string].compile) {
-    //   for (let i = 0; i < breakpoint.expressions.length; i++) {
-    //     try {
-    //       // TODO: Address the case where `breakpoint.id` is `null`.
-    //       breakpoint.expressions[i] =
-    //           // TODO: Address the case where `compile` is `null`.
-    //           (this.breakpoints[breakpoint.id as string].compile as
-    //                (text: string) => string)(breakpoint.expressions[i]);
-    //     } catch (e) {
-    //       this.logger.info(
-    //           'Unable to compile watch expression >> ' +
-    //           breakpoint.expressions[i] + ' <<');
-    //       expressionErrors.push({
-    //         name: breakpoint.expressions[i],
-    //         status: new StatusMessage(
-    //             StatusMessage.VARIABLE_VALUE, 'Error Compiling Expression',
-    //             true)
-    //       });
-    //       breakpoint.expressions.splice(i, 1);
-    //     }
-    //   }
-    // }
-
+    // Breakpoint Hit
+    const start = process.hrtime();
     try {
-      await this.captureBreakpointData(breakpoint, callFrames, callback);
-    } catch (e) {
+      this.captureBreakpointData(breakpoint, callFrames);
+    } catch (err) {
       return utils.setErrorStatusAndCallback(
           callback, breakpoint, StatusMessage.BREAKPOINT_SOURCE_LOCATION,
-          utils.messages.CAPTURE_BREAKPOINT_DATA + e);
+          utils.messages.CAPTURE_BREAKPOINT_DATA + err);
     }
+    const end = process.hrtime(start);
+    this.logger.info(utils.formatInterval('capture time: ', end));
     callback(null);
   }
 
-  async captureBreakpointData(
+  captureBreakpointData(
       breakpoint: apiTypes.Breakpoint,
-      callFrames: inspector.Debugger.CallFrame[],
-      callback: (err: Error|null) => void) {
-    const start = process.hrtime();
+      callFrames: inspector.Debugger.CallFrame[]): void {
     const expressionErrors: Array<apiTypes.Variable|null> = [];
     const that = this;
     // TODO: Address the case where `breakpoint.id` is `null`.
@@ -445,33 +386,18 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       } else {
         const frame = callFrames[0];
         const evaluatedExpressions = breakpoint.expressions.map(function(exp) {
-          try {
-            const ast = acorn.parse(exp, {sourceType: 'script'});
-            const validator = require('./validator');
-            if (!validator.isValid(ast)) {
-              return 'expression not allowed';
-            }
-          } catch (e) {
-            return e.message;
-          }
-          that.session.post(
-              'Debugger.evaluateOnCallFrame',
-              {callFrameId: frame.callFrameId, expression: exp},
-              (error: Error|null, response: any) => {
-                if (error) console.error(error);
-                if (response.exceptionDetails !== undefined) {
-                  return String(response.exceptionDetails);
-                } else {
-                  return response.result;
-                }
-              });
+          const result = state.evaluate(exp, frame, that.v8Inspector);
+          // TODO: Address the case where `result.mirror` is `undefined`.
+          return result.error ?
+              result.error :
+              (result.object as inspector.Runtime.RemoteObject).value();
         });
         breakpoint.evaluatedExpressions = evaluatedExpressions;
       }
     } else {
-      const captured = await state.capture(
-          callFrames, breakpoint, callback, this.config, this.scriptmapper,
-          this.session);
+      const captured = state.capture(
+          callFrames, breakpoint, this.config, this.scriptmapper,
+          this.v8Inspector);
       breakpoint.stackFrames = captured.stackFrames;
       // TODO: This suggests the Status type and Variable type are the same.
       //       Determine if that is the case.
@@ -479,8 +405,6 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       breakpoint.evaluatedExpressions =
           expressionErrors.concat(captured.evaluatedExpressions);
     }
-    const end = process.hrtime(start);
-    this.logger.info(utils.formatInterval('capture time: ', end));
   }
 
   handleDebugPausedEvent(params: any) {

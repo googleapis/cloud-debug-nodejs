@@ -35,7 +35,7 @@ function stateIsClean(api: DebugApi): boolean {
   return true;
 }
 
-describe.skip(__filename, function() {
+describe(__filename, function() {
   const config = extend({}, defaultConfig, {
     workingDirectory: __dirname,
     forceNewAgent_: true

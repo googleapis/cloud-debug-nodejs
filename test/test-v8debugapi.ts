@@ -1496,7 +1496,7 @@ describe('v8debugapi', function() {
       });
     });
 
-    it.skip('should capture state in transpiled TS async functions', (done) => {
+    it('should capture state in transpiled TS async functions', (done) => {
       const bp: apiTypes.Breakpoint = {
         id: 'async-id-1',
         location: {

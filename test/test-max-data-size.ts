@@ -33,7 +33,7 @@ let api: DebugApi;
 // TODO: Have this actually implement Breakpoint
 const breakpointInFoo: apiTypes.Breakpoint = {
   id: 'fake-id-123',
-  location: { path: 'test-max-data-size-code.js', line: 4 }
+  location: { path: 'build/test/test-max-data-size-code.js', line: 4 }
 } as apiTypes.Breakpoint;
 
 describe('maxDataSize', function() {
