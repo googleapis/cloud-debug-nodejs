@@ -63,7 +63,6 @@ let singleton: DebugApi;
 export function create(
     logger_: Logger, config_: DebugAgentConfig, jsFiles_: ScanStats,
     sourcemapper_: SourceMapper): DebugApi|null {
-
   if (singleton && !config_.forceNewAgent_) {
     return singleton;
   } else if (singleton) {
