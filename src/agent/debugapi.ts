@@ -19,10 +19,25 @@ import * as apiTypes from '../types/api-types';
 import {Logger} from '../types/common-types';
 
 import {DebugAgentConfig} from './config';
-import {InspectorDebugApi} from './inspectordebugapi';
 import {ScanStats} from './scanner';
 import {SourceMapper} from './sourcemapper';
-import {V8DebugApi} from './v8debugapi';
+
+interface DebugApiConstructor {
+  new(logger_: Logger, config_: DebugAgentConfig, jsFiles_: ScanStats,
+      sourcemapper_: SourceMapper): DebugApi;
+}
+let debugApiConstructor: DebugApiConstructor;
+let nodeVersion = /v(\d+\.\d+\.\d+)/.exec(process.version);
+if (!nodeVersion || nodeVersion.length < 2) {
+  console.error('can\'t get the node version.');
+  process.exit(1);
+} else if (semver.satisfies(nodeVersion[1], '>=8')) {
+  const inspectorapi = require('./inspectordebugapi');
+  debugApiConstructor = inspectorapi.InspectorDebugApi;
+} else {
+  const v8debugapi = require('./v8debugapi');
+  debugApiConstructor = v8debugapi.V8DebugApi;
+}
 
 export interface DebugApi {
   set: (breakpoint: apiTypes.Breakpoint, cb: (err: Error|null) => void) => void;
@@ -48,10 +63,6 @@ let singleton: DebugApi;
 export function create(
     logger_: Logger, config_: DebugAgentConfig, jsFiles_: ScanStats,
     sourcemapper_: SourceMapper): DebugApi|null {
-  let nodeVersion = /v(\d+\.\d+\.\d+)/.exec(process.version);
-  if (!nodeVersion || nodeVersion.length < 2) {
-    return null;
-  }
 
   if (singleton && !config_.forceNewAgent_) {
     return singleton;
@@ -60,12 +71,8 @@ export function create(
   }
 
   let debugapi: any;
-  if (semver.satisfies(nodeVersion[1], '>=8')) {
-    // Use inspector api
-    debugapi = new InspectorDebugApi(logger_, config_, jsFiles_, sourcemapper_);
-  } else {
-    debugapi = new V8DebugApi(logger_, config_, jsFiles_, sourcemapper_);
-  }
+  debugapi = new debugApiConstructor(logger_, config_, jsFiles_, sourcemapper_);
+
   singleton = {
     /**
      * @param {!Breakpoint} breakpoint Debug API Breakpoint object
