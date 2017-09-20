@@ -1,6 +1,21 @@
+/**
+ * Copyright 2017 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import * as acorn from 'acorn';
 import * as estree from 'estree';
-
 import * as inspector from 'inspector';
 import * as _ from 'lodash';
 import * as path from 'path';
@@ -13,9 +28,10 @@ import {DebugAgentConfig} from './config';
 import * as debugapi from './debugapi';
 import {FileStats, ScanStats} from './scanner';
 import {MapInfoOutput, SourceMapper} from './sourcemapper';
-import * as state from './state2';
+import * as state from './state-inspector';
 import * as utils from './utils';
 import {V8Inspector} from './v8inspector';
+
 
 export class BreakpointData {
   constructor(
@@ -67,7 +83,6 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       }
     });
     this.v8Inspector = new V8Inspector(this.session);
-    console.log('inspector');
   }
 
   set(breakpoint: apiTypes.Breakpoint, cb: (err: Error|null) => void): void {
@@ -274,8 +289,8 @@ export class InspectorDebugApi implements debugapi.DebugApi {
           utils.messages.SOURCE_FILE_AMBIGUOUS);
     }
 
-    // // TODO: Address the case where `breakpoint.location` is `null`.
-    // // TODO: Address the case where `fileStats[matchingScript]` is `null`.
+    // TODO: Address the case where `breakpoint.location` is `null`.
+    // TODO: Address the case where `fileStats[matchingScript]` is `null`.
     if ((breakpoint.location as apiTypes.SourceLocation).line >=
         (this.fileStats[matchingScript] as FileStats).lines) {
       return utils.setErrorStatusAndCallback(

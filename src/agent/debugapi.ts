@@ -1,5 +1,5 @@
 /**
- * Copyright 2014 Google Inc. All Rights Reserved.
+ * Copyright 2017 Google Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import {DebugAgentConfig} from './config';
 import {InspectorDebugApi} from './inspectordebugapi';
 import {ScanStats} from './scanner';
 import {SourceMapper} from './sourcemapper';
-import {V8DebugApi} from './v8debugapi2';
+import {V8DebugApi} from './v8debugapi';
 
 export const messages = {
   INVALID_BREAKPOINT: 'invalid snapshot - id or location missing',
@@ -78,8 +78,9 @@ export function create(
   } else if (singleton) {
     singleton.disconnect();
   }
+
   let debugapi: any;
-  if (semver.satisfies(nodeVersion[1], '>=9')) {
+  if (semver.satisfies(nodeVersion[1], '>=8')) {
     // Use inspector api
     debugapi = new InspectorDebugApi(logger_, config_, jsFiles_, sourcemapper_);
   } else {
