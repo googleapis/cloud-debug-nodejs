@@ -24,7 +24,10 @@ export class V8Inspector {
   setBreakpointByUrl(
       lineNumber: number, url?: string, urlRegex?: string,
       columnNumber?: number, condition?: string) {
-    let result: any = {};
+    const result: {
+      error?: Error,
+      response?: inspector.Debugger.SetBreakpointByUrlReturnType
+    } = {};
     this.session.post(
         'Debugger.setBreakpointByUrl', {
           lineNumber: lineNumber,
@@ -33,7 +36,8 @@ export class V8Inspector {
           columnNumber: columnNumber,
           condition: condition
         },
-        (error: Error|null, response: any) => {
+        (error: Error|null,
+         response: inspector.Debugger.SetBreakpointByUrlReturnType) => {
           if (error) result.error = error;
           result.response = response;
         });
@@ -41,8 +45,13 @@ export class V8Inspector {
   }
 
   removeBreakpoint(breakpointId: string) {
+    const result: {error?: Error} = {};
     this.session.post(
-        'Debugger.removeBreakpoint', {breakpointId: breakpointId});
+        'Debugger.removeBreakpoint', {breakpointId: breakpointId},
+        (error: Error|null) => {
+          if (error) result.error = error;
+        });
+    return result;
   }
 
   evaluateOnCallFrame(
@@ -50,7 +59,10 @@ export class V8Inspector {
       includeCommandLineAPI?: boolean, silent?: boolean,
       returnByValue?: boolean, generatePreview?: boolean,
       throwOnSideEffect?: boolean) {
-    let result: any = {};
+    const result: {
+      error?: Error,
+      response?: inspector.Debugger.EvaluateOnCallFrameReturnType
+    } = {};
     this.session.post(
         'Debugger.evaluateOnCallFrame', {
           callFrameId: callFrameId,
@@ -62,9 +74,8 @@ export class V8Inspector {
           generatePreview: generatePreview,
           throwOnSideEffect: throwOnSideEffect
         },
-        (error: Error|null, response: any) => {
-          if (error) console.log('ebva', error);
-
+        (error: Error|null,
+         response: inspector.Debugger.EvaluateOnCallFrameReturnType) => {
           if (error) result.error = error;
           result.response = response;
         });
@@ -74,7 +85,9 @@ export class V8Inspector {
   getProperties(
       objectId: string, ownProperties?: boolean,
       accessorPropertiesOnly?: boolean, generatePreview?: boolean) {
-    let result: any = {};
+    const result:
+        {error?: Error,
+         response?: inspector.Runtime.GetPropertiesReturnType} = {};
     this.session.post(
         'Runtime.getProperties', {
           objectId: objectId,
@@ -82,8 +95,8 @@ export class V8Inspector {
           accessorPropertiesOnly: accessorPropertiesOnly,
           generatePreview: generatePreview
         },
-        (error: Error|null, response: any) => {
-          if (error) console.log('getproper', error);
+        (error: Error|null,
+         response: inspector.Runtime.GetPropertiesReturnType) => {
           if (error) result.error = error;
           result.response = response;
         });

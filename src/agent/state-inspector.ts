@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import * as inspector from 'inspector';
 import * as lodash from 'lodash';
 import * as util from 'util';
@@ -60,8 +61,12 @@ export function evaluate(
 
   // Now actually ask V8 Inspector to evaluate the expression
   const result = v8inspector.evaluateOnCallFrame(frame.callFrameId, expression);
-  if (result.response.exceptionDetails) {
-    return {error: result.response.exceptionDetails};
+  if (result.error || !result.response) {
+    return {
+      error: result.error ? String(result.error) : 'no reponse in result'
+    };
+  } else if (result.response.exceptionDetails) {
+    return {error: String(result.response.exceptionDetails)};
   } else {
     return {error: null, object: result.response.result};
   }
@@ -142,7 +147,7 @@ class StateResolver {
     // Evaluate the watch expressions
     const evalIndexSet = new Set();
     if (this.expressions_) {
-      this.expressions_.forEach(async (expression, index2) => {
+      this.expressions_.forEach((expression, index2) => {
         const result =
             evaluate(expression, this.callFrames_[0], this.v8Inspector_);
         let evaluated;
@@ -264,7 +269,7 @@ class StateResolver {
   }
 
   resolveFullPath_(frame: inspector.Debugger.CallFrame): string {
-    let scriptId: string = frame.location.scriptId;
+    const scriptId: string = frame.location.scriptId;
     if (this.scriptmapper_[scriptId] === undefined) {
       return '';
     }
@@ -310,7 +315,6 @@ class StateResolver {
         varTableIndex: ARG_LOCAL_LIMIT_MESSAGE_INDEX
       });
     } else {
-      args = [];
       locals = this.resolveLocalsList_(frame);
 
       if (isEmpty(locals)) {
@@ -353,9 +357,7 @@ class StateResolver {
    * name.
    * @function resolveLocalsList_
    * @memberof StateResolver
-   * @param {FrameMirror} frame - A instance of FrameMirror
-   * @param {Array<Object>} args - An array of objects representing any function
-   *  arguments the frame may list
+   * @param {inspector.Debugger.CallFrame} frame - A instance of callframe.
    * @returns {Array<Object>} - returns an array containing data about selected
    *  variables
    */
@@ -375,15 +377,19 @@ class StateResolver {
     for (let i = 0; i < count; ++i) {
       let result = this.v8Inspector_.getProperties(
           frame.scopeChain[i].object.objectId as string);
-      if (!isEmpty(result.response.result)) {
+      if (result.response && !isEmpty(result.response.result)) {
         for (let j = 0; j < result.response.result.length; ++j) {
           if (!usedNames[result.response.result[j].name]) {
             // It's a valid variable that belongs in the locals list
             // and wasn't discovered at a lower-scope
             usedNames[result.response.result[j].name] = true;
-            locals.push(this.resolveVariable_(
-                result.response.result[j].name, result.response.result[j].value,
-                false));
+            if (result.response.result[j].value) {
+              locals.push(this.resolveVariable_(
+                  result.response.result[j].name,
+                  result.response.result[j].value as
+                      inspector.Runtime.RemoteObject,
+                  false));
+            }
           }
         }
       }
@@ -478,25 +484,33 @@ class StateResolver {
       isEvaluated: boolean): apiTypes.Variable {
     const maxProps = this.config_.capture.maxProperties;
     let result = this.v8Inspector_.getProperties(object.objectId as string);
-    let truncate = maxProps && result.response.result.length > maxProps;
-    let upperBound = result.response.result.length;
-    if (!isEvaluated && truncate) upperBound = maxProps;
     let members: Array<any> = [];
-    for (let i = 0; i < upperBound; ++i) {
-      if (result.response.result[i].isOwn) {
-        members.push(this.resolveObjectProperty_(
-            isEvaluated, result.response.result[i]));
-      } else {
-        truncate = false;
-      }
-    }
-    if (!isEvaluated && truncate) {
+    if (result.error || !result.response) {
       members.push({
-        name: 'Only first `config.capture.maxProperties=' +
-            this.config_.capture.maxProperties +
-            '` properties were captured. Use in an expression' +
-            ' to see all properties.'
+        name: result.error ? String(result.error) :
+                             'no response got in getProperty'
       });
+    } else {
+      let truncate = maxProps && result.response.result.length > maxProps;
+      let upperBound = result.response.result.length;
+      if (!isEvaluated && truncate) upperBound = maxProps;
+      for (let i = 0; i < upperBound; ++i) {
+        if (result.response.result[i].isOwn) {
+          members.push(this.resolveObjectProperty_(
+              isEvaluated, result.response.result[i]));
+        } else {
+          truncate = false;
+        }
+      }
+
+      if (!isEvaluated && truncate) {
+        members.push({
+          name: 'Only first `config.capture.maxProperties=' +
+              this.config_.capture.maxProperties +
+              '` properties were captured. Use in an expression' +
+              ' to see all properties.'
+        });
+      }
     }
     return {value: object.description, members: members};
   }

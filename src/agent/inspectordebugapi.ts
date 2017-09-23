@@ -17,7 +17,6 @@
 import * as acorn from 'acorn';
 import * as estree from 'estree';
 import * as inspector from 'inspector';
-import * as _ from 'lodash';
 import * as path from 'path';
 
 import {StatusMessage} from '../status-message';
@@ -32,19 +31,12 @@ import * as state from './state-inspector';
 import * as utils from './utils';
 import {V8Inspector} from './v8inspector';
 
-
 export class BreakpointData {
   constructor(
       public id: string, public active: boolean,
       public apiBreakpoint: apiTypes.Breakpoint,
       public parsedCondition: estree.Node,
-      public compile: null|((src: string) => string)) {
-    this.id = id;
-    this.active = active;
-    this.apiBreakpoint = apiBreakpoint;
-    this.parsedCondition = parsedCondition;
-    this.compile = compile;
-  }
+      public compile: null|((src: string) => string)) {}
 }
 
 export class InspectorDebugApi implements debugapi.DebugApi {
@@ -56,9 +48,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
   session: inspector.Session;
   scriptmapper: {[id: string]: any} = {};
 
-  listeners:
-      {[id: string]: {enabled: boolean;
-                      listener: (...args: any[]) => any;}} = {};
+  listeners: {[id: string]: utils.Listener} = {};
   numBreakpoints = 0;
   v8Inspector: V8Inspector;
   constructor(
@@ -75,9 +65,9 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     });
     this.session.post('Debugger.enable');
     this.session.post('Debugger.setBreakpointsActive', {active: true});
-    this.session.on('Debugger.paused', (params: any) => {
+    this.session.on('Debugger.paused', (message) => {
       try {
-        this.handleDebugPausedEvent(params);
+        this.handleDebugPausedEvent(message.params);
       } catch (error) {
         console.error(error);
       }
@@ -96,7 +86,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     }
     const baseScriptPath = path.normalize(breakpoint.location.path);
     if (!this.sourcemapper.hasMappingInfo(baseScriptPath)) {
-      if (!_.endsWith(baseScriptPath, '.js')) {
+      if (!baseScriptPath.endsWith('js')) {
         return utils.setErrorStatusAndCallback(
             cb, breakpoint, StatusMessage.BREAKPOINT_SOURCE_LOCATION,
             utils.messages.COULD_NOT_FIND_OUTPUT_FILE);
@@ -137,13 +127,16 @@ export class InspectorDebugApi implements debugapi.DebugApi {
           cb, breakpoint, StatusMessage.BREAKPOINT_CONDITION,
           utils.messages.V8_BREAKPOINT_CLEAR_ERROR);
     }
-    let id = breakpoint.id;
-    this.v8Inspector.removeBreakpoint(breakpointData.id);
+    const id = breakpoint.id;
+    let result = this.v8Inspector.removeBreakpoint(breakpointData.id);
     let breakpointId = this.breakpoints[id].id;
     delete this.breakpoints[id];
     delete this.listeners[breakpointId];
     this.numBreakpoints--;
     setImmediate(function() {
+      if (result.error) {
+        cb(result.error);
+      }
       cb(null);
     });
   }
@@ -151,10 +144,9 @@ export class InspectorDebugApi implements debugapi.DebugApi {
   wait(breakpoint: apiTypes.Breakpoint, callback: (err?: Error) => void): void {
     // TODO: Address the case whree `breakpoint.id` is `null`.
     const bp = this.breakpoints[breakpoint.id as string];
-    const that = this;
     const listener =
-        this.onBreakpointHit.bind(this, breakpoint, function(err: Error) {
-          that.listeners[bp.id].enabled = false;
+        this.onBreakpointHit.bind(this, breakpoint, (err: Error) => {
+          this.listeners[bp.id].enabled = false;
           // This method is called from the debug event listener, which
           // swallows all exception. We defer the callback to make sure
           // the user errors aren't silenced.
@@ -323,7 +315,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     if (breakpoint.condition) condition = breakpoint.condition;
     let res = this.v8Inspector.setBreakpointByUrl(
         line - 1, matchingScript, undefined, column - 1, condition);
-    if (res.error) {
+    if (res.error || !res.response) {
       return utils.setErrorStatusAndCallback(
           cb, breakpoint, StatusMessage.BREAKPOINT_SOURCE_LOCATION,
           utils.messages.V8_BREAKPOINT_ERROR);
@@ -425,12 +417,13 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     }
   }
 
-  handleDebugPausedEvent(params: any) {
+  handleDebugPausedEvent(params: inspector.Debugger.PausedEventDataType) {
     try {
-      let bpId: string = params.params.hitBreakpoints[0];
+      if (!params.hitBreakpoints) return;
+      const bpId: string = params.hitBreakpoints[0];
       if (this.listeners[bpId].enabled) {
         this.logger.info('>>>breakpoint hit<<< number: ' + bpId);
-        this.listeners[bpId].listener(params.params.callFrames);
+        this.listeners[bpId].listener(params.callFrames);
       }
     } catch (e) {
       this.logger.warn('Internal V8 error on breakpoint event: ' + e);

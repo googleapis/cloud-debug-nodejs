@@ -27,8 +27,10 @@ export const messages = {
       'Could not determine the output file associated with the transpiled input file'
 };
 
-
-
+export interface Listener {
+  enabled: boolean;
+  listener: (...args: any[]) => any;
+}
 // Exposed for unit testing.
 export function findScripts(
     scriptPath: string, config: DebugAgentConfig,

@@ -50,9 +50,7 @@ export class V8DebugApi implements debugapi.DebugApi {
   v8: v8Types.Debug;
   config: DebugAgentConfig;
   fileStats: ScanStats;
-  listeners:
-      {[id: string]: {enabled: boolean;
-                      listener: (...args: any[]) => any;}} = {};
+  listeners: {[id: string]: utils.Listener} = {};
   v8Version: any;
   usePermanentListener: boolean;
   logger: Logger;

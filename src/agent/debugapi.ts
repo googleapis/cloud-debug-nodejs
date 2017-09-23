@@ -22,22 +22,6 @@ import {DebugAgentConfig} from './config';
 import {ScanStats} from './scanner';
 import {SourceMapper} from './sourcemapper';
 
-interface DebugApiConstructor {
-  new(logger_: Logger, config_: DebugAgentConfig, jsFiles_: ScanStats,
-      sourcemapper_: SourceMapper): DebugApi;
-}
-let debugApiConstructor: DebugApiConstructor;
-let nodeVersion = /v(\d+\.\d+\.\d+)/.exec(process.version);
-if (!nodeVersion || nodeVersion.length < 2) {
-  console.error('can\'t get the node version.');
-  process.exit(1);
-} else if (semver.satisfies(nodeVersion[1], '>=8')) {
-  const inspectorapi = require('./inspectordebugapi');
-  debugApiConstructor = inspectorapi.InspectorDebugApi;
-} else {
-  const v8debugapi = require('./v8debugapi');
-  debugApiConstructor = v8debugapi.V8DebugApi;
-}
 
 export interface DebugApi {
   set: (breakpoint: apiTypes.Breakpoint, cb: (err: Error|null) => void) => void;
@@ -55,57 +39,69 @@ export interface DebugApi {
   numListeners_: () => number;
 }
 
+interface DebugApiConstructor {
+  new(logger_: Logger, config_: DebugAgentConfig, jsFiles_: ScanStats,
+      sourcemapper_: SourceMapper): DebugApi;
+}
+
+class DummyDebugApi implements DebugApi {
+  constructor(
+      _logger: Logger, _config: DebugAgentConfig, _jsFiles: ScanStats,
+      _sourcemapper: SourceMapper) {
+    return;
+  }
+  set(_breakpoint: apiTypes.Breakpoint, cb: (err: Error|null) => void): void {
+    return setImmediate(() => {
+      cb(new Error('no debugapi running.'));
+    });
+  }
+  clear(_breakpoint: apiTypes.Breakpoint, cb: (err: Error|null) => void): void {
+    return setImmediate(() => {
+      cb(new Error('no debugapi running.'));
+    });
+  }
+  wait(_breakpoint: apiTypes.Breakpoint, cb: (err?: Error) => void): void {
+    return setImmediate(() => {
+      cb(new Error('no debugapi running.'));
+    });
+  }
+  log:
+      (breakpoint: apiTypes.Breakpoint,
+       print: (format: string, exps: string[]) => void,
+       shouldStop: () => boolean) => void;
+  disconnect: () => void;
+  numBreakpoints_: () => number;
+  numListeners_: () => number;
+}
+
+let debugApiConstructor: DebugApiConstructor;
+const nodeVersion = /v(\d+\.\d+\.\d+)/.exec(process.version);
+
+if (!nodeVersion || nodeVersion.length < 2) {
+  console.error('can\'t get the node version.');
+  debugApiConstructor = DummyDebugApi;
+} else if (semver.satisfies(nodeVersion[1], '>=8')) {
+  const inspectorapi = require('./inspectordebugapi');
+  debugApiConstructor = inspectorapi.InspectorDebugApi;
+} else {
+  const v8debugapi = require('./v8debugapi');
+  debugApiConstructor = v8debugapi.V8DebugApi;
+}
+
 export const MODULE_WRAP_PREFIX_LENGTH =
     require('module').wrap('☃').indexOf('☃');
 
 let singleton: DebugApi;
 
 export function create(
-    logger_: Logger, config_: DebugAgentConfig, jsFiles_: ScanStats,
-    sourcemapper_: SourceMapper): DebugApi|null {
-  if (singleton && !config_.forceNewAgent_) {
+    logger: Logger, config: DebugAgentConfig, jsFiles: ScanStats,
+    sourcemapper: SourceMapper): DebugApi|null {
+  if (singleton && !config.forceNewAgent_) {
     return singleton;
   } else if (singleton) {
     singleton.disconnect();
   }
 
-  let debugapi: any;
-  debugapi = new debugApiConstructor(logger_, config_, jsFiles_, sourcemapper_);
-
-  singleton = {
-    /**
-     * @param {!Breakpoint} breakpoint Debug API Breakpoint object
-     * @param {function(?Error)} cb callback with an options error string 1st
-     *            argument
-     */
-    set: function(
-        breakpoint: apiTypes.Breakpoint, cb: (err: Error|null) => void): void {
-      debugapi.set(breakpoint, cb);
-    },
-    clear: function(
-        breakpoint: apiTypes.Breakpoint, cb: (err: Error|null) => void): void {
-      debugapi.clear(breakpoint, cb);
-    },
-    wait: function(breakpoint: apiTypes.Breakpoint, cb: (err?: Error) => void):
-        void {
-          debugapi.wait(breakpoint, cb);
-        },
-
-    log: function(
-        breakpoint: apiTypes.Breakpoint,
-        print: (format: string, exps: string[]) => void,
-        shouldStop: () => boolean): void {
-      debugapi.log(breakpoint, print, shouldStop);
-    },
-    disconnect: function() {
-      debugapi.disconnect();
-    },
-    numBreakpoints_: function(): number {
-      return debugapi.numBreakpoints_();
-    },
-    numListeners_: function(): number {
-      return debugapi.numListeners_();
-    },
-  };
+  singleton = new debugApiConstructor(logger, config, jsFiles, sourcemapper);
   return singleton;
 }
