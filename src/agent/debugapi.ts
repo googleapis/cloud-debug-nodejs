@@ -78,7 +78,8 @@ let debugApiConstructor: DebugApiConstructor;
 const nodeVersion = /v(\d+\.\d+\.\d+)/.exec(process.version);
 
 if (!nodeVersion || nodeVersion.length < 2) {
-  console.error('can\'t get the node version.');
+  console.error(
+      'Debug agent cannot get node version. Cloud debugger is disabled.');
   debugApiConstructor = DummyDebugApi;
 } else if (semver.satisfies(nodeVersion[1], '>=8')) {
   const inspectorapi = require('./inspectordebugapi');

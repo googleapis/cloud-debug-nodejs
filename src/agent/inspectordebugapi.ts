@@ -223,6 +223,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
    * @param {function(?Error)} cb error-back style callback
    */
   // TODO: Fix the documented types to match the function's input types
+  // TODO: Unify this function with setInternal in v8debugapi.ts.
   setInternal(
       breakpoint: apiTypes.Breakpoint, mapInfo: MapInfoOutput|null,
       compile: ((src: string) => string)|null,

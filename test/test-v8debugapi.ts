@@ -137,9 +137,9 @@ describe('v8debugapi', function() {
             assert.ok(api, 'should be able to create the api');
 
             // monkey-patch wait to add validation of the breakpoints.
-            const origWait = api.wait;
+            const origWait = api.wait.bind(api);
             api.wait = function (bp, callback) {
-              origWait(bp, function (err) {
+              origWait(bp, function (err?: Error) {
                 validateBreakpoint(bp);
                 callback(err);
               });
