@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
- // TODO: Unify some common code with state.ts in future PRs.
+// TODO: Unify some common code with state.ts in future PRs.
 
 import * as inspector from 'inspector';
 import * as lodash from 'lodash';
