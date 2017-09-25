@@ -46,9 +46,10 @@ interface DebugApiConstructor {
 
 class DummyDebugApi implements DebugApi {
   constructor(
-      _logger: Logger, _config: DebugAgentConfig, _jsFiles: ScanStats,
+      logger: Logger, _config: DebugAgentConfig, _jsFiles: ScanStats,
       _sourcemapper: SourceMapper) {
-    return;
+    logger.error(
+        'Debug agent cannot get node version. Cloud debugger is disabled.');
   }
   set(_breakpoint: apiTypes.Breakpoint, cb: (err: Error|null) => void): void {
     return setImmediate(() => {
@@ -78,8 +79,6 @@ let debugApiConstructor: DebugApiConstructor;
 const nodeVersion = /v(\d+\.\d+\.\d+)/.exec(process.version);
 
 if (!nodeVersion || nodeVersion.length < 2) {
-  console.error(
-      'Debug agent cannot get node version. Cloud debugger is disabled.');
   debugApiConstructor = DummyDebugApi;
 } else if (semver.satisfies(nodeVersion[1], '>=8')) {
   const inspectorapi = require('./inspectordebugapi');
@@ -96,7 +95,7 @@ let singleton: DebugApi;
 
 export function create(
     logger: Logger, config: DebugAgentConfig, jsFiles: ScanStats,
-    sourcemapper: SourceMapper): DebugApi|null {
+    sourcemapper: SourceMapper): DebugApi {
   if (singleton && !config.forceNewAgent_) {
     return singleton;
   } else if (singleton) {

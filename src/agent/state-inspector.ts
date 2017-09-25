@@ -77,7 +77,7 @@ export function evaluate(
 class StateResolver {
   private callFrames_: Array<inspector.Debugger.CallFrame>;
   private v8Inspector_: V8Inspector;
-  private expressions_: string[];
+  private expressions_: string[]|undefined;
   private config_: DebugAgentConfig;
   private scriptmapper_: {[id: string]: any};
   private breakpoint_: apiTypes.Breakpoint;
@@ -99,7 +99,8 @@ class StateResolver {
       scriptmapper: {[id: string]: any}, v8Inspector: V8Inspector) {
     this.callFrames_ = callFrames;
     this.breakpoint_ = breakpoint;
-    this.expressions_ = breakpoint.expressions as string[];
+    // TODO: Investigate whether this cast can be avoided.
+    this.expressions_ = breakpoint.expressions;
     this.config_ = config;
     this.scriptmapper_ = scriptmapper;
     this.v8Inspector_ = v8Inspector;
@@ -187,9 +188,10 @@ class StateResolver {
       assert(!this.resolvedVariableTable_[index]);  // shouldn't have it
                                                     // resolved yet
       const isEvaluated = evalIndexSet.has(index);
-      if (this.rawVariableTable_[index].objectId)
+      if (this.rawVariableTable_[index].objectId) {
         this.resolvedVariableTable_[index] = this.resolveRemoteObject_(
             this.rawVariableTable_[index], isEvaluated);
+      }
       index++;
     }
     // If we filled up the buffer already, we need to trim the remainder
@@ -379,6 +381,7 @@ class StateResolver {
     for (let i = 0; i < count; ++i) {
       let result = this.v8Inspector_.getProperties(
           frame.scopeChain[i].object.objectId as string);
+      // TODO: Handle when result.error exists.
       if (result.response && !isEmpty(result.response.result)) {
         for (let j = 0; j < result.response.result.length; ++j) {
           if (!usedNames[result.response.result[j].name]) {

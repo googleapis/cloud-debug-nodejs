@@ -69,7 +69,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       try {
         this.handleDebugPausedEvent(message.params);
       } catch (error) {
-        console.error(error);
+        this.logger.error(error);
       }
     });
     this.v8Inspector = new V8Inspector(this.session);
@@ -128,8 +128,8 @@ export class InspectorDebugApi implements debugapi.DebugApi {
           utils.messages.V8_BREAKPOINT_CLEAR_ERROR);
     }
     const id = breakpoint.id;
-    let result = this.v8Inspector.removeBreakpoint(breakpointData.id);
-    let breakpointId = this.breakpoints[id].id;
+    const result = this.v8Inspector.removeBreakpoint(breakpointData.id);
+    const breakpointId = this.breakpoints[id].id;
     delete this.breakpoints[id];
     delete this.listeners[breakpointId];
     this.numBreakpoints--;
@@ -178,7 +178,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
               breakpoint.logMessageFormat as string,
               // TODO: Determine how to remove the `as` cast below
               breakpoint.evaluatedExpressions.map(
-                  JSON.stringify as (ob: any) => string));
+                  (obj: any) => JSON.stringify(obj)));
           logsThisSecond++;
           if (shouldStop()) {
             this.listeners[bpId].enabled = false;
@@ -224,7 +224,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
    */
   // TODO: Fix the documented types to match the function's input types
   // TODO: Unify this function with setInternal in v8debugapi.ts.
-  setInternal(
+  private setInternal(
       breakpoint: apiTypes.Breakpoint, mapInfo: MapInfoOutput|null,
       compile: ((src: string) => string)|null,
       cb: (err: Error|null) => void): void {
@@ -330,7 +330,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     });  // success.
   }
 
-  onBreakpointHit(
+  private onBreakpointHit(
       breakpoint: apiTypes.Breakpoint, callback: (err: Error|null) => void,
       callFrames: inspector.Debugger.CallFrame[]): void {
     // TODO: Address the situation where `breakpoint.id` is `null`.
@@ -357,7 +357,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     callback(null);
   }
 
-  captureBreakpointData(
+  private captureBreakpointData(
       breakpoint: apiTypes.Breakpoint,
       callFrames: inspector.Debugger.CallFrame[]): void {
     const expressionErrors: Array<apiTypes.Variable|null> = [];
@@ -418,7 +418,8 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     }
   }
 
-  handleDebugPausedEvent(params: inspector.Debugger.PausedEventDataType) {
+  private handleDebugPausedEvent(params:
+                                     inspector.Debugger.PausedEventDataType) {
     try {
       if (!params.hitBreakpoints) return;
       const bpId: string = params.hitBreakpoints[0];

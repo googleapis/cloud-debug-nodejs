@@ -204,7 +204,7 @@ export class V8DebugApi implements debugapi.DebugApi {
               breakpoint.logMessageFormat as string,
               // TODO: Determine how to remove the `as` cast below
               breakpoint.evaluatedExpressions.map(
-                  JSON.stringify as (ob: any) => string));
+                  (obj: any) => JSON.stringify(obj)));
           logsThisSecond++;
           if (shouldStop()) {
             that.listeners[num].enabled = false;
@@ -238,7 +238,7 @@ export class V8DebugApi implements debugapi.DebugApi {
   }
 
 
-  setInternal(
+  private setInternal(
       breakpoint: apiTypes.Breakpoint, mapInfo: MapInfoOutput|null,
       compile: ((src: string) => string)|null,
       cb: (err: Error|null) => void): void {
@@ -347,7 +347,7 @@ export class V8DebugApi implements debugapi.DebugApi {
     });  // success.
   }
 
-  setByRegExp(scriptPath: string, line: number, column: number):
+  private setByRegExp(scriptPath: string, line: number, column: number):
       v8Types.BreakPoint {
     const regexp = utils.pathToRegExp(scriptPath);
     const num =
@@ -356,7 +356,7 @@ export class V8DebugApi implements debugapi.DebugApi {
     return v8bp;
   }
 
-  onBreakpointHit(
+  private onBreakpointHit(
       breakpoint: apiTypes.Breakpoint, callback: (err: Error|null) => void,
       execState: v8Types.ExecutionState): void {
     // TODO: Address the situation where `breakpoint.id` is `null`.
@@ -399,7 +399,7 @@ export class V8DebugApi implements debugapi.DebugApi {
    * Evaluates the breakpoint condition, if present.
    * @return object with either a boolean value or an error property
    */
-  checkCondition(
+  private checkCondition(
       breakpoint: apiTypes.Breakpoint,
       execState: v8Types.ExecutionState): {value?: boolean, error?: string} {
     if (!breakpoint.condition) {
@@ -417,7 +417,7 @@ export class V8DebugApi implements debugapi.DebugApi {
     };  // intentional !!
   }
 
-  captureBreakpointData(
+  private captureBreakpointData(
       breakpoint: apiTypes.Breakpoint,
       execState: v8Types.ExecutionState): void {
     const expressionErrors: Array<apiTypes.Variable|null> = [];
