@@ -15,7 +15,7 @@
  */
 
 import * as apiTypes from '../src/types/api-types';
-import {V8DebugApi} from '../src/agent/v8debugapi';
+import {DebugApi} from '../src/agent/debugapi';
 import {DebugAgentConfig} from '../src/agent/config';
 
 // TODO: Have this actually implement Breakpoint
@@ -31,7 +31,7 @@ import * as commonTypes from '../src/types/common-types';
 
 import * as assert from 'assert';
 import * as extend from 'extend';
-import * as v8debugapi from '../src/agent/v8debugapi';
+import * as debugapi from '../src/agent/debugapi';
 const common: commonTypes.Common = require('@google-cloud/common');
 import defaultConfig from '../src/agent/config';
 import {StatusMessage} from '../src/status-message';
@@ -39,9 +39,10 @@ import * as scanner from '../src/agent/scanner';
 import * as SourceMapper from '../src/agent/sourcemapper';
 import * as path from 'path';
 import * as semver from 'semver';
+import * as utils from '../src/agent/utils';
 const code = require('./test-v8debugapi-code.js');
 
-function stateIsClean(api: V8DebugApi): boolean {
+function stateIsClean(api: DebugApi): boolean {
   assert.equal(api.numBreakpoints_(), 0,
     'there should be no breakpoints active');
   assert.equal(api.numListeners_(), 0,
@@ -118,7 +119,7 @@ describe('v8debugapi', function() {
   // TODO: It appears `logLevel` is a typo and should be `level`.  However,
   //       with this change, the tests fail.  Resolve this.
   const logger = new common.logger({ levelLevel: config.logLevel } as any as commonTypes.LoggerOptions);
-  let api: V8DebugApi;
+  let api: DebugApi;
 
   beforeEach(function(done) {
     if (!api) {
@@ -132,13 +133,13 @@ describe('v8debugapi', function() {
 
             // TODO: Handle the case when mapper is undefined.
             // TODO: Handle the case when v8debugapi.create returns null
-            api = v8debugapi.create(logger, config, jsStats, mapper as SourceMapper.SourceMapper) as V8DebugApi;
+            api = debugapi.create(logger, config, jsStats, mapper as SourceMapper.SourceMapper) as DebugApi;
             assert.ok(api, 'should be able to create the api');
 
             // monkey-patch wait to add validation of the breakpoints.
-            const origWait = api.wait;
+            const origWait = api.wait.bind(api);
             api.wait = function (bp, callback) {
-              origWait(bp, function (err) {
+              origWait(bp, function (err?: Error) {
                 validateBreakpoint(bp);
                 callback(err);
               });
@@ -266,7 +267,7 @@ describe('v8debugapi', function() {
         // TODO: Handle the case where bp.status is undefined
         assert.ok((bp.status as any).isError);
         assert((bp.status as any).description.format ===
-          api.messages.SOURCE_FILE_AMBIGUOUS);
+          utils.messages.SOURCE_FILE_AMBIGUOUS);
         done();
       });
     });
@@ -285,7 +286,7 @@ describe('v8debugapi', function() {
         // TODO: Handle the case where bp.status is undefined
         assert.ok((bp.status as any).isError);
         assert((bp.status as any).description.format.match(
-          `${api.messages.INVALID_LINE_NUMBER}.*foo.js:500`));
+          `${utils.messages.INVALID_LINE_NUMBER}.*foo.js:500`));
         done();
       });
     });
@@ -1546,14 +1547,14 @@ describe('v8debugapi.findScripts', function() {
       '/my/project/root/test/fixtures/a/hello.js': {hash: 'fake', lines: 50}
     };
     const scriptPath = '/my/project/root/test/fixtures/a/hello.js';
-    const result = v8debugapi.findScripts(scriptPath, config, fakeFileStats);
+    const result = utils.findScripts(scriptPath, config, fakeFileStats);
     assert.deepEqual(
         result, ['/some/strange/directory/test/fixtures/a/hello.js']);
   });
 });
 
 describe('v8debugapi.findScriptsFuzzy', function() {
-  const fuzzy = v8debugapi.findScriptsFuzzy;
+  const fuzzy = utils.findScriptsFuzzy;
 
   it('should not confuse . as a regexp pattern', function() {
     assert.deepEqual(fuzzy('foo.js', ['/fooXjs']), []);

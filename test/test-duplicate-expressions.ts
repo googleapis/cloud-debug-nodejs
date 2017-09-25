@@ -16,7 +16,6 @@
 
 import * as commonTypes from '../src/types/common-types';
 import * as apiTypes from '../src/types/api-types';
-import {V8DebugApi} from '../src/agent/v8debugapi';
 
 // TODO: Have this actually implement Breakpoint
 const breakpointInFoo: apiTypes.Breakpoint = {
@@ -26,7 +25,7 @@ const breakpointInFoo: apiTypes.Breakpoint = {
 
 import * as assert from 'assert';
 import * as extend from 'extend';
-import * as v8debugapi from '../src/agent/v8debugapi';
+import * as debugapi from '../src/agent/debugapi';
 const common: commonTypes.Common = require('@google-cloud/common');
 import defaultConfig from '../src/agent/config';
 import * as SourceMapper from '../src/agent/sourcemapper';
@@ -34,7 +33,7 @@ import * as scanner from '../src/agent/scanner';
 const foo = require('./test-duplicate-expressions-code.js');
 
 // TODO: Determine why this must be named `stateIsClean1`.
-function stateIsClean1(api: V8DebugApi): boolean {
+function stateIsClean1(api: debugapi.DebugApi): boolean {
   assert.equal(api.numBreakpoints_(), 0,
     'there should be no breakpoints active');
   assert.equal(api.numListeners_(), 0,
@@ -50,7 +49,7 @@ describe(__filename, function() {
   // TODO: It appears `logLevel` is a typo and should be `level`.  However,
   //       with this change, the tests fail.  Resolve this.
   const logger = new common.logger({ logLevel: config.logLevel } as any as commonTypes.LoggerOptions);
-  let api: V8DebugApi;
+  let api: debugapi.DebugApi;
 
   beforeEach(function(done) {
     if (!api) {
@@ -63,7 +62,7 @@ describe(__filename, function() {
 
             // TODO: Handle the case when mapper is undefined
             // TODO: Handle the case when v8debugapi.create returns null
-            api = v8debugapi.create(logger, config, jsStats, mapper as SourceMapper.SourceMapper) as V8DebugApi;
+            api = debugapi.create(logger, config, jsStats, mapper as SourceMapper.SourceMapper) as debugapi.DebugApi;
             assert.ok(api, 'should be able to create the api');
             done();
           });

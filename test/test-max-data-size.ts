@@ -18,22 +18,21 @@ process.env.GCLOUD_DIAGNOSTICS_CONFIG = 'test/fixtures/test-config.js';
 
 import * as commonTypes from '../src/types/common-types';
 import * as apiTypes from '../src/types/api-types';
-import {V8DebugApi} from '../src/agent/v8debugapi';
 
 import * as assert from 'assert';
 import * as extend from 'extend';
 const common: commonTypes.Common = require('@google-cloud/common');
-import * as v8debugapi from '../src/agent/v8debugapi';
+import * as debugapi from '../src/agent/debugapi';
 import * as SourceMapper from '../src/agent/sourcemapper';
 import * as scanner from '../src/agent/scanner';
 import defaultConfig from '../src/agent/config';
 const foo = require('./test-max-data-size-code.js');
-let api: V8DebugApi;
+let api: debugapi.DebugApi;
 
 // TODO: Have this actually implement Breakpoint
 const breakpointInFoo: apiTypes.Breakpoint = {
   id: 'fake-id-123',
-  location: { path: 'test-max-data-size-code.js', line: 4 }
+  location: { path: 'build/test/test-max-data-size-code.js', line: 4 }
 } as apiTypes.Breakpoint;
 
 describe('maxDataSize', function() {
@@ -55,7 +54,7 @@ describe('maxDataSize', function() {
 
             // TODO: Handle the case when mapper is undefined
             // TODO: Handle the case when v8debugapi.create returns null
-            api = v8debugapi.create(logger, config, jsStats, mapper as SourceMapper.SourceMapper) as V8DebugApi;
+            api = debugapi.create(logger, config, jsStats, mapper as SourceMapper.SourceMapper) as debugapi.DebugApi;
             done();
           });
         });
@@ -65,15 +64,16 @@ describe('maxDataSize', function() {
   });
 
   it('should limit data reported', function(done) {
+    const oldMaxData = config.capture.maxDataSize;    
     config.capture.maxDataSize = 5;
     // clone a clean breakpointInFoo
     // TODO: Have this actually implement Breakpoint.
     const bp: apiTypes.Breakpoint = {id: breakpointInFoo.id, location: breakpointInFoo.location} as apiTypes.Breakpoint;
     // TODO: Determine how to remove this cast to any.
-    (api as any).set(bp, function(err: Error) {
+    api.set(bp, function(err: Error) {
       assert.ifError(err);
       // TODO: Determine how to remove this cast to any.
-      (api as any).wait(bp, function(err: Error) {
+      api.wait(bp, function(err: Error) {
         assert.ifError(err);
         // TODO: Determine how to remove this cast to any.
         assert(bp.variableTable.some(function(v) {
@@ -82,23 +82,25 @@ describe('maxDataSize', function() {
           return ((v as any).status as any).description.format === 'Max data size reached';
         }));
         // TODO: Determine how to remove this cast to any.
-        (api as any).clear(bp);
-        done();
+        api.clear(bp, function(err) {
+          config.capture.maxDataSize = oldMaxData;
+          assert.ifError(err);
+          done();
+        });
       });
       process.nextTick(function() {foo(2);});
     });
   });
 
   it('should be unlimited if 0', function(done) {
+    const oldMaxData = config.capture.maxDataSize;    
     config.capture.maxDataSize = 0;
     // clone a clean breakpointInFoo
     // TODO: Have this actually implement breakpoint
     const bp: apiTypes.Breakpoint = {id: breakpointInFoo.id, location: breakpointInFoo.location} as apiTypes.Breakpoint;
-    // TODO: Determine how to remove this cast to any.
-    (api as any).set(bp, function(err: Error) {
+    api.set(bp, function(err: Error) {
       assert.ifError(err);
-      // TODO: Determine how to remove this cast to any.
-      (api as any).wait(bp, function(err: Error) {
+      api.wait(bp, function(err: Error) {
         assert.ifError(err);
         // TODO: Determine how to remove this cast to any.
         // TODO: The function supplied to reduce is of the wrong type.
@@ -109,9 +111,11 @@ describe('maxDataSize', function() {
                    elem.status.description.format !== 'Max data size reached');
         // TODO: Fix this incorrect method signature.
         } as any), true as any as string);
-        // TODO: Determine how to remove this cast to any.
-        (api as any).clear(bp);
-        done();
+        api.clear(bp, function(err) {
+          config.capture.maxDataSize = oldMaxData;
+          assert.ifError(err);
+          done();
+        });
       });
       process.nextTick(function() {foo(2);});
     });
