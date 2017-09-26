@@ -35,7 +35,7 @@ export class BreakpointData {
   constructor(
       public id: string, public active: boolean,
       public apiBreakpoint: apiTypes.Breakpoint,
-      public parsedCondition: estree.Node,
+      public parsedCondition: estree.Node, public locationStr: string,
       public compile: null|((src: string) => string)) {}
 }
 
@@ -46,9 +46,12 @@ export class InspectorDebugApi implements debugapi.DebugApi {
   breakpoints: {[id: string]: BreakpointData} = {};
   sourcemapper: SourceMapper;
   session: inspector.Session;
-  scriptmapper: {[id: string]: any} = {};
-
   listeners: {[id: string]: utils.Listener} = {};
+  scriptmapper: {[id: string]: any} = {};
+  // locationmapper maps location string to a list of breakpoint.id.
+  locationmapper: {[id: string]: string[]} = {};
+  // breakpointmapper maps inspector breakpoint id to a list of breakpoint.id.
+  breakpointmapper: {[id: string]: string[]} = {};
   numBreakpoints = 0;
   v8Inspector: V8Inspector;
   constructor(
@@ -127,11 +130,27 @@ export class InspectorDebugApi implements debugapi.DebugApi {
           cb, breakpoint, StatusMessage.BREAKPOINT_CONDITION,
           utils.messages.V8_BREAKPOINT_CLEAR_ERROR);
     }
-    const id = breakpoint.id;
-    const result = this.v8Inspector.removeBreakpoint(breakpointData.id);
-    const breakpointId = this.breakpoints[id].id;
-    delete this.breakpoints[id];
-    delete this.listeners[breakpointId];
+    let locationStr = breakpointData.locationStr;
+    const bpId = breakpointData.id;
+
+    // delete breakpoint from locationmapper and breakpointmapper.
+    this.deleteBreakpointInArray(
+        this.locationmapper[locationStr], breakpoint.id);
+    if (this.locationmapper[locationStr].length === 0) {
+      delete this.locationmapper[locationStr];
+    }
+    this.deleteBreakpointInArray(this.breakpointmapper[bpId], breakpoint.id);
+    if (this.breakpointmapper[bpId].length === 0) {
+      delete this.breakpointmapper[bpId];
+    }
+
+    let result: {error?: Error} = {};
+    if (!this.breakpointmapper[breakpointData.id]) {
+      // No breakpoint for this inspector brekapoint.
+      result = this.v8Inspector.removeBreakpoint(breakpointData.id);
+    }
+    delete this.breakpoints[breakpoint.id];
+    delete this.listeners[breakpoint.id];
     this.numBreakpoints--;
     setImmediate(function() {
       if (result.error) {
@@ -143,10 +162,9 @@ export class InspectorDebugApi implements debugapi.DebugApi {
 
   wait(breakpoint: apiTypes.Breakpoint, callback: (err?: Error) => void): void {
     // TODO: Address the case whree `breakpoint.id` is `null`.
-    const bp = this.breakpoints[breakpoint.id as string];
     const listener =
         this.onBreakpointHit.bind(this, breakpoint, (err: Error) => {
-          this.listeners[bp.id].enabled = false;
+          this.listeners[breakpoint.id as string].enabled = false;
           // This method is called from the debug event listener, which
           // swallows all exception. We defer the callback to make sure
           // the user errors aren't silenced.
@@ -154,14 +172,16 @@ export class InspectorDebugApi implements debugapi.DebugApi {
             callback(err);
           });
         });
-    this.listeners[bp.id] = {enabled: true, listener: listener};
+    this.listeners[breakpoint.id as string] = {
+      enabled: true,
+      listener: listener
+    };
   }
 
   log(breakpoint: apiTypes.Breakpoint,
       print: (format: string, exps: string[]) => void,
       shouldStop: () => boolean): void {
     // TODO: Address the case whree `breakpoint.id` is `null`.
-    const bpId = this.breakpoints[breakpoint.id as string].id;
     let logsThisSecond = 0;
     let timesliceEnd = Date.now() + 1000;
     // TODO: Determine why the Error argument is not used.
@@ -181,22 +201,25 @@ export class InspectorDebugApi implements debugapi.DebugApi {
                   (obj: any) => JSON.stringify(obj)));
           logsThisSecond++;
           if (shouldStop()) {
-            this.listeners[bpId].enabled = false;
+            this.listeners[breakpoint.id as string].enabled = false;
           } else {
             if (logsThisSecond >= this.config.log.maxLogsPerSecond) {
-              this.listeners[bpId].enabled = false;
+              this.listeners[breakpoint.id as string].enabled = false;
               setTimeout(() => {
                 // listeners[num] may have been deleted by `clear` during the
                 // async hop. Make sure it is valid before setting a property
                 // on it.
-                if (!shouldStop() && this.listeners[bpId]) {
-                  this.listeners[bpId].enabled = true;
+                if (!shouldStop() && this.listeners[breakpoint.id as string]) {
+                  this.listeners[breakpoint.id as string].enabled = true;
                 }
               }, this.config.log.logDelaySeconds * 1000);
             }
           }
         });
-    this.listeners[bpId] = {enabled: true, listener: listener};
+    this.listeners[breakpoint.id as string] = {
+      enabled: true,
+      listener: listener
+    };
   }
 
   disconnect(): void {
@@ -209,6 +232,13 @@ export class InspectorDebugApi implements debugapi.DebugApi {
 
   numListeners_(): number {
     return Object.keys(this.listeners).length;
+  }
+
+  private deleteBreakpointInArray(breakpointArray: string[], bp: string) {
+    const index = breakpointArray.indexOf(bp);
+    if (index >= 0) {
+      breakpointArray.splice(index, 1);
+    }
   }
 
   /**
@@ -314,16 +344,31 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     }
     let condition;
     if (breakpoint.condition) condition = breakpoint.condition;
-    let res = this.v8Inspector.setBreakpointByUrl(
-        line - 1, matchingScript, undefined, column - 1, condition);
-    if (res.error || !res.response) {
-      return utils.setErrorStatusAndCallback(
-          cb, breakpoint, StatusMessage.BREAKPOINT_SOURCE_LOCATION,
-          utils.messages.V8_BREAKPOINT_ERROR);
+    let locationStr = JSON.stringify(breakpoint.location);
+
+    let bpId;  // inspector breakpoint id
+    if (!this.locationmapper[locationStr]) {
+      // The first time when a breakpoint was set to this location.
+      let res = this.v8Inspector.setBreakpointByUrl(
+          line - 1, matchingScript, undefined, column - 1, condition);
+      if (res.error || !res.response) {
+        return utils.setErrorStatusAndCallback(
+            cb, breakpoint, StatusMessage.BREAKPOINT_SOURCE_LOCATION,
+            utils.messages.V8_BREAKPOINT_ERROR);
+      }
+      bpId = res.response.breakpointId;
+      this.locationmapper[locationStr] = [];
+      this.breakpointmapper[bpId] = [];
+    } else {
+      // Breakpoint found on this location. Acquire the breakpoint id.
+      bpId = this.breakpoints[this.locationmapper[locationStr][0]].id;
     }
+
+    this.locationmapper[locationStr].push(breakpoint.id as string);
+    this.breakpointmapper[bpId].push(breakpoint.id as string);
     this.breakpoints[breakpoint.id as string] = new BreakpointData(
-        res.response.breakpointId, true, breakpoint, ast as estree.Program,
-        compile);
+        bpId, true, breakpoint, ast as estree.Program, locationStr, compile);
+
     this.numBreakpoints++;
     setImmediate(function() {
       cb(null);
@@ -394,11 +439,13 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       } else {
         const frame = callFrames[0];
         const evaluatedExpressions = breakpoint.expressions.map(function(exp) {
-          const result = state.evaluate(exp, frame, that.v8Inspector);
+          const result = state.evaluate(exp, frame, that.v8Inspector, true);
           // TODO: Address the case where `result.mirror` is `undefined`.
-          return result.error ?
-              result.error :
-              (result.object as inspector.Runtime.RemoteObject).value();
+          if (result.error)
+            return result.error;
+          else {
+            return (result.object as inspector.Runtime.RemoteObject).value;
+          }
         });
         breakpoint.evaluatedExpressions = evaluatedExpressions;
       }
@@ -423,10 +470,12 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     try {
       if (!params.hitBreakpoints) return;
       const bpId: string = params.hitBreakpoints[0];
-      if (this.listeners[bpId].enabled) {
-        this.logger.info('>>>breakpoint hit<<< number: ' + bpId);
-        this.listeners[bpId].listener(params.callFrames);
-      }
+      this.breakpointmapper[bpId].forEach((id: string) => {
+        if (this.listeners[id].enabled) {
+          this.logger.info('>>>breakpoint hit<<< number: ' + id);
+          this.listeners[id].listener(params.callFrames);
+        }
+      });
     } catch (e) {
       this.logger.warn('Internal V8 error on breakpoint event: ' + e);
     }

@@ -55,10 +55,9 @@ export class V8Inspector {
   }
 
   evaluateOnCallFrame(
-      callFrameId: string, expression: string, objectGroup?: string,
-      includeCommandLineAPI?: boolean, silent?: boolean,
-      returnByValue?: boolean, generatePreview?: boolean,
-      throwOnSideEffect?: boolean) {
+      callFrameId: string, expression: string, returnByValue?: boolean,
+      objectGroup?: string, includeCommandLineAPI?: boolean, silent?: boolean,
+      generatePreview?: boolean, throwOnSideEffect?: boolean) {
     const result: {
       error?: Error,
       response?: inspector.Debugger.EvaluateOnCallFrameReturnType
