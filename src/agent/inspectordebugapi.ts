@@ -350,23 +350,44 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     if (line === 1) {
       column += debugapi.MODULE_WRAP_PREFIX_LENGTH - 1;
     }
+
+    let result =
+        this.setAndStoreBreakpoint(breakpoint, line, column, matchingScript);
+    if (!result) {
+      return utils.setErrorStatusAndCallback(
+          cb, breakpoint, StatusMessage.BREAKPOINT_SOURCE_LOCATION,
+          utils.messages.V8_BREAKPOINT_ERROR);
+    }
+
+    this.breakpoints[breakpoint.id as string] = new BreakpointData(
+        result.v8BreakpointId, true, breakpoint, ast as estree.Program,
+        result.locationStr, compile);
+
+    this.numBreakpoints++;
+    setImmediate(function() {
+      cb(null);
+    });  // success.
+  }
+
+  private setAndStoreBreakpoint(
+      breakpoint: apiTypes.Breakpoint, line: number, column: number,
+      matchingScript: string):
+      {v8BreakpointId: inspector.Debugger.BreakpointId,
+       locationStr: string}|null {
     let condition;
     if (breakpoint.condition) condition = breakpoint.condition;
-
     // location Str will be a JSON string of Stackdriver breakpoint location.
     // It will be used as key at locationmapper to ensure there will be no
     // duplicate breakpoints at the same location.
     let locationStr = JSON.stringify(breakpoint.location);
     let v8BreakpointId;  // v8/inspector breakpoint id
-
     if (!this.locationmapper[locationStr]) {
       // The first time when a breakpoint was set to this location.
       let res = this.v8Inspector.setBreakpointByUrl(
           line - 1, matchingScript, undefined, column - 1, condition);
       if (res.error || !res.response) {
-        return utils.setErrorStatusAndCallback(
-            cb, breakpoint, StatusMessage.BREAKPOINT_SOURCE_LOCATION,
-            utils.messages.V8_BREAKPOINT_ERROR);
+        // Error case.
+        return null;
       }
       v8BreakpointId = res.response.breakpointId;
       this.locationmapper[locationStr] = [];
@@ -382,14 +403,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     this.locationmapper[locationStr].push(breakpoint.id as string);
     this.breakpointmapper[v8BreakpointId].push(breakpoint.id as string);
 
-    this.breakpoints[breakpoint.id as string] = new BreakpointData(
-        v8BreakpointId, true, breakpoint, ast as estree.Program, locationStr,
-        compile);
-
-    this.numBreakpoints++;
-    setImmediate(function() {
-      cb(null);
-    });  // success.
+    return {v8BreakpointId: v8BreakpointId, locationStr: locationStr};
   }
 
   private onBreakpointHit(
