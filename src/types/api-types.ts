@@ -78,7 +78,7 @@ export interface Breakpoint {
   variableTable: Array<Variable|null>;
   // TODO: The `controller.ts` file assumes `id` is not null or undefined.
   //       Verify it it should be optional.
-  id?: string;
+  id?: BreakpointId;
   // TODO: The debug code assumes the rest of these members
   //       are optional.  Determine if this is correct.
   action?: Action;
@@ -103,6 +103,8 @@ export interface Breakpoint {
     [key: string]: string,
   };
 }
+
+export type BreakpointId = string;
 
 export interface ListBreakpointsQuery {
   waitToken?: string;
