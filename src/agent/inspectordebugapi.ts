@@ -33,7 +33,7 @@ import {V8Inspector} from './v8inspector';
 
 export class BreakpointData {
   constructor(
-      public id: inspector.Debugger.BreakpointId, public active: boolean,
+      public id: inspector.Debugger.BreakpointId,
       public apiBreakpoint: apiTypes.Breakpoint,
       public parsedCondition: estree.Node, public locationStr: string,
       public compile: null|((src: string) => string)) {}
@@ -360,7 +360,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     }
 
     this.breakpoints[breakpoint.id as string] = new BreakpointData(
-        result.v8BreakpointId, true, breakpoint, ast as estree.Program,
+        result.v8BreakpointId, breakpoint, ast as estree.Program,
         result.locationStr, compile);
 
     this.numBreakpoints++;
@@ -409,16 +409,6 @@ export class InspectorDebugApi implements debugapi.DebugApi {
   private onBreakpointHit(
       breakpoint: apiTypes.Breakpoint, callback: (err: Error|null) => void,
       callFrames: inspector.Debugger.CallFrame[]): void {
-    // TODO: Address the situation where `breakpoint.id` is `null`.
-    const bp = this.breakpoints[breakpoint.id as string];
-    if (!bp.active) {
-      // Breakpoint exists, but not active. We never disable breakpoints, so
-      // this is theoretically not possible. Perhaps this is possible if there
-      // is a second debugger present? Regardless, report the error.
-      return utils.setErrorStatusAndCallback(
-          callback, breakpoint, StatusMessage.BREAKPOINT_SOURCE_LOCATION,
-          utils.messages.V8_BREAKPOINT_DISABLED);
-    }
     // Breakpoint Hit
     const start = process.hrtime();
     try {
