@@ -178,3 +178,10 @@ export function getBreakpointCompiler(breakpoint: apiTypes.Breakpoint):
       return null;
   }
 }
+
+export function removeFirstOccurrenceInArray<T>(array: T[], element: T): void {
+  const index = array.indexOf(element);
+  if (index >= 0) {
+    array.splice(index, 1);
+  }
+}

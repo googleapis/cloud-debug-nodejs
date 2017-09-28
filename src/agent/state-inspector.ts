@@ -47,7 +47,7 @@ const ARG_LOCAL_LIMIT_MESSAGE_INDEX = 3;
  */
 export function evaluate(
     expression: string, frame: inspector.Debugger.CallFrame,
-    v8inspector: V8Inspector):
+    v8inspector: V8Inspector, returnByValue: boolean):
     {error: string|null, object?: inspector.Runtime.RemoteObject} {
   // First validate the expression to make sure it doesn't mutate state
   const acorn = require('acorn');
@@ -62,7 +62,8 @@ export function evaluate(
   }
 
   // Now actually ask V8 Inspector to evaluate the expression
-  const result = v8inspector.evaluateOnCallFrame(frame.callFrameId, expression);
+  const result = v8inspector.evaluateOnCallFrame(
+      {callFrameId: frame.callFrameId, expression, returnByValue});
   if (result.error || !result.response) {
     return {
       error: result.error ? String(result.error) : 'no reponse in result'
@@ -152,7 +153,7 @@ class StateResolver {
     if (this.expressions_) {
       this.expressions_.forEach((expression, index2) => {
         const result =
-            evaluate(expression, this.callFrames_[0], this.v8Inspector_);
+            evaluate(expression, this.callFrames_[0], this.v8Inspector_, false);
         let evaluated;
         if (result.error) {
           evaluated = {
@@ -199,6 +200,7 @@ class StateResolver {
       this.trimVariableTable_(index, frames);
     }
     return {
+      id: this.breakpoint_.id,
       stackFrames: frames,
       variableTable: this.resolvedVariableTable_,
       evaluatedExpressions: this.evaluatedExpressions_
@@ -380,7 +382,7 @@ class StateResolver {
       count -= 1;
     for (let i = 0; i < count; ++i) {
       let result = this.v8Inspector_.getProperties(
-          frame.scopeChain[i].object.objectId as string);
+          {objectId: frame.scopeChain[i].object.objectId as string});
       // TODO: Handle when result.error exists.
       if (result.response && !isEmpty(result.response.result)) {
         for (let j = 0; j < result.response.result.length; ++j) {
@@ -488,7 +490,8 @@ class StateResolver {
       object: inspector.Runtime.RemoteObject,
       isEvaluated: boolean): apiTypes.Variable {
     const maxProps = this.config_.capture.maxProperties;
-    let result = this.v8Inspector_.getProperties(object.objectId as string);
+    let result =
+        this.v8Inspector_.getProperties({objectId: object.objectId as string});
     let members: Array<any> = [];
     if (result.error || !result.response) {
       members.push({
