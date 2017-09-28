@@ -165,7 +165,6 @@ export class V8DebugApi implements debugapi.DebugApi {
   }
 
   wait(breakpoint: apiTypes.Breakpoint, callback: (err?: Error) => void): void {
-    // TODO: Address the case whree `breakpoint.id` is `null`.
     const that = this;
     const num = that.breakpoints[breakpoint.id].v8Breakpoint.number();
     const listener =
@@ -186,7 +185,6 @@ export class V8DebugApi implements debugapi.DebugApi {
       print: (format: string, exps: string[]) => void,
       shouldStop: () => boolean): void {
     const that = this;
-    // TODO: Address the case whree `breakpoint.id` is `null`.
     const num = that.breakpoints[breakpoint.id].v8Breakpoint.number();
     let logsThisSecond = 0;
     let timesliceEnd = Date.now() + 1000;
@@ -276,7 +274,6 @@ export class V8DebugApi implements debugapi.DebugApi {
     // debuglet, we are going to assume that repository root === the starting
     // working directory.
     let matchingScript;
-    // TODO: Address the case where `breakpoint.location` is `null`.
     const scripts = utils.findScripts(
         mapInfo ? mapInfo.file :
                   path.normalize(
@@ -295,7 +292,6 @@ export class V8DebugApi implements debugapi.DebugApi {
           utils.messages.SOURCE_FILE_AMBIGUOUS);
     }
 
-    // TODO: Address the case where `breakpoint.location` is `null`.
     // TODO: Address the case where `fileStats[matchingScript]` is `null`.
     if ((breakpoint.location as apiTypes.SourceLocation).line >=
         (this.fileStats[matchingScript] as FileStats).lines) {
@@ -337,7 +333,6 @@ export class V8DebugApi implements debugapi.DebugApi {
       this.logger.info('activating v8 breakpoint listener');
       this.v8.setListener(this.handleDebugEvents);
     }
-    // TODO: Address the case whree `breakpoint.id` is `null`.
     this.breakpoints[breakpoint.id] =
         // TODO: Address the case where `ast` is `null`.
         new V8BreakpointData(breakpoint, v8bp, ast as estree.Program, compile);
@@ -421,11 +416,9 @@ export class V8DebugApi implements debugapi.DebugApi {
       breakpoint: apiTypes.Breakpoint,
       execState: v8Types.ExecutionState): void {
     const expressionErrors: Array<apiTypes.Variable|null> = [];
-    // TODO: Address the case where `breakpoint.id` is `null`.
     if (breakpoint.expressions && this.breakpoints[breakpoint.id].compile) {
       for (let i = 0; i < breakpoint.expressions.length; i++) {
         try {
-          // TODO: Address the case where `breakpoint.id` is `null`.
           breakpoint.expressions[i] =
               // TODO: Address the case where `compile` is `null`.
               (this.breakpoints[breakpoint.id].compile as (text: string) =>
