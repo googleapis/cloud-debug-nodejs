@@ -167,7 +167,7 @@ export class V8DebugApi implements debugapi.DebugApi {
   wait(breakpoint: apiTypes.Breakpoint, callback: (err?: Error) => void): void {
     // TODO: Address the case whree `breakpoint.id` is `null`.
     const that = this;
-    const num = that.breakpoints[breakpoint.id as string].v8Breakpoint.number();
+    const num = that.breakpoints[breakpoint.id].v8Breakpoint.number();
     const listener =
         this.onBreakpointHit.bind(this, breakpoint, function(err: Error) {
           that.listeners[num].enabled = false;
@@ -187,7 +187,7 @@ export class V8DebugApi implements debugapi.DebugApi {
       shouldStop: () => boolean): void {
     const that = this;
     // TODO: Address the case whree `breakpoint.id` is `null`.
-    const num = that.breakpoints[breakpoint.id as string].v8Breakpoint.number();
+    const num = that.breakpoints[breakpoint.id].v8Breakpoint.number();
     let logsThisSecond = 0;
     let timesliceEnd = Date.now() + 1000;
     // TODO: Determine why the Error argument is not used.
@@ -338,7 +338,7 @@ export class V8DebugApi implements debugapi.DebugApi {
       this.v8.setListener(this.handleDebugEvents);
     }
     // TODO: Address the case whree `breakpoint.id` is `null`.
-    this.breakpoints[breakpoint.id as string] =
+    this.breakpoints[breakpoint.id] =
         // TODO: Address the case where `ast` is `null`.
         new V8BreakpointData(breakpoint, v8bp, ast as estree.Program, compile);
     this.numBreakpoints++;
@@ -360,7 +360,7 @@ export class V8DebugApi implements debugapi.DebugApi {
       breakpoint: apiTypes.Breakpoint, callback: (err: Error|null) => void,
       execState: v8Types.ExecutionState): void {
     // TODO: Address the situation where `breakpoint.id` is `null`.
-    const v8bp = this.breakpoints[breakpoint.id as string].v8Breakpoint;
+    const v8bp = this.breakpoints[breakpoint.id].v8Breakpoint;
     if (!v8bp.active()) {
       // Breakpoint exists, but not active. We never disable breakpoints, so
       // this is theoretically not possible. Perhaps this is possible if there
@@ -422,15 +422,14 @@ export class V8DebugApi implements debugapi.DebugApi {
       execState: v8Types.ExecutionState): void {
     const expressionErrors: Array<apiTypes.Variable|null> = [];
     // TODO: Address the case where `breakpoint.id` is `null`.
-    if (breakpoint.expressions &&
-        this.breakpoints[breakpoint.id as string].compile) {
+    if (breakpoint.expressions && this.breakpoints[breakpoint.id].compile) {
       for (let i = 0; i < breakpoint.expressions.length; i++) {
         try {
           // TODO: Address the case where `breakpoint.id` is `null`.
           breakpoint.expressions[i] =
               // TODO: Address the case where `compile` is `null`.
-              (this.breakpoints[breakpoint.id as string].compile as
-                   (text: string) => string)(breakpoint.expressions[i]);
+              (this.breakpoints[breakpoint.id].compile as (text: string) =>
+                   string)(breakpoint.expressions[i]);
         } catch (e) {
           this.logger.info(
               'Unable to compile watch expression >> ' +

@@ -178,3 +178,10 @@ export function getBreakpointCompiler(breakpoint: apiTypes.Breakpoint):
       return null;
   }
 }
+
+export function removeElementInArray(array: string[], element: string) {
+  const index = array.indexOf(element);
+  if (index >= 0) {
+    array.splice(index, 1);
+  }
+}

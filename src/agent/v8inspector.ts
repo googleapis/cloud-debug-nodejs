@@ -21,21 +21,14 @@ export class V8Inspector {
   constructor(session: inspector.Session) {
     this.session = session;
   }
-  setBreakpointByUrl(
-      lineNumber: number, url?: string, urlRegex?: string,
-      columnNumber?: number, condition?: string) {
+  setBreakpointByUrl(options:
+                         inspector.Debugger.SetBreakpointByUrlParameterType) {
     const result: {
       error?: Error,
       response?: inspector.Debugger.SetBreakpointByUrlReturnType
     } = {};
     this.session.post(
-        'Debugger.setBreakpointByUrl', {
-          lineNumber: lineNumber,
-          url: url,
-          urlRegex: urlRegex,
-          columnNumber: columnNumber,
-          condition: condition
-        },
+        'Debugger.setBreakpointByUrl', options,
         (error: Error|null,
          response: inspector.Debugger.SetBreakpointByUrlReturnType) => {
           if (error) result.error = error;
@@ -54,25 +47,14 @@ export class V8Inspector {
     return result;
   }
 
-  evaluateOnCallFrame(
-      callFrameId: string, expression: string, returnByValue?: boolean,
-      objectGroup?: string, includeCommandLineAPI?: boolean, silent?: boolean,
-      generatePreview?: boolean, throwOnSideEffect?: boolean) {
+  evaluateOnCallFrame(options:
+                          inspector.Debugger.EvaluateOnCallFrameParameterType) {
     const result: {
       error?: Error,
       response?: inspector.Debugger.EvaluateOnCallFrameReturnType
     } = {};
     this.session.post(
-        'Debugger.evaluateOnCallFrame', {
-          callFrameId: callFrameId,
-          expression: expression,
-          objectGroup: objectGroup,
-          includeCommandLineAPI: includeCommandLineAPI,
-          silent: silent,
-          returnByValue: returnByValue,
-          generatePreview: generatePreview,
-          throwOnSideEffect: throwOnSideEffect
-        },
+        'Debugger.evaluateOnCallFrame', options,
         (error: Error|null,
          response: inspector.Debugger.EvaluateOnCallFrameReturnType) => {
           if (error) result.error = error;
@@ -81,19 +63,12 @@ export class V8Inspector {
     return result;
   }
 
-  getProperties(
-      objectId: string, ownProperties?: boolean,
-      accessorPropertiesOnly?: boolean, generatePreview?: boolean) {
+  getProperties(options: inspector.Runtime.GetPropertiesParameterType) {
     const result:
         {error?: Error,
          response?: inspector.Runtime.GetPropertiesReturnType} = {};
     this.session.post(
-        'Runtime.getProperties', {
-          objectId: objectId,
-          ownProperties: ownProperties,
-          accessorPropertiesOnly: accessorPropertiesOnly,
-          generatePreview: generatePreview
-        },
+        'Runtime.getProperties', options,
         (error: Error|null,
          response: inspector.Runtime.GetPropertiesReturnType) => {
           if (error) result.error = error;
