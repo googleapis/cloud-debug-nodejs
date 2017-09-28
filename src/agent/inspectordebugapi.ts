@@ -139,11 +139,12 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     const v8BreakpointId = breakpointData.id;
 
     // delete current breakpoint from locationmapper and breakpointmapper.
-    utils.removeElementInArray(this.locationMapper[locationStr], breakpoint.id);
+    utils.removeFirstOccurrenceInArray(
+        this.locationMapper[locationStr], breakpoint.id);
     if (this.locationMapper[locationStr].length === 0) {
       delete this.locationMapper[locationStr];
     }
-    utils.removeElementInArray(
+    utils.removeFirstOccurrenceInArray(
         this.breakpointMapper[v8BreakpointId], breakpoint.id);
     if (this.breakpointMapper[v8BreakpointId].length === 0) {
       delete this.breakpointMapper[v8BreakpointId];
