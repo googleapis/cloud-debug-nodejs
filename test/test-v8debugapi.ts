@@ -1548,7 +1548,7 @@ describe('v8debugapi', () => {
             assert.ok(bp.stackFrames);
             assert.ok(bp.variableTable);
             assert.ok(bp.evaluatedExpressions);
-            console.log(JSON.stringify(bp.evaluatedExpressions, null, 2));
+
             for (const i in bp.evaluatedExpressions) {
               const expr = bp.evaluatedExpressions[i];
               // TODO: Handle the case when expr is undefined
