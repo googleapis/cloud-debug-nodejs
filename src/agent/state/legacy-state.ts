@@ -54,7 +54,7 @@ export function evaluate(expression: string, frame: v8.FrameMirror):
     const ast = acorn.parse(expression, {sourceType: 'script'});
     const validator = require('../util/validator');
     if (!validator.isValid(ast)) {
-      return {error: 'expression not allowed'};
+      return {error: 'Expression not allowed'};
     }
   } catch (err) {
     return {error: err.message};

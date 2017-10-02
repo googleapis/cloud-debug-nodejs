@@ -417,8 +417,6 @@ export class V8DebugApi implements debugapi.DebugApi {
     if (breakpoint.expressions && this.breakpoints[breakpoint.id].compile) {
       for (let i = 0; i < breakpoint.expressions.length; i++) {
         try {
-          console.log((this.breakpoints[breakpoint.id].compile as (text: string) =>
-          string)(breakpoint.expressions[i]));
           breakpoint.expressions[i] =
               // TODO: Address the case where `compile` is `null`.
               (this.breakpoints[breakpoint.id].compile as (text: string) =>
@@ -434,6 +432,7 @@ export class V8DebugApi implements debugapi.DebugApi {
                 true)
           });
           breakpoint.expressions.splice(i, 1);
+          i--;
         }
       }
     }
