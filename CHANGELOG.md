@@ -2,7 +2,8 @@
 
 ## 2017-10-04, Version 2.2.0 (Beta), @dominickramer
 
-This release includes support for the new [v8 Inspector Protocol](https://chromedevtools.github.io/debugger-protocol-viewer/v8/) (#329) and
+This release includes support for the new [v8 Inspector Protocol]
+(https://chromedevtools.github.io/debugger-protocol-viewer/v8/) (#329) and
 fixes an issue with setting snapshots on lines that cannot directly have
 snapshots set, such as comments (#330).
 
