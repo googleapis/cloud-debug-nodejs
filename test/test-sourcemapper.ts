@@ -17,7 +17,7 @@
 import * as assert from 'assert';
 import * as path from 'path';
 
-import * as sm from '../src/agent/sourcemapper';
+import * as sm from '../src/agent/io/sourcemapper';
 
 const BASE_PATH = path.join(__dirname, 'fixtures', 'sourcemapper');
 

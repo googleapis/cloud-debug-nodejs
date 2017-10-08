@@ -15,7 +15,7 @@
  */
 
 import * as realAssert from 'assert';
-import {debugAssert} from '../src/agent/debug-assert';
+import {debugAssert} from '../src/agent/util/debug-assert';
 
 describe('debug-assert', () => {
   it('should fire assertions when enabled', () => {

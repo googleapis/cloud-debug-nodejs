@@ -23,7 +23,7 @@ const fixture = function(file: string): string {
   return path.join(fixtureDir, file);
 };
 
-import * as scanner from '../src/agent/scanner';
+import * as scanner from '../src/agent/io/scanner';
 
 describe('scanner', function() {
 

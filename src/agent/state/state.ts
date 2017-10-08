@@ -17,17 +17,17 @@ import * as lodash from 'lodash';
 import * as util from 'util';
 import * as vm from 'vm';
 
-import {debugAssert} from './debug-assert';
+import {debugAssert} from '../util/debug-assert';
 
 const transform = lodash.transform;
 const flatten = lodash.flatten;
 const isEmpty = lodash.isEmpty;
 
-import {StatusMessage} from '../status-message';
+import {StatusMessage} from '../../status-message';
 
-import * as v8Types from '../types/v8-types';
-import * as apiTypes from '../types/api-types';
-import {DebugAgentConfig} from './config';
+import * as v8Types from '../../types/v8-types';
+import * as apiTypes from '../../types/api-types';
+import {DebugAgentConfig} from '../config';
 
 // TODO: Determine if `ScopeType` should be named `scopeType`.
 // tslint:disable-next-line:variable-name

@@ -15,7 +15,7 @@
  */
 
 import * as apiTypes from '../src/types/api-types';
-import {DebugApi} from '../src/agent/debugapi';
+import {DebugApi} from '../src/agent/api/debugapi';
 import {DebugAgentConfig} from '../src/agent/config';
 
 // TODO: Have this actually implement Breakpoint
@@ -31,15 +31,15 @@ import * as commonTypes from '../src/types/common-types';
 
 import * as assert from 'assert';
 import * as extend from 'extend';
-import * as debugapi from '../src/agent/debugapi';
+import * as debugapi from '../src/agent/api/debugapi';
 const common: commonTypes.Common = require('@google-cloud/common');
 import defaultConfig from '../src/agent/config';
 import {StatusMessage} from '../src/status-message';
-import * as scanner from '../src/agent/scanner';
-import * as SourceMapper from '../src/agent/sourcemapper';
+import * as scanner from '../src/agent/io/scanner';
+import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as path from 'path';
 import * as semver from 'semver';
-import * as utils from '../src/agent/utils';
+import * as utils from '../src/agent/util/utils';
 const code = require('./test-v8debugapi-code.js');
 
 function stateIsClean(api: DebugApi): boolean {

@@ -15,12 +15,12 @@
  */
 import * as semver from 'semver';
 
-import * as apiTypes from '../types/api-types';
-import {Logger} from '../types/common-types';
+import * as apiTypes from '../../types/api-types';
+import {Logger} from '../../types/common-types';
 
-import {DebugAgentConfig} from './config';
-import {ScanStats} from './scanner';
-import {SourceMapper} from './sourcemapper';
+import {DebugAgentConfig} from '../config';
+import {ScanStats} from '../io/scanner';
+import {SourceMapper} from '../io/sourcemapper';
 
 
 export interface DebugApi {

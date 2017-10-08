@@ -20,15 +20,15 @@ import * as inspector from 'inspector';
 import * as lodash from 'lodash';
 import * as util from 'util';
 
-import {debugAssert} from './debug-assert';
+import {debugAssert} from '../util/debug-assert';
 
 const isEmpty = lodash.isEmpty;
 
-import {StatusMessage} from '../status-message';
+import {StatusMessage} from '../../status-message';
 
-import * as apiTypes from '../types/api-types';
-import {DebugAgentConfig} from './config';
-import {V8Inspector} from './v8inspector';
+import * as apiTypes from '../../types/api-types';
+import {DebugAgentConfig} from '../config';
+import {V8Inspector} from '../api/v8inspector';
 
 const assert = debugAssert(!!process.env.CLOUD_DEBUG_ASSERTIONS);
 

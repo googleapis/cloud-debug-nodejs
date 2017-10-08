@@ -1,10 +1,10 @@
 import * as path from 'path';
 
-import {StatusMessage} from '../status-message';
-import * as apiTypes from '../types/api-types';
+import {StatusMessage} from '../../status-message';
+import * as apiTypes from '../../types/api-types';
 
-import {DebugAgentConfig} from './config';
-import {ScanStats} from './scanner';
+import {DebugAgentConfig} from '../config';
+import {ScanStats} from '../io/scanner';
 
 
 export const messages = {

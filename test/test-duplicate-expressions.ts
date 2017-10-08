@@ -25,11 +25,11 @@ const breakpointInFoo: apiTypes.Breakpoint = {
 
 import * as assert from 'assert';
 import * as extend from 'extend';
-import * as debugapi from '../src/agent/debugapi';
+import * as debugapi from '../src/agent/api/debugapi';
 const common: commonTypes.Common = require('@google-cloud/common');
 import defaultConfig from '../src/agent/config';
-import * as SourceMapper from '../src/agent/sourcemapper';
-import * as scanner from '../src/agent/scanner';
+import * as SourceMapper from '../src/agent/io/sourcemapper';
+import * as scanner from '../src/agent/io/scanner';
 const foo = require('./test-duplicate-expressions-code.js');
 
 // TODO: Determine why this must be named `stateIsClean1`.
