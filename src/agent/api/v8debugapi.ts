@@ -252,7 +252,7 @@ export class V8DebugApi implements debugapi.DebugApi {
         // parser API available us :(.
         ast = acorn.parse(
             breakpoint.condition, {sourceType: 'script', ecmaVersion: 6});
-        const validator = require('./validator.js');
+        const validator = require('../util/validator.js');
         if (!validator.isValid(ast)) {
           return utils.setErrorStatusAndCallback(
               cb, breakpoint, StatusMessage.BREAKPOINT_CONDITION,
