@@ -22,13 +22,13 @@ import * as path from 'path';
 import {StatusMessage} from '../../status-message';
 import * as apiTypes from '../../types/api-types';
 import {Logger} from '../../types/common-types';
-
 import {DebugAgentConfig} from '../config';
-import * as debugapi from './debugapi';
 import {FileStats, ScanStats} from '../io/scanner';
 import {MapInfoOutput, SourceMapper} from '../io/sourcemapper';
 import * as state from '../state/state-inspector';
 import * as utils from '../util/utils';
+
+import * as debugapi from './debugapi';
 import {V8Inspector} from './v8inspector';
 
 export class BreakpointData {

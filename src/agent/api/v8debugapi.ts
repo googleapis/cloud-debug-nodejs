@@ -25,13 +25,13 @@ import {StatusMessage} from '../../status-message';
 import * as apiTypes from '../../types/api-types';
 import {Logger} from '../../types/common-types';
 import * as v8Types from '../../types/v8-types';
-
 import {DebugAgentConfig} from '../config';
-import * as debugapi from './debugapi';
 import {FileStats, ScanStats} from '../io/scanner';
 import {MapInfoOutput, SourceMapper} from '../io/sourcemapper';
 import * as state from '../state/state';
 import * as utils from '../util/utils';
+
+import * as debugapi from './debugapi';
 
 export class V8BreakpointData {
   constructor(
