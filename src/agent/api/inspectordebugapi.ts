@@ -25,7 +25,7 @@ import {Logger} from '../../types/common-types';
 import {DebugAgentConfig} from '../config';
 import {FileStats, ScanStats} from '../io/scanner';
 import {MapInfoOutput, SourceMapper} from '../io/sourcemapper';
-import * as state from '../state/state-inspector';
+import * as state from '../state/inspector-state';
 import * as utils from '../util/utils';
 
 import * as debugapi from './debugapi';

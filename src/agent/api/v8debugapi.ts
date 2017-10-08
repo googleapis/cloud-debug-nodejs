@@ -28,7 +28,7 @@ import * as v8Types from '../../types/v8-types';
 import {DebugAgentConfig} from '../config';
 import {FileStats, ScanStats} from '../io/scanner';
 import {MapInfoOutput, SourceMapper} from '../io/sourcemapper';
-import * as state from '../state/state';
+import * as state from '../state/legacy-state';
 import * as utils from '../util/utils';
 
 import * as debugapi from './debugapi';

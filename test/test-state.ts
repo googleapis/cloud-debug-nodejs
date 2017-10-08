@@ -15,7 +15,7 @@
  */
 
 import * as assert from 'assert';
-import * as state from '../src/agent/state/state';
+import * as state from '../src/agent/state/legacy-state';
 
 describe('state', () => {
   // Testing of state.js is driven through test-v8debugapi.js. There are
