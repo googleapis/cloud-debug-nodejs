@@ -22,21 +22,16 @@ import {DebugAgentConfig} from '../config';
 import {ScanStats} from '../io/scanner';
 import {SourceMapper} from '../io/sourcemapper';
 
-
 export interface DebugApi {
-  set: (breakpoint: apiTypes.Breakpoint, cb: (err: Error|null) => void) => void;
-  clear:
-      (breakpoint: apiTypes.Breakpoint, cb: (err: Error|null) => void) => void;
-  wait:
-      (breakpoint: apiTypes.Breakpoint,
-       callback: (err?: Error) => void) => void;
-  log:
-      (breakpoint: apiTypes.Breakpoint,
-       print: (format: string, exps: string[]) => void,
-       shouldStop: () => boolean) => void;
-  disconnect: () => void;
-  numBreakpoints_: () => number;
-  numListeners_: () => number;
+  set(breakpoint: apiTypes.Breakpoint, cb: (err: Error|null) => void): void;
+  clear(breakpoint: apiTypes.Breakpoint, cb: (err: Error|null) => void): void;
+  wait(breakpoint: apiTypes.Breakpoint, callback: (err?: Error) => void): void;
+  log(breakpoint: apiTypes.Breakpoint,
+      print: (format: string, exps: string[]) => void,
+      shouldStop: () => boolean): void;
+  disconnect(): void;
+  numBreakpoints_(): number;
+  numListeners_(): number;
 }
 
 interface DebugApiConstructor {
@@ -44,47 +39,17 @@ interface DebugApiConstructor {
       sourcemapper_: SourceMapper): DebugApi;
 }
 
-class DummyDebugApi implements DebugApi {
-  constructor(
-      logger: Logger, _config: DebugAgentConfig, _jsFiles: ScanStats,
-      _sourcemapper: SourceMapper) {
-    logger.error(
-        'Debug agent cannot get node version. Cloud debugger is disabled.');
-  }
-  set(_breakpoint: apiTypes.Breakpoint, cb: (err: Error|null) => void): void {
-    return setImmediate(() => {
-      cb(new Error('no debugapi running.'));
-    });
-  }
-  clear(_breakpoint: apiTypes.Breakpoint, cb: (err: Error|null) => void): void {
-    return setImmediate(() => {
-      cb(new Error('no debugapi running.'));
-    });
-  }
-  wait(_breakpoint: apiTypes.Breakpoint, cb: (err?: Error) => void): void {
-    return setImmediate(() => {
-      cb(new Error('no debugapi running.'));
-    });
-  }
-  log:
-      (breakpoint: apiTypes.Breakpoint,
-       print: (format: string, exps: string[]) => void,
-       shouldStop: () => boolean) => void;
-  disconnect: () => void;
-  numBreakpoints_: () => number;
-  numListeners_: () => number;
-}
-
 let debugApiConstructor: DebugApiConstructor;
 const nodeVersion = /v(\d+\.\d+\.\d+)/.exec(process.version);
 
 if (!nodeVersion || nodeVersion.length < 2) {
-  debugApiConstructor = DummyDebugApi;
+  const dummyapi = require('./dummy-debugapi');
+  debugApiConstructor = dummyapi.DummyDebugApi;
 } else if (semver.satisfies(nodeVersion[1], '>=8')) {
-  const inspectorapi = require('./inspectordebugapi');
+  const inspectorapi = require('./inspector-debugapi');
   debugApiConstructor = inspectorapi.InspectorDebugApi;
 } else {
-  const v8debugapi = require('./v8debugapi');
+  const v8debugapi = require('./legacy-debugapi');
   debugApiConstructor = v8debugapi.V8DebugApi;
 }
 
