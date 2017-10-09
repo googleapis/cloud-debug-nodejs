@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as apiTypes from '../src/types/api-types';
+import * as stackdriver from '../src/types/stackdriver';
 import {DebugAgentConfig} from '../src/agent/config';
 import {Debuggee} from '../src/debuggee';
 
@@ -50,17 +50,17 @@ let oldGP: string|undefined;
 declare type MetadataCallback = (err: Error|null, ob?: any, result?: string) => void;
 
 // TODO: Have this actually implement Breakpoint.
-const bp: apiTypes.Breakpoint = {
+const bp: stackdriver.Breakpoint = {
   id: 'test',
   action: 'CAPTURE',
   location: {path: 'fixtures/foo.js', line: 2}
-} as apiTypes.Breakpoint;
+} as stackdriver.Breakpoint;
 // TODO: Have this actually implement Breakpoint.
-const errorBp: apiTypes.Breakpoint = {
+const errorBp: stackdriver.Breakpoint = {
   id: 'testLog',
   action: 'FOO',
   location: {path: 'fixtures/foo.js', line: 2}
-} as any as apiTypes.Breakpoint;
+} as any as stackdriver.Breakpoint;
 
 function verifyBreakpointRejection(re: RegExp, body: {breakpoint: any}) {
   const status = body.breakpoint.status;

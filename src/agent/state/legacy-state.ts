@@ -26,7 +26,7 @@ const isEmpty = lodash.isEmpty;
 import {StatusMessage} from '../../client/stackdriver/status-message';
 
 import * as v8Types from '../../types/v8-types';
-import * as apiTypes from '../../types/api-types';
+import * as stackdriver from '../../types/stackdriver';
 import {DebugAgentConfig} from '../config';
 
 // TODO: Determine if `ScopeType` should be named `scopeType`.
@@ -74,10 +74,10 @@ class StateResolver {
   private expressions_: string[];
   private config_: DebugAgentConfig;
   private ctx_: v8Types.Debug;
-  private evaluatedExpressions_: apiTypes.Variable[];
+  private evaluatedExpressions_: stackdriver.Variable[];
   private totalSize_: number;
-  private messageTable_: apiTypes.Variable[];
-  private resolvedVariableTable_: apiTypes.Variable[];
+  private messageTable_: stackdriver.Variable[];
+  private resolvedVariableTable_: stackdriver.Variable[];
   private rawVariableTable_: Array<v8Types.ValueMirror|null>;
 
   /**
@@ -135,7 +135,7 @@ class StateResolver {
    * @return an object with stackFrames, variableTable, and
    *         evaluatedExpressions fields
    */
-  capture_(): apiTypes.Breakpoint {
+  capture_(): stackdriver.Breakpoint {
     const that = this;
 
     // Evaluate the watch expressions
@@ -191,10 +191,10 @@ class StateResolver {
     }
     return {
       // TODO (fgao): Add path attribute to avoid explicit cast to
-      // apiTypes.SourceLocation once breakpoint is passed in this class.
+      // stackdriver.SourceLocation once breakpoint is passed in this class.
       id: 'dummy-id',
       location: {line: this.state_.frame(0).sourceLine() + 1} as
-          apiTypes.SourceLocation,
+          stackdriver.SourceLocation,
       stackFrames: frames,
       variableTable: that.resolvedVariableTable_,
       evaluatedExpressions: that.evaluatedExpressions_
@@ -210,12 +210,13 @@ class StateResolver {
    * @param {Object} frames Frames associated with the current execution
    *                        environment.
    */
-  trimVariableTable_(fromIndex: number, frames: apiTypes.StackFrame[]): void {
+  trimVariableTable_(fromIndex: number, frames: stackdriver.StackFrame[]):
+      void {
     this.resolvedVariableTable_.splice(
         fromIndex);  // remove the remaining entries
 
     const that = this;
-    const processBufferFull = function(variables: apiTypes.Variable[]) {
+    const processBufferFull = function(variables: stackdriver.Variable[]) {
       variables.forEach(function(variable) {
         if (variable.varTableIndex && variable.varTableIndex >= fromIndex) {
           // make it point to the sentinel 'buffer full' value
@@ -237,8 +238,8 @@ class StateResolver {
     processBufferFull(this.resolvedVariableTable_);
   }
 
-  resolveFrames_(): apiTypes.StackFrame[] {
-    const frames: apiTypes.StackFrame[] = [];
+  resolveFrames_(): stackdriver.StackFrame[] {
+    const frames: stackdriver.StackFrame[] = [];
     const frameCount =
         Math.min(this.state_.frameCount(), this.config_.capture.maxFrames);
 
@@ -307,8 +308,8 @@ class StateResolver {
   }
 
   resolveFrame_(frame: v8Types.FrameMirror, underFrameCap: boolean):
-      apiTypes.StackFrame {
-    let args: Array<apiTypes.Variable> = [];
+      stackdriver.StackFrame {
+    let args: Array<stackdriver.Variable> = [];
     // TODO: `locals` should be of type v8Types.ScopeMirror[]
     //       Resolve conflicts so that it can be specified of that type.
     let locals: Array<any> = [];
@@ -348,7 +349,7 @@ class StateResolver {
     return func.name() || func.inferredName() || '(anonymous function)';
   }
 
-  resolveLocation_(frame: v8Types.FrameMirror): apiTypes.SourceLocation {
+  resolveLocation_(frame: v8Types.FrameMirror): stackdriver.SourceLocation {
     return {
       path: this.resolveRelativePath_(frame),
       // V8 uses 0-based line numbers but Debuglet API uses 1-based numbers.
@@ -445,10 +446,10 @@ class StateResolver {
    */
   resolveVariable_(
       name: string, value: v8Types.ValueMirror,
-      isEvaluated: boolean): apiTypes.Variable {
+      isEvaluated: boolean): stackdriver.Variable {
     let size = name.length;
 
-    const data: apiTypes.Variable = {name: name};
+    const data: stackdriver.Variable = {name: name};
 
     if (value.isPrimitive() || value.isRegExp()) {
       // primitives: undefined, null, boolean, number, string, symbol
@@ -508,16 +509,16 @@ class StateResolver {
    * provided object mirror.
    */
   resolveMirror_(mirror: v8Types.ObjectMirror, isEvaluated: boolean):
-      apiTypes.Variable {
+      stackdriver.Variable {
     let properties = mirror.properties();
     const maxProps = this.config_.capture.maxProperties;
     const truncate = maxProps && properties.length > maxProps;
     if (!isEvaluated && truncate) {
       properties = properties.slice(0, maxProps);
     }
-    // TODO: It looks like `members` should be of type apiTypes.Variable[]
+    // TODO: It looks like `members` should be of type stackdriver.Variable[]
     //       but is missing fields.  Determine if those fields are required or
-    //       if the type should not be apiTypes.Variable[]
+    //       if the type should not be stackdriver.Variable[]
     const members =
         properties.map(this.resolveMirrorProperty_.bind(this, isEvaluated));
     if (!isEvaluated && truncate) {
@@ -534,7 +535,7 @@ class StateResolver {
 
   resolveMirrorProperty_(
       isEvaluated: boolean,
-      property: v8Types.PropertyMirror): apiTypes.Variable {
+      property: v8Types.PropertyMirror): stackdriver.Variable {
     const name = String(property.name());
     // Array length must be special cased as it is a native property that
     // we know to be safe to evaluate which is not generally true.
@@ -562,6 +563,6 @@ export function testAssert(): void {
  */
 export function capture(
     execState: v8Types.ExecutionState, expressions: string[],
-    config: DebugAgentConfig, v8: v8Types.Debug): apiTypes.Breakpoint {
+    config: DebugAgentConfig, v8: v8Types.Debug): stackdriver.Breakpoint {
   return (new StateResolver(execState, expressions, config, v8)).capture_();
 }

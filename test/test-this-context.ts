@@ -15,7 +15,7 @@
  */
 
 import * as commonTypes from '../src/types/common-types';
-import * as apiTypes from '../src/types/api-types';
+import * as stackdriver from '../src/types/stackdriver';
 
 import * as assert from 'assert';
 import * as extend from 'extend';
@@ -68,10 +68,10 @@ describe(__filename, function() {
   afterEach(function() { assert(stateIsClean(api)); });
   it('Should be able to read the argument and the context', function(done) {
     // TODO: Have this actually implement Breakpoint
-    const brk: apiTypes.Breakpoint = {
+    const brk: stackdriver.Breakpoint = {
       id: 'fake-id-123',
       location: { path: 'test-this-context-code.js', line: 5 }
-    } as apiTypes.Breakpoint;
+    } as stackdriver.Breakpoint;
     let ctxMembers;
     api.set(brk, function(err) {
       assert.ifError(err);
@@ -104,7 +104,7 @@ describe(__filename, function() {
     const brk = {
       id: 'fake-id-123',
       location: { path: 'test-this-context-code.js', line: 9 }
-    } as apiTypes.Breakpoint;
+    } as stackdriver.Breakpoint;
     api.set(brk, function(err) {
       assert.ifError(err);
       api.wait(brk, function(err) {

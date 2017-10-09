@@ -22,8 +22,8 @@ import * as semver from 'semver';
 import * as vm from 'vm';
 
 import {StatusMessage} from '../../client/stackdriver/status-message';
-import * as apiTypes from '../../types/api-types';
 import {Logger} from '../../types/common-types';
+import * as stackdriver from '../../types/stackdriver';
 import * as v8Types from '../../types/v8-types';
 import {DebugAgentConfig} from '../config';
 import {FileStats, ScanStats} from '../io/scanner';
@@ -35,7 +35,7 @@ import * as debugapi from './debugapi';
 
 export class V8BreakpointData {
   constructor(
-      public apiBreakpoint: apiTypes.Breakpoint,
+      public apiBreakpoint: stackdriver.Breakpoint,
       public v8Breakpoint: v8Types.BreakPoint,
       public parsedCondition: estree.Node,
       // TODO: The code in this method assumes that `compile` exists.  Verify
@@ -98,7 +98,7 @@ export class V8DebugApi implements debugapi.DebugApi {
     }
   }
 
-  set(breakpoint: apiTypes.Breakpoint, cb: (err: Error|null) => void): void {
+  set(breakpoint: stackdriver.Breakpoint, cb: (err: Error|null) => void): void {
     if (!this.v8 || !breakpoint ||
         typeof breakpoint.id === 'undefined' ||  // 0 is a valid id
         !breakpoint.location || !breakpoint.location.path ||
@@ -137,7 +137,8 @@ export class V8DebugApi implements debugapi.DebugApi {
       this.setInternal(breakpoint, mapInfo, compile, cb);
     }
   }
-  clear(breakpoint: apiTypes.Breakpoint, cb: (err: Error|null) => void): void {
+  clear(breakpoint: stackdriver.Breakpoint, cb: (err: Error|null) => void):
+      void {
     if (typeof breakpoint.id === 'undefined') {
       return utils.setErrorStatusAndCallback(
           cb, breakpoint, StatusMessage.BREAKPOINT_CONDITION,
@@ -164,7 +165,8 @@ export class V8DebugApi implements debugapi.DebugApi {
     });
   }
 
-  wait(breakpoint: apiTypes.Breakpoint, callback: (err?: Error) => void): void {
+  wait(breakpoint: stackdriver.Breakpoint, callback: (err?: Error) => void):
+      void {
     const that = this;
     const num = that.breakpoints[breakpoint.id].v8Breakpoint.number();
     const listener =
@@ -181,7 +183,7 @@ export class V8DebugApi implements debugapi.DebugApi {
     that.listeners[num] = {enabled: true, listener: listener};
   }
 
-  log(breakpoint: apiTypes.Breakpoint,
+  log(breakpoint: stackdriver.Breakpoint,
       print: (format: string, exps: string[]) => void,
       shouldStop: () => boolean): void {
     const that = this;
@@ -237,7 +239,7 @@ export class V8DebugApi implements debugapi.DebugApi {
 
 
   private setInternal(
-      breakpoint: apiTypes.Breakpoint, mapInfo: MapInfoOutput|null,
+      breakpoint: stackdriver.Breakpoint, mapInfo: MapInfoOutput|null,
       compile: ((src: string) => string)|null,
       cb: (err: Error|null) => void): void {
     // Parse and validate conditions and watch expressions for correctness and
@@ -277,7 +279,7 @@ export class V8DebugApi implements debugapi.DebugApi {
     const scripts = utils.findScripts(
         mapInfo ? mapInfo.file :
                   path.normalize(
-                      (breakpoint.location as apiTypes.SourceLocation).path),
+                      (breakpoint.location as stackdriver.SourceLocation).path),
         this.config, this.fileStats);
     if (scripts.length === 0) {
       return utils.setErrorStatusAndCallback(
@@ -293,12 +295,12 @@ export class V8DebugApi implements debugapi.DebugApi {
     }
 
     // TODO: Address the case where `fileStats[matchingScript]` is `null`.
-    if ((breakpoint.location as apiTypes.SourceLocation).line >=
+    if ((breakpoint.location as stackdriver.SourceLocation).line >=
         (this.fileStats[matchingScript] as FileStats).lines) {
       return utils.setErrorStatusAndCallback(
           cb, breakpoint, StatusMessage.BREAKPOINT_SOURCE_LOCATION,
           utils.messages.INVALID_LINE_NUMBER + matchingScript + ':' +
-              (breakpoint.location as apiTypes.SourceLocation).line +
+              (breakpoint.location as stackdriver.SourceLocation).line +
               '. Loaded script contained ' +
               (this.fileStats[matchingScript] as FileStats).lines +
               ' lines. Please ensure' +
@@ -310,10 +312,10 @@ export class V8DebugApi implements debugapi.DebugApi {
     // TODO: Address the case where `breakpoint.location` is `null`.
     let column = mapInfo && mapInfo.column ?
         mapInfo.column :
-        ((breakpoint.location as apiTypes.SourceLocation).column || 1);
+        ((breakpoint.location as stackdriver.SourceLocation).column || 1);
     const line = mapInfo ?
         mapInfo.line :
-        (breakpoint.location as apiTypes.SourceLocation).line;
+        (breakpoint.location as stackdriver.SourceLocation).line;
 
     // We need to special case breakpoints on the first line. Since Node.js
     // wraps modules with a function expression, we adjust
@@ -352,7 +354,7 @@ export class V8DebugApi implements debugapi.DebugApi {
   }
 
   private onBreakpointHit(
-      breakpoint: apiTypes.Breakpoint, callback: (err: Error|null) => void,
+      breakpoint: stackdriver.Breakpoint, callback: (err: Error|null) => void,
       execState: v8Types.ExecutionState): void {
     // TODO: Address the situation where `breakpoint.id` is `null`.
     const v8bp = this.breakpoints[breakpoint.id].v8Breakpoint;
@@ -395,7 +397,7 @@ export class V8DebugApi implements debugapi.DebugApi {
    * @return object with either a boolean value or an error property
    */
   private checkCondition(
-      breakpoint: apiTypes.Breakpoint,
+      breakpoint: stackdriver.Breakpoint,
       execState: v8Types.ExecutionState): {value?: boolean, error?: string} {
     if (!breakpoint.condition) {
       return {value: true};
@@ -413,9 +415,9 @@ export class V8DebugApi implements debugapi.DebugApi {
   }
 
   private captureBreakpointData(
-      breakpoint: apiTypes.Breakpoint,
+      breakpoint: stackdriver.Breakpoint,
       execState: v8Types.ExecutionState): void {
-    const expressionErrors: Array<apiTypes.Variable|null> = [];
+    const expressionErrors: Array<stackdriver.Variable|null> = [];
     if (breakpoint.expressions && this.breakpoints[breakpoint.id].compile) {
       for (let i = 0; i < breakpoint.expressions.length; i++) {
         try {
@@ -462,7 +464,8 @@ export class V8DebugApi implements debugapi.DebugApi {
       breakpoint.stackFrames = captured.stackFrames;
       // TODO: This suggests the Status type and Variable type are the same.
       //       Determine if that is the case.
-      breakpoint.variableTable = captured.variableTable as apiTypes.Variable[];
+      breakpoint.variableTable =
+          captured.variableTable as stackdriver.Variable[];
       breakpoint.evaluatedExpressions =
           expressionErrors.concat(captured.evaluatedExpressions);
     }

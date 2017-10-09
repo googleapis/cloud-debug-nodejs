@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import * as apiTypes from '../../types/api-types';
 import {Logger} from '../../types/common-types';
+import * as stackdriver from '../../types/stackdriver';
 import {DebugAgentConfig} from '../config';
 import {ScanStats} from '../io/scanner';
 import {SourceMapper} from '../io/sourcemapper';
@@ -29,23 +29,25 @@ export class DummyDebugApi implements DebugApi {
     logger.error(
         'Debug agent cannot get node version. Cloud debugger is disabled.');
   }
-  set(_breakpoint: apiTypes.Breakpoint, cb: (err: Error|null) => void): void {
+  set(_breakpoint: stackdriver.Breakpoint,
+      cb: (err: Error|null) => void): void {
     return setImmediate(() => {
       cb(new Error('no debugapi running.'));
     });
   }
-  clear(_breakpoint: apiTypes.Breakpoint, cb: (err: Error|null) => void): void {
+  clear(_breakpoint: stackdriver.Breakpoint, cb: (err: Error|null) => void):
+      void {
     return setImmediate(() => {
       cb(new Error('no debugapi running.'));
     });
   }
-  wait(_breakpoint: apiTypes.Breakpoint, cb: (err?: Error) => void): void {
+  wait(_breakpoint: stackdriver.Breakpoint, cb: (err?: Error) => void): void {
     return setImmediate(() => {
       cb(new Error('no debugapi running.'));
     });
   }
   log:
-      (breakpoint: apiTypes.Breakpoint,
+      (breakpoint: stackdriver.Breakpoint,
        print: (format: string, exps: string[]) => void,
        shouldStop: () => boolean) => void;
   disconnect: () => void;

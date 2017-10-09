@@ -24,7 +24,7 @@ assert.ok(
     'Need to have GOOGLE_APPLICATION_CREDENTIALS defined to be able to run ' +
     'this test');
 
-import * as apiTypes from '../src/types/api-types';
+import * as stackdriver from '../src/types/stackdriver';
 import {Controller} from '../src/agent/controller';
 import {Debuggee} from '../src/debuggee';
 import {Debug} from '../src/client/stackdriver/debug';
@@ -69,7 +69,7 @@ describe('Controller', function() {
       controller.listBreakpoints(debuggee, function(err, _response, maybeBody) {
         assert.ifError(err);
         assert.ok(maybeBody);
-        const body = maybeBody as apiTypes.ListBreakpointsResponse;
+        const body = maybeBody as stackdriver.ListBreakpointsResponse;
         assert.ok(body.nextWaitToken);
         done();
       });
@@ -94,14 +94,14 @@ describe('Controller', function() {
       controller.listBreakpoints(debuggee, function(err, _response, maybeBody) {
         assert.ifError(err);
         assert.ok(maybeBody);
-        const body = maybeBody as apiTypes.ListBreakpointsResponse;
+        const body = maybeBody as stackdriver.ListBreakpointsResponse;
         assert.ok(body.nextWaitToken);
         // Second list should block until the wait timeout
         // TODO: Determine if the response parameter should be used.
         controller.listBreakpoints(debuggee, function(err, _response, maybeBody) {
           assert.ifError(err);
           assert.ok(maybeBody);
-          const body = maybeBody as apiTypes.ListBreakpointsResponse;
+          const body = maybeBody as stackdriver.ListBreakpointsResponse;
           assert.ok(body.nextWaitToken);
           // waitExpired will only be set if successOnTimeout was given correctly
           assert.ok(body.waitExpired);

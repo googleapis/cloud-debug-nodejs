@@ -15,13 +15,13 @@
  */
 
 import * as commonTypes from '../src/types/common-types';
-import * as apiTypes from '../src/types/api-types';
+import * as stackdriver from '../src/types/stackdriver';
 
 // TODO: Have this actually implement Breakpoint
-const breakpointInFoo: apiTypes.Breakpoint = {
+const breakpointInFoo: stackdriver.Breakpoint = {
   id: 'fake-id-123',
   location: { path: 'test-duplicate-expressions-code.js', line: 4 }
-} as apiTypes.Breakpoint;
+} as stackdriver.Breakpoint;
 
 import * as assert from 'assert';
 import * as extend from 'extend';

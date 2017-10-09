@@ -15,7 +15,7 @@
  */
 
 import * as commonTypes from '../src/types/common-types';
-import * as apiTypes from '../src/types/api-types';
+import * as stackdriver from '../src/types/stackdriver';
 
 import * as assert from 'assert';
 import * as extend from 'extend';
@@ -68,10 +68,10 @@ describe(__filename, function() {
   afterEach(function() { assert(stateIsClean(api)); });
   it('Should read e as the caught error', function(done) {
     // TODO: Have this actually implement Breakpoint
-    const brk: apiTypes.Breakpoint = {
+    const brk: stackdriver.Breakpoint = {
       id: 'fake-id-123',
       location: { path: 'test-try-catch-code.js', line: 7 }
-    } as apiTypes.Breakpoint;
+    } as stackdriver.Breakpoint;
     api.set(brk, function(err) {
       assert.ifError(err);
       api.wait(brk, function(err) {
@@ -96,10 +96,10 @@ describe(__filename, function() {
   });
   it('Should read e as the local error', function(done) {
     // TODO: Have this actually implement Breakpoint
-    const brk: apiTypes.Breakpoint = {
+    const brk: stackdriver.Breakpoint = {
       id: 'fake-id-123',
       location: { path: 'test-try-catch-code.js', line: 8 }
-    } as apiTypes.Breakpoint;
+    } as stackdriver.Breakpoint;
     api.set(brk, function(err) {
       assert.ifError(err);
       api.wait(brk, function(err) {

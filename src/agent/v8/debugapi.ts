@@ -15,18 +15,19 @@
  */
 import * as semver from 'semver';
 
-import * as apiTypes from '../../types/api-types';
 import {Logger} from '../../types/common-types';
-
+import * as stackdriver from '../../types/stackdriver';
 import {DebugAgentConfig} from '../config';
 import {ScanStats} from '../io/scanner';
 import {SourceMapper} from '../io/sourcemapper';
 
 export interface DebugApi {
-  set(breakpoint: apiTypes.Breakpoint, cb: (err: Error|null) => void): void;
-  clear(breakpoint: apiTypes.Breakpoint, cb: (err: Error|null) => void): void;
-  wait(breakpoint: apiTypes.Breakpoint, callback: (err?: Error) => void): void;
-  log(breakpoint: apiTypes.Breakpoint,
+  set(breakpoint: stackdriver.Breakpoint, cb: (err: Error|null) => void): void;
+  clear(breakpoint: stackdriver.Breakpoint, cb: (err: Error|null) => void):
+      void;
+  wait(breakpoint: stackdriver.Breakpoint, callback: (err?: Error) => void):
+      void;
+  log(breakpoint: stackdriver.Breakpoint,
       print: (format: string, exps: string[]) => void,
       shouldStop: () => boolean): void;
   disconnect(): void;

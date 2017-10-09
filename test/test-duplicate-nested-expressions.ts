@@ -15,7 +15,7 @@
  */
 
 import * as commonTypes from '../src/types/common-types';
-import * as apiTypes from '../src/types/api-types';
+import * as stackdriver from '../src/types/stackdriver';
 
 import * as assert from 'assert';
 import * as extend from 'extend';
@@ -69,10 +69,10 @@ describe(__filename, function() {
   afterEach(function() { assert(stateIsClean2(api)); });
   it('Should read the argument before the name is confounded', function(done) {
     // TODO: Have this actually implement Breakpoint
-    const brk: apiTypes.Breakpoint = {
+    const brk: stackdriver.Breakpoint = {
       id: 'fake-id-123',
       location: { path: 'test-duplicate-nested-expressions-code.js', line: 4 }
-    } as apiTypes.Breakpoint;
+    } as stackdriver.Breakpoint;
     api.set(brk, function(err) {
       assert.ifError(err);
       api.wait(brk, function(err) {
@@ -98,10 +98,10 @@ describe(__filename, function() {
 
   it('Should read an argument after the name is confounded', function(done) {
     // TODO: Have this actually implement Breakpoint
-    const brk: apiTypes.Breakpoint = {
+    const brk: stackdriver.Breakpoint = {
       id: 'fake-id-1234',
       location: { path: 'test-duplicate-nested-expressions-code.js', line: 5 }
-    } as apiTypes.Breakpoint;
+    } as stackdriver.Breakpoint;
     api.set(brk, function(err) {
       assert.ifError(err);
       api.wait(brk, function(err) {
@@ -127,10 +127,10 @@ describe(__filename, function() {
 
   it('Should read an argument value after its value is modified', function(done) {
     // TODO: Have this actually implement Breakpoint
-    const brk: apiTypes.Breakpoint = {
+    const brk: stackdriver.Breakpoint = {
       id: 'fake-id-1234',
       location: { path: 'test-duplicate-nested-expressions-code.js', line: 6 }
-    } as apiTypes.Breakpoint;
+    } as stackdriver.Breakpoint;
     api.set(brk, function(err) {
       assert.ifError(err);
       api.wait(brk, function(err) {
@@ -156,10 +156,10 @@ describe(__filename, function() {
 
   it('Should represent a const name at its local-scope when clearly defined', function(done) {
     // TODO: Have this actually implement Breakpoint
-    const brk: apiTypes.Breakpoint = {
+    const brk: stackdriver.Breakpoint = {
       id: 'fake-id-1234',
       location: { path: 'test-duplicate-nested-expressions-code.js', line: 8 }
-    } as apiTypes.Breakpoint;
+    } as stackdriver.Breakpoint;
     api.set(brk, function(err) {
       assert.ifError(err);
       api.wait(brk, function(err) {

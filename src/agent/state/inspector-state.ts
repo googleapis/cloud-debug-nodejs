@@ -26,7 +26,7 @@ const isEmpty = lodash.isEmpty;
 
 import {StatusMessage} from '../../client/stackdriver/status-message';
 
-import * as apiTypes from '../../types/api-types';
+import * as stackdriver from '../../types/stackdriver';
 import {DebugAgentConfig} from '../config';
 import {V8Inspector} from '../v8/v8inspector';
 
@@ -81,11 +81,11 @@ class StateResolver {
   private expressions_: string[]|undefined;
   private config_: DebugAgentConfig;
   private scriptmapper_: {[id: string]: any};
-  private breakpoint_: apiTypes.Breakpoint;
-  private evaluatedExpressions_: apiTypes.Variable[];
+  private breakpoint_: stackdriver.Breakpoint;
+  private evaluatedExpressions_: stackdriver.Variable[];
   private totalSize_: number;
-  private messageTable_: apiTypes.Variable[];
-  private resolvedVariableTable_: apiTypes.Variable[];
+  private messageTable_: stackdriver.Variable[];
+  private resolvedVariableTable_: stackdriver.Variable[];
   private rawVariableTable_: Array<any>;
 
   /**
@@ -96,7 +96,7 @@ class StateResolver {
    */
   constructor(
       callFrames: Array<inspector.Debugger.CallFrame>,
-      breakpoint: apiTypes.Breakpoint, config: DebugAgentConfig,
+      breakpoint: stackdriver.Breakpoint, config: DebugAgentConfig,
       scriptmapper: {[id: string]: any}, v8Inspector: V8Inspector) {
     this.callFrames_ = callFrames;
     this.breakpoint_ = breakpoint;
@@ -147,7 +147,7 @@ class StateResolver {
    * @return an object with stackFrames, variableTable, and
    *         evaluatedExpressions fields
    */
-  capture_(): apiTypes.Breakpoint {
+  capture_(): stackdriver.Breakpoint {
     // Evaluate the watch expressions
     const evalIndexSet = new Set();
     if (this.expressions_) {
@@ -216,12 +216,13 @@ class StateResolver {
    * @param {Object} frames Frames associated with the current execution
    *                        environment.
    */
-  trimVariableTable_(fromIndex: number, frames: apiTypes.StackFrame[]): void {
+  trimVariableTable_(fromIndex: number, frames: stackdriver.StackFrame[]):
+      void {
     this.resolvedVariableTable_.splice(
         fromIndex);  // remove the remaining entries
 
     const that = this;
-    const processBufferFull = function(variables: apiTypes.Variable[]) {
+    const processBufferFull = function(variables: stackdriver.Variable[]) {
       variables.forEach(function(variable) {
         if (variable.varTableIndex && variable.varTableIndex >= fromIndex) {
           // make it point to the sentinel 'buffer full' value
@@ -243,8 +244,8 @@ class StateResolver {
     processBufferFull(this.resolvedVariableTable_);
   }
 
-  resolveFrames_(): apiTypes.StackFrame[] {
-    const frames: apiTypes.StackFrame[] = [];
+  resolveFrames_(): stackdriver.StackFrame[] {
+    const frames: stackdriver.StackFrame[] = [];
     const frameCount =
         Math.min(this.callFrames_.length, this.config_.capture.maxFrames);
     for (let i = 0; i < frameCount; i++) {
@@ -307,8 +308,8 @@ class StateResolver {
   }
 
   resolveFrame_(frame: inspector.Debugger.CallFrame, underFrameCap: boolean):
-      apiTypes.StackFrame {
-    let args: Array<apiTypes.Variable> = [];
+      stackdriver.StackFrame {
+    let args: Array<stackdriver.Variable> = [];
     let locals: Array<any> = [];
 
     if (!underFrameCap) {
@@ -346,7 +347,7 @@ class StateResolver {
   }
 
   resolveLocation_(frame: inspector.Debugger.CallFrame):
-      apiTypes.SourceLocation {
+      stackdriver.SourceLocation {
     return {
       path: this.resolveRelativePath_(frame),
       line: frame.location.lineNumber
@@ -367,7 +368,8 @@ class StateResolver {
    * @returns {Array<Object>} - returns an array containing data about selected
    *  variables
    */
-  resolveLocalsList_(frame: inspector.Debugger.CallFrame): apiTypes.Variable[] {
+  resolveLocalsList_(frame: inspector.Debugger.CallFrame):
+      stackdriver.Variable[] {
     let locals: Array<any> = [];
 
     const usedNames: {[name: string]: boolean} = {};
@@ -419,9 +421,9 @@ class StateResolver {
    */
   resolveVariable_(
       name: string, object: inspector.Runtime.RemoteObject,
-      isEvaluated: boolean): apiTypes.Variable {
+      isEvaluated: boolean): stackdriver.Variable {
     let size = name.length;
-    const data: apiTypes.Variable = {name: name};
+    const data: stackdriver.Variable = {name: name};
     if (this.isPrimitive_(object.type)) {
       // primitives: undefined, null, boolean, number, string, symbol
       data.value = String(object.value);
@@ -488,7 +490,7 @@ class StateResolver {
    */
   resolveRemoteObject_(
       object: inspector.Runtime.RemoteObject,
-      isEvaluated: boolean): apiTypes.Variable {
+      isEvaluated: boolean): stackdriver.Variable {
     const maxProps = this.config_.capture.maxProperties;
     let result =
         this.v8Inspector_.getProperties({objectId: object.objectId as string});
@@ -524,7 +526,7 @@ class StateResolver {
   }
 
   resolveObjectProperty_(isEvaluated: boolean, property: any):
-      apiTypes.Variable {
+      stackdriver.Variable {
     const name = String(property.name);
     if (property.get !== undefined) {
       return {name: name, varTableIndex: GETTER_MESSAGE_INDEX};
@@ -546,9 +548,9 @@ export function testAssert(): void {
  */
 export function capture(
     callFrames: Array<inspector.Debugger.CallFrame>,
-    breakpoint: apiTypes.Breakpoint, config: DebugAgentConfig,
+    breakpoint: stackdriver.Breakpoint, config: DebugAgentConfig,
     scriptmapper: {[id: string]: any},
-    v8Inspector: V8Inspector): apiTypes.Breakpoint {
+    v8Inspector: V8Inspector): stackdriver.Breakpoint {
   return (new StateResolver(
               callFrames, breakpoint, config, scriptmapper, v8Inspector))
       .capture_();
