@@ -23,8 +23,8 @@ import * as extend from 'extend';
 import * as dns from 'dns';
 import * as fs from 'fs';
 
-import {GcpMetadata} from '../types/gcp-metadata-types';
-const metadata: GcpMetadata = require('gcp-metadata');
+import * as gcpMetadata from '../types/gcp-metadata';
+const metadata: gcpMetadata.GcpMetadata = require('gcp-metadata');
 
 import * as _ from 'lodash';
 import * as path from 'path';
