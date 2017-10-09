@@ -112,7 +112,7 @@ export class Debuglet extends EventEmitter {
   private v8debug_: DebugApi|null;
   private running_: boolean;
   private project_: string|null;
-  private debugletApi_: Controller;
+  private controller_: Controller;
   private completedBreakpointMap_: {[key: string]: boolean};
 
   // Exposed for testing
@@ -163,7 +163,7 @@ export class Debuglet extends EventEmitter {
         {level: common.logger.LEVELS[this.config_.logLevel], tag: pjson.name});
 
     /** @private {DebugletApi} */
-    this.debugletApi_ = new Controller(this.debug_);
+    this.controller_ = new Controller(this.debug_);
 
     /** @private {Debuggee} */
     this.debuggee_ = null;
@@ -472,7 +472,7 @@ export class Debuglet extends EventEmitter {
       }
 
       // TODO: Handle the case when `that.debuggee_` is null.
-      that.debugletApi_.register(
+      that.controller_.register(
           that.debuggee_ as Debuggee,
           function(err: Error|null, result?: {debuggee: Debuggee;}) {
             if (err) {
@@ -526,7 +526,7 @@ export class Debuglet extends EventEmitter {
 
       that.logger_.info('Fetching breakpoints');
       // TODO: Address the case when `that.debuggee` is `null`.
-      that.debugletApi_.listBreakpoints(
+      that.controller_.listBreakpoints(
           (that.debuggee_ as Debuggee), function(err: Error, response, body) {
             if (err) {
               that.logger_.error(
@@ -749,7 +749,7 @@ export class Debuglet extends EventEmitter {
     const that = this;
 
     that.logger_.info('\tupdating breakpoint data on server', breakpoint.id);
-    that.debugletApi_.updateBreakpoint(
+    that.controller_.updateBreakpoint(
         // TODO: Address the case when `that.debuggee_` is `null`.
         (that.debuggee_ as Debuggee), breakpoint, function(err /*, body*/) {
           if (err) {
@@ -771,7 +771,7 @@ export class Debuglet extends EventEmitter {
     const that = this;
 
     // TODO: Address the case when `that.debuggee_` is `null`.
-    that.debugletApi_.updateBreakpoint(
+    that.controller_.updateBreakpoint(
         (that.debuggee_ as Debuggee), breakpoint, function(err /*, body*/) {
           if (err) {
             that.logger_.error('Unable to complete breakpoint on server', err);
