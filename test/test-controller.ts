@@ -27,7 +27,7 @@ import {Debug} from '../src/debug';
 // not being set
 delete process.env.GCLOUD_PROJECT;
 
-import {Controller} from '../src/controller';
+import {Controller} from '../src/agent/controller';
 // TODO: Fix fakeDebug to actually implement Debug.
 const fakeDebug: Debug = {
   request: request

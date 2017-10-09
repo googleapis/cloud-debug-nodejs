@@ -32,7 +32,7 @@ import * as semver from 'semver';
 import * as util from 'util';
 import * as http from 'http';
 
-import {Controller} from '../controller';
+import {Controller} from './controller';
 import {Debuggee} from '../debuggee';
 import {StatusMessage} from '../status-message';
 

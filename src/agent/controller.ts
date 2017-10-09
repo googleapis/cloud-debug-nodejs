@@ -18,16 +18,16 @@
  * @module debug/controller
  */
 
-import {Common} from './types/common-types';
+import {Common} from '../types/common-types';
 export const common: Common = require('@google-cloud/common');
 
 import * as assert from 'assert';
 import * as http from 'http';
 import * as qs from 'querystring';
 
-import {Debug} from './debug';
-import {Debuggee} from './debuggee';
-import {Breakpoint, ListBreakpointsQuery, ListBreakpointsResponse} from './types/api-types';
+import {Debug} from '../debug';
+import {Debuggee} from '../debuggee';
+import {Breakpoint, ListBreakpointsQuery, ListBreakpointsResponse} from '../types/api-types';
 
 /** @const {string} Cloud Debug API endpoint */
 const API = 'https://clouddebugger.googleapis.com/v2/controller';

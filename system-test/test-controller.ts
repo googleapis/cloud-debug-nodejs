@@ -25,7 +25,7 @@ assert.ok(
     'this test');
 
 import * as apiTypes from '../src/types/api-types';
-import {Controller} from '../src/controller';
+import {Controller} from '../src/agent/controller';
 import {Debuggee} from '../src/debuggee';
 import {Debug} from '../src/debug';
 const debug = new Debug({});
