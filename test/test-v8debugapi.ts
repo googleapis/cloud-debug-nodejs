@@ -27,12 +27,12 @@ const breakpointInFoo: stackdriver.Breakpoint = {
 
 const MAX_INT = 2147483647; // Max signed int32.
 
-import * as commonTypes from '../src/types/common-types';
+import {Common, LoggerOptions} from '../src/types/common';
 
 import * as assert from 'assert';
 import * as extend from 'extend';
 import * as debugapi from '../src/agent/v8/debugapi';
-const common: commonTypes.Common = require('@google-cloud/common');
+const common: Common = require('@google-cloud/common');
 import defaultConfig from '../src/agent/config';
 import {StatusMessage} from '../src/client/stackdriver/status-message';
 import * as scanner from '../src/agent/io/scanner';
@@ -118,7 +118,7 @@ describe('v8debugapi', function() {
   });
   // TODO: It appears `logLevel` is a typo and should be `level`.  However,
   //       with this change, the tests fail.  Resolve this.
-  const logger = new common.logger({ levelLevel: config.logLevel } as any as commonTypes.LoggerOptions);
+  const logger = new common.logger({ levelLevel: config.logLevel } as any as LoggerOptions);
   let api: DebugApi;
 
   beforeEach(function(done) {

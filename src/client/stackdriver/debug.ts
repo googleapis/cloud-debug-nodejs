@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {AuthenticationConfig, Common} from '../../types/common-types';
+import {AuthenticationConfig, Common} from '../../types/common';
 export const common: Common = require('@google-cloud/common');
 
 export class Debug extends common.Service {

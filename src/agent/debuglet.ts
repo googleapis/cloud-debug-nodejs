@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {AuthenticationConfig, Common} from '../types/common-types';
+import {AuthenticationConfig, Common} from '../types/common';
 const common: Common = require('@google-cloud/common');
 
 import * as crypto from 'crypto';
@@ -49,7 +49,7 @@ import * as assert from 'assert';
 import * as stackdriver from '../types/stackdriver';
 import {DebugAgentConfig} from './config';
 import {Debug} from '../client/stackdriver/debug';
-import {Logger} from '../types/common-types';
+import {Logger} from '../types/common';
 import {DebugApi} from './v8/debugapi';
 
 const promisify = require('util.promisify');

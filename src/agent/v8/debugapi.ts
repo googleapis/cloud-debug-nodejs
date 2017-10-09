@@ -15,7 +15,7 @@
  */
 import * as semver from 'semver';
 
-import {Logger} from '../../types/common-types';
+import {Logger} from '../../types/common';
 import * as stackdriver from '../../types/stackdriver';
 import {DebugAgentConfig} from '../config';
 import {ScanStats} from '../io/scanner';

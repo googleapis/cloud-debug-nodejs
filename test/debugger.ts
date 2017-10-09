@@ -18,7 +18,7 @@
  * @module debug/debugger
  */
 
-import * as commonTypes from '../src/types/common-types';
+import * as commonTypes from '../src/types/common';
 import * as stackdriver from '../src/types/stackdriver';
 import {Debug} from '../src/client/stackdriver/debug';
 import {Debuggee} from '../src/debuggee';

@@ -20,7 +20,7 @@ import * as inspector from 'inspector';
 import * as path from 'path';
 
 import {StatusMessage} from '../../client/stackdriver/status-message';
-import {Logger} from '../../types/common-types';
+import {Logger} from '../../types/common';
 import * as stackdriver from '../../types/stackdriver';
 import {DebugAgentConfig} from '../config';
 import {FileStats, ScanStats} from '../io/scanner';

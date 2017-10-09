@@ -18,7 +18,7 @@
  * @module debug/controller
  */
 
-import {Common} from '../types/common-types';
+import {Common} from '../types/common';
 export const common: Common = require('@google-cloud/common');
 
 import * as assert from 'assert';

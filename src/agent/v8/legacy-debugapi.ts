@@ -22,7 +22,7 @@ import * as semver from 'semver';
 import * as vm from 'vm';
 
 import {StatusMessage} from '../../client/stackdriver/status-message';
-import {Logger} from '../../types/common-types';
+import {Logger} from '../../types/common';
 import * as stackdriver from '../../types/stackdriver';
 import * as v8 from '../../types/v8';
 import {DebugAgentConfig} from '../config';

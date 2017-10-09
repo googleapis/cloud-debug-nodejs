@@ -16,12 +16,12 @@
 
 process.env.GCLOUD_DIAGNOSTICS_CONFIG = 'test/fixtures/test-config.js';
 
-import * as commonTypes from '../src/types/common-types';
+import {Common, LoggerOptions} from '../src/types/common';
 import * as stackdriver from '../src/types/stackdriver';
 
 import * as assert from 'assert';
 import * as extend from 'extend';
-const common: commonTypes.Common = require('@google-cloud/common');
+const common: Common = require('@google-cloud/common');
 import * as debugapi from '../src/agent/v8/debugapi';
 import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as scanner from '../src/agent/io/scanner';
@@ -44,7 +44,7 @@ describe('maxDataSize', function() {
     if (!api) {
       // TODO: It appears `logLevel` is a typo and should be `level`.  However,
       //       with this change, the tests fail.  Resolve this.
-      const logger = new common.logger({ levelLevel: config.logLevel } as any as commonTypes.LoggerOptions);
+      const logger = new common.logger({ levelLevel: config.logLevel } as any as LoggerOptions);
       scanner.scan(true, config.workingDirectory, /.js$/)
         .then(function (fileStats) {
           const jsStats = fileStats.selectStats(/.js$/);
