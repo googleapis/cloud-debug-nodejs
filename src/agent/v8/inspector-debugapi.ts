@@ -19,7 +19,7 @@ import * as estree from 'estree';
 import * as inspector from 'inspector';
 import * as path from 'path';
 
-import {StatusMessage} from '../../status-message';
+import {StatusMessage} from '../../client/stackdriver/status-message';
 import * as apiTypes from '../../types/api-types';
 import {Logger} from '../../types/common-types';
 import {DebugAgentConfig} from '../config';

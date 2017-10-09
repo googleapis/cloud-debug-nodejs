@@ -28,7 +28,7 @@ import {Debuglet} from '../src/agent/debuglet';
 import * as dns from 'dns';
 import * as extend from 'extend';
 const metadata: {project: any, instance: any} = require('gcp-metadata');
-import {Debug} from '../src/debug';
+import {Debug} from '../src/client/stackdriver/debug';
 
 const DEBUGGEE_ID = 'bar';
 const API = 'https://clouddebugger.googleapis.com';

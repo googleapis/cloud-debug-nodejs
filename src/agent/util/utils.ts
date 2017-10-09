@@ -1,6 +1,6 @@
 import * as path from 'path';
 
-import {StatusMessage} from '../../status-message';
+import {StatusMessage} from '../../client/stackdriver/status-message';
 import * as apiTypes from '../../types/api-types';
 
 import {DebugAgentConfig} from '../config';

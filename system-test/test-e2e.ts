@@ -22,7 +22,7 @@ import * as _ from 'lodash'; // for _.find. Can't use ES6 yet.
 import * as cp from 'child_process';
 import * as semver from 'semver';
 const promisifyAll = require('@google-cloud/common').util.promisifyAll;
-import {Debug} from '../src/debug';
+import {Debug} from '../src/client/stackdriver/debug';
 import {Debuggee} from '../src/debuggee';
 import {Debugger} from '../test/debugger';
 

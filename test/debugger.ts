@@ -20,7 +20,7 @@
 
 import * as commonTypes from '../src/types/common-types';
 import * as apiTypes from '../src/types/api-types';
-import {Debug} from '../src/debug';
+import {Debug} from '../src/client/stackdriver/debug';
 import {Debuggee} from '../src/debuggee';
 
 const pjson = require('../../package.json');

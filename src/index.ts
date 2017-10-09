@@ -16,7 +16,7 @@
 
 import {DebugAgentConfig, StackdriverConfig} from './agent/config';
 import {Debuglet} from './agent/debuglet';
-import {Debug} from './debug';
+import {Debug} from './client/stackdriver/debug';
 
 // Singleton.
 let debuglet: Debuglet;

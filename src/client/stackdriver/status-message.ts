@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as apiTypes from './types/api-types';
+import * as apiTypes from '../../types/api-types';
 
 export class StatusMessage implements apiTypes.StatusMessage {
   refersTo: apiTypes.Reference;

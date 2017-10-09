@@ -23,7 +23,7 @@ const transform = lodash.transform;
 const flatten = lodash.flatten;
 const isEmpty = lodash.isEmpty;
 
-import {StatusMessage} from '../../status-message';
+import {StatusMessage} from '../../client/stackdriver/status-message';
 
 import * as v8Types from '../../types/v8-types';
 import * as apiTypes from '../../types/api-types';

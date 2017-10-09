@@ -21,7 +21,7 @@ import * as assert from 'assert';
 import * as nock from 'nock';
 import request from './auth-request';
 import {Debuggee} from '../src/debuggee';
-import {Debug} from '../src/debug';
+import {Debug} from '../src/client/stackdriver/debug';
 
 // the tests in this file rely on the GCLOUD_PROJECT environment variable
 // not being set

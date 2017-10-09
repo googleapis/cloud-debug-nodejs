@@ -24,7 +24,7 @@ import {debugAssert} from '../util/debug-assert';
 
 const isEmpty = lodash.isEmpty;
 
-import {StatusMessage} from '../../status-message';
+import {StatusMessage} from '../../client/stackdriver/status-message';
 
 import * as apiTypes from '../../types/api-types';
 import {DebugAgentConfig} from '../config';

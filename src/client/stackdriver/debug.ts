@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {AuthenticationConfig, Common} from './types/common-types';
+import {AuthenticationConfig, Common} from '../../types/common-types';
 export const common: Common = require('@google-cloud/common');
 
 export class Debug extends common.Service {
@@ -53,7 +53,7 @@ export class Debug extends common.Service {
       projectIdRequired: false,
       baseUrl: 'https://clouddebugger.googleapis.com/v2',
       scopes: ['https://www.googleapis.com/auth/cloud_debugger'],
-      packageJson: require('../../package.json')
+      packageJson: require('../../../../package.json')
     };
 
     // TODO: Update Service to provide types

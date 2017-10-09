@@ -25,7 +25,7 @@ import * as assert from 'assert';
 import * as http from 'http';
 import * as qs from 'querystring';
 
-import {Debug} from '../debug';
+import {Debug} from '../client/stackdriver/debug';
 import {Debuggee} from '../debuggee';
 import {Breakpoint, ListBreakpointsQuery, ListBreakpointsResponse} from '../types/api-types';
 

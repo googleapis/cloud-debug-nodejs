@@ -34,7 +34,7 @@ import * as extend from 'extend';
 import * as debugapi from '../src/agent/v8/debugapi';
 const common: commonTypes.Common = require('@google-cloud/common');
 import defaultConfig from '../src/agent/config';
-import {StatusMessage} from '../src/status-message';
+import {StatusMessage} from '../src/client/stackdriver/status-message';
 import * as scanner from '../src/agent/io/scanner';
 import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as path from 'path';

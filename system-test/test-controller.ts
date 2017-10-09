@@ -27,7 +27,7 @@ assert.ok(
 import * as apiTypes from '../src/types/api-types';
 import {Controller} from '../src/agent/controller';
 import {Debuggee} from '../src/debuggee';
-import {Debug} from '../src/debug';
+import {Debug} from '../src/client/stackdriver/debug';
 const debug = new Debug({});
 
 
