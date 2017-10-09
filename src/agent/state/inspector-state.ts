@@ -28,7 +28,7 @@ import {StatusMessage} from '../../status-message';
 
 import * as apiTypes from '../../types/api-types';
 import {DebugAgentConfig} from '../config';
-import {V8Inspector} from '../api/v8inspector';
+import {V8Inspector} from '../v8/v8inspector';
 
 const assert = debugAssert(!!process.env.CLOUD_DEBUG_ASSERTIONS);
 

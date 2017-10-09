@@ -40,7 +40,7 @@ import {StatusMessage} from '../status-message';
 import defaultConfig from './config';
 import * as scanner from './io/scanner';
 import * as SourceMapper from './io/sourcemapper';
-import * as debugapi from './api/debugapi';
+import * as debugapi from './v8/debugapi';
 
 const pjson = require('../../../package.json');
 
@@ -50,7 +50,7 @@ import {Breakpoint} from '../types/api-types';
 import {DebugAgentConfig} from './config';
 import {Debug} from '../debug';
 import {Logger} from '../types/common-types';
-import {DebugApi} from './api/debugapi';
+import {DebugApi} from './v8/debugapi';
 
 const promisify = require('util.promisify');
 

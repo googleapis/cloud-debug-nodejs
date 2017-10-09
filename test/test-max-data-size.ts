@@ -22,7 +22,7 @@ import * as apiTypes from '../src/types/api-types';
 import * as assert from 'assert';
 import * as extend from 'extend';
 const common: commonTypes.Common = require('@google-cloud/common');
-import * as debugapi from '../src/agent/api/debugapi';
+import * as debugapi from '../src/agent/v8/debugapi';
 import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as scanner from '../src/agent/io/scanner';
 import defaultConfig from '../src/agent/config';

@@ -15,7 +15,7 @@
  */
 
 import * as apiTypes from '../src/types/api-types';
-import {DebugApi} from '../src/agent/api/debugapi';
+import {DebugApi} from '../src/agent/v8/debugapi';
 import {DebugAgentConfig} from '../src/agent/config';
 
 // TODO: Have this actually implement Breakpoint
@@ -31,7 +31,7 @@ import * as commonTypes from '../src/types/common-types';
 
 import * as assert from 'assert';
 import * as extend from 'extend';
-import * as debugapi from '../src/agent/api/debugapi';
+import * as debugapi from '../src/agent/v8/debugapi';
 const common: commonTypes.Common = require('@google-cloud/common');
 import defaultConfig from '../src/agent/config';
 import {StatusMessage} from '../src/status-message';
