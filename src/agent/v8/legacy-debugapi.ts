@@ -24,7 +24,7 @@ import * as vm from 'vm';
 import {StatusMessage} from '../../client/stackdriver/status-message';
 import {Logger} from '../../types/common-types';
 import * as stackdriver from '../../types/stackdriver';
-import * as v8Types from '../../types/v8-types';
+import * as v8 from '../../types/v8';
 import {DebugAgentConfig} from '../config';
 import {FileStats, ScanStats} from '../io/scanner';
 import {MapInfoOutput, SourceMapper} from '../io/sourcemapper';
@@ -36,8 +36,7 @@ import * as debugapi from './debugapi';
 export class V8BreakpointData {
   constructor(
       public apiBreakpoint: stackdriver.Breakpoint,
-      public v8Breakpoint: v8Types.BreakPoint,
-      public parsedCondition: estree.Node,
+      public v8Breakpoint: v8.BreakPoint, public parsedCondition: estree.Node,
       // TODO: The code in this method assumes that `compile` exists.  Verify
       // that is correct.
       // TODO: Update this so that `null|` is not needed for `compile`.
@@ -47,7 +46,7 @@ export class V8BreakpointData {
 export class V8DebugApi implements debugapi.DebugApi {
   breakpoints: {[id: string]: V8BreakpointData} = {};
   sourcemapper: SourceMapper;
-  v8: v8Types.Debug;
+  v8: v8.Debug;
   config: DebugAgentConfig;
   fileStats: ScanStats;
   listeners: {[id: string]: utils.Listener} = {};
@@ -55,8 +54,8 @@ export class V8DebugApi implements debugapi.DebugApi {
   usePermanentListener: boolean;
   logger: Logger;
   handleDebugEvents:
-      (evt: v8Types.DebugEvent, execState: v8Types.ExecutionState,
-       eventData: v8Types.BreakEvent) => void;
+      (evt: v8.DebugEvent, execState: v8.ExecutionState,
+       eventData: v8.BreakEvent) => void;
 
   numBreakpoints = 0;
 
@@ -71,8 +70,8 @@ export class V8DebugApi implements debugapi.DebugApi {
     this.logger = logger_;
     this.usePermanentListener = semver.satisfies(this.v8Version[1], '>=4.5');
     this.handleDebugEvents =
-        (evt: v8Types.DebugEvent, execState: v8Types.ExecutionState,
-         eventData: v8Types.BreakEvent): void => {
+        (evt: v8.DebugEvent, execState: v8.ExecutionState,
+         eventData: v8.BreakEvent): void => {
           try {
             switch (evt) {
               // TODO: Address the case where `v8` is `null`.
@@ -345,7 +344,7 @@ export class V8DebugApi implements debugapi.DebugApi {
   }
 
   private setByRegExp(scriptPath: string, line: number, column: number):
-      v8Types.BreakPoint {
+      v8.BreakPoint {
     const regexp = utils.pathToRegExp(scriptPath);
     const num =
         this.v8.setScriptBreakPointByRegExp(regexp, line - 1, column - 1);
@@ -355,7 +354,7 @@ export class V8DebugApi implements debugapi.DebugApi {
 
   private onBreakpointHit(
       breakpoint: stackdriver.Breakpoint, callback: (err: Error|null) => void,
-      execState: v8Types.ExecutionState): void {
+      execState: v8.ExecutionState): void {
     // TODO: Address the situation where `breakpoint.id` is `null`.
     const v8bp = this.breakpoints[breakpoint.id].v8Breakpoint;
     if (!v8bp.active()) {
@@ -398,7 +397,7 @@ export class V8DebugApi implements debugapi.DebugApi {
    */
   private checkCondition(
       breakpoint: stackdriver.Breakpoint,
-      execState: v8Types.ExecutionState): {value?: boolean, error?: string} {
+      execState: v8.ExecutionState): {value?: boolean, error?: string} {
     if (!breakpoint.condition) {
       return {value: true};
     }
@@ -410,13 +409,12 @@ export class V8DebugApi implements debugapi.DebugApi {
     }
     // TODO: Address the case where `result.mirror` is `null`.
     return {
-      value: !!((result.mirror as v8Types.ValueMirror).value())
+      value: !!((result.mirror as v8.ValueMirror).value())
     };  // intentional !!
   }
 
   private captureBreakpointData(
-      breakpoint: stackdriver.Breakpoint,
-      execState: v8Types.ExecutionState): void {
+      breakpoint: stackdriver.Breakpoint, execState: v8.ExecutionState): void {
     const expressionErrors: Array<stackdriver.Variable|null> = [];
     if (breakpoint.expressions && this.breakpoints[breakpoint.id].compile) {
       for (let i = 0; i < breakpoint.expressions.length; i++) {
@@ -450,7 +448,7 @@ export class V8DebugApi implements debugapi.DebugApi {
           const result = state.evaluate(exp, frame);
           // TODO: Address the case where `result.mirror` is `undefined`.
           return result.error ? result.error :
-                                (result.mirror as v8Types.ValueMirror).value();
+                                (result.mirror as v8.ValueMirror).value();
         });
         breakpoint.evaluatedExpressions = evaluatedExpressions;
       }
