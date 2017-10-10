@@ -1,10 +1,10 @@
 import * as path from 'path';
 
-import {StatusMessage} from '../status-message';
-import * as apiTypes from '../types/api-types';
+import {StatusMessage} from '../../client/stackdriver/status-message';
+import * as stackdriver from '../../types/stackdriver';
 
-import {DebugAgentConfig} from './config';
-import {ScanStats} from './scanner';
+import {DebugAgentConfig} from '../config';
+import {ScanStats} from '../io/scanner';
 
 
 export const messages = {
@@ -129,8 +129,8 @@ export const formatInterval = function(
 
 
 export function setErrorStatusAndCallback(
-    fn: (err: Error|null) => void, breakpoint: apiTypes.Breakpoint,
-    refersTo: apiTypes.Reference, message: string): void {
+    fn: (err: Error|null) => void, breakpoint: stackdriver.Breakpoint,
+    refersTo: stackdriver.Reference, message: string): void {
   const error = new Error(message);
   return setImmediate(function() {
     if (breakpoint && !breakpoint.status) {
@@ -146,12 +146,13 @@ export function setErrorStatusAndCallback(
  *
  * @param {Breakpoint} breakpoint
  */
-export function getBreakpointCompiler(breakpoint: apiTypes.Breakpoint):
+export function getBreakpointCompiler(breakpoint: stackdriver.Breakpoint):
     ((uncompiled: string) => string)|null {
   // TODO: Address the case where `breakpoint.location` is `null`.
-  switch (path.normalize((breakpoint.location as apiTypes.SourceLocation).path)
-              .split('.')
-              .pop()) {
+  switch (
+      path.normalize((breakpoint.location as stackdriver.SourceLocation).path)
+          .split('.')
+          .pop()) {
     case 'coffee':
       return function(uncompiled) {
         const comp = require('coffee-script');

@@ -18,16 +18,16 @@
  * @module debug/controller
  */
 
-import {Common} from './types/common-types';
+import {Common} from '../types/common';
 export const common: Common = require('@google-cloud/common');
 
 import * as assert from 'assert';
 import * as http from 'http';
 import * as qs from 'querystring';
 
-import {Debug} from './debug';
-import {Debuggee} from './debuggee';
-import {Breakpoint, ListBreakpointsQuery, ListBreakpointsResponse} from './types/api-types';
+import {Debug} from '../client/stackdriver/debug';
+import {Debuggee} from '../debuggee';
+import * as stackdriver from '../types/stackdriver';
 
 /** @const {string} Cloud Debug API endpoint */
 const API = 'https://clouddebugger.googleapis.com/v2/controller';
@@ -87,10 +87,10 @@ export class Controller extends common.ServiceObject {
       debuggee: Debuggee,
       callback:
           (err: Error|null, response?: http.ServerResponse,
-           body?: ListBreakpointsResponse) => void): void {
+           body?: stackdriver.ListBreakpointsResponse) => void): void {
     const that = this;
     assert(debuggee.id, 'should have a registered debuggee');
-    const query: ListBreakpointsQuery = {successOnTimeout: true};
+    const query: stackdriver.ListBreakpointsQuery = {successOnTimeout: true};
     if (that.nextWaitToken_) {
       query.waitToken = that.nextWaitToken_;
     }
@@ -129,7 +129,7 @@ export class Controller extends common.ServiceObject {
    * @param {!Function} callback accepting (err, body)
    */
   updateBreakpoint(
-      debuggee: Debuggee, breakpoint: Breakpoint,
+      debuggee: Debuggee, breakpoint: stackdriver.Breakpoint,
       callback: (err?: Error, body?: any) => void): void {
     assert(debuggee.id, 'should have a registered debuggee');
 

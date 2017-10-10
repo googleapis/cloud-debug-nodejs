@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import * as apiTypes from './types/api-types';
+import * as stackdriver from '../../types/stackdriver';
 
-export class StatusMessage implements apiTypes.StatusMessage {
-  refersTo: apiTypes.Reference;
-  description: apiTypes.FormatMessage;
+export class StatusMessage implements stackdriver.StatusMessage {
+  refersTo: stackdriver.Reference;
+  description: stackdriver.FormatMessage;
   isError: boolean;
 
   /**
@@ -26,7 +26,7 @@ export class StatusMessage implements apiTypes.StatusMessage {
    * @constructor
    */
   constructor(
-      refersTo: apiTypes.Reference, description: string, isError: boolean) {
+      refersTo: stackdriver.Reference, description: string, isError: boolean) {
     this.refersTo = refersTo;
     this.description = {format: description};
     this.isError = isError;
@@ -34,14 +34,14 @@ export class StatusMessage implements apiTypes.StatusMessage {
 
   // These status messages come from a proto definition.
   // New status messages cannot be added here.
-  static readonly UNSPECIFIED: apiTypes.Reference = 'UNSPECIFIED';
-  static readonly BREAKPOINT_SOURCE_LOCATION: apiTypes.Reference =
+  static readonly UNSPECIFIED: stackdriver.Reference = 'UNSPECIFIED';
+  static readonly BREAKPOINT_SOURCE_LOCATION: stackdriver.Reference =
       'BREAKPOINT_SOURCE_LOCATION';
-  static readonly BREAKPOINT_CONDITION: apiTypes.Reference =
+  static readonly BREAKPOINT_CONDITION: stackdriver.Reference =
       'BREAKPOINT_CONDITION';
-  static readonly BREAKPOINT_EXPRESSION: apiTypes.Reference =
+  static readonly BREAKPOINT_EXPRESSION: stackdriver.Reference =
       'BREAKPOINT_EXPRESSION';
-  static readonly VARIABLE_NAME: apiTypes.Reference = 'VARIABLE_NAME';
-  static readonly VARIABLE_VALUE: apiTypes.Reference = 'VARIABLE_VALUE';
-  static readonly BREAKPOINT_AGE: apiTypes.Reference = 'BREAKPOINT_AGE';
+  static readonly VARIABLE_NAME: stackdriver.Reference = 'VARIABLE_NAME';
+  static readonly VARIABLE_VALUE: stackdriver.Reference = 'VARIABLE_VALUE';
+  static readonly BREAKPOINT_AGE: stackdriver.Reference = 'BREAKPOINT_AGE';
 }

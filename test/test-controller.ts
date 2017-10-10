@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-import * as apiTypes from '../src/types/api-types';
+import * as stackdriver from '../src/types/stackdriver';
 import * as http from 'http';
 
 import * as assert from 'assert';
 import * as nock from 'nock';
 import request from './auth-request';
 import {Debuggee} from '../src/debuggee';
-import {Debug} from '../src/debug';
+import {Debug} from '../src/client/stackdriver/debug';
 
 // the tests in this file rely on the GCLOUD_PROJECT environment variable
 // not being set
 delete process.env.GCLOUD_PROJECT;
 
-import {Controller} from '../src/controller';
+import {Controller} from '../src/agent/controller';
 // TODO: Fix fakeDebug to actually implement Debug.
 const fakeDebug: Debug = {
   request: request
@@ -119,7 +119,7 @@ describe('Controller API', function() {
       const controller = new Controller(fakeDebug);
       // TODO: Fix debuggee to actually implement Debuggee
       // TODO: Determine if the response parameter should be used.
-      controller.listBreakpoints(debuggee as Debuggee, function(err: Error|null, _response?: http.ServerResponse, result?: apiTypes.ListBreakpointsResponse) {
+      controller.listBreakpoints(debuggee as Debuggee, function(err: Error|null, _response?: http.ServerResponse, result?: stackdriver.ListBreakpointsResponse) {
         assert(!err, 'not expecting an error');
         // TODO: Handle the case where result is undefined
         assert(!(result as any).breakpoints, 'should not have a breakpoints property');
@@ -139,7 +139,7 @@ describe('Controller API', function() {
           const controller = new Controller(fakeDebug);
           // TODO: Fix debuggee to actually implement Debuggee
           // TODO: Determine if the response parameter should be used.
-          controller.listBreakpoints(debuggee as Debuggee, function(err: Error|null, _response?: http.ServerResponse, result?: apiTypes.ListBreakpointsResponse) {
+          controller.listBreakpoints(debuggee as Debuggee, function(err: Error|null, _response?: http.ServerResponse, result?: stackdriver.ListBreakpointsResponse) {
             assert(!err, 'not expecting an error');
             // TODO: Handle the case where result is undefined
             assert(!(result as any).breakpoints, 'should not have breakpoints property');
@@ -189,12 +189,12 @@ describe('Controller API', function() {
 
     // TODO: Fix this so that each element of the array is actually an
     //       array of Breakpoints.
-    const testsBreakpoints: apiTypes.Breakpoint[][] = [
+    const testsBreakpoints: stackdriver.Breakpoint[][] = [
       [],
       [{id: 'breakpoint-0',
        location: { path: 'foo.js', line: 18 }}]
-    ] as apiTypes.Breakpoint[][];
-    testsBreakpoints.forEach(function(breakpoints: apiTypes.Breakpoint[], index: number) {
+    ] as stackdriver.Breakpoint[][];
+    testsBreakpoints.forEach(function(breakpoints: stackdriver.Breakpoint[], index: number) {
       it('should pass test ' + index, function(done) {
         const scope = nock(url)
           .get(api + '/debuggees/fake-debuggee/breakpoints?successOnTimeout=true')
@@ -205,7 +205,7 @@ describe('Controller API', function() {
         const debuggee: Debuggee = { id: 'fake-debuggee' } as Debuggee;
         const controller = new Controller(fakeDebug);
         // TODO: Determine if the response parameter should be used.
-        controller.listBreakpoints(debuggee, function(err: Error|null, _response: http.ServerResponse, result: apiTypes.ListBreakpointsResponse) {
+        controller.listBreakpoints(debuggee, function(err: Error|null, _response: http.ServerResponse, result: stackdriver.ListBreakpointsResponse) {
           assert(!err, 'not expecting an error');
           assert(result.breakpoints, 'should have a breakpoints property');
           const bps = result.breakpoints;
@@ -220,7 +220,7 @@ describe('Controller API', function() {
   describe('updateBreakpoint', function() {
     it('should PUT to server when a breakpoint is updated', function(done) {
       // TODO: Fix breakpoint to actually Breakpoint
-      const breakpoint: apiTypes.Breakpoint = {id: 'breakpoint-0', location: {path: 'foo.js', line: 99}} as apiTypes.Breakpoint;
+      const breakpoint: stackdriver.Breakpoint = {id: 'breakpoint-0', location: {path: 'foo.js', line: 99}} as stackdriver.Breakpoint;
       const scope = nock(url)
         .put(api + '/debuggees/fake-debuggee/breakpoints/breakpoint-0', {
           debuggeeId: 'fake-debuggee',

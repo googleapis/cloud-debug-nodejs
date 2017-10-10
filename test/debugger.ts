@@ -18,9 +18,9 @@
  * @module debug/debugger
  */
 
-import * as commonTypes from '../src/types/common-types';
-import * as apiTypes from '../src/types/api-types';
-import {Debug} from '../src/debug';
+import * as commonTypes from '../src/types/common';
+import * as stackdriver from '../src/types/stackdriver';
+import {Debug} from '../src/client/stackdriver/debug';
 import {Debuggee} from '../src/debuggee';
 
 const pjson = require('../../package.json');
@@ -121,7 +121,7 @@ export class Debugger extends common.ServiceObject {
     includeInactive: boolean;
     stripResults: boolean;
     actions: string
-  }, callback: (err: Error|null, breakpoints?: apiTypes.Breakpoint[]) => void) {
+  }, callback: (err: Error|null, breakpoints?: stackdriver.Breakpoint[]) => void) {
     if (typeof(options) === 'function') {
       callback = options;
       // TODO: Determine how to remove this cast.
@@ -175,7 +175,7 @@ export class Debugger extends common.ServiceObject {
    *     called with information about the given breakpoint, or an Error object
    *     if an error occurred in obtaining its information.
    */
-  getBreakpoint(debuggeeId: string, breakpointId: string, callback: (err: Error|null, bp?: apiTypes.Breakpoint) => void) {
+  getBreakpoint(debuggeeId: string, breakpointId: string, callback: (err: Error|null, bp?: stackdriver.Breakpoint) => void) {
     const query = {
       clientVersion: this.clientVersion_
     };
@@ -211,7 +211,7 @@ export class Debugger extends common.ServiceObject {
    *     that the Breakpoint object here will differ from the input object in
    *     that its id field will be set.
    */
-  setBreakpoint(debuggeeId: string, breakpoint: apiTypes.Breakpoint, callback: (err: Error|null, bp?: apiTypes.Breakpoint) => void) {
+  setBreakpoint(debuggeeId: string, breakpoint: stackdriver.Breakpoint, callback: (err: Error|null, bp?: stackdriver.Breakpoint) => void) {
     const query = {
       clientVersion: this.clientVersion_
     };

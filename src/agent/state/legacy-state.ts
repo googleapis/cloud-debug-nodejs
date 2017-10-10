@@ -17,17 +17,17 @@ import * as lodash from 'lodash';
 import * as util from 'util';
 import * as vm from 'vm';
 
-import {debugAssert} from './debug-assert';
+import {debugAssert} from '../util/debug-assert';
 
 const transform = lodash.transform;
 const flatten = lodash.flatten;
 const isEmpty = lodash.isEmpty;
 
-import {StatusMessage} from '../status-message';
+import {StatusMessage} from '../../client/stackdriver/status-message';
 
-import * as v8Types from '../types/v8-types';
-import * as apiTypes from '../types/api-types';
-import {DebugAgentConfig} from './config';
+import * as v8 from '../../types/v8';
+import * as stackdriver from '../../types/stackdriver';
+import {DebugAgentConfig} from '../config';
 
 // TODO: Determine if `ScopeType` should be named `scopeType`.
 // tslint:disable-next-line:variable-name
@@ -46,13 +46,13 @@ const ARG_LOCAL_LIMIT_MESSAGE_INDEX = 3;
  *
  * @return an object with error and mirror fields.
  */
-export function evaluate(expression: string, frame: v8Types.FrameMirror):
-    {error: string|null, mirror?: v8Types.ValueMirror} {
+export function evaluate(expression: string, frame: v8.FrameMirror):
+    {error: string|null, mirror?: v8.ValueMirror} {
   // First validate the expression to make sure it doesn't mutate state
   const acorn = require('acorn');
   try {
     const ast = acorn.parse(expression, {sourceType: 'script'});
-    const validator = require('./validator');
+    const validator = require('../util/validator');
     if (!validator.isValid(ast)) {
       return {error: 'expression not allowed'};
     }
@@ -70,15 +70,15 @@ export function evaluate(expression: string, frame: v8Types.FrameMirror):
 }
 
 class StateResolver {
-  private state_: v8Types.ExecutionState;
+  private state_: v8.ExecutionState;
   private expressions_: string[];
   private config_: DebugAgentConfig;
-  private ctx_: v8Types.Debug;
-  private evaluatedExpressions_: apiTypes.Variable[];
+  private ctx_: v8.Debug;
+  private evaluatedExpressions_: stackdriver.Variable[];
   private totalSize_: number;
-  private messageTable_: apiTypes.Variable[];
-  private resolvedVariableTable_: apiTypes.Variable[];
-  private rawVariableTable_: Array<v8Types.ValueMirror|null>;
+  private messageTable_: stackdriver.Variable[];
+  private resolvedVariableTable_: stackdriver.Variable[];
+  private rawVariableTable_: Array<v8.ValueMirror|null>;
 
   /**
    * @param {!Object} execState
@@ -87,12 +87,12 @@ class StateResolver {
    * @constructor
    */
   constructor(
-      execState: v8Types.ExecutionState, expressions: string[],
-      config: DebugAgentConfig, v8: v8Types.Debug) {
+      execState: v8.ExecutionState, expressions: string[],
+      config: DebugAgentConfig, v8debug: v8.Debug) {
     this.state_ = execState;
     this.expressions_ = expressions;
     this.config_ = config;
-    this.ctx_ = v8;
+    this.ctx_ = v8debug;
 
     this.evaluatedExpressions_ = [];
     this.totalSize_ = 0;
@@ -135,7 +135,7 @@ class StateResolver {
    * @return an object with stackFrames, variableTable, and
    *         evaluatedExpressions fields
    */
-  capture_(): apiTypes.Breakpoint {
+  capture_(): stackdriver.Breakpoint {
     const that = this;
 
     // Evaluate the watch expressions
@@ -152,10 +152,10 @@ class StateResolver {
                 StatusMessage.VARIABLE_VALUE, result.error, true)
           };
         } else {
-          // TODO: Determine how to not downcast this to v8Types.ValueMirror
+          // TODO: Determine how to not downcast this to v8.ValueMirror
           // TODO: Handle the case where `result.mirror` is `undefined`.
           evaluated = that.resolveVariable_(
-              expression, result.mirror as v8Types.ValueMirror, true);
+              expression, result.mirror as v8.ValueMirror, true);
           const varTableIdx = evaluated.varTableIndex;
           if (typeof varTableIdx !== 'undefined') {
             evalIndexSet.add(varTableIdx);
@@ -181,7 +181,7 @@ class StateResolver {
       // TODO: This code suggests that an ObjectMirror and Stutus are the
       //       same.  Resolve this.
       that.resolvedVariableTable_[index] = that.resolveMirror_(
-          that.rawVariableTable_[index] as v8Types.ObjectMirror, isEvaluated);
+          that.rawVariableTable_[index] as v8.ObjectMirror, isEvaluated);
       index++;
     }
 
@@ -191,10 +191,10 @@ class StateResolver {
     }
     return {
       // TODO (fgao): Add path attribute to avoid explicit cast to
-      // apiTypes.SourceLocation once breakpoint is passed in this class.
+      // stackdriver.SourceLocation once breakpoint is passed in this class.
       id: 'dummy-id',
       location: {line: this.state_.frame(0).sourceLine() + 1} as
-          apiTypes.SourceLocation,
+          stackdriver.SourceLocation,
       stackFrames: frames,
       variableTable: that.resolvedVariableTable_,
       evaluatedExpressions: that.evaluatedExpressions_
@@ -210,12 +210,13 @@ class StateResolver {
    * @param {Object} frames Frames associated with the current execution
    *                        environment.
    */
-  trimVariableTable_(fromIndex: number, frames: apiTypes.StackFrame[]): void {
+  trimVariableTable_(fromIndex: number, frames: stackdriver.StackFrame[]):
+      void {
     this.resolvedVariableTable_.splice(
         fromIndex);  // remove the remaining entries
 
     const that = this;
-    const processBufferFull = function(variables: apiTypes.Variable[]) {
+    const processBufferFull = function(variables: stackdriver.Variable[]) {
       variables.forEach(function(variable) {
         if (variable.varTableIndex && variable.varTableIndex >= fromIndex) {
           // make it point to the sentinel 'buffer full' value
@@ -237,8 +238,8 @@ class StateResolver {
     processBufferFull(this.resolvedVariableTable_);
   }
 
-  resolveFrames_(): apiTypes.StackFrame[] {
-    const frames: apiTypes.StackFrame[] = [];
+  resolveFrames_(): stackdriver.StackFrame[] {
+    const frames: stackdriver.StackFrame[] = [];
     const frameCount =
         Math.min(this.state_.frameCount(), this.config_.capture.maxFrames);
 
@@ -252,7 +253,7 @@ class StateResolver {
     return frames;
   }
 
-  shouldFrameBeResolved_(frame: v8Types.FrameMirror): boolean {
+  shouldFrameBeResolved_(frame: v8.FrameMirror): boolean {
     // Only capture data from the frames for which we can link the data back
     // to the source files.
 
@@ -271,7 +272,7 @@ class StateResolver {
     return true;
   }
 
-  resolveFullPath_(frame: v8Types.FrameMirror): string {
+  resolveFullPath_(frame: v8.FrameMirror): string {
     const func = frame.func();
     if (!func.resolved()) {
       return '';
@@ -285,7 +286,7 @@ class StateResolver {
     return script.name();
   }
 
-  resolveRelativePath_(frame: v8Types.FrameMirror): string {
+  resolveRelativePath_(frame: v8.FrameMirror): string {
     const fullPath = this.resolveFullPath_(frame);
     return this.stripCurrentWorkingDirectory_(fullPath);
   }
@@ -306,10 +307,10 @@ class StateResolver {
     return path.indexOf('node_modules') === 0;
   }
 
-  resolveFrame_(frame: v8Types.FrameMirror, underFrameCap: boolean):
-      apiTypes.StackFrame {
-    let args: Array<apiTypes.Variable> = [];
-    // TODO: `locals` should be of type v8Types.ScopeMirror[]
+  resolveFrame_(frame: v8.FrameMirror, underFrameCap: boolean):
+      stackdriver.StackFrame {
+    let args: Array<stackdriver.Variable> = [];
+    // TODO: `locals` should be of type v8.ScopeMirror[]
     //       Resolve conflicts so that it can be specified of that type.
     let locals: Array<any> = [];
     // Locals and arguments are safe to collect even when
@@ -341,14 +342,14 @@ class StateResolver {
     };
   }
 
-  resolveFunctionName_(func: v8Types.FunctionMirror): string {
+  resolveFunctionName_(func: v8.FunctionMirror): string {
     if (!func || !func.isFunction()) {
       return '';
     }
     return func.name() || func.inferredName() || '(anonymous function)';
   }
 
-  resolveLocation_(frame: v8Types.FrameMirror): apiTypes.SourceLocation {
+  resolveLocation_(frame: v8.FrameMirror): stackdriver.SourceLocation {
     return {
       path: this.resolveRelativePath_(frame),
       // V8 uses 0-based line numbers but Debuglet API uses 1-based numbers.
@@ -372,7 +373,7 @@ class StateResolver {
    * @returns {Array<Object>} - returns an array containing data about selected
    *  variables
    */
-  resolveLocalsList_(frame: v8Types.FrameMirror): v8Types.ScopeMirror[] {
+  resolveLocalsList_(frame: v8.FrameMirror): v8.ScopeMirror[] {
     const self = this;
     const usedNames: {[name: string]: boolean} = {};
     const makeMirror = this.ctx_.MakeMirror;
@@ -389,7 +390,7 @@ class StateResolver {
     // We find the top-level (module global) variable pollute the local
     // variables we omit them by default, unless the breakpoint itself is
     // top-level. The last two scopes are always omitted.
-    let scopes: v8Types.ScopeMirror[];
+    let scopes: v8.ScopeMirror[];
     if (allScopes[count - 3].scopeType() === ScopeType.Closure) {
       scopes = allScopes.slice(0, -3);
     } else {
@@ -397,7 +398,7 @@ class StateResolver {
       scopes = allScopes.slice(0, -2);
     }
 
-    return flatten(scopes.map(function(scope: v8Types.ScopeMirror) {
+    return flatten(scopes.map(function(scope: v8.ScopeMirror) {
              return transform(
                  // TODO: Update this so that `locals` is not of type `any[]`.
                  scope.details().object(),
@@ -410,7 +411,7 @@ class StateResolver {
                      // TODO: Determine how to not have an explicit down cast to
                      // ValueMirror
                      locals.push(self.resolveVariable_(
-                         name, trg as v8Types.ValueMirror, false));
+                         name, trg as v8.ValueMirror, false));
                    }  // otherwise another same-named variable occured at a
                       // lower scope
                    return locals;
@@ -427,7 +428,7 @@ class StateResolver {
             // TODO: Determine how to not have an explicit down cast to
             // ValueMirror
             return [self.resolveVariable_(
-                'context', makeMirror(ctx) as v8Types.ValueMirror, false)];
+                'context', makeMirror(ctx) as v8.ValueMirror, false)];
           }
           return [];
         }()));
@@ -443,12 +444,11 @@ class StateResolver {
    * @param {boolean} isEvaluated Specifies if the variable is from a watched
    *                              expression.
    */
-  resolveVariable_(
-      name: string, value: v8Types.ValueMirror,
-      isEvaluated: boolean): apiTypes.Variable {
+  resolveVariable_(name: string, value: v8.ValueMirror, isEvaluated: boolean):
+      stackdriver.Variable {
     let size = name.length;
 
-    const data: apiTypes.Variable = {name: name};
+    const data: stackdriver.Variable = {name: name};
 
     if (value.isPrimitive() || value.isRegExp()) {
       // primitives: undefined, null, boolean, number, string, symbol
@@ -470,7 +470,7 @@ class StateResolver {
       // TODO: Determine how to resolve this so that a ValueMirror doesn't need
       //       to be cast to a FunctionMirror.
       data.value = 'function ' +
-          this.resolveFunctionName_(value as v8Types.FunctionMirror) + '()';
+          this.resolveFunctionName_(value as v8.FunctionMirror) + '()';
     } else if (value.isObject()) {
       data.varTableIndex = this.getVariableIndex_(value);
     } else {
@@ -489,7 +489,7 @@ class StateResolver {
     return data;
   }
 
-  getVariableIndex_(value: v8Types.ValueMirror): number {
+  getVariableIndex_(value: v8.ValueMirror): number {
     let idx = this.rawVariableTable_.indexOf(value);
     if (idx === -1) {
       idx = this.storeObjectToVariableTable_(value);
@@ -497,7 +497,7 @@ class StateResolver {
     return idx;
   }
 
-  storeObjectToVariableTable_(obj: v8Types.ValueMirror): number {
+  storeObjectToVariableTable_(obj: v8.ValueMirror): number {
     let idx = this.rawVariableTable_.length;
     this.rawVariableTable_[idx] = obj;
     return idx;
@@ -507,17 +507,17 @@ class StateResolver {
    * Responsible for recursively resolving the properties on a
    * provided object mirror.
    */
-  resolveMirror_(mirror: v8Types.ObjectMirror, isEvaluated: boolean):
-      apiTypes.Variable {
+  resolveMirror_(mirror: v8.ObjectMirror, isEvaluated: boolean):
+      stackdriver.Variable {
     let properties = mirror.properties();
     const maxProps = this.config_.capture.maxProperties;
     const truncate = maxProps && properties.length > maxProps;
     if (!isEvaluated && truncate) {
       properties = properties.slice(0, maxProps);
     }
-    // TODO: It looks like `members` should be of type apiTypes.Variable[]
+    // TODO: It looks like `members` should be of type stackdriver.Variable[]
     //       but is missing fields.  Determine if those fields are required or
-    //       if the type should not be apiTypes.Variable[]
+    //       if the type should not be stackdriver.Variable[]
     const members =
         properties.map(this.resolveMirrorProperty_.bind(this, isEvaluated));
     if (!isEvaluated && truncate) {
@@ -532,9 +532,8 @@ class StateResolver {
     return {value: mirror.toText(), members: members};
   }
 
-  resolveMirrorProperty_(
-      isEvaluated: boolean,
-      property: v8Types.PropertyMirror): apiTypes.Variable {
+  resolveMirrorProperty_(isEvaluated: boolean, property: v8.PropertyMirror):
+      stackdriver.Variable {
     const name = String(property.name());
     // Array length must be special cased as it is a native property that
     // we know to be safe to evaluate which is not generally true.
@@ -561,7 +560,8 @@ export function testAssert(): void {
  *         evaluatedExpressions fields
  */
 export function capture(
-    execState: v8Types.ExecutionState, expressions: string[],
-    config: DebugAgentConfig, v8: v8Types.Debug): apiTypes.Breakpoint {
-  return (new StateResolver(execState, expressions, config, v8)).capture_();
+    execState: v8.ExecutionState, expressions: string[],
+    config: DebugAgentConfig, v8debug: v8.Debug): stackdriver.Breakpoint {
+  return (new StateResolver(execState, expressions, config, v8debug))
+      .capture_();
 }

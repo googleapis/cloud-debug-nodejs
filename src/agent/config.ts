@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import {AuthenticationConfig} from '../types/common-types';
+import * as common from '../types/common';
 
-export interface DebugAgentConfig extends AuthenticationConfig {
+export interface DebugAgentConfig extends common.AuthenticationConfig {
   workingDirectory?: string;
 
   /**
@@ -162,7 +162,7 @@ export interface DebugAgentConfig extends AuthenticationConfig {
   testMode_: boolean;
 }
 
-export interface StackdriverConfig extends AuthenticationConfig {
+export interface StackdriverConfig extends common.AuthenticationConfig {
   debug?: DebugAgentConfig;
 }
 

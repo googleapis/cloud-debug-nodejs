@@ -19,7 +19,7 @@ import * as fs from 'fs';
 import * as _ from 'lodash';
 import * as path from 'path';
 import * as sourceMap from 'source-map';
-import {findScriptsFuzzy} from './utils';
+import {findScriptsFuzzy} from '../util/utils';
 
 /** @define {string} */ const MAP_EXT = '.map';
 

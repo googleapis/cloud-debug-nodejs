@@ -16,24 +16,24 @@
 
 process.env.GCLOUD_DIAGNOSTICS_CONFIG = 'test/fixtures/test-config.js';
 
-import * as commonTypes from '../src/types/common-types';
-import * as apiTypes from '../src/types/api-types';
+import {Common, LoggerOptions} from '../src/types/common';
+import * as stackdriver from '../src/types/stackdriver';
 
 import * as assert from 'assert';
 import * as extend from 'extend';
-const common: commonTypes.Common = require('@google-cloud/common');
-import * as debugapi from '../src/agent/debugapi';
-import * as SourceMapper from '../src/agent/sourcemapper';
-import * as scanner from '../src/agent/scanner';
+const common: Common = require('@google-cloud/common');
+import * as debugapi from '../src/agent/v8/debugapi';
+import * as SourceMapper from '../src/agent/io/sourcemapper';
+import * as scanner from '../src/agent/io/scanner';
 import defaultConfig from '../src/agent/config';
 const foo = require('./test-max-data-size-code.js');
 let api: debugapi.DebugApi;
 
 // TODO: Have this actually implement Breakpoint
-const breakpointInFoo: apiTypes.Breakpoint = {
+const breakpointInFoo: stackdriver.Breakpoint = {
   id: 'fake-id-123',
   location: { path: 'build/test/test-max-data-size-code.js', line: 4 }
-} as apiTypes.Breakpoint;
+} as stackdriver.Breakpoint;
 
 describe('maxDataSize', function() {
   const config = extend({}, defaultConfig, {
@@ -44,7 +44,7 @@ describe('maxDataSize', function() {
     if (!api) {
       // TODO: It appears `logLevel` is a typo and should be `level`.  However,
       //       with this change, the tests fail.  Resolve this.
-      const logger = new common.logger({ levelLevel: config.logLevel } as any as commonTypes.LoggerOptions);
+      const logger = new common.logger({ levelLevel: config.logLevel } as any as LoggerOptions);
       scanner.scan(true, config.workingDirectory, /.js$/)
         .then(function (fileStats) {
           const jsStats = fileStats.selectStats(/.js$/);
@@ -68,7 +68,7 @@ describe('maxDataSize', function() {
     config.capture.maxDataSize = 5;
     // clone a clean breakpointInFoo
     // TODO: Have this actually implement Breakpoint.
-    const bp: apiTypes.Breakpoint = {id: breakpointInFoo.id, location: breakpointInFoo.location} as apiTypes.Breakpoint;
+    const bp: stackdriver.Breakpoint = {id: breakpointInFoo.id, location: breakpointInFoo.location} as stackdriver.Breakpoint;
     // TODO: Determine how to remove this cast to any.
     api.set(bp, function(err: Error) {
       assert.ifError(err);
@@ -97,7 +97,7 @@ describe('maxDataSize', function() {
     config.capture.maxDataSize = 0;
     // clone a clean breakpointInFoo
     // TODO: Have this actually implement breakpoint
-    const bp: apiTypes.Breakpoint = {id: breakpointInFoo.id, location: breakpointInFoo.location} as apiTypes.Breakpoint;
+    const bp: stackdriver.Breakpoint = {id: breakpointInFoo.id, location: breakpointInFoo.location} as stackdriver.Breakpoint;
     api.set(bp, function(err: Error) {
       assert.ifError(err);
       api.wait(bp, function(err: Error) {
@@ -105,7 +105,7 @@ describe('maxDataSize', function() {
         // TODO: Determine how to remove this cast to any.
         // TODO: The function supplied to reduce is of the wrong type.
         //       Fix this.
-        assert(bp.variableTable.reduce(function(acc: Function, elem: apiTypes.Variable) {
+        assert(bp.variableTable.reduce(function(acc: Function, elem: stackdriver.Variable) {
           return acc &&
                  (!elem.status ||
                    elem.status.description.format !== 'Max data size reached');

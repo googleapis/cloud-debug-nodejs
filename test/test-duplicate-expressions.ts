@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 
-import * as commonTypes from '../src/types/common-types';
-import * as apiTypes from '../src/types/api-types';
+import {Common, LoggerOptions} from '../src/types/common';
+import * as stackdriver from '../src/types/stackdriver';
 
 // TODO: Have this actually implement Breakpoint
-const breakpointInFoo: apiTypes.Breakpoint = {
+const breakpointInFoo: stackdriver.Breakpoint = {
   id: 'fake-id-123',
   location: { path: 'test-duplicate-expressions-code.js', line: 4 }
-} as apiTypes.Breakpoint;
+} as stackdriver.Breakpoint;
 
 import * as assert from 'assert';
 import * as extend from 'extend';
-import * as debugapi from '../src/agent/debugapi';
-const common: commonTypes.Common = require('@google-cloud/common');
+import * as debugapi from '../src/agent/v8/debugapi';
+const common: Common = require('@google-cloud/common');
 import defaultConfig from '../src/agent/config';
-import * as SourceMapper from '../src/agent/sourcemapper';
-import * as scanner from '../src/agent/scanner';
+import * as SourceMapper from '../src/agent/io/sourcemapper';
+import * as scanner from '../src/agent/io/scanner';
 const foo = require('./test-duplicate-expressions-code.js');
 
 // TODO: Determine why this must be named `stateIsClean1`.
@@ -48,7 +48,7 @@ describe(__filename, function() {
   });
   // TODO: It appears `logLevel` is a typo and should be `level`.  However,
   //       with this change, the tests fail.  Resolve this.
-  const logger = new common.logger({ logLevel: config.logLevel } as any as commonTypes.LoggerOptions);
+  const logger = new common.logger({ logLevel: config.logLevel } as any as LoggerOptions);
   let api: debugapi.DebugApi;
 
   beforeEach(function(done) {

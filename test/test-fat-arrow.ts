@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-import * as commonTypes from '../src/types/common-types';
-import * as apiTypes from '../src/types/api-types';
+import {Common, LoggerOptions} from '../src/types/common';
+import * as stackdriver from '../src/types/stackdriver';
 
 import * as assert from 'assert';
 import * as extend from 'extend';
-import * as debugapi from '../src/agent/debugapi';
-const common: commonTypes.Common = require('@google-cloud/common');
+import * as debugapi from '../src/agent/v8/debugapi';
+const common: Common = require('@google-cloud/common');
 import defaultConfig from '../src/agent/config';
-import * as SourceMapper from '../src/agent/sourcemapper';
-import * as scanner from '../src/agent/scanner';
+import * as SourceMapper from '../src/agent/io/sourcemapper';
+import * as scanner from '../src/agent/io/scanner';
 
 process.env.GCLOUD_PROJECT = '0';
 
@@ -42,7 +42,7 @@ describe(__filename, function() {
   });
   // TODO: It appears `logLevel` is a typo and should be `level`.  However,
   //       with this change, the tests fail.  Resolve this.
-  const logger = new common.logger({ levelLevel: config.logLevel } as any as commonTypes.LoggerOptions);
+  const logger = new common.logger({ levelLevel: config.logLevel } as any as LoggerOptions);
   let api: debugapi.DebugApi;
   let foo: () => number;
   before(function () {
@@ -71,10 +71,10 @@ describe(__filename, function() {
   afterEach(function() { assert(stateIsClean(api)); });
   it('Should read the argument value of the fat arrow', function(done) {
     // TODO: Have this implement Breakpoint
-    const brk: apiTypes.Breakpoint = {
+    const brk: stackdriver.Breakpoint = {
       id: 'fake-id-123',
       location: { path: 'fixtures/fat-arrow.js', line: 5 }
-    } as apiTypes.Breakpoint;
+    } as stackdriver.Breakpoint;
     api.set(brk, function(err) {
       assert.ifError(err);
       api.wait(brk, function(err) {
@@ -98,10 +98,10 @@ describe(__filename, function() {
   });
    it('Should process the argument value change of the fat arrow', function(done) {
     // TODO: Have this implement Breakpoint
-    const brk: apiTypes.Breakpoint = {
+    const brk: stackdriver.Breakpoint = {
       id: 'fake-id-123',
       location: { path: 'fixtures/fat-arrow.js', line: 6 }
-    } as apiTypes.Breakpoint;
+    } as stackdriver.Breakpoint;
     api.set(brk, function(err) {
       assert.ifError(err);
       api.wait(brk, function(err) {

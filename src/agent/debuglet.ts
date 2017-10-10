@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {AuthenticationConfig, Common} from '../types/common-types';
+import {AuthenticationConfig, Common} from '../types/common';
 const common: Common = require('@google-cloud/common');
 
 import * as crypto from 'crypto';
@@ -23,8 +23,8 @@ import * as extend from 'extend';
 import * as dns from 'dns';
 import * as fs from 'fs';
 
-import {GcpMetadata} from '../types/gcp-metadata-types';
-const metadata: GcpMetadata = require('gcp-metadata');
+import * as gcpMetadata from '../types/gcp-metadata';
+const metadata: gcpMetadata.GcpMetadata = require('gcp-metadata');
 
 import * as _ from 'lodash';
 import * as path from 'path';
@@ -32,25 +32,25 @@ import * as semver from 'semver';
 import * as util from 'util';
 import * as http from 'http';
 
-import {Controller} from '../controller';
+import {Controller} from './controller';
 import {Debuggee} from '../debuggee';
-import {StatusMessage} from '../status-message';
+import {StatusMessage} from '../client/stackdriver/status-message';
 
 // The following import syntax is used because './config' has a default export
 import defaultConfig from './config';
-import * as scanner from './scanner';
-import * as SourceMapper from './sourcemapper';
-import * as debugapi from './debugapi';
+import * as scanner from './io/scanner';
+import * as SourceMapper from './io/sourcemapper';
+import * as debugapi from './v8/debugapi';
 
 const pjson = require('../../../package.json');
 
 import * as assert from 'assert';
 
-import {Breakpoint} from '../types/api-types';
+import * as stackdriver from '../types/stackdriver';
 import {DebugAgentConfig} from './config';
-import {Debug} from '../debug';
-import {Logger} from '../types/common-types';
-import {DebugApi} from './debugapi';
+import {Debug} from '../client/stackdriver/debug';
+import {Logger} from '../types/common';
+import {DebugApi} from './v8/debugapi';
 
 const promisify = require('util.promisify');
 
@@ -71,7 +71,8 @@ const BREAKPOINT_ACTION_MESSAGE =
  * @param {Breakpoint} breakpoint The breakpoint to format.
  * @return {string} A formatted string.
  */
-const formatBreakpoint = function(msg: string, breakpoint: Breakpoint): string {
+const formatBreakpoint = function(
+    msg: string, breakpoint: stackdriver.Breakpoint): string {
   let text = msg +
       util.format(
           'breakpoint id: %s,\n\tlocation: %s', breakpoint.id,
@@ -98,7 +99,7 @@ const formatBreakpoint = function(msg: string, breakpoint: Breakpoint): string {
  * @return {string} A formatted string.
  */
 const formatBreakpoints = function(
-    msg: string, breakpoints: {[key: string]: Breakpoint}): string {
+    msg: string, breakpoints: {[key: string]: stackdriver.Breakpoint}): string {
   return msg +
       Object.keys(breakpoints)
           .map(function(b) {
@@ -112,7 +113,7 @@ export class Debuglet extends EventEmitter {
   private v8debug_: DebugApi|null;
   private running_: boolean;
   private project_: string|null;
-  private debugletApi_: Controller;
+  private controller_: Controller;
   private completedBreakpointMap_: {[key: string]: boolean};
 
   // Exposed for testing
@@ -120,7 +121,7 @@ export class Debuglet extends EventEmitter {
   fetcherActive_: boolean;
   logger_: Logger;
   debuggee_: Debuggee|null;
-  activeBreakpointMap_: {[key: string]: Breakpoint};
+  activeBreakpointMap_: {[key: string]: stackdriver.Breakpoint};
 
   /**
    * @param {Debug} debug - A Debug instance.
@@ -163,7 +164,7 @@ export class Debuglet extends EventEmitter {
         {level: common.logger.LEVELS[this.config_.logLevel], tag: pjson.name});
 
     /** @private {DebugletApi} */
-    this.debugletApi_ = new Controller(this.debug_);
+    this.controller_ = new Controller(this.debug_);
 
     /** @private {Debuggee} */
     this.debuggee_ = null;
@@ -472,7 +473,7 @@ export class Debuglet extends EventEmitter {
       }
 
       // TODO: Handle the case when `that.debuggee_` is null.
-      that.debugletApi_.register(
+      that.controller_.register(
           that.debuggee_ as Debuggee,
           function(err: Error|null, result?: {debuggee: Debuggee;}) {
             if (err) {
@@ -526,7 +527,7 @@ export class Debuglet extends EventEmitter {
 
       that.logger_.info('Fetching breakpoints');
       // TODO: Address the case when `that.debuggee` is `null`.
-      that.debugletApi_.listBreakpoints(
+      that.controller_.listBreakpoints(
           (that.debuggee_ as Debuggee), function(err: Error, response, body) {
             if (err) {
               that.logger_.error(
@@ -566,20 +567,20 @@ export class Debuglet extends EventEmitter {
                   that.scheduleBreakpointFetch_(0 /*immediately*/);
                   return;
                 }
-                const bps =
-                    (body.breakpoints || []).filter(function(bp: Breakpoint) {
-                      const action = bp.action || 'CAPTURE';
-                      if (action !== 'CAPTURE' && action !== 'LOG') {
-                        that.logger_.warn(
-                            'Found breakpoint with invalid action:', action);
-                        bp.status = new StatusMessage(
-                            StatusMessage.UNSPECIFIED,
-                            BREAKPOINT_ACTION_MESSAGE, true);
-                        that.rejectBreakpoint_(bp);
-                        return false;
-                      }
-                      return true;
-                    });
+                const bps = (body.breakpoints ||
+                             []).filter(function(bp: stackdriver.Breakpoint) {
+                  const action = bp.action || 'CAPTURE';
+                  if (action !== 'CAPTURE' && action !== 'LOG') {
+                    that.logger_.warn(
+                        'Found breakpoint with invalid action:', action);
+                    bp.status = new StatusMessage(
+                        StatusMessage.UNSPECIFIED, BREAKPOINT_ACTION_MESSAGE,
+                        true);
+                    that.rejectBreakpoint_(bp);
+                    return false;
+                  }
+                  return true;
+                });
                 that.updateActiveBreakpoints_(bps);
                 if (Object.keys(that.activeBreakpointMap_).length) {
                   that.logger_.info(formatBreakpoints(
@@ -598,7 +599,7 @@ export class Debuglet extends EventEmitter {
    * @param {Array.<Breakpoint>} breakpoints
    * @private
    */
-  updateActiveBreakpoints_(breakpoints: Breakpoint[]): void {
+  updateActiveBreakpoints_(breakpoints: stackdriver.Breakpoint[]): void {
     const that = this;
     const updatedBreakpointMap = this.convertBreakpointListToMap_(breakpoints);
 
@@ -607,7 +608,7 @@ export class Debuglet extends EventEmitter {
           formatBreakpoints('Server breakpoints: ', updatedBreakpointMap));
     }
 
-    breakpoints.forEach(function(breakpoint: Breakpoint) {
+    breakpoints.forEach(function(breakpoint: stackdriver.Breakpoint) {
 
       // TODO: Address the case when `breakpoint.id` is `undefined`.
       if (!that.completedBreakpointMap_[breakpoint.id as string] &&
@@ -645,9 +646,9 @@ export class Debuglet extends EventEmitter {
    * @return {Object.<string, Breakpoint>} A map of breakpoint IDs to breakpoints.
    * @private
    */
-  convertBreakpointListToMap_(breakpointList: Breakpoint[]):
-      {[key: string]: Breakpoint} {
-    const map: {[id: string]: Breakpoint} = {};
+  convertBreakpointListToMap_(breakpointList: stackdriver.Breakpoint[]):
+      {[key: string]: stackdriver.Breakpoint} {
+    const map: {[id: string]: stackdriver.Breakpoint} = {};
     breakpointList.forEach(function(breakpoint) {
       // TODO: Address the case when `breakpoint.id` is `undefined`.
       map[breakpoint.id as string] = breakpoint;
@@ -659,7 +660,7 @@ export class Debuglet extends EventEmitter {
    * @param {Breakpoint} breakpoint
    * @private
    */
-  removeBreakpoint_(breakpoint: Breakpoint): void {
+  removeBreakpoint_(breakpoint: stackdriver.Breakpoint): void {
     this.logger_.info('\tdeleted breakpoint', breakpoint.id);
     // TODO: Address the case when `breakpoint.id` is `undefined`.
     delete this.activeBreakpointMap_[breakpoint.id as string];
@@ -675,7 +676,9 @@ export class Debuglet extends EventEmitter {
    * @return {boolean} false on error
    * @private
    */
-  addBreakpoint_(breakpoint: Breakpoint, cb: (ob: Error|string) => void): void {
+  addBreakpoint_(
+      breakpoint: stackdriver.Breakpoint,
+      cb: (ob: Error|string) => void): void {
     const that = this;
 
     if (!that.config_.allowExpressions &&
@@ -745,11 +748,11 @@ export class Debuglet extends EventEmitter {
    * @param {Breakpoint} breakpoint
    * @private
    */
-  completeBreakpoint_(breakpoint: Breakpoint): void {
+  completeBreakpoint_(breakpoint: stackdriver.Breakpoint): void {
     const that = this;
 
     that.logger_.info('\tupdating breakpoint data on server', breakpoint.id);
-    that.debugletApi_.updateBreakpoint(
+    that.controller_.updateBreakpoint(
         // TODO: Address the case when `that.debuggee_` is `null`.
         (that.debuggee_ as Debuggee), breakpoint, function(err /*, body*/) {
           if (err) {
@@ -767,11 +770,11 @@ export class Debuglet extends EventEmitter {
    * @param {Breakpoint} breakpoint
    * @private
    */
-  rejectBreakpoint_(breakpoint: Breakpoint): void {
+  rejectBreakpoint_(breakpoint: stackdriver.Breakpoint): void {
     const that = this;
 
     // TODO: Address the case when `that.debuggee_` is `null`.
-    that.debugletApi_.updateBreakpoint(
+    that.controller_.updateBreakpoint(
         (that.debuggee_ as Debuggee), breakpoint, function(err /*, body*/) {
           if (err) {
             that.logger_.error('Unable to complete breakpoint on server', err);
@@ -787,7 +790,7 @@ export class Debuglet extends EventEmitter {
    * @param {Breakpoint} breakpoint Server breakpoint object
    * @private
    */
-  scheduleBreakpointExpiry_(breakpoint: Breakpoint): void {
+  scheduleBreakpointExpiry_(breakpoint: stackdriver.Breakpoint): void {
     const that = this;
 
     const now = Date.now() / 1000;
