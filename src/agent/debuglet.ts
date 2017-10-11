@@ -205,6 +205,14 @@ export class Debuglet extends EventEmitter {
    * @private
    */
   async start(): Promise<void> {
+    process.on('warning', (warning) => {
+      if ((warning as any).code ===
+          'INSPECTOR_ASYNC_STACK_TRACES_NOT_AVAILABLE') {
+        console.log(
+            'The current debug agent does not use Inspector async stack ' +
+            'traces. The above warning will not affect the debug agent.');
+      }
+    });
     const that = this;
     const stat = promisify(fs.stat);
 
