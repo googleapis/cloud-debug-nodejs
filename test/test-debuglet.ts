@@ -315,6 +315,43 @@ describe('Debuglet', function() {
       assert.deepEqual(mergedConfig, compareConfig);
     });
 
+    it('should elaborate on inspector warning on 32 bit', function(done) {
+      let logText = '';
+      const oldLog = console.log;
+      console.log = function(s: string) {
+        logText += s;
+      }
+      const projectId = '11020304f2934-a';
+      const debug = new Debug(
+          {projectId: projectId, credentials: fakeCredentials});
+      const debuglet = new Debuglet(debug, defaultConfig);
+
+      nocks.projectId('project-via-metadata');
+      const scope = nock(API)
+                      .post(REGISTER_PATH)
+                      .reply(200, {debuggee: {id: DEBUGGEE_ID}});
+
+      debuglet.once('registered', function(id: string) {
+        assert.equal(id, DEBUGGEE_ID);
+        // TODO: Handle the case where debuglet.debuggee is undefined
+        assert.equal((debuglet.debuggee_ as Debuggee).project, projectId);
+        console.log = oldLog;
+        const arch = process.arch;
+        if (arch === 'ia32' || arch === 'x86') {
+          assert(logText.includes('The current debug agent does not use '
+            + 'Inspector async stack traces'));
+        } else {
+          assert(!logText.includes('The current debug agent does not use '
+            + 'Inspector async stack traces'));
+        }
+        debuglet.stop();
+        scope.done();
+        done();
+      });
+
+      debuglet.start();
+    });
+
     it('should not start when projectId is not available', function(done) {
       const savedGetProjectId = Debuglet.getProjectId;
       Debuglet.getProjectId = () => {
