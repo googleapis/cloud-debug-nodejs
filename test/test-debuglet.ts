@@ -17,6 +17,7 @@
 import * as stackdriver from '../src/types/stackdriver';
 import {DebugAgentConfig} from '../src/agent/config';
 import {Debuggee} from '../src/debuggee';
+import * as semver from 'semver';
 
 import * as _ from 'lodash';
 import * as path from 'path';
@@ -337,12 +338,18 @@ describe('Debuglet', function() {
         assert.equal((debuglet.debuggee_ as Debuggee).project, projectId);
         console.log = oldLog;
         const arch = process.arch;
-        if (arch === 'ia32' || arch === 'x86') {
-          assert(logText.includes('The current debug agent does not use '
-            + 'Inspector async stack traces'));
+        const nodeVersion = /v(\d+\.\d+\.\d+)/.exec(process.version);
+        if (!nodeVersion || nodeVersion.length < 2) {
+          (assert as any).fail();
+        } else if (semver.satisfies(nodeVersion[1], '>=8') &&
+            (arch === 'ia32' || arch === 'x86')) {
+          assert(logText.includes(
+              'The current debug agent does not use ' +
+              'Inspector async stack traces'));
         } else {
-          assert(!logText.includes('The current debug agent does not use '
-            + 'Inspector async stack traces'));
+          assert(!logText.includes(
+              'The current debug agent does not use ' +
+              'Inspector async stack traces'));
         }
         debuglet.stop();
         scope.done();

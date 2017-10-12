@@ -213,6 +213,7 @@ export class Debuglet extends EventEmitter {
             'traces. The above warning will not affect the debug agent.');
       }
     });
+
     const that = this;
     const stat = promisify(fs.stat);
 
