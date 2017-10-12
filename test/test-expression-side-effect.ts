@@ -14,23 +14,109 @@
  * limitations under the License.
  */
 import * as stackdriver from '../src/types/stackdriver';
-const breakpointInFoo: stackdriver.Breakpoint = {
-  id: 'fake-id-123',
-  location: { path: 'build/test/test-expression-side-effect-code.js', line: 5 }
-} as stackdriver.Breakpoint;
+import * as semver from 'semver';
+import * as debugapi from '../src/agent/v8/debugapi';
+import * as extend from 'extend';
+import defaultConfig from '../src/agent/config';
+import * as scanner from '../src/agent/io/scanner';
+import * as SourceMapper from '../src/agent/io/sourcemapper';
+import {Common, LoggerOptions} from '../src/types/common';
+import * as assert from 'assert';
+import {StatusMessage} from '../src/client/stackdriver/status-message';
 
+const code = require('./test-expression-side-effect-code.js');
+
+const common: Common = require('@google-cloud/common');
+
+
+const nodeVersion = /v(\d+\.\d+\.\d+)/.exec(process.version);
 
 
 describe('expression side effect', () => {
-  it('should have expression evaluated', (done) => {
+  let api: debugapi.DebugApi;
+  const config = extend({}, defaultConfig, {
+    forceNewAgent_: true
+  });
+
+  before(function(done) {
+    if (!api) {
+      // TODO: It appears `logLevel` is a typo and should be `level`.  However,
+      //       with this change, the tests fail.  Resolve this.
+      const logger = new common.logger({ levelLevel: config.logLevel } as any as LoggerOptions);
+      scanner.scan(true, config.workingDirectory, /.js$/)
+        .then(function (fileStats) {
+          const jsStats = fileStats.selectStats(/.js$/);
+          const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
+          SourceMapper.create(mapFiles, function (err, mapper) {
+            assert(!err);
+
+            // TODO: Handle the case when mapper is undefined
+            // TODO: Handle the case when v8debugapi.create returns null
+            api = debugapi.create(logger, config, jsStats, mapper as SourceMapper.SourceMapper) as debugapi.DebugApi;
+            done();
+          });
+        });
+    } else {
+      console.log('else');
+      done();
+    }
+  });
+
+  it('should have expression evaluated without side effects', (done) => {
     // this test makes sure that the necessary environment variables to enable
     // asserts are present during testing. Use run-tests.sh, or export
     // CLOUD_DEBUG_ASSERTIONS=1 to make sure this test passes.
-    if (parseFloat(process.version) < 8) {
-      done();
-    }
-    // const bp: stackdriver.Breakpoint = {id: breakpointInFoo.id, location: breakpointInFoo.location} as stackdriver.Breakpoint;
-    done();
+    const bp: stackdriver.Breakpoint = {
+      id: 'fake-id-123',
+      location: { path: 'build/test/test-expression-side-effect-code.js', line: 16 },
+      expressions: [ 'item.getPrice()']
+    } as stackdriver.Breakpoint;
 
+    if (!nodeVersion || nodeVersion.length < 2 || semver.satisfies(nodeVersion[1], '<8')) {
+      done();
+    } else {
+      api.set(bp, function(err) {
+        assert.ifError(err);
+        api.wait(bp, function(err) {
+          assert.ifError(err);
+          const watch = bp.evaluatedExpressions[0];
+          assert.equal((watch as any).value, '2');
+          api.clear(bp, function(err) {
+            assert.ifError(err);
+            done();
+          });
+        })
+        process.nextTick(function() {code.foo();});
+      })
+    }
+  });
+
+  it('should not have expression evaluated with side effects', (done) => {
+    // this test makes sure that the necessary environment variables to enable
+    // asserts are present during testing. Use run-tests.sh, or export
+    // CLOUD_DEBUG_ASSERTIONS=1 to make sure this test passes.
+    const bp: stackdriver.Breakpoint = {
+      id: 'fake-id-123',
+      location: { path: 'build/test/test-expression-side-effect-code.js', line: 16 },
+      expressions: [ 'item.increasePriceByOne()']
+    } as stackdriver.Breakpoint;
+
+    if (!nodeVersion || nodeVersion.length < 2 || semver.satisfies(nodeVersion[1], '<8')) {
+      done();
+    } else {
+      api.set(bp, function(err) {
+        assert.ifError(err);
+        api.wait(bp, function(err) {
+          assert.ifError(err);
+          const watch = bp.evaluatedExpressions[0];
+          assert(((watch as any).status as StatusMessage).isError);
+          api.clear(bp, function(err) {
+            assert.ifError(err);
+            done();
+          });
+        })
+        process.nextTick(function() {code.foo();});
+      })
+    }
   });
 });

@@ -7,16 +7,15 @@
 /*7*/  getPrice() {
 /*8*/    return this.price;
 /*9*/  }
-/*10*/  get price() {
-/*11*/    return this.price;
+/*10*/  increasePriceByOne() {
+/*11*/    this.price += 1;
 /*12*/  }
-/*13*/  increasePriceByOne() {
-/*14*/    this.price += 1;
-/*15*/  }
-/*16*/}
-/*17*/function foo() {
-/*18*/  var item = new Item();
-/*19*/  item.increasePriceByOne();
-/*20*/  item.increasePriceByOne();
-/*21*/}
-/*22*/module.exports = foo;
+/*13*/}
+/*14*/function foo() {
+/*15*/  var item = new Item();
+/*16*/  item.increasePriceByOne();
+/*17*/  item.increasePriceByOne();
+/*18*/}
+/*19*/module.exports = {
+/*20*/  foo: foo
+/*21*/};
