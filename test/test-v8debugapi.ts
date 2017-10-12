@@ -1562,7 +1562,7 @@ describe('v8debugapi', () => {
               } else {
                 assert(
                   (expr as any).status.description.format.match('Expression not allowed')
-                || (expr as any).status.description.format.match('object'));
+                || (expr as any).status.description.format.match('TypeError'));
               }
             }
 
