@@ -877,6 +877,35 @@ describe('Debuglet', function() {
       debuglet.start();
     });
 
+    it.only('should fetch and add breakpoints', function(done) {
+      this.timeout(2000);
+      const debug = new Debug(
+          {projectId: 'fake-project', credentials: fakeCredentials});
+      const debuglet = new Debuglet(debug, defaultConfig);
+
+      const scope = nock(API)
+                      .post(REGISTER_PATH)
+                      .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+                      .get(BPS_PATH + '?successOnTimeout=true')
+                      .reply(200, {breakpoints: [bp]});
+
+      debuglet.start();
+      const debugPromise = debuglet.initializationPromise();
+
+      debuglet.once('registered', function reg(id: string) {
+        assert.equal(id, DEBUGGEE_ID);
+        debugPromise.then(() => {
+          setTimeout(function() {
+            debuglet.stop();
+            scope.done();
+            done();
+          }, 1000);
+        }).catch((err) => {
+          assert.ifError(err);
+        });
+      });
+    });
+
     it('should reject breakpoints with conditions when allowExpressions=false',
         function(done) {
       this.timeout(2000);

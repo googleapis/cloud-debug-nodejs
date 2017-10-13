@@ -120,7 +120,7 @@ export class Debuglet extends EventEmitter {
   logger_: Logger;
   debuggee_: Debuggee|null;
   activeBreakpointMap_: {[key: string]: stackdriver.Breakpoint};
-
+  promiseResolve_: (value?: void|PromiseLike<void>|undefined) => void;
   /**
    * @param {Debug} debug - A Debug instance.
    * @param {object=} config - The option parameters for the Debuglet.
@@ -322,6 +322,14 @@ export class Debuglet extends EventEmitter {
 
     });
   }
+  initializationPromise() {
+    return new Promise<void>((resolve) => {
+      this.promiseResolve_ = () => {
+        console.log('resolved');
+        resolve();
+      };
+    });
+  }
 
   /**
    * @private
@@ -489,7 +497,6 @@ export class Debuglet extends EventEmitter {
               onError(err);
               return;
             }
-
             // TODO: It appears that the Debuggee class never has an
             // `isDisabled`
             //       field set.  Determine if this is a bug or if the following
@@ -601,6 +608,7 @@ export class Debuglet extends EventEmitter {
             }
           });
     }, seconds * 1000).unref();
+    this.promiseResolve_();
   }
 
   /**
