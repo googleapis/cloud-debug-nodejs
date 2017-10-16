@@ -877,7 +877,7 @@ describe('Debuglet', function() {
       debuglet.start();
     });
 
-    it.only('should fetch and add breakpoints', function(done) {
+    it('should resolve promises before executing user functions', function(done) {
       this.timeout(2000);
       const debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials});
@@ -885,9 +885,7 @@ describe('Debuglet', function() {
 
       const scope = nock(API)
                       .post(REGISTER_PATH)
-                      .reply(200, {debuggee: {id: DEBUGGEE_ID}})
-                      .get(BPS_PATH + '?successOnTimeout=true')
-                      .reply(200, {breakpoints: [bp]});
+                      .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
       debuglet.start();
       const debugPromise = debuglet.initializationPromise();

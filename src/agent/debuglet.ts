@@ -113,6 +113,8 @@ export class Debuglet extends EventEmitter {
   private project_: string|null;
   private controller_: Controller;
   private completedBreakpointMap_: {[key: string]: boolean};
+  private promiseInitialized_: boolean;
+  private promiseResolve_: (value?: void|PromiseLike<void>|undefined) => void;
 
   // Exposed for testing
   config_: DebugAgentConfig;
@@ -120,7 +122,7 @@ export class Debuglet extends EventEmitter {
   logger_: Logger;
   debuggee_: Debuggee|null;
   activeBreakpointMap_: {[key: string]: stackdriver.Breakpoint};
-  promiseResolve_: (value?: void|PromiseLike<void>|undefined) => void;
+
   /**
    * @param {Debug} debug - A Debug instance.
    * @param {object=} config - The option parameters for the Debuglet.
@@ -174,6 +176,9 @@ export class Debuglet extends EventEmitter {
 
     /** @private {Object.<string, Boolean>} */
     this.completedBreakpointMap_ = {};
+
+    /** @private {boolean} */
+    this.promiseInitialized_ = false;
   }
 
   static normalizeConfig_(config: DebugAgentConfig): DebugAgentConfig {
@@ -323,9 +328,9 @@ export class Debuglet extends EventEmitter {
     });
   }
   initializationPromise() {
+    this.promiseInitialized_ = true;
     return new Promise<void>((resolve) => {
       this.promiseResolve_ = () => {
-        console.log('resolved');
         resolve();
       };
     });
@@ -497,6 +502,7 @@ export class Debuglet extends EventEmitter {
               onError(err);
               return;
             }
+
             // TODO: It appears that the Debuggee class never has an
             // `isDisabled`
             //       field set.  Determine if this is a bug or if the following
@@ -608,7 +614,10 @@ export class Debuglet extends EventEmitter {
             }
           });
     }, seconds * 1000).unref();
-    this.promiseResolve_();
+    if (this.promiseInitialized_) {
+      this.promiseResolve_();
+      this.promiseInitialized_ = false;
+    }
   }
 
   /**
