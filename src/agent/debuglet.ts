@@ -209,8 +209,9 @@ export class Debuglet extends EventEmitter {
       if ((warning as any).code ===
           'INSPECTOR_ASYNC_STACK_TRACES_NOT_AVAILABLE') {
         console.log(
-            'The current debug agent does not use Inspector async stack ' +
-            'traces. The above warning will not affect the debug agent.');
+            'The Stackdriver debug agent does not use Inspector async stack ' +
+            'traces. The INSPECTOR_ASYNC_STACK_TRACES_NOT_AVAILABLE warning ' +
+            'does not impact Stackdriver debug agent and can be ignored.');
       }
     });
 

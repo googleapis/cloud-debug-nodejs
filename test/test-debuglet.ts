@@ -290,16 +290,26 @@ describe('Debuglet', function() {
   });
 
   describe('setup', function() {
-    before(function() { oldGP = process.env.GCLOUD_PROJECT; });
+    before(function() {
+      oldGP = process.env.GCLOUD_PROJECT;
+    });
 
     after(function() { process.env.GCLOUD_PROJECT = oldGP; });
-
-    beforeEach(function() {
+    let logText = '';
+    let oldLog: any;
+    beforeEach(() => {
       delete process.env.GCLOUD_PROJECT;
+      oldLog = console.log;
+      console.log = function(s: string) {
+        logText += s;
+      }
       nocks.oauth2();
     });
 
-    afterEach(function() { nock.cleanAll(); });
+    afterEach(() => {
+      console.log = oldLog;
+      nock.cleanAll();
+    });
 
     it('should merge config correctly', function() {
       const testValue = 2 * defaultConfig.capture.maxExpandFrames;
@@ -316,12 +326,8 @@ describe('Debuglet', function() {
       assert.deepEqual(mergedConfig, compareConfig);
     });
 
-    it('should elaborate on inspector warning on 32 bit', function(done) {
-      let logText = '';
-      const oldLog = console.log;
-      console.log = function(s: string) {
-        logText += s;
-      }
+    it('should elaborate on inspector warning on 32 bit but not on 64 bit',
+        function(done) {
       const projectId = '11020304f2934-a';
       const debug = new Debug(
           {projectId: projectId, credentials: fakeCredentials});
@@ -336,20 +342,17 @@ describe('Debuglet', function() {
         assert.equal(id, DEBUGGEE_ID);
         // TODO: Handle the case where debuglet.debuggee is undefined
         assert.equal((debuglet.debuggee_ as Debuggee).project, projectId);
-        console.log = oldLog;
         const arch = process.arch;
         const nodeVersion = /v(\d+\.\d+\.\d+)/.exec(process.version);
+        const message = 'The Stackdriver debug agent does not use Inspector async stack';
         if (!nodeVersion || nodeVersion.length < 2) {
+          // TODO: Fix this invalid method signature.
           (assert as any).fail();
         } else if (semver.satisfies(nodeVersion[1], '>=8') &&
             (arch === 'ia32' || arch === 'x86')) {
-          assert(logText.includes(
-              'The current debug agent does not use ' +
-              'Inspector async stack traces'));
+          assert(logText.includes(message));
         } else {
-          assert(!logText.includes(
-              'The current debug agent does not use ' +
-              'Inspector async stack traces'));
+          assert(!logText.includes(message));
         }
         debuglet.stop();
         scope.done();
