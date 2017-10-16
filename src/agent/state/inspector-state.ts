@@ -62,7 +62,7 @@ export function evaluate(
       error: result.error ? String(result.error) : 'no reponse in result'
     };
   } else if (result.response.exceptionDetails) {
-    return {error: String(result.response.result.description)};
+    return {error: String(result.response.result.description).split('\n')[0]};
   } else {
     return {error: null, object: result.response.result};
   }
