@@ -60,12 +60,12 @@ export class InspectorDebugApi implements debugapi.DebugApi {
   numBreakpoints = 0;
   v8Inspector: V8Inspector;
   constructor(
-      logger_: Logger, config_: DebugAgentConfig, jsFiles_: ScanStats,
-      sourcemapper_: SourceMapper) {
-    this.logger = logger_;
-    this.config = config_;
-    this.fileStats = jsFiles_;
-    this.sourcemapper = sourcemapper_;
+      logger: Logger, config: DebugAgentConfig, jsFiles: ScanStats,
+      sourcemapper: SourceMapper) {
+    this.logger = logger;
+    this.config = config;
+    this.fileStats = jsFiles;
+    this.sourcemapper = sourcemapper;
     this.session = new inspector.Session();
     this.session.connect();
     this.session.on('Debugger.scriptParsed', (script) => {
@@ -192,6 +192,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     let timesliceEnd = Date.now() + 1000;
     // TODO: Determine why the Error argument is not used.
     const listener =
+        // tslint:disable-next-line:variable-name
         this.onBreakpointHit.bind(this, breakpoint, (_err: Error) => {
           const currTime = Date.now();
           if (currTime > timesliceEnd) {

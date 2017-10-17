@@ -35,8 +35,8 @@ const qs: { parse: (qs: any, sep?: string, eq?: string,
 const API = 'https://clouddebugger.googleapis.com/v2/debugger';
 
 export class Debugger extends common.ServiceObject {
-  private nextWaitToken_: string|null;
-  private clientVersion_: string;
+  private nextWaitToken: string|null;
+  private clientVersion: string;
 
   /**
    * @constructor
@@ -48,9 +48,9 @@ export class Debugger extends common.ServiceObject {
     });
 
     /** @private {string} */
-    this.nextWaitToken_ = null;
+    this.nextWaitToken = null;
 
-    this.clientVersion_ = pjson.name + '/client-for-testing/v' + pjson.version;
+    this.clientVersion = pjson.name + '/client-for-testing/v' + pjson.version;
   }
 
   /**
@@ -71,7 +71,7 @@ export class Debugger extends common.ServiceObject {
     }
 
     const query = {
-      clientVersion: this.clientVersion_,
+      clientVersion: this.clientVersion,
       includeInactive: includeInactive,
       project: projectId
     };
@@ -130,7 +130,7 @@ export class Debugger extends common.ServiceObject {
 
     // TODO: Remove this cast as `any`
     const query: any = {
-      clientVersion: this.clientVersion_,
+      clientVersion: this.clientVersion,
       includeAllUsers: !!options.includeAllUsers,
       includeInactive: !!options.includeInactive,
       stripResults: !!options.stripResults
@@ -139,8 +139,8 @@ export class Debugger extends common.ServiceObject {
     if ((options as any).action) {
       query.action = { value: (options as any).action };
     }
-    if (this.nextWaitToken_) {
-      query.waitToken = this.nextWaitToken_;
+    if (this.nextWaitToken) {
+      query.waitToken = this.nextWaitToken;
     }
 
     const uri = API + '/debuggees/' + encodeURIComponent(debuggeeId) +
@@ -177,7 +177,7 @@ export class Debugger extends common.ServiceObject {
    */
   getBreakpoint(debuggeeId: string, breakpointId: string, callback: (err: Error|null, bp?: stackdriver.Breakpoint) => void) {
     const query = {
-      clientVersion: this.clientVersion_
+      clientVersion: this.clientVersion
     };
 
     const uri = API + '/debuggees/' + encodeURIComponent(debuggeeId) +
@@ -213,7 +213,7 @@ export class Debugger extends common.ServiceObject {
    */
   setBreakpoint(debuggeeId: string, breakpoint: stackdriver.Breakpoint, callback: (err: Error|null, bp?: stackdriver.Breakpoint) => void) {
     const query = {
-      clientVersion: this.clientVersion_
+      clientVersion: this.clientVersion
     };
     const options = {
       uri: API + '/debuggees/' + encodeURIComponent(debuggeeId) +
@@ -251,7 +251,7 @@ export class Debugger extends common.ServiceObject {
    */
   deleteBreakpoint(debuggeeId: string, breakpointId: string, callback: (err: Error|null) => void) {
     const query = {
-      clientVersion: this.clientVersion_
+      clientVersion: this.clientVersion
     };
     const options = {
       uri: API + '/debuggees/' + encodeURIComponent(debuggeeId) +

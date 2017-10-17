@@ -62,12 +62,14 @@ describe('Controller', function() {
           description: 'this is a system test'
         });
     // TODO: Determine if the body parameter should be used.
-    controller.register(debuggee, function(err, _body) {
-      assert.ifError(err);
+    // tslint:disable-next-line:variable-name
+    controller.register(debuggee, function(err1, _body) {
+      assert.ifError(err1);
 
       // TODO: Determine if the response parameter should be used.
-      controller.listBreakpoints(debuggee, function(err, _response, maybeBody) {
-        assert.ifError(err);
+      // tslint:disable-next-line:variable-name
+      controller.listBreakpoints(debuggee, function(err2, _response, maybeBody) {
+        assert.ifError(err2);
         assert.ok(maybeBody);
         const body = maybeBody as stackdriver.ListBreakpointsResponse;
         assert.ok(body.nextWaitToken);
@@ -86,25 +88,28 @@ describe('Controller', function() {
           description: 'this is a system test'
         });
     // TODO: Determine if the body parameter should be used.
-    controller.register(debuggee, function(err, _body) {
-      assert.ifError(err);
+    // tslint:disable-next-line:variable-name
+    controller.register(debuggee, function(err1, _body) {
+      assert.ifError(err1);
 
       // First list should set the wait token
       // TODO: Determine if the response parameter should be used.
-      controller.listBreakpoints(debuggee, function(err, _response, maybeBody) {
-        assert.ifError(err);
-        assert.ok(maybeBody);
-        const body = maybeBody as stackdriver.ListBreakpointsResponse;
-        assert.ok(body.nextWaitToken);
+      // tslint:disable-next-line:variable-name
+      controller.listBreakpoints(debuggee, function(err2, _response1, maybeBody1) {
+        assert.ifError(err2);
+        assert.ok(maybeBody1);
+        const body1 = maybeBody1 as stackdriver.ListBreakpointsResponse;
+        assert.ok(body1.nextWaitToken);
         // Second list should block until the wait timeout
         // TODO: Determine if the response parameter should be used.
-        controller.listBreakpoints(debuggee, function(err, _response, maybeBody) {
-          assert.ifError(err);
-          assert.ok(maybeBody);
-          const body = maybeBody as stackdriver.ListBreakpointsResponse;
-          assert.ok(body.nextWaitToken);
+        // tslint:disable-next-line:variable-name
+        controller.listBreakpoints(debuggee, function(err3, _response2, maybeBody2) {
+          assert.ifError(err3);
+          assert.ok(maybeBody2);
+          const body2 = maybeBody2 as stackdriver.ListBreakpointsResponse;
+          assert.ok(body2.nextWaitToken);
           // waitExpired will only be set if successOnTimeout was given correctly
-          assert.ok(body.waitExpired);
+          assert.ok(body2.waitExpired);
           done();
         });
       });

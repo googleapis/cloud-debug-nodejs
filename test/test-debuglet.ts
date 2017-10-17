@@ -86,6 +86,7 @@ describe('Debuglet', function() {
       // TODO: Fix this cast to any that is caused by the fact that `lookup`
       //       is a readonly property.
       // TODO: Determine if the hostname parameter should be used.
+      // tslint:disable-next-line:variable-name
       (dns as any).lookup = (_hostname: string|null, cb: (err: Error|null, param: {address: string, family: string}) => void) => {
         setImmediate(() => {
           cb(null, { address: '700.800.900.fake', family: 'Addams'});
@@ -103,6 +104,7 @@ describe('Debuglet', function() {
       //       is a readonly property.
       // TODO: Determine if the hostname parameter should be used.
       // TODO: Determine if these types are correct
+      // tslint:disable-next-line:variable-name
       (dns as any).lookup = (_hostname: string, cb: (err: Error) => void) => {
         setImmediate(() => {
           cb(new Error('resolution error'));
@@ -130,12 +132,13 @@ describe('Debuglet', function() {
       // TODO: Determine if the options to Debug should be optional so that
       //       new Debug() can be used instead of new Debug({}).
       // TODO: This is never used.  Determine if it should be used.
-      //const debug = new Debug({});
+      // const debug = new Debug({});
       // TODO: This is never used.  Determine if it should be used.
-      //const debuglet = new Debuglet(debug, defaultConfig);
+      // const debuglet = new Debuglet(debug, defaultConfig);
 
       // TODO: Determine if the path parameter should be used.
       // TODO: Determine if these types are correct
+      // tslint:disable-next-line:variable-name
       metadata.project = (_path: string, cb: MetadataCallback) => {
         setImmediate(() => {
           cb(null, {}, FAKE_PROJECT_ID);
@@ -150,16 +153,18 @@ describe('Debuglet', function() {
 
     it('should return null on error', (done) => {
       // TODO: This is never used.  Determine if it should be used.
-      //const debug = new Debug({});
+      // const debug = new Debug({});
       // TODO: This is never used.  Determine if it should be used.
-      //const debuglet = new Debuglet(debug, defaultConfig);
+      // const debuglet = new Debuglet(debug, defaultConfig);
 
       // TODO: Determine if the path parameter should be used.
+      // tslint:disable-next-line:variable-name
       metadata.project = (_path: string, cb: MetadataCallback) => {
         setImmediate(() => { cb(new Error()); });
       };
 
       // TODO: Determine if the err parameter should be used.
+      // tslint:disable-next-line:variable-name
       Debuglet.getProjectIdFromMetadata().catch((_err) => {
         done();
       });
@@ -179,11 +184,12 @@ describe('Debuglet', function() {
     it('should return project retrived from metadata', (done) => {
       const FAKE_CLUSTER_NAME = 'fake-cluster-name-from-metadata';
       // TODO: This is never used.  Determine if it should be used.
-      //const debug = new Debug({});
+      // const debug = new Debug({});
       // TODO: This is never used.  Determine if it should be used.
-      //const debuglet = new Debuglet(debug, defaultConfig);
+      // const debuglet = new Debuglet(debug, defaultConfig);
 
       // TODO: Determine if the path parameter should be used.
+      // tslint:disable-next-line:variable-name
       metadata.instance = (_path: string, cb: MetadataCallback) => {
         setImmediate(() => {
           cb(null, {}, FAKE_CLUSTER_NAME);
@@ -198,16 +204,18 @@ describe('Debuglet', function() {
 
     it('should return null on error', (done) => {
       // TODO: This is never used.  Determine if it should be used.
-      //const debug = new Debug({});
+      // const debug = new Debug({});
       // TODO: This is never used.  Determine if it should be used.
-      //const debuglet = new Debuglet(debug, defaultConfig);
+      // const debuglet = new Debuglet(debug, defaultConfig);
 
       // TODO: Determine if the path parameter should be used.
+      // tslint:disable-next-line:variable-name
       metadata.instance = (_path: string, cb: MetadataCallback) => {
         setImmediate(() => { cb(new Error()); });
       };
 
       // TODO: Determine if the err parameter should be used.
+      // tslint:disable-next-line:variable-name
       Debuglet.getClusterNameFromMetadata().catch((_err) => {
         done();
       });
@@ -280,6 +288,7 @@ describe('Debuglet', function() {
         return Promise.reject(new Error('rejection'));
       };
       // TODO: Determine if the err parameter should be used.
+      // tslint:disable-next-line:variable-name
       Debuglet.getProjectId({}).catch((_err) => {
         // restore environment variables.
         process.env = envs;
@@ -573,6 +582,7 @@ describe('Debuglet', function() {
                         }).once().reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
            // TODO: Determine if the id parameter should be used.
+           // tslint:disable-next-line:variable-name
            debuglet.once('registered', function(_id: string) {
              debuglet.stop();
              scope.done();
@@ -596,6 +606,7 @@ describe('Debuglet', function() {
                      }).once().reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
         // TODO: Determine if the response parameter should be used.
+        // tslint:disable-next-line:variable-name
         debuglet.once('registered', function(_id: string) {
           debuglet.stop();
           scope.done();
@@ -793,10 +804,10 @@ describe('Debuglet', function() {
                       .post(REGISTER_PATH)
                       .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
-      debuglet.once('registered', function(id: string) {
-        assert.equal(id, DEBUGGEE_ID);
-        debuglet.once('registered', function(id: string) {
-          assert.equal(id, DEBUGGEE_ID);
+      debuglet.once('registered', function(id1: string) {
+        assert.equal(id1, DEBUGGEE_ID);
+        debuglet.once('registered', function(id2: string) {
+          assert.equal(id2, DEBUGGEE_ID);
           debuglet.stop();
           scope.done();
           done();

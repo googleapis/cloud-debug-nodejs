@@ -24,23 +24,28 @@ import {DebugApi} from './debugapi';
 
 export class DummyDebugApi implements DebugApi {
   constructor(
+      // tslint:disable-next-line:variable-name
       logger: Logger, _config: DebugAgentConfig, _jsFiles: ScanStats,
+      // tslint:disable-next-line:variable-name
       _sourcemapper: SourceMapper) {
     logger.error(
         'Debug agent cannot get node version. Cloud debugger is disabled.');
   }
+  // tslint:disable-next-line:variable-name
   set(_breakpoint: stackdriver.Breakpoint,
       cb: (err: Error|null) => void): void {
     return setImmediate(() => {
       cb(new Error('no debugapi running.'));
     });
   }
+  // tslint:disable-next-line:variable-name
   clear(_breakpoint: stackdriver.Breakpoint, cb: (err: Error|null) => void):
       void {
     return setImmediate(() => {
       cb(new Error('no debugapi running.'));
     });
   }
+  // tslint:disable-next-line:variable-name
   wait(_breakpoint: stackdriver.Breakpoint, cb: (err?: Error) => void): void {
     return setImmediate(() => {
       cb(new Error('no debugapi running.'));
@@ -51,6 +56,8 @@ export class DummyDebugApi implements DebugApi {
        print: (format: string, exps: string[]) => void,
        shouldStop: () => boolean) => void;
   disconnect: () => void;
+  // tslint:disable-next-line:variable-name
   numBreakpoints_: () => number;
+  // tslint:disable-next-line:variable-name
   numListeners_: () => number;
 }

@@ -75,10 +75,10 @@ describe(__filename, function() {
   afterEach(function() { assert(stateIsClean1(api)); });
 
   it('should not duplicate expressions', function(done) {
-    api.set(breakpointInFoo, function(err) {
-      assert.ifError(err);
-      api.wait(breakpointInFoo, function(err) {
-        assert.ifError(err);
+    api.set(breakpointInFoo, function(err1) {
+      assert.ifError(err1);
+      api.wait(breakpointInFoo, function(err2) {
+        assert.ifError(err2);
         // TODO: Determine how to remove this cast to any.
         const frames = breakpointInFoo.stackFrames[0];
         const exprs = frames.arguments.concat(frames.locals);

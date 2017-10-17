@@ -70,11 +70,11 @@ describe('maxDataSize', function() {
     // TODO: Have this actually implement Breakpoint.
     const bp: stackdriver.Breakpoint = {id: breakpointInFoo.id, location: breakpointInFoo.location} as stackdriver.Breakpoint;
     // TODO: Determine how to remove this cast to any.
-    api.set(bp, function(err: Error) {
-      assert.ifError(err);
+    api.set(bp, function(err1: Error) {
+      assert.ifError(err1);
       // TODO: Determine how to remove this cast to any.
-      api.wait(bp, function(err: Error) {
-        assert.ifError(err);
+      api.wait(bp, function(err2: Error) {
+        assert.ifError(err2);
         // TODO: Determine how to remove this cast to any.
         assert(bp.variableTable.some(function(v) {
           // TODO: Handle the case when v is undefined
@@ -82,9 +82,9 @@ describe('maxDataSize', function() {
           return ((v as any).status as any).description.format === 'Max data size reached';
         }));
         // TODO: Determine how to remove this cast to any.
-        api.clear(bp, function(err) {
+        api.clear(bp, function(err3) {
           config.capture.maxDataSize = oldMaxData;
-          assert.ifError(err);
+          assert.ifError(err3);
           done();
         });
       });
@@ -98,10 +98,10 @@ describe('maxDataSize', function() {
     // clone a clean breakpointInFoo
     // TODO: Have this actually implement breakpoint
     const bp: stackdriver.Breakpoint = {id: breakpointInFoo.id, location: breakpointInFoo.location} as stackdriver.Breakpoint;
-    api.set(bp, function(err: Error) {
-      assert.ifError(err);
-      api.wait(bp, function(err: Error) {
-        assert.ifError(err);
+    api.set(bp, function(err1: Error) {
+      assert.ifError(err1);
+      api.wait(bp, function(err2: Error) {
+        assert.ifError(err2);
         // TODO: Determine how to remove this cast to any.
         // TODO: The function supplied to reduce is of the wrong type.
         //       Fix this.
@@ -111,9 +111,9 @@ describe('maxDataSize', function() {
                    elem.status.description.format !== 'Max data size reached');
         // TODO: Fix this incorrect method signature.
         } as any), true as any as string);
-        api.clear(bp, function(err) {
+        api.clear(bp, function(err3) {
           config.capture.maxDataSize = oldMaxData;
-          assert.ifError(err);
+          assert.ifError(err3);
           done();
         });
       });

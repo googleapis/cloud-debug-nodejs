@@ -72,10 +72,10 @@ describe(__filename, function() {
       id: 'fake-id-123',
       location: { path: 'test-try-catch-code.js', line: 7 }
     } as stackdriver.Breakpoint;
-    api.set(brk, function(err) {
-      assert.ifError(err);
-      api.wait(brk, function(err) {
-        assert.ifError(err);
+    api.set(brk, function(err1) {
+      assert.ifError(err1);
+      api.wait(brk, function(err2) {
+        assert.ifError(err2);
         // TODO: Determine how to remove this cast to any.
         const frame = (brk as any).stackFrames[0];
         const args = frame.arguments;
@@ -86,8 +86,8 @@ describe(__filename, function() {
         assert(e.name === 'e');
         assert(Number.isInteger(e.varTableIndex));
         assert.equal(args.length, 0, 'There should be zero arguments');
-        api.clear(brk, function(err) {
-          assert.ifError(err);
+        api.clear(brk, function(err3) {
+          assert.ifError(err3);
           done();
         });
       });
@@ -100,10 +100,10 @@ describe(__filename, function() {
       id: 'fake-id-123',
       location: { path: 'test-try-catch-code.js', line: 8 }
     } as stackdriver.Breakpoint;
-    api.set(brk, function(err) {
-      assert.ifError(err);
-      api.wait(brk, function(err) {
-        assert.ifError(err);
+    api.set(brk, function(err1) {
+      assert.ifError(err1);
+      api.wait(brk, function(err2) {
+        assert.ifError(err2);
         // TODO: Determine how to remove this cast to any.
         const frame = (brk as any).stackFrames[0];
         const args = frame.arguments;
@@ -115,8 +115,8 @@ describe(__filename, function() {
           {name: 'e', value: '2'}
         );
         assert.equal(args.length, 0, 'There should be zero arguments');
-        api.clear(brk, function(err) {
-          assert.ifError(err);
+        api.clear(brk, function(err3) {
+          assert.ifError(err3);
           done();
         });
       });

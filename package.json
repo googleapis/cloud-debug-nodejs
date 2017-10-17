@@ -41,7 +41,7 @@
     "changelog-maker": "^2.2.2",
     "closure-npc": "*",
     "coveralls": "^2.11.2",
-    "gts": "latest",
+    "gts": "^0.4.0",
     "istanbul": "^0.4.1",
     "mocha": "^3.0.0",
     "nock": "^9.0.0",
