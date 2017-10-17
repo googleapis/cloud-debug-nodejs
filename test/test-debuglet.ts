@@ -140,7 +140,7 @@ describe('Debuglet', function() {
         setImmediate(() => {
           cb(null, {}, FAKE_PROJECT_ID);
         });
-      }
+      };
 
       Debuglet.getProjectIdFromMetadata().then((projectId) => {
         assert.strictEqual(projectId, FAKE_PROJECT_ID);
@@ -157,7 +157,7 @@ describe('Debuglet', function() {
       // TODO: Determine if the path parameter should be used.
       metadata.project = (_path: string, cb: MetadataCallback) => {
         setImmediate(() => { cb(new Error()); });
-      }
+      };
 
       // TODO: Determine if the err parameter should be used.
       Debuglet.getProjectIdFromMetadata().catch((_err) => {
@@ -188,7 +188,7 @@ describe('Debuglet', function() {
         setImmediate(() => {
           cb(null, {}, FAKE_CLUSTER_NAME);
         });
-      }
+      };
 
       Debuglet.getClusterNameFromMetadata().then((clusterName) => {
         assert.strictEqual(clusterName, FAKE_CLUSTER_NAME);
@@ -205,7 +205,7 @@ describe('Debuglet', function() {
       // TODO: Determine if the path parameter should be used.
       metadata.instance = (_path: string, cb: MetadataCallback) => {
         setImmediate(() => { cb(new Error()); });
-      }
+      };
 
       // TODO: Determine if the err parameter should be used.
       Debuglet.getClusterNameFromMetadata().catch((_err) => {

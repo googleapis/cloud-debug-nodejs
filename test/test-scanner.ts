@@ -39,7 +39,7 @@ describe('scanner', function() {
       // TODO: Determine if the err parameter should be used.
       scanner.scan(true, './this directory does not exist', /.js$/).catch((_err) => {
         done();
-      }); 
+      });
     });
 
     it('should be able to return all file stats directly', function(done) {

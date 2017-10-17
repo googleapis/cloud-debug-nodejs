@@ -53,7 +53,7 @@ bench('100x set + validate', function() {
     };
     v8debugapi.set(bp);
     v8debugapi.clear(bp);
-  }  
+  }
 });
 
 bench('fib(29)', function() {fib(29);});
@@ -63,9 +63,9 @@ bench('fib(29)', function() {fib(29);});
   const bp = {
     id: 'breakpoint1',
     location: {path: __filename, line: 4},
-    condition: 'n > 50000' 
+    condition: 'n > 50000'
   };
-  v8debugapi.set(bp); 
+  v8debugapi.set(bp);
   bench('fib(29) with breakpoint: ', function() {
     fib(29);
   });

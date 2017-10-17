@@ -22,4 +22,4 @@ export default function(options: any, callback: (err: Error, body: any, response
   request(options, function(err: Error, response: request.RequestResponse, body: any) {
     callback(err, body, response);
   });
-};
+}

@@ -515,7 +515,7 @@ describe('v8debugapi', function() {
             assert.ifError(err);
             done();
           });
-        })
+        });
         process.nextTick(function() {code.foo(1);});
       });
     });
