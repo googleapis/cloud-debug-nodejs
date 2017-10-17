@@ -176,7 +176,7 @@ class StateResolver {
                that.rawVariableTable.length &&  // NOTE: length changes in loop
            (that.totalSize < that.config.capture.maxDataSize || noLimit)) {
       assert(!that.resolvedVariableTable[index]);  // shouldn't have it
-                                                    // resolved yet
+                                                   // resolved yet
       const isEvaluated = evalIndexSet.has(index);
       // TODO: This code suggests that an ObjectMirror and Stutus are the
       //       same.  Resolve this.
@@ -221,8 +221,7 @@ class StateResolver {
         if (variable.varTableIndex && variable.varTableIndex >= fromIndex) {
           // make it point to the sentinel 'buffer full' value
           variable.varTableIndex = BUFFER_FULL_MESSAGE_INDEX;
-          variable.status =
-              that.messageTable[BUFFER_FULL_MESSAGE_INDEX].status;
+          variable.status = that.messageTable[BUFFER_FULL_MESSAGE_INDEX].status;
         }
         if (variable.members) {
           processBufferFull(variable.members);

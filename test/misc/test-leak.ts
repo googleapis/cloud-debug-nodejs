@@ -13,10 +13,7 @@ let iters = 0;
 function test() {
   iters++;
 
-  const bp = {
-    id: 'fake-breakpoint',
-    location: { path: __filename, line: 4}
-  };
+  const bp = {id: 'fake-breakpoint', location: {path: __filename, line: 4}};
   v8debugapi.set(bp);
   v8debugapi.clear(bp);
 
@@ -29,9 +26,3 @@ function test() {
 }
 
 test();
-
-
-
-
-
-

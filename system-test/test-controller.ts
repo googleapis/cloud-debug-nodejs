@@ -22,7 +22,7 @@ assert.ok(
 assert.ok(
     process.env.GOOGLE_APPLICATION_CREDENTIALS,
     'Need to have GOOGLE_APPLICATION_CREDENTIALS defined to be able to run ' +
-    'this test');
+        'this test');
 
 import * as stackdriver from '../src/types/stackdriver';
 import {Controller} from '../src/agent/controller';
@@ -36,17 +36,16 @@ describe('Controller', function() {
 
   it('should register successfully', function(done) {
     const controller = new Controller(debug);
-    const debuggee =
-        new Debuggee({
-          project: process.env.GCLOUD_PROJECT,
-          uniquifier: 'test-uid-' + Date.now(),
-          description: 'this is a system test'
-        });
+    const debuggee = new Debuggee({
+      project: process.env.GCLOUD_PROJECT,
+      uniquifier: 'test-uid-' + Date.now(),
+      description: 'this is a system test'
+    });
 
     controller.register(debuggee, function(err, maybeBody) {
       assert.ifError(err);
       assert.ok(maybeBody);
-      const body = maybeBody as { debuggee: Debuggee };
+      const body = maybeBody as {debuggee: Debuggee};
       assert.ok(body.debuggee);
       assert.ok(body.debuggee.id);
       done();
@@ -55,12 +54,11 @@ describe('Controller', function() {
 
   it('should list breakpoints', function(done) {
     const controller = new Controller(debug);
-    const debuggee =
-        new Debuggee({
-          project: process.env.GCLOUD_PROJECT,
-          uniquifier: 'test-uid-' + Date.now(),
-          description: 'this is a system test'
-        });
+    const debuggee = new Debuggee({
+      project: process.env.GCLOUD_PROJECT,
+      uniquifier: 'test-uid-' + Date.now(),
+      description: 'this is a system test'
+    });
     // TODO: Determine if the body parameter should be used.
     // tslint:disable-next-line:variable-name
     controller.register(debuggee, function(err1, _body) {
@@ -68,25 +66,25 @@ describe('Controller', function() {
 
       // TODO: Determine if the response parameter should be used.
       // tslint:disable-next-line:variable-name
-      controller.listBreakpoints(debuggee, function(err2, _response, maybeBody) {
-        assert.ifError(err2);
-        assert.ok(maybeBody);
-        const body = maybeBody as stackdriver.ListBreakpointsResponse;
-        assert.ok(body.nextWaitToken);
-        done();
-      });
+      controller.listBreakpoints(
+          debuggee, function(err2, _response, maybeBody) {
+            assert.ifError(err2);
+            assert.ok(maybeBody);
+            const body = maybeBody as stackdriver.ListBreakpointsResponse;
+            assert.ok(body.nextWaitToken);
+            done();
+          });
     });
   });
 
   it('should pass success on timeout', function(done) {
     this.timeout(100000);
     const controller = new Controller(debug);
-    const debuggee =
-        new Debuggee({
-          project: process.env.GCLOUD_PROJECT,
-          uniquifier: 'test-uid-' + Date.now(),
-          description: 'this is a system test'
-        });
+    const debuggee = new Debuggee({
+      project: process.env.GCLOUD_PROJECT,
+      uniquifier: 'test-uid-' + Date.now(),
+      description: 'this is a system test'
+    });
     // TODO: Determine if the body parameter should be used.
     // tslint:disable-next-line:variable-name
     controller.register(debuggee, function(err1, _body) {
@@ -95,24 +93,28 @@ describe('Controller', function() {
       // First list should set the wait token
       // TODO: Determine if the response parameter should be used.
       // tslint:disable-next-line:variable-name
-      controller.listBreakpoints(debuggee, function(err2, _response1, maybeBody1) {
-        assert.ifError(err2);
-        assert.ok(maybeBody1);
-        const body1 = maybeBody1 as stackdriver.ListBreakpointsResponse;
-        assert.ok(body1.nextWaitToken);
-        // Second list should block until the wait timeout
-        // TODO: Determine if the response parameter should be used.
-        // tslint:disable-next-line:variable-name
-        controller.listBreakpoints(debuggee, function(err3, _response2, maybeBody2) {
-          assert.ifError(err3);
-          assert.ok(maybeBody2);
-          const body2 = maybeBody2 as stackdriver.ListBreakpointsResponse;
-          assert.ok(body2.nextWaitToken);
-          // waitExpired will only be set if successOnTimeout was given correctly
-          assert.ok(body2.waitExpired);
-          done();
-        });
-      });
+      controller.listBreakpoints(
+          debuggee, function(err2, _response1, maybeBody1) {
+            assert.ifError(err2);
+            assert.ok(maybeBody1);
+            const body1 = maybeBody1 as stackdriver.ListBreakpointsResponse;
+            assert.ok(body1.nextWaitToken);
+            // Second list should block until the wait timeout
+            // TODO: Determine if the response parameter should be used.
+            // tslint:disable-next-line:variable-name
+            controller.listBreakpoints(
+                debuggee, function(err3, _response2, maybeBody2) {
+                  assert.ifError(err3);
+                  assert.ok(maybeBody2);
+                  const body2 =
+                      maybeBody2 as stackdriver.ListBreakpointsResponse;
+                  assert.ok(body2.nextWaitToken);
+                  // waitExpired will only be set if successOnTimeout was given
+                  // correctly
+                  assert.ok(body2.waitExpired);
+                  done();
+                });
+          });
     });
   });
 

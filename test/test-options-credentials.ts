@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-import {DebugAgentConfig} from '../src/agent/config';
-
-import * as path from 'path';
 import * as assert from 'assert';
-import * as nock from 'nock';
-import * as nocks from './nocks';
 import * as extend from 'extend';
+import * as nock from 'nock';
+import * as path from 'path';
+
 import * as config from '../src/agent/config';
+import {DebugAgentConfig} from '../src/agent/config';
 import {Debuglet} from '../src/agent/debuglet';
+
+import * as nocks from './nocks';
 
 const envProject = process.env.GCLOUD_PROJECT;
 

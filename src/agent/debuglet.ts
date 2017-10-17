@@ -249,8 +249,7 @@ export class Debuglet extends EventEmitter {
       // At this point err3 being falsy implies sourcemapper is defined
       const mapper = sourcemapper as SourceMapper.SourceMapper;
 
-      that.v8debug =
-          debugapi.create(that.logger, that.config, jsStats, mapper);
+      that.v8debug = debugapi.create(that.logger, that.config, jsStats, mapper);
 
       id = id || fileStats.hash;
 

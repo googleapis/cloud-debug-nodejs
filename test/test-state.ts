@@ -26,8 +26,9 @@ describe('state', () => {
     // asserts are present during testing. Use run-tests.sh, or export
     // CLOUD_DEBUG_ASSERTIONS=1 to make sure this test passes.
     if (!process.env.CLOUD_DEBUG_ASSERTIONS) {
-      console.log('This test requires the enviornment variable ' +
-                  'CLOUD_DEBUG_ASSERTIONS to be set in order to pass');
+      console.log(
+          'This test requires the enviornment variable ' +
+          'CLOUD_DEBUG_ASSERTIONS to be set in order to pass');
     }
     assert.throws(() => {
       state.testAssert();
