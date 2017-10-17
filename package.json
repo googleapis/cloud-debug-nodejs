@@ -1,11 +1,16 @@
 {
   "name": "@google-cloud/debug-agent",
   "version": "2.1.3",
-  "author": "Google Inc.",
+  "author": {
+    "name": "Google Inc."
+  },
   "description": "Stackdriver Debug Agent for Node.js",
   "main": "./build/src/index.js",
   "types": "./build/types/index.d.ts",
-  "repository": "googlecloudplatform/cloud-debug-nodejs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/googlecloudplatform/cloud-debug-nodejs.git"
+  },
   "keywords": [
     "google",
     "debugger",
@@ -34,23 +39,16 @@
     "@types/semver": "^5.3.32",
     "@types/source-map": "^0.5.0",
     "changelog-maker": "^2.2.2",
-    "clang-format": "^1.0.55",
     "closure-npc": "*",
     "coveralls": "^2.11.2",
-    "del": "^2.2.2",
-    "gulp": "^3.9.1",
-    "gulp-clang-format": "^1.0.23",
-    "gulp-sourcemaps": "^2.6.0",
-    "gulp-tslint": "^8.1.1",
-    "gulp-typescript": "^3.1.6",
+    "gts": "latest",
     "istanbul": "^0.4.1",
-    "merge2": "^1.0.3",
     "mocha": "^3.0.0",
     "nock": "^9.0.0",
     "request": "^2.81.0",
     "source-map-support": "^0.4.15",
     "tslint": "^5.4.3",
-    "typescript": "^2.3.2"
+    "typescript": "^2.5.3"
   },
   "dependencies": {
     "@google-cloud/common": "^0.13.3",
@@ -67,12 +65,23 @@
     "util.promisify": "^1.0.0"
   },
   "scripts": {
-    "build": "gulp",
-    "changelog": "npm run build && ./bin/run-changelog.sh",
-    "coverage": "npm run build && ./bin/run-test.sh -c",
-    "prepare": "npm run build",
-    "system-test": "npm run build && ./bin/run-system-test.sh",
-    "test": "gulp test"
+    "check": "gts check",
+    "clean": "gts clean",
+    "setup-unit-tests": "mkdir -p build/test && cp -R test/* build/test && cp package.json build",
+    "setup-system-tests": "mkdir -p build/system-test && cp -R system-test/* build/system-test",
+    "precompile": "npm run setup-unit-tests && npm run setup-system-tests",
+    "compile": "tsc -p .",
+    "fix": "gts fix",
+    "pretest": "npm run compile",
+    "posttest": "npm run check",
+    "prechangelog": "npm run compile",
+    "changelog": "./bin/run-changelog.sh",
+    "precoverage": "npm run compile",
+    "coverage": "./bin/run-test.sh -c",
+    "prepare": "npm run compile",
+    "presystem-test": "npm run compile",
+    "system-test": "./bin/run-system-test.sh",
+    "test": "./bin/run-test.sh"
   },
   "files": [
     "CHANGELOG.md",
@@ -80,5 +89,48 @@
     "README.md",
     "build/src",
     "build/types"
-  ]
+  ],
+  "contributors": [
+    {
+      "name": "Ali Ijaz Sheikh",
+      "email": "ofrobots@google.com"
+    },
+    {
+      "name": "Matt Loring",
+      "email": "mattloring@google.com"
+    },
+    {
+      "name": "Steren",
+      "email": "steren.giannini@gmail.com"
+    },
+    {
+      "name": "Brad Abrams",
+      "email": "bma@google.com"
+    },
+    {
+      "name": "Justin Beckwith",
+      "email": "justin.beckwith@gmail.com"
+    },
+    {
+      "name": "Cristian Cavalli",
+      "email": "cristiancavall@google.com"
+    },
+    {
+      "name": "Dominic Kramer",
+      "email": "DominicDKramer@google.com"
+    },
+    {
+      "name": "Jason",
+      "email": "jason.polites@gmail.com"
+    },
+    {
+      "name": "Kelvin Jin",
+      "email": "kelvinjin@google.com"
+    }
+  ],
+  "readmeFilename": "README.md",
+  "bugs": {
+    "url": "https://github.com/googlecloudplatform/cloud-debug-nodejs/issues"
+  },
+  "homepage": "https://github.com/googlecloudplatform/cloud-debug-nodejs#readme"
 }
