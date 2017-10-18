@@ -46,10 +46,15 @@ const nodeVersion = /v(\d+\.\d+\.\d+)/.exec(process.version);
 if (!nodeVersion || nodeVersion.length < 2) {
   const dummyapi = require('./dummy-debugapi');
   debugApiConstructor = dummyapi.DummyDebugApi;
-} else if (semver.satisfies(nodeVersion[1], '>=8')) {
+} else if (
+    semver.satisfies(nodeVersion[1], '>=8') &&
+    process.env.GCLOUD_USE_INSPECTOR) {
   const inspectorapi = require('./inspector-debugapi');
   debugApiConstructor = inspectorapi.InspectorDebugApi;
 } else {
+  if (process.env.GCLOUD_USE_INSPECTOR) {
+    console.log('Inspector protocol only works for node 8+.');
+  }
   const v8debugapi = require('./legacy-debugapi');
   debugApiConstructor = v8debugapi.V8DebugApi;
 }
