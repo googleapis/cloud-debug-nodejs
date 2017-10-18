@@ -885,8 +885,9 @@ describe('Debuglet', function() {
 
       const scope = nock(API)
                       .post(REGISTER_PATH)
-                      .reply(200, {debuggee: {id: DEBUGGEE_ID}});
-
+                      .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+                      .get(BPS_PATH + '?successOnTimeout=true')
+                      .reply(200, {breakpoints: []});
       debuglet.start();
       const debugPromise = debuglet.initializationPromise();
 

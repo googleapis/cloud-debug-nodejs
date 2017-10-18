@@ -562,7 +562,6 @@ export class Debuglet extends EventEmitter {
                   that.config_.internal.registerDelayOnFetcherErrorSec);
               return;
             }
-
             // TODO: Address the case where `response` is `undefined`.
             switch ((response as http.ServerResponse).statusCode) {
               case 404:
@@ -610,14 +609,14 @@ export class Debuglet extends EventEmitter {
                 }
                 that.scheduleBreakpointFetch_(
                     that.config_.breakpointUpdateIntervalSec);
+                if (that.promiseInitialized_) {
+                  that.promiseResolve_();
+                  that.promiseInitialized_ = false;
+                }
                 return;
             }
           });
     }, seconds * 1000).unref();
-    if (this.promiseInitialized_) {
-      this.promiseResolve_();
-      this.promiseInitialized_ = false;
-    }
   }
 
   /**
