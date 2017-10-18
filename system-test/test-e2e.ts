@@ -218,8 +218,8 @@ describe('@google-cloud/debug end-to-end behavior', function() {
           console.log('-- waiting before checking if the log was written');
           return Promise.all([breakpoint, delay(10 * 1000)]);
           // TODO: Determine if the results parameter should be used.
-          // tslint:disable-next-line:variable-name
         })
+        // tslint:disable-next-line:variable-name
         .then(function(_results: stackdriver.Breakpoint[]) {
 
           // Check the contents of the log, but keep the original breakpoint.

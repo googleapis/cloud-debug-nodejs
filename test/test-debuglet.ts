@@ -88,8 +88,8 @@ describe('Debuglet', function() {
       // TODO: Fix this cast to any that is caused by the fact that `lookup`
       //       is a readonly property.
       // TODO: Determine if the hostname parameter should be used.
-      // tslint:disable-next-line:variable-name
       (dns as any).lookup =
+          // tslint:disable-next-line:variable-name
           (_hostname: string|null,
            cb: (err: Error|null, param: {address: string, family: string}) =>
                void) => {

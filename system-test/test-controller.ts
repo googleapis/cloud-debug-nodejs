@@ -65,8 +65,8 @@ describe('Controller', function() {
       assert.ifError(err1);
 
       // TODO: Determine if the response parameter should be used.
-      // tslint:disable-next-line:variable-name
       controller.listBreakpoints(
+          // tslint:disable-next-line:variable-name
           debuggee, function(err2, _response, maybeBody) {
             assert.ifError(err2);
             assert.ok(maybeBody);
@@ -92,8 +92,8 @@ describe('Controller', function() {
 
       // First list should set the wait token
       // TODO: Determine if the response parameter should be used.
-      // tslint:disable-next-line:variable-name
       controller.listBreakpoints(
+        // tslint:disable-next-line:variable-name
           debuggee, function(err2, _response1, maybeBody1) {
             assert.ifError(err2);
             assert.ok(maybeBody1);
@@ -101,8 +101,8 @@ describe('Controller', function() {
             assert.ok(body1.nextWaitToken);
             // Second list should block until the wait timeout
             // TODO: Determine if the response parameter should be used.
-            // tslint:disable-next-line:variable-name
             controller.listBreakpoints(
+              // tslint:disable-next-line:variable-name
                 debuggee, function(err3, _response2, maybeBody2) {
                   assert.ifError(err3);
                   assert.ok(maybeBody2);

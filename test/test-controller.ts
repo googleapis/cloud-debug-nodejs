@@ -120,10 +120,10 @@ describe('Controller API', function() {
       const controller = new Controller(fakeDebug);
       // TODO: Fix debuggee to actually implement Debuggee
       // TODO: Determine if the response parameter should be used.
-      // tslint:disable-next-line:variable-name
       controller.listBreakpoints(
           debuggee as Debuggee,
           function(
+              // tslint:disable-next-line:variable-name
               err: Error|null, _response?: http.ServerResponse,
               result?: stackdriver.ListBreakpointsResponse) {
             assert(!err, 'not expecting an error');
@@ -150,10 +150,10 @@ describe('Controller API', function() {
           const controller = new Controller(fakeDebug);
           // TODO: Fix debuggee to actually implement Debuggee
           // TODO: Determine if the response parameter should be used.
-          // tslint:disable-next-line:variable-name
           controller.listBreakpoints(
               debuggee as Debuggee,
               function(
+                  // tslint:disable-next-line:variable-name
                   err: Error|null, _response?: http.ServerResponse,
                   result?: stackdriver.ListBreakpointsResponse) {
                 assert(!err, 'not expecting an error');
@@ -229,10 +229,10 @@ describe('Controller API', function() {
         const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
         const controller = new Controller(fakeDebug);
         // TODO: Determine if the response parameter should be used.
-        // tslint:disable-next-line:variable-name
         controller.listBreakpoints(
             debuggee,
             function(
+                // tslint:disable-next-line:variable-name
                 err: Error|null, _response: http.ServerResponse,
                 result: stackdriver.ListBreakpointsResponse) {
               assert(!err, 'not expecting an error');

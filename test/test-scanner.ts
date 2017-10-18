@@ -37,8 +37,8 @@ describe('scanner', function() {
 
     it('should error when called on a bad path', function(done) {
       // TODO: Determine if the err parameter should be used.
-      // tslint:disable-next-line:variable-name
       scanner.scan(true, './this directory does not exist', /.js$/)
+          // tslint:disable-next-line:variable-name
           .catch((_err) => {
             done();
           });
