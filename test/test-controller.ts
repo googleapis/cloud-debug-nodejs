@@ -123,8 +123,7 @@ describe('Controller API', function() {
       controller.listBreakpoints(
           debuggee as Debuggee,
           function(
-              // tslint:disable-next-line:variable-name
-              err: Error|null, _response?: http.ServerResponse,
+              err: Error|null, response?: http.ServerResponse,
               result?: stackdriver.ListBreakpointsResponse) {
             assert(!err, 'not expecting an error');
             // TODO: Handle the case where result is undefined
@@ -153,8 +152,7 @@ describe('Controller API', function() {
           controller.listBreakpoints(
               debuggee as Debuggee,
               function(
-                  // tslint:disable-next-line:variable-name
-                  err: Error|null, _response?: http.ServerResponse,
+                  err: Error|null, response?: http.ServerResponse,
                   result?: stackdriver.ListBreakpointsResponse) {
                 assert(!err, 'not expecting an error');
                 // TODO: Handle the case where result is undefined
@@ -179,8 +177,7 @@ describe('Controller API', function() {
       const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
       const controller = new Controller(fakeDebug);
       // TODO: Determine if the response parameter should be used.
-      // tslint:disable-next-line:variable-name
-      controller.listBreakpoints(debuggee, function(err, _response, result) {
+      controller.listBreakpoints(debuggee, function(err, response, result) {
         assert(err instanceof Error, 'expecting an error');
         assert(!result, 'should not have a result');
         scope.done();
@@ -199,8 +196,7 @@ describe('Controller API', function() {
       const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
       const controller = new Controller(fakeDebug);
       // TODO: Determine if the result parameter should be used.
-      // tslint:disable-next-line:variable-name
-      controller.listBreakpoints(debuggee, function(err, response, _result) {
+      controller.listBreakpoints(debuggee, function(err, response, result) {
         // TODO: Fix this incorrect method signature.
         (assert as any).ifError(err, 'not expecting an error');
         // TODO: Fix this error that states `body` is not a property
@@ -232,8 +228,7 @@ describe('Controller API', function() {
         controller.listBreakpoints(
             debuggee,
             function(
-                // tslint:disable-next-line:variable-name
-                err: Error|null, _response: http.ServerResponse,
+                err: Error|null, response: http.ServerResponse,
                 result: stackdriver.ListBreakpointsResponse) {
               assert(!err, 'not expecting an error');
               assert(result.breakpoints, 'should have a breakpoints property');

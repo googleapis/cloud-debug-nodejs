@@ -75,8 +75,7 @@ class ScanResultsImpl implements ScanResults {
    *  should be included in the returned results.
    */
   selectStats(regex: RegExp): ScanStats|{} {
-    // tslint:disable-next-line:variable-name
-    return _.pickBy(this.stats, function(_ignore, key) {
+    return _.pickBy(this.stats, function(ignore, key) {
       return regex.test(key);
     });
   }
@@ -210,8 +209,7 @@ function findFiles(
   });
 
   find.on(
-      // tslint:disable-next-line:variable-name
-      'directory', function(dir: string, _ignore: fs.Stats, stop: () => void) {
+      'directory', function(dir: string, ignore: fs.Stats, stop: () => void) {
         const base = path.basename(dir);
         if (base === '.git' || base === 'node_modules') {
           stop();  // do not descend

@@ -60,18 +60,16 @@ describe('Controller', function() {
       description: 'this is a system test'
     });
     // TODO: Determine if the body parameter should be used.
-    // tslint:disable-next-line:variable-name
-    controller.register(debuggee, function(err1, _body) {
+    controller.register(debuggee, function(err1, body1) {
       assert.ifError(err1);
 
       // TODO: Determine if the response parameter should be used.
       controller.listBreakpoints(
-          // tslint:disable-next-line:variable-name
-          debuggee, function(err2, _response, maybeBody) {
+          debuggee, function(err2, response, maybeBody) {
             assert.ifError(err2);
             assert.ok(maybeBody);
-            const body = maybeBody as stackdriver.ListBreakpointsResponse;
-            assert.ok(body.nextWaitToken);
+            const body2 = maybeBody as stackdriver.ListBreakpointsResponse;
+            assert.ok(body2.nextWaitToken);
             done();
           });
     });
@@ -86,15 +84,13 @@ describe('Controller', function() {
       description: 'this is a system test'
     });
     // TODO: Determine if the body parameter should be used.
-    // tslint:disable-next-line:variable-name
-    controller.register(debuggee, function(err1, _body) {
+    controller.register(debuggee, function(err1, body) {
       assert.ifError(err1);
 
       // First list should set the wait token
       // TODO: Determine if the response parameter should be used.
       controller.listBreakpoints(
-        // tslint:disable-next-line:variable-name
-          debuggee, function(err2, _response1, maybeBody1) {
+          debuggee, function(err2, response1, maybeBody1) {
             assert.ifError(err2);
             assert.ok(maybeBody1);
             const body1 = maybeBody1 as stackdriver.ListBreakpointsResponse;
@@ -102,8 +98,7 @@ describe('Controller', function() {
             // Second list should block until the wait timeout
             // TODO: Determine if the response parameter should be used.
             controller.listBreakpoints(
-              // tslint:disable-next-line:variable-name
-                debuggee, function(err3, _response2, maybeBody2) {
+                debuggee, function(err3, response2, maybeBody2) {
                   assert.ifError(err3);
                   assert.ok(maybeBody2);
                   const body2 =

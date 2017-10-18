@@ -33,8 +33,7 @@ const CLUSTER_WORKERS = 3;
 const FILENAME = 'build/test/fixtures/fib.js';
 
 const delay = function(delayTimeMS: number): Promise<void> {
-  // tslint:disable-next-line:variable-name
-  return new Promise(function(resolve, _reject) {
+  return new Promise(function(resolve, reject) {
     setTimeout(resolve, delayTimeMS);
   });
 };
@@ -219,8 +218,7 @@ describe('@google-cloud/debug end-to-end behavior', function() {
           return Promise.all([breakpoint, delay(10 * 1000)]);
           // TODO: Determine if the results parameter should be used.
         })
-        // tslint:disable-next-line:variable-name
-        .then(function(_results: stackdriver.Breakpoint[]) {
+        .then(function(results: stackdriver.Breakpoint[]) {
 
           // Check the contents of the log, but keep the original breakpoint.
 

@@ -192,8 +192,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     let timesliceEnd = Date.now() + 1000;
     // TODO: Determine why the Error argument is not used.
     const listener =
-        // tslint:disable-next-line:variable-name
-        this.onBreakpointHit.bind(this, breakpoint, (_err: Error) => {
+        this.onBreakpointHit.bind(this, breakpoint, (err: Error) => {
           const currTime = Date.now();
           if (currTime > timesliceEnd) {
             logsThisSecond = 0;

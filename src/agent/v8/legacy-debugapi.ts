@@ -191,8 +191,7 @@ export class V8DebugApi implements debugapi.DebugApi {
     let timesliceEnd = Date.now() + 1000;
     // TODO: Determine why the Error argument is not used.
     const listener =
-        // tslint:disable-next-line:variable-name
-        this.onBreakpointHit.bind(this, breakpoint, function(_err: Error) {
+        this.onBreakpointHit.bind(this, breakpoint, function(err: Error) {
           const currTime = Date.now();
           if (currTime > timesliceEnd) {
             logsThisSecond = 0;

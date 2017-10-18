@@ -415,8 +415,7 @@ export class Debuglet extends EventEmitter {
     return new Promise<string>((resolve, reject) => {
       metadata.project(
           'project-id',
-          // tslint:disable-next-line:variable-name
-          (err: Error, _res: http.ServerResponse, projectId: string) => {
+          (err: Error, res: http.ServerResponse, projectId: string) => {
             err ? reject(err) : resolve(projectId);
           });
     });
@@ -426,8 +425,7 @@ export class Debuglet extends EventEmitter {
     return new Promise<string>((resolve, reject) => {
       metadata.instance(
           'attributes/cluster-name',
-          // tslint:disable-next-line:variable-name
-          (err: Error, _res: http.ServerResponse, clusterName: string) => {
+          (err: Error, res: http.ServerResponse, clusterName: string) => {
             err ? reject(err) : resolve(clusterName);
           });
     });

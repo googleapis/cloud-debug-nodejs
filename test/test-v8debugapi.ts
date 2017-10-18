@@ -1686,8 +1686,7 @@ describe('v8debugapi', function() {
       api.set(bp, function(err1) {
         assert.ifError(err1);
         // TODO: Determine if the err parameter should be used.
-        // tslint:disable-next-line:variable-name
-        api.wait(bp, function(_err2) {
+        api.wait(bp, function(err2) {
           api.clear(bp, function(err3) {
             assert.ifError(err3);
             throw new Error(message);

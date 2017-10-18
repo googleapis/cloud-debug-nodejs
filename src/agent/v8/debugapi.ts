@@ -31,9 +31,7 @@ export interface DebugApi {
       print: (format: string, exps: string[]) => void,
       shouldStop: () => boolean): void;
   disconnect(): void;
-  // tslint:disable-next-line:variable-name
   numBreakpoints_(): number;
-  // tslint:disable-next-line:variable-name
   numListeners_(): number;
 }
 
