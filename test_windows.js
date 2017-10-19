@@ -4,14 +4,14 @@ var semver = require('semver');
 
 process.env.GCLOUD_PROJECT = 0
 process.env.CLOUD_DEBUG_ASSERTIONS = 1
-spawn('node_modules/.bin/mocha',
+spawn(path.join('node_modules', '.bin', 'mocha.cmd'),
   [ path.join('build', 'test'), '--timeout 4000', '--R' ], {
   stdio : 'inherit'
 }).on('close', function() {
   if (semver.satisfies(process.version, '>=8')) {
     process.env.GCLOUD_USE_INSPECTOR = true;
     console.log('Run test with Inspector');
-    spawn('node_modules/.bin/mocha',
+    spawn(path.join('node_modules', '.bin', 'mocha.cmd'),
       [ path.join('build', 'test'), '--timeout 4000', '--R' ], {
       stdio : 'inherit'
     });
