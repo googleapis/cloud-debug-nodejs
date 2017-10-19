@@ -30,6 +30,7 @@ import * as _ from 'lodash';
 import * as path from 'path';
 import * as semver from 'semver';
 import * as util from 'util';
+import * as utils from './util/utils';
 import * as http from 'http';
 
 import {Controller} from './controller';
@@ -205,17 +206,14 @@ export class Debuglet extends EventEmitter {
    * @private
    */
   async start(): Promise<void> {
+    const that = this;
     process.on('warning', (warning) => {
       if ((warning as any).code ===
           'INSPECTOR_ASYNC_STACK_TRACES_NOT_AVAILABLE') {
-        console.log(
-            'The Stackdriver debug agent does not use Inspector async stack ' +
-            'traces. The INSPECTOR_ASYNC_STACK_TRACES_NOT_AVAILABLE warning ' +
-            'does not impact Stackdriver debug agent and can be ignored.');
+        that.logger_.info(utils.messages.ASYNC_TRACES_WARNING);
       }
     });
 
-    const that = this;
     const stat = promisify(fs.stat);
 
     try {

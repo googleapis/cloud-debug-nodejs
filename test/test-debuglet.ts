@@ -30,6 +30,7 @@ import * as dns from 'dns';
 import * as extend from 'extend';
 const metadata: {project: any, instance: any} = require('gcp-metadata');
 import {Debug} from '../src/client/stackdriver/debug';
+import * as utils from '../src/agent/util/utils'
 
 const DEBUGGEE_ID = 'bar';
 const API = 'https://clouddebugger.googleapis.com';
@@ -332,7 +333,10 @@ describe('Debuglet', function() {
       const debug = new Debug(
           {projectId: projectId, credentials: fakeCredentials});
       const debuglet = new Debuglet(debug, defaultConfig);
-
+      let logText = '';
+      debuglet.logger_.info = function(s: string) {
+        logText += s;
+      };
       nocks.projectId('project-via-metadata');
       const scope = nock(API)
                       .post(REGISTER_PATH)
@@ -343,16 +347,11 @@ describe('Debuglet', function() {
         // TODO: Handle the case where debuglet.debuggee is undefined
         assert.equal((debuglet.debuggee_ as Debuggee).project, projectId);
         const arch = process.arch;
-        const nodeVersion = /v(\d+\.\d+\.\d+)/.exec(process.version);
-        const message = 'The Stackdriver debug agent does not use Inspector async stack';
-        if (!nodeVersion || nodeVersion.length < 2) {
-          // TODO: Fix this invalid method signature.
-          (assert as any).fail();
-        } else if (semver.satisfies(nodeVersion[1], '>=8') &&
+        if (semver.satisfies(process.version, '>=8') &&
             (arch === 'ia32' || arch === 'x86')) {
-          assert(logText.includes(message));
+          assert(logText.includes(utils.messages.ASYNC_TRACES_WARNING));
         } else {
-          assert(!logText.includes(message));
+          assert(!logText.includes(utils.messages.ASYNC_TRACES_WARNING));
         }
         debuglet.stop();
         scope.done();
