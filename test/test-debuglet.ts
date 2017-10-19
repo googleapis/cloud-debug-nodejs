@@ -296,19 +296,12 @@ describe('Debuglet', function() {
     });
 
     after(function() { process.env.GCLOUD_PROJECT = oldGP; });
-    let logText = '';
-    let oldLog: any;
     beforeEach(() => {
       delete process.env.GCLOUD_PROJECT;
-      oldLog = console.log;
-      console.log = function(s: string) {
-        logText += s;
-      }
       nocks.oauth2();
     });
 
     afterEach(() => {
-      console.log = oldLog;
       nock.cleanAll();
     });
 
