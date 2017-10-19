@@ -12,12 +12,15 @@ install:
   - ps: Install-Product node $env:nodejs_version
   # install modules
   - npm install
+  - SET GCLOUD_PROJECT=0
+  - SET CLOUD_DEBUG_ASSERTIONS=1
 
 # Post-install test scripts.
 test_script:
   # run tests
   - npm run build
-  - node test_windows.js
+  - node_modules/.bin/mocha build/test --timeout 4000 --R
+  - GCLOUD_USE_INSPECTOR=1 node_modules/.bin/mocha build/test --timeout 4000 --R
 
 # Don't actually build using MSBuild
 build: off

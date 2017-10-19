@@ -31,13 +31,8 @@ function run {
 
 # Run test/coverage
 run build/test
+GCLOUD_USE_INSPECTOR=true run build/test
 
-node_version_major=$(node -p "require('semver').major(process.version)")
-if test $node_version_major -ge 8
-then
-  echo 'Test with v8 Inspector'
-  GCLOUD_USE_INSPECTOR=true run build/test
-fi
 
 
 # Conditionally publish coverage
