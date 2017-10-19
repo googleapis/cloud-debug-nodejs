@@ -327,7 +327,7 @@ export class Debuglet extends EventEmitter {
 
     });
   }
-  initializationPromise() {
+  initializePromise() {
     this.promiseInitialized_ = true;
     return new Promise<void>((resolve) => {
       this.promiseResolve_ = () => {

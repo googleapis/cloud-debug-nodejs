@@ -889,7 +889,7 @@ describe('Debuglet', function() {
                       .get(BPS_PATH + '?successOnTimeout=true')
                       .reply(200, {breakpoints: []});
       debuglet.start();
-      const debugPromise = debuglet.initializationPromise();
+      const debugPromise = debuglet.initializePromise();
 
       debuglet.once('registered', function reg(id: string) {
         assert.equal(id, DEBUGGEE_ID);
