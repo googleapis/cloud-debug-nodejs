@@ -320,7 +320,7 @@ describe('Debuglet', function() {
       assert.deepEqual(mergedConfig, compareConfig);
     });
 
-    it.skip('should elaborate on inspector warning on 32 bit but not on 64 bit',
+    it('should elaborate on inspector warning on 32 bit but not on 64 bit',
         function(done) {
       const projectId = '11020304f2934-a';
       const debug = new Debug(
@@ -341,7 +341,8 @@ describe('Debuglet', function() {
         assert.equal((debuglet.debuggee_ as Debuggee).project, projectId);
         const arch = process.arch;
         if (semver.satisfies(process.version, '>=8.5') &&
-            (arch === 'ia32' || arch === 'x86')) {
+            (arch === 'ia32' || arch === 'x86') &&
+            process.env.GCLOUD_USE_INSPECTOR) {
           assert(logText.includes(utils.messages.ASYNC_TRACES_WARNING));
         } else {
           assert(!logText.includes(utils.messages.ASYNC_TRACES_WARNING));
