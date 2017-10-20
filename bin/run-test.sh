@@ -32,7 +32,7 @@ function run {
 # Run test/coverage
 run build/test
 
-node_version_major=$(node -v | sed 's/v\([0-9]*\)\.[0-9]*.[0-9]*/\1/')
+node_version_major=$(node -p "require('semver').major(process.version)")
 if test $node_version_major -ge 8
 then
   echo 'Test with v8 Inspector'

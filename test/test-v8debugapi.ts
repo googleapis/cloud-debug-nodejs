@@ -110,6 +110,37 @@ function validateBreakpoint(breakpoint: stackdriver.Breakpoint): void {
     breakpoint.stackFrames.forEach(validateStackFrame);
   }
 }
+describe('v8debugapi', function() {
+  const config: DebugAgentConfig = extend({}, defaultConfig, {
+    workingDirectory: __dirname,
+    forceNewAgent_: true
+  });
+  const logger = new common.logger({ levelLevel: config.logLevel } as any as LoggerOptions);
+
+  it('Verify the correct debugapi was constructed', (done) => {
+    let api: DebugApi;
+    scanner.scan(true, config.workingDirectory as string, /.js$|.map$/)
+    .then(function (fileStats) {
+      const jsStats = fileStats.selectStats(/.js$/);
+      const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
+      SourceMapper.create(mapFiles, function (err, mapper) {
+        assert(!err);
+
+        // TODO: Handle the case when mapper is undefined.
+        // TODO: Handle the case when v8debugapi.create returns null
+        api = debugapi.create(logger, config, jsStats, mapper as SourceMapper.SourceMapper) as DebugApi;
+        if (process.env.GCLOUD_USE_INSPECTOR && semver.satisfies(process.version, '>=8')) {
+          const inspectorapi = require('../src/agent/v8/inspector-debugapi');
+          assert.ok(api instanceof inspectorapi.InspectorDebugApi);
+        } else {
+          const v8debugapi = require('../src/agent/v8/legacy-debugapi');
+          assert.ok(api instanceof v8debugapi.V8DebugApi);
+        }
+        done();
+      });
+    });
+  });
+});
 
 describe('v8debugapi', function() {
   const config: DebugAgentConfig = extend({}, defaultConfig, {

@@ -52,9 +52,6 @@ if (!nodeVersion || nodeVersion.length < 2) {
   const inspectorapi = require('./inspector-debugapi');
   debugApiConstructor = inspectorapi.InspectorDebugApi;
 } else {
-  if (process.env.GCLOUD_USE_INSPECTOR) {
-    console.log('Inspector protocol only works for node 8+.');
-  }
   const v8debugapi = require('./legacy-debugapi');
   debugApiConstructor = v8debugapi.V8DebugApi;
 }

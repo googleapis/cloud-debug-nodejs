@@ -90,6 +90,9 @@ export class V8DebugApi implements debugapi.DebugApi {
             this.logger.warn('Internal V8 error on breakpoint event: ' + e);
           }
         };
+    if (process.env.GCLOUD_USE_INSPECTOR) {
+      this.logger.warn(utils.messages.INSPECTOR_NOT_AVAILABLE);
+    }
     if (this.usePermanentListener) {
       this.logger.info('activating v8 breakpoint listener (permanent)');
 
