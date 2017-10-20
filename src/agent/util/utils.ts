@@ -25,9 +25,10 @@ export const messages = {
   INVALID_LINE_NUMBER: 'Invalid snapshot position: ',
   COULD_NOT_FIND_OUTPUT_FILE:
       'Could not determine the output file associated with the transpiled input file',
-  ASYNC_TRACES_WARNING: 'The Stackdriver debug agent does not use Inspector ' +
+  ASYNC_TRACES_WARNING:
+      'The Stackdriver Debugger for Node.js does not require V8 Inspector ' +
       'async stack traces. The INSPECTOR_ASYNC_STACK_TRACES_NOT_AVAILABLE ' +
-      'warning does not impact Stackdriver debug agent and can be ignored.'
+      'can be ignored.'
 };
 
 export interface Listener {

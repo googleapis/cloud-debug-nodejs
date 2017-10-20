@@ -296,12 +296,12 @@ describe('Debuglet', function() {
     });
 
     after(function() { process.env.GCLOUD_PROJECT = oldGP; });
-    beforeEach(() => {
+    beforeEach(function() {
       delete process.env.GCLOUD_PROJECT;
       nocks.oauth2();
     });
 
-    afterEach(() => {
+    afterEach(function() {
       nock.cleanAll();
     });
 
@@ -340,7 +340,7 @@ describe('Debuglet', function() {
         // TODO: Handle the case where debuglet.debuggee is undefined
         assert.equal((debuglet.debuggee_ as Debuggee).project, projectId);
         const arch = process.arch;
-        if (semver.satisfies(process.version, '>=8') &&
+        if (semver.satisfies(process.version, '>=8.5') &&
             (arch === 'ia32' || arch === 'x86')) {
           assert(logText.includes(utils.messages.ASYNC_TRACES_WARNING));
         } else {
