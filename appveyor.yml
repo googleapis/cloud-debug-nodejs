@@ -18,7 +18,7 @@ install:
 # Post-install test scripts.
 test_script:
   # run tests
-  - npm run build
+  - npm run compile
   - SET GCLOUD_USE_INSPECTOR=
   - node_modules/.bin/mocha build/test --timeout 4000 --R
   - SET GCLOUD_USE_INSPECTOR=1

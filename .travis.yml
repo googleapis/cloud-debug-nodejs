@@ -5,7 +5,7 @@ node_js:
 - '6'
 - '8'
 script:
-- gulp test.coverage
+- npm run system-test
 notifications:
   email:
     - nodejs-build-notifications+travis@googlegroups.com
