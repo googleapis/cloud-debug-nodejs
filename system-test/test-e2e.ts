@@ -213,7 +213,7 @@ describe('@google-cloud/debug end-to-end behavior', function () {
       // Check the contents of the log, but keep the original breakpoint.
 
       // TODO: This is never used.  Determine if it should be used.
-      //const breakpoint = results[0];
+      // const breakpoint = results[0];
 
       children.forEach(function(child, index) {
         assert(child.transcript.indexOf('o is: {"a":[1,"hi",true]}') !== -1,

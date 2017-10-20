@@ -20,7 +20,7 @@ const Logger = require('../src/logger.js');
 const config = require('../config.js').default;
 import * as assert from 'assert';
 const pretty = require('pretty-hrtime');
-//const util = require('util');
+// const util = require('util');
 const fib = require('./bench-code.js');
 
 const logger = new Logger(config.logLevel);

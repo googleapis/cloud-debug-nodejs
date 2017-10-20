@@ -137,9 +137,9 @@ describe('Debuglet', function() {
       // TODO: Determine if the options to Debug should be optional so that
       //       new Debug() can be used instead of new Debug({}).
       // TODO: This is never used.  Determine if it should be used.
-      //const debug = new Debug({});
+      // const debug = new Debug({});
       // TODO: This is never used.  Determine if it should be used.
-      //const debuglet = new Debuglet(debug, defaultConfig);
+      // const debuglet = new Debuglet(debug, defaultConfig);
 
       // TODO: Determine if the path parameter should be used.
       // TODO: Determine if these types are correct
@@ -157,9 +157,9 @@ describe('Debuglet', function() {
 
     it('should return null on error', (done) => {
       // TODO: This is never used.  Determine if it should be used.
-      //const debug = new Debug({});
+      // const debug = new Debug({});
       // TODO: This is never used.  Determine if it should be used.
-      //const debuglet = new Debuglet(debug, defaultConfig);
+      // const debuglet = new Debuglet(debug, defaultConfig);
 
       // TODO: Determine if the path parameter should be used.
       metadata.project = (path: string, cb: MetadataCallback) => {
@@ -186,9 +186,9 @@ describe('Debuglet', function() {
     it('should return project retrived from metadata', (done) => {
       const FAKE_CLUSTER_NAME = 'fake-cluster-name-from-metadata';
       // TODO: This is never used.  Determine if it should be used.
-      //const debug = new Debug({});
+      // const debug = new Debug({});
       // TODO: This is never used.  Determine if it should be used.
-      //const debuglet = new Debuglet(debug, defaultConfig);
+      // const debuglet = new Debuglet(debug, defaultConfig);
 
       // TODO: Determine if the path parameter should be used.
       metadata.instance = (path: string, cb: MetadataCallback) => {
@@ -205,9 +205,9 @@ describe('Debuglet', function() {
 
     it('should return null on error', (done) => {
       // TODO: This is never used.  Determine if it should be used.
-      //const debug = new Debug({});
+      // const debug = new Debug({});
       // TODO: This is never used.  Determine if it should be used.
-      //const debuglet = new Debuglet(debug, defaultConfig);
+      // const debuglet = new Debuglet(debug, defaultConfig);
 
       // TODO: Determine if the path parameter should be used.
       metadata.instance = (path: string, cb: MetadataCallback) => {
