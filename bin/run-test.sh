@@ -33,8 +33,6 @@ function run {
 run build/test
 GCLOUD_USE_INSPECTOR=true run build/test
 
-
-
 # Conditionally publish coverage
 if [ "$cover" ]; then
   $(npm bin)/istanbul report lcovonly

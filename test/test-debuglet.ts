@@ -320,7 +320,7 @@ describe('Debuglet', function() {
       assert.deepEqual(mergedConfig, compareConfig);
     });
 
-    it('should elaborate on inspector warning on 32 bit but not on 64 bit',
+    it.skip('should elaborate on inspector warning on 32 bit but not on 64 bit',
         function(done) {
       const projectId = '11020304f2934-a';
       const debug = new Debug(

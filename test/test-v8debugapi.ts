@@ -116,9 +116,9 @@ describe('debugapi selection', function() {
     forceNewAgent_: true
   });
   const logger = new common.logger({ levelLevel: config.logLevel } as any as LoggerOptions);
-  let warnIsCalled = false;
-  logger.warn = function(_s: string) {
-    warnIsCalled = true;
+  let logText = '';
+  logger.warn = function(s: string) {
+    logText += s;
   }
   it('should use the correct debugapi and have appropriate warning', (done) => {
     let api: DebugApi;
@@ -139,9 +139,9 @@ describe('debugapi selection', function() {
           assert.ok(api instanceof v8debugapi.V8DebugApi);
         }
         if (process.env.GCLOUD_USE_INSPECTOR && semver.satisfies(process.version, '<8')) {
-          assert(warnIsCalled);
+          assert(logText.includes(utils.messages.INSPECTOR_NOT_AVAILABLE));
         } else {
-          assert(!warnIsCalled);
+          assert(!logText.includes(utils.messages.INSPECTOR_NOT_AVAILABLE));
         }
         done();
       });
