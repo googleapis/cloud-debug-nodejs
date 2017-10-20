@@ -73,10 +73,10 @@ describe(__filename, function() {
       location: { path: 'test-this-context-code.js', line: 5 }
     } as stackdriver.Breakpoint;
     let ctxMembers;
-    api.set(brk, function(err) {
-      assert.ifError(err);
-      api.wait(brk, function(err) {
-        assert.ifError(err);
+    api.set(brk, function(err1) {
+      assert.ifError(err1);
+      api.wait(brk, function(err2) {
+        assert.ifError(err2);
         // TODO: Determine how to remove this cast to any.
         const frame = (brk as any).stackFrames[0];
         const args = frame.arguments;
@@ -91,8 +91,8 @@ describe(__filename, function() {
         assert.equal(locals.length, 2, 'There should be two locals');
         assert.deepEqual(locals[0], {name: 'b', value: '1'});
         assert.deepEqual(locals[1].name, 'context');
-        api.clear(brk, function(err) {
-          assert.ifError(err);
+        api.clear(brk, function(err3) {
+          assert.ifError(err3);
           done();
         });
       });
@@ -105,10 +105,10 @@ describe(__filename, function() {
       id: 'fake-id-123',
       location: { path: 'test-this-context-code.js', line: 9 }
     } as stackdriver.Breakpoint;
-    api.set(brk, function(err) {
-      assert.ifError(err);
-      api.wait(brk, function(err) {
-        assert.ifError(err);
+    api.set(brk, function(err1) {
+      assert.ifError(err1);
+      api.wait(brk, function(err2) {
+        assert.ifError(err2);
         // TODO: Determine how to remove this cast to any.
         const frame = (brk as any).stackFrames[0];
         const args = frame.arguments;
@@ -116,8 +116,8 @@ describe(__filename, function() {
         assert.equal(args.length, 0, 'There should be zero arguments');
         assert.equal(locals.length, 1, 'There should be one local');
         assert.deepEqual(locals[0], {name: 'j', value: '1'});
-        api.clear(brk, function(err) {
-          assert.ifError(err);
+        api.clear(brk, function(err3) {
+          assert.ifError(err3);
           done();
         });
       });

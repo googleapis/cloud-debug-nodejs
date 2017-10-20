@@ -67,15 +67,15 @@ describe('Controller', function() {
           agentVersion: agentVersion
         });
     // TODO: Determine if the body parameter should be used.
-    controller.register(debuggee, function(err, body) {
-      assert.ifError(err);
+    controller.register(debuggee, function(err1, body1) {
+      assert.ifError(err1);
 
       // TODO: Determine if the response parameter should be used.
-      controller.listBreakpoints(debuggee, function(err, response, maybeBody) {
-        assert.ifError(err);
+      controller.listBreakpoints(debuggee, function(err2, response, maybeBody) {
+        assert.ifError(err2);
         assert.ok(maybeBody);
-        const body = maybeBody as stackdriver.ListBreakpointsResponse;
-        assert.ok(body.nextWaitToken);
+        const body2 = maybeBody as stackdriver.ListBreakpointsResponse;
+        assert.ok(body2.nextWaitToken);
         done();
       });
     });
@@ -97,20 +97,20 @@ describe('Controller', function() {
 
       // First list should set the wait token
       // TODO: Determine if the response parameter should be used.
-      controller.listBreakpoints(debuggee, function(err, response, maybeBody) {
-        assert.ifError(err);
-        assert.ok(maybeBody);
-        const body = maybeBody as stackdriver.ListBreakpointsResponse;
-        assert.ok(body.nextWaitToken);
+      controller.listBreakpoints(debuggee, function(err1, response1, maybeBody1) {
+        assert.ifError(err1);
+        assert.ok(maybeBody1);
+        const body1 = maybeBody1 as stackdriver.ListBreakpointsResponse;
+        assert.ok(body1.nextWaitToken);
         // Second list should block until the wait timeout
         // TODO: Determine if the response parameter should be used.
-        controller.listBreakpoints(debuggee, function(err, response, maybeBody) {
-          assert.ifError(err);
-          assert.ok(maybeBody);
-          const body = maybeBody as stackdriver.ListBreakpointsResponse;
-          assert.ok(body.nextWaitToken);
+        controller.listBreakpoints(debuggee, function(err2, response2, maybeBody2) {
+          assert.ifError(err2);
+          assert.ok(maybeBody2);
+          const body2 = maybeBody2 as stackdriver.ListBreakpointsResponse;
+          assert.ok(body2.nextWaitToken);
           // waitExpired will only be set if successOnTimeout was given correctly
-          assert.ok(body.waitExpired);
+          assert.ok(body2.waitExpired);
           done();
         });
       });

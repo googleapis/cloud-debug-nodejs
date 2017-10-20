@@ -143,7 +143,7 @@ describe('Debuglet', function() {
 
       // TODO: Determine if the path parameter should be used.
       // TODO: Determine if these types are correct
-      metadata.project = (path: string, cb: MetadataCallback) => {
+      metadata.project = (instancePath: string, cb: MetadataCallback) => {
         setImmediate(() => {
           cb(null, {}, FAKE_PROJECT_ID);
         });
@@ -162,7 +162,7 @@ describe('Debuglet', function() {
       // const debuglet = new Debuglet(debug, defaultConfig);
 
       // TODO: Determine if the path parameter should be used.
-      metadata.project = (path: string, cb: MetadataCallback) => {
+      metadata.project = (instancePath: string, cb: MetadataCallback) => {
         setImmediate(() => { cb(new Error()); });
       };
 
@@ -191,7 +191,7 @@ describe('Debuglet', function() {
       // const debuglet = new Debuglet(debug, defaultConfig);
 
       // TODO: Determine if the path parameter should be used.
-      metadata.instance = (path: string, cb: MetadataCallback) => {
+      metadata.instance = (instancePath: string, cb: MetadataCallback) => {
         setImmediate(() => {
           cb(null, {}, FAKE_CLUSTER_NAME);
         });
@@ -210,7 +210,7 @@ describe('Debuglet', function() {
       // const debuglet = new Debuglet(debug, defaultConfig);
 
       // TODO: Determine if the path parameter should be used.
-      metadata.instance = (path: string, cb: MetadataCallback) => {
+      metadata.instance = (instancePath: string, cb: MetadataCallback) => {
         setImmediate(() => { cb(new Error()); });
       };
 
@@ -839,10 +839,10 @@ describe('Debuglet', function() {
                       .post(REGISTER_PATH)
                       .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
-      debuglet.once('registered', function(id: string) {
-        assert.equal(id, DEBUGGEE_ID);
-        debuglet.once('registered', function(id: string) {
-          assert.equal(id, DEBUGGEE_ID);
+      debuglet.once('registered', function(id1: string) {
+        assert.equal(id1, DEBUGGEE_ID);
+        debuglet.once('registered', function(id2: string) {
+          assert.equal(id2, DEBUGGEE_ID);
           debuglet.stop();
           scope.done();
           done();

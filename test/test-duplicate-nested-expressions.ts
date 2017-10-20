@@ -73,22 +73,19 @@ describe(__filename, function() {
       id: 'fake-id-123',
       location: { path: 'test-duplicate-nested-expressions-code.js', line: 4 }
     } as stackdriver.Breakpoint;
-    api.set(brk, function(err) {
-      assert.ifError(err);
-      api.wait(brk, function(err) {
-        assert.ifError(err);
+    api.set(brk, function(err1) {
+      assert.ifError(err1);
+      api.wait(brk, function(err2) {
+        assert.ifError(err2);
         // TODO: Determine how to remove this cast to any.
         const frame = (brk as any).stackFrames[0];
         const args = frame.arguments;
         const locals = frame.locals;
         assert.equal(args.length, 0, 'There should be zero arguments');
         assert.equal(locals.length, 1, 'There should be one locals');
-        assert.deepEqual(
-          locals[0],
-          {name: 'a', value: 'test'}
- 	      );
-        api.clear(brk,function(err) {
-          assert.ifError(err);
+        assert.deepEqual(locals[0], {name: 'a', value: 'test'});
+        api.clear(brk,function(err3) {
+          assert.ifError(err3);
           done();
         });
       });
@@ -102,10 +99,10 @@ describe(__filename, function() {
       id: 'fake-id-1234',
       location: { path: 'test-duplicate-nested-expressions-code.js', line: 5 }
     } as stackdriver.Breakpoint;
-    api.set(brk, function(err) {
-      assert.ifError(err);
-      api.wait(brk, function(err) {
-        assert.ifError(err);
+    api.set(brk, function(err1) {
+      assert.ifError(err1);
+      api.wait(brk, function(err2) {
+        assert.ifError(err2);
         // TODO: Determine how to remove this cast to any.
         const frame = (brk as any).stackFrames[0];
         const args = frame.arguments;
@@ -116,8 +113,8 @@ describe(__filename, function() {
           locals[0],
           {name: 'a', value: '10'}
         );
-        api.clear(brk, function(err) {
-          assert.ifError(err);
+        api.clear(brk, function(err3) {
+          assert.ifError(err3);
           done();
         });
       });
@@ -131,10 +128,10 @@ describe(__filename, function() {
       id: 'fake-id-1234',
       location: { path: 'test-duplicate-nested-expressions-code.js', line: 6 }
     } as stackdriver.Breakpoint;
-    api.set(brk, function(err) {
-      assert.ifError(err);
-      api.wait(brk, function(err) {
-        assert.ifError(err);
+    api.set(brk, function(err1) {
+      assert.ifError(err1);
+      api.wait(brk, function(err2) {
+        assert.ifError(err2);
         // TODO: Determine how to remove this cast to any.
         const frame = (brk as any).stackFrames[0];
         const args = frame.arguments;
@@ -145,8 +142,8 @@ describe(__filename, function() {
           locals[0],
           {name: 'a', value: '11'}
         );
-        api.clear(brk, function(err) {
-          assert.ifError(err);
+        api.clear(brk, function(err3) {
+          assert.ifError(err3);
           done();
         });
       });
@@ -160,10 +157,10 @@ describe(__filename, function() {
       id: 'fake-id-1234',
       location: { path: 'test-duplicate-nested-expressions-code.js', line: 8 }
     } as stackdriver.Breakpoint;
-    api.set(brk, function(err) {
-      assert.ifError(err);
-      api.wait(brk, function(err) {
-        assert.ifError(err);
+    api.set(brk, function(err1) {
+      assert.ifError(err1);
+      api.wait(brk, function(err2) {
+        assert.ifError(err2);
         // TODO: Determine how to remove this cast to any.
         const frame = (brk as any).stackFrames[0];
         const args = frame.arguments;
@@ -178,8 +175,8 @@ describe(__filename, function() {
           locals[1],
           {name: 'a', value: 'true'}
         );
-        api.clear(brk, function(err) {
-          assert.ifError(err);
+        api.clear(brk, function(err3) {
+          assert.ifError(err3);
           done();
         });
       });
