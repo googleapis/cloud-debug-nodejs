@@ -93,7 +93,7 @@ describe('Debuglet', function() {
       // TODO: Fix this cast to any that is caused by the fact that `lookup`
       //       is a readonly property.
       // TODO: Determine if the hostname parameter should be used.
-      (dns as any).lookup = (_hostname: string|null, cb: (err: Error|null, param: {address: string, family: string}) => void) => {
+      (dns as any).lookup = (hostname: string|null, cb: (err: Error|null, param: {address: string, family: string}) => void) => {
         setImmediate(() => {
           cb(null, { address: '700.800.900.fake', family: 'Addams'});
         });
@@ -110,7 +110,7 @@ describe('Debuglet', function() {
       //       is a readonly property.
       // TODO: Determine if the hostname parameter should be used.
       // TODO: Determine if these types are correct
-      (dns as any).lookup = (_hostname: string, cb: (err: Error) => void) => {
+      (dns as any).lookup = (hostname: string, cb: (err: Error) => void) => {
         setImmediate(() => {
           cb(new Error('resolution error'));
         });
@@ -143,7 +143,7 @@ describe('Debuglet', function() {
 
       // TODO: Determine if the path parameter should be used.
       // TODO: Determine if these types are correct
-      metadata.project = (_path: string, cb: MetadataCallback) => {
+      metadata.project = (path: string, cb: MetadataCallback) => {
         setImmediate(() => {
           cb(null, {}, FAKE_PROJECT_ID);
         });
@@ -162,12 +162,12 @@ describe('Debuglet', function() {
       //const debuglet = new Debuglet(debug, defaultConfig);
 
       // TODO: Determine if the path parameter should be used.
-      metadata.project = (_path: string, cb: MetadataCallback) => {
+      metadata.project = (path: string, cb: MetadataCallback) => {
         setImmediate(() => { cb(new Error()); });
       };
 
       // TODO: Determine if the err parameter should be used.
-      Debuglet.getProjectIdFromMetadata().catch((_err) => {
+      Debuglet.getProjectIdFromMetadata().catch((err) => {
         done();
       });
     });
@@ -191,7 +191,7 @@ describe('Debuglet', function() {
       //const debuglet = new Debuglet(debug, defaultConfig);
 
       // TODO: Determine if the path parameter should be used.
-      metadata.instance = (_path: string, cb: MetadataCallback) => {
+      metadata.instance = (path: string, cb: MetadataCallback) => {
         setImmediate(() => {
           cb(null, {}, FAKE_CLUSTER_NAME);
         });
@@ -210,12 +210,12 @@ describe('Debuglet', function() {
       //const debuglet = new Debuglet(debug, defaultConfig);
 
       // TODO: Determine if the path parameter should be used.
-      metadata.instance = (_path: string, cb: MetadataCallback) => {
+      metadata.instance = (path: string, cb: MetadataCallback) => {
         setImmediate(() => { cb(new Error()); });
       };
 
       // TODO: Determine if the err parameter should be used.
-      Debuglet.getClusterNameFromMetadata().catch((_err) => {
+      Debuglet.getClusterNameFromMetadata().catch((err) => {
         done();
       });
     });
@@ -287,7 +287,7 @@ describe('Debuglet', function() {
         return Promise.reject(new Error('rejection'));
       };
       // TODO: Determine if the err parameter should be used.
-      Debuglet.getProjectId({}).catch((_err) => {
+      Debuglet.getProjectId({}).catch((err) => {
         // restore environment variables.
         process.env = envs;
         done();
@@ -619,7 +619,7 @@ describe('Debuglet', function() {
                         }).once().reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
            // TODO: Determine if the id parameter should be used.
-           debuglet.once('registered', function(_id: string) {
+           debuglet.once('registered', function(id: string) {
              debuglet.stop();
              scope.done();
              done();
@@ -642,7 +642,7 @@ describe('Debuglet', function() {
                      }).once().reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
         // TODO: Determine if the response parameter should be used.
-        debuglet.once('registered', function(_id: string) {
+        debuglet.once('registered', function(id: string) {
           debuglet.stop();
           scope.done();
           done();

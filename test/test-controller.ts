@@ -123,7 +123,7 @@ describe('Controller API', function() {
       const controller = new Controller(fakeDebug);
       // TODO: Fix debuggee to actually implement Debuggee
       // TODO: Determine if the response parameter should be used.
-      controller.listBreakpoints(debuggee as Debuggee, function(err: Error|null, _response?: http.ServerResponse, result?: stackdriver.ListBreakpointsResponse) {
+      controller.listBreakpoints(debuggee as Debuggee, function(err: Error|null, response?: http.ServerResponse, result?: stackdriver.ListBreakpointsResponse) {
         assert(!err, 'not expecting an error');
         // TODO: Handle the case where result is undefined
         assert(!(result as any).breakpoints, 'should not have a breakpoints property');
@@ -143,7 +143,7 @@ describe('Controller API', function() {
           const controller = new Controller(fakeDebug);
           // TODO: Fix debuggee to actually implement Debuggee
           // TODO: Determine if the response parameter should be used.
-          controller.listBreakpoints(debuggee as Debuggee, function(err: Error|null, _response?: http.ServerResponse, result?: stackdriver.ListBreakpointsResponse) {
+          controller.listBreakpoints(debuggee as Debuggee, function(err: Error|null, response?: http.ServerResponse, result?: stackdriver.ListBreakpointsResponse) {
             assert(!err, 'not expecting an error');
             // TODO: Handle the case where result is undefined
             assert(!(result as any).breakpoints, 'should not have breakpoints property');
@@ -162,7 +162,7 @@ describe('Controller API', function() {
       const debuggee: Debuggee = { id: 'fake-debuggee' } as Debuggee;
       const controller = new Controller(fakeDebug);
       // TODO: Determine if the response parameter should be used.
-      controller.listBreakpoints(debuggee, function(err, _response, result) {
+      controller.listBreakpoints(debuggee, function(err, response, result) {
         assert(err instanceof Error, 'expecting an error');
         assert(!result, 'should not have a result');
         scope.done();
@@ -180,7 +180,7 @@ describe('Controller API', function() {
       const debuggee: Debuggee = { id: 'fake-debuggee' } as Debuggee;
       const controller = new Controller(fakeDebug);
       // TODO: Determine if the result parameter should be used.
-      controller.listBreakpoints(debuggee, function(err, response, _result) {
+      controller.listBreakpoints(debuggee, function(err, response, result) {
         // TODO: Fix this incorrect method signature.
         (assert as any).ifError(err, 'not expecting an error');
         // TODO: Fix this error that states `body` is not a property
@@ -209,7 +209,7 @@ describe('Controller API', function() {
         const debuggee: Debuggee = { id: 'fake-debuggee' } as Debuggee;
         const controller = new Controller(fakeDebug);
         // TODO: Determine if the response parameter should be used.
-        controller.listBreakpoints(debuggee, function(err: Error|null, _response: http.ServerResponse, result: stackdriver.ListBreakpointsResponse) {
+        controller.listBreakpoints(debuggee, function(err: Error|null, response: http.ServerResponse, result: stackdriver.ListBreakpointsResponse) {
           assert(!err, 'not expecting an error');
           assert(result.breakpoints, 'should have a breakpoints property');
           const bps = result.breakpoints;

@@ -1523,7 +1523,7 @@ describe('v8debugapi', function() {
       api.set(bp, function(err) {
         assert.ifError(err);
         // TODO: Determine if the err parameter should be used.
-        api.wait(bp, function(_err) {
+        api.wait(bp, function(err) {
           api.clear(bp, function(err) {
             assert.ifError(err);
             throw new Error(message);

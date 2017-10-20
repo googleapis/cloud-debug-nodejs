@@ -67,11 +67,11 @@ describe('Controller', function() {
           agentVersion: agentVersion
         });
     // TODO: Determine if the body parameter should be used.
-    controller.register(debuggee, function(err, _body) {
+    controller.register(debuggee, function(err, body) {
       assert.ifError(err);
 
       // TODO: Determine if the response parameter should be used.
-      controller.listBreakpoints(debuggee, function(err, _response, maybeBody) {
+      controller.listBreakpoints(debuggee, function(err, response, maybeBody) {
         assert.ifError(err);
         assert.ok(maybeBody);
         const body = maybeBody as stackdriver.ListBreakpointsResponse;
@@ -92,19 +92,19 @@ describe('Controller', function() {
           agentVersion: agentVersion
         });
     // TODO: Determine if the body parameter should be used.
-    controller.register(debuggee, function(err, _body) {
+    controller.register(debuggee, function(err, body) {
       assert.ifError(err);
 
       // First list should set the wait token
       // TODO: Determine if the response parameter should be used.
-      controller.listBreakpoints(debuggee, function(err, _response, maybeBody) {
+      controller.listBreakpoints(debuggee, function(err, response, maybeBody) {
         assert.ifError(err);
         assert.ok(maybeBody);
         const body = maybeBody as stackdriver.ListBreakpointsResponse;
         assert.ok(body.nextWaitToken);
         // Second list should block until the wait timeout
         // TODO: Determine if the response parameter should be used.
-        controller.listBreakpoints(debuggee, function(err, _response, maybeBody) {
+        controller.listBreakpoints(debuggee, function(err, response, maybeBody) {
           assert.ifError(err);
           assert.ok(maybeBody);
           const body = maybeBody as stackdriver.ListBreakpointsResponse;
