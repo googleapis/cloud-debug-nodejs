@@ -118,7 +118,7 @@ describe('debugapi selection', function() {
   let logText = '';
   logger.warn = function(s: string) {
     logText += s;
-  }
+  };
   it('should use the correct debugapi and have appropriate warning', (done) => {
     let api: DebugApi;
     scanner.scan(true, config.workingDirectory as string, /.js$|.map$/)
