@@ -17,6 +17,7 @@
 import * as stackdriver from '../src/types/stackdriver';
 import {DebugAgentConfig} from '../src/agent/config';
 import {Debuggee} from '../src/debuggee';
+import * as semver from 'semver';
 
 import * as _ from 'lodash';
 import * as path from 'path';
@@ -29,6 +30,7 @@ import * as dns from 'dns';
 import * as extend from 'extend';
 const metadata: {project: any, instance: any} = require('gcp-metadata');
 import {Debug} from '../src/client/stackdriver/debug';
+import * as utils from '../src/agent/util/utils'
 
 const DEBUGGEE_ID = 'bar';
 const API = 'https://clouddebugger.googleapis.com';
@@ -289,16 +291,19 @@ describe('Debuglet', function() {
   });
 
   describe('setup', function() {
-    before(function() { oldGP = process.env.GCLOUD_PROJECT; });
+    before(function() {
+      oldGP = process.env.GCLOUD_PROJECT;
+    });
 
     after(function() { process.env.GCLOUD_PROJECT = oldGP; });
-
     beforeEach(function() {
       delete process.env.GCLOUD_PROJECT;
       nocks.oauth2();
     });
 
-    afterEach(function() { nock.cleanAll(); });
+    afterEach(function() {
+      nock.cleanAll();
+    });
 
     it('should merge config correctly', function() {
       const testValue = 2 * defaultConfig.capture.maxExpandFrames;
@@ -313,6 +318,40 @@ describe('Debuglet', function() {
       // maxExpandFrames adjusted.
       compareConfig.capture.maxExpandFrames = testValue;
       assert.deepEqual(mergedConfig, compareConfig);
+    });
+
+    it('should elaborate on inspector warning on 32 bit but not on 64 bit',
+        function(done) {
+      const projectId = '11020304f2934-a';
+      const debug = new Debug(
+          {projectId: projectId, credentials: fakeCredentials});
+      const debuglet = new Debuglet(debug, defaultConfig);
+      let logText = '';
+      debuglet.logger_.info = function(s: string) {
+        logText += s;
+      };
+      nocks.projectId('project-via-metadata');
+      const scope = nock(API)
+                      .post(REGISTER_PATH)
+                      .reply(200, {debuggee: {id: DEBUGGEE_ID}});
+
+      debuglet.once('registered', function(id: string) {
+        assert.equal(id, DEBUGGEE_ID);
+        // TODO: Handle the case where debuglet.debuggee is undefined
+        assert.equal((debuglet.debuggee_ as Debuggee).project, projectId);
+        const arch = process.arch;
+        if (semver.satisfies(process.version, '>=8.5') &&
+            (arch === 'ia32' || arch === 'x86')) {
+          assert(logText.includes(utils.messages.ASYNC_TRACES_WARNING));
+        } else {
+          assert(!logText.includes(utils.messages.ASYNC_TRACES_WARNING));
+        }
+        debuglet.stop();
+        scope.done();
+        done();
+      });
+
+      debuglet.start();
     });
 
     it('should not start when projectId is not available', function(done) {

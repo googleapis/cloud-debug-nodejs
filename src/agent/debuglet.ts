@@ -30,6 +30,7 @@ import * as _ from 'lodash';
 import * as path from 'path';
 import * as semver from 'semver';
 import * as util from 'util';
+import * as utils from './util/utils';
 import * as http from 'http';
 
 import {Controller} from './controller';
@@ -206,6 +207,13 @@ export class Debuglet extends EventEmitter {
    */
   async start(): Promise<void> {
     const that = this;
+    process.on('warning', (warning) => {
+      if ((warning as any).code ===
+          'INSPECTOR_ASYNC_STACK_TRACES_NOT_AVAILABLE') {
+        that.logger_.info(utils.messages.ASYNC_TRACES_WARNING);
+      }
+    });
+
     const stat = promisify(fs.stat);
 
     try {
