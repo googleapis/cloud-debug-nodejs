@@ -64,7 +64,7 @@ describe('maxDataSize', function() {
   });
 
   it('should limit data reported', function(done) {
-    const oldMaxData = config.capture.maxDataSize;    
+    const oldMaxData = config.capture.maxDataSize;
     config.capture.maxDataSize = 5;
     // clone a clean breakpointInFoo
     // TODO: Have this actually implement Breakpoint.
@@ -93,7 +93,7 @@ describe('maxDataSize', function() {
   });
 
   it('should be unlimited if 0', function(done) {
-    const oldMaxData = config.capture.maxDataSize;    
+    const oldMaxData = config.capture.maxDataSize;
     config.capture.maxDataSize = 0;
     // clone a clean breakpointInFoo
     // TODO: Have this actually implement breakpoint

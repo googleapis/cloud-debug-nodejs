@@ -90,7 +90,7 @@ describe(__filename, function() {
         api.clear(brk,function(err) {
           assert.ifError(err);
           done();
-        })
+        });
       });
       process.nextTick(foo.bind(null, 'test'));
     });
