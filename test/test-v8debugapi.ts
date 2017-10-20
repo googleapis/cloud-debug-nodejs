@@ -1231,9 +1231,11 @@ describe('v8debugapi', function() {
           assert.ok(bp.evaluatedExpressions);
 
           for (const i in bp.evaluatedExpressions) {
-            const expr = bp.evaluatedExpressions[i];
-            // TODO: Handle the case when expr is undefined
-            assert((expr as any).status && (expr as any).status.isError);
+            if (i) {
+              const expr = bp.evaluatedExpressions[i];
+              // TODO: Handle the case when expr is undefined
+              assert((expr as any).status && (expr as any).status.isError);
+            }
           }
 
           api.clear(bp, function(err3) {
@@ -1370,9 +1372,11 @@ describe('v8debugapi', function() {
             assert.ok(bp.evaluatedExpressions);
 
             for (const i in bp.evaluatedExpressions) {
-              const expr = bp.evaluatedExpressions[i];
-              // TODO: Handle the case when expr is undefined
-              assert((expr as any).value === String(Math.PI * 3));
+              if (i) {
+                const expr = bp.evaluatedExpressions[i];
+                // TODO: Handle the case when expr is undefined
+                assert((expr as any).value === String(Math.PI * 3));
+              }
             }
 
             api.clear(bp, function(err3) {
@@ -1405,17 +1409,19 @@ describe('v8debugapi', function() {
             assert.ok(bp.evaluatedExpressions);
 
             for (const i in bp.evaluatedExpressions) {
-              const expr = bp.evaluatedExpressions[i];
-              // TODO: Handle the case when expr is undefined
-              assert((expr as any).status && (expr as any).status.isError);
-              if ((expr as any).name === ':)' ||
-                  (expr as any).name === 'process=this' ||
-                  (expr as any).name === 'return') {
-                assert.equal((expr as any).status.description.format,
-                  'Error Compiling Expression');
-              } else {
-                assert(
-                  (expr as any).status.description.format.match('Unexpected token'));
+              if (i) {
+                const expr = bp.evaluatedExpressions[i];
+                // TODO: Handle the case when expr is undefined
+                assert((expr as any).status && (expr as any).status.isError);
+                if ((expr as any).name === ':)' ||
+                    (expr as any).name === 'process=this' ||
+                    (expr as any).name === 'return') {
+                  assert.equal((expr as any).status.description.format,
+                    'Error Compiling Expression');
+                } else {
+                  assert(
+                    (expr as any).status.description.format.match('Unexpected token'));
+                }
               }
             }
 
