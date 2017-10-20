@@ -34,14 +34,14 @@ describe('Debuggee', function() {
   });
 
   it('should throw on invalid input', function() {
-    assert.throws(function() { new Debuggee({agentVersion: agentVersion}); });
-    assert.throws(function() { new Debuggee({project: '5', agentVersion: agentVersion}); });
-    assert.throws(function() { new Debuggee({project: undefined, agentVersion: agentVersion}); });
-    assert.throws(function() { new Debuggee({project: 'test', agentVersion: agentVersion}); });
+    assert.throws(function() { return new Debuggee({agentVersion: agentVersion}); });
+    assert.throws(function() { return new Debuggee({project: '5', agentVersion: agentVersion}); });
+    assert.throws(function() { return new Debuggee({project: undefined, agentVersion: agentVersion}); });
+    assert.throws(function() { return new Debuggee({project: 'test', agentVersion: agentVersion}); });
     assert.throws(function() {
-      new Debuggee({project: 'test', uniquifier: undefined, agentVersion: agentVersion});
+      const _ = new Debuggee({project: 'test', uniquifier: undefined, agentVersion: agentVersion});
       assert.throws(function() {
-        new Debuggee({project: 'test', uniquifier: 'uid', agentVersion: agentVersion});
+        return new Debuggee({project: 'test', uniquifier: 'uid', agentVersion: agentVersion});
       });
     });
   });
