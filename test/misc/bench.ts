@@ -16,14 +16,13 @@
 
 
 const v8debugapi = require('../src/v8debugapi.js');
-const Logger = require('../src/logger.js');
 const config = require('../config.js').default;
 import * as assert from 'assert';
 const pretty = require('pretty-hrtime');
 // const util = require('util');
 const fib = require('./bench-code.js');
 
-const logger = new Logger(config.logLevel);
+const logger = new (require('../src/logger.js'))(config.logLevel);
 assert.ok(v8debugapi.init(logger, config));
 
 function bench(message: any, f: any) {
