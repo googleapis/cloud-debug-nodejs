@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
+import * as assert from 'assert';
+import * as extend from 'extend';
+
+import * as debugapi from '../src/agent/v8/debugapi';
 import {Common, LoggerOptions} from '../src/types/common';
 import * as stackdriver from '../src/types/stackdriver';
 
-import * as assert from 'assert';
-import * as extend from 'extend';
-import * as debugapi from '../src/agent/v8/debugapi';
 const common: Common = require('@google-cloud/common');
 import defaultConfig from '../src/agent/config';
 import * as SourceMapper from '../src/agent/io/sourcemapper';
@@ -28,69 +29,69 @@ const foo = require('./test-duplicate-nested-expressions-code.js');
 
 // TODO: Determine why this must be named `_stateIsClean`.
 function stateIsClean2(api: debugapi.DebugApi): boolean {
-  assert.equal(api.numBreakpoints_(), 0,
-    'there should be no breakpoints active');
-  assert.equal(api.numListeners_(), 0,
-    'there should be no listeners active');
+  assert.equal(
+      api.numBreakpoints_(), 0, 'there should be no breakpoints active');
+  assert.equal(api.numListeners_(), 0, 'there should be no listeners active');
   return true;
 }
 
 describe(__filename, function() {
-  const config = extend({}, defaultConfig, {
-    workingDirectory: __dirname,
-    forceNewAgent_: true
-  });
+  const config = extend(
+      {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
   // TODO: It appears `logLevel` is a typo and should be `level`.  However,
   //       with this change, the tests fail.  Resolve this.
-  const logger = new common.logger({ logLevel: config.logLevel} as any as LoggerOptions);
+  const logger =
+      new common.logger({logLevel: config.logLevel} as any as LoggerOptions);
   let api: debugapi.DebugApi;
 
   beforeEach(function(done) {
     if (!api) {
       scanner.scan(true, config.workingDirectory, /.js$/)
-        .then(function (fileStats) {
-          const jsStats = fileStats.selectStats(/.js$/);
-          const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
-          SourceMapper.create(mapFiles, function (err, mapper) {
-            assert(!err);
+          .then(function(fileStats) {
+            const jsStats = fileStats.selectStats(/.js$/);
+            const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
+            SourceMapper.create(mapFiles, function(err, mapper) {
+              assert(!err);
 
-            // TODO: Handle the case when mapper is undefined
-            // TODO: Handle the case when v8debugapi.create returns null
-            api = debugapi.create(logger, config, jsStats, mapper as SourceMapper.SourceMapper) as debugapi.DebugApi;
-            assert.ok(api, 'should be able to create the api');
-            done();
+              // TODO: Handle the case when mapper is undefined
+              // TODO: Handle the case when v8debugapi.create returns null
+              api =
+                  debugapi.create(
+                      logger, config, jsStats,
+                      mapper as SourceMapper.SourceMapper) as debugapi.DebugApi;
+              assert.ok(api, 'should be able to create the api');
+              done();
+            });
           });
-        });
     } else {
       assert(stateIsClean2(api));
       done();
     }
   });
-  afterEach(function() { assert(stateIsClean2(api)); });
+  afterEach(function() {
+    assert(stateIsClean2(api));
+  });
   it('Should read the argument before the name is confounded', function(done) {
     // TODO: Have this actually implement Breakpoint
     const brk: stackdriver.Breakpoint = {
       id: 'fake-id-123',
-      location: { path: 'test-duplicate-nested-expressions-code.js', line: 4 }
+      location: {path: 'test-duplicate-nested-expressions-code.js', line: 4}
     } as stackdriver.Breakpoint;
-    api.set(brk, function(err) {
-      assert.ifError(err);
-      api.wait(brk, function(err) {
-        assert.ifError(err);
+    api.set(brk, function(err1) {
+      assert.ifError(err1);
+      api.wait(brk, function(err2) {
+        assert.ifError(err2);
         // TODO: Determine how to remove this cast to any.
         const frame = (brk as any).stackFrames[0];
         const args = frame.arguments;
         const locals = frame.locals;
         assert.equal(args.length, 0, 'There should be zero arguments');
         assert.equal(locals.length, 1, 'There should be one locals');
-        assert.deepEqual(
-          locals[0],
-          {name: 'a', value: 'test'}
- 	      );
-        api.clear(brk,function(err) {
-          assert.ifError(err);
+        assert.deepEqual(locals[0], {name: 'a', value: 'test'});
+        api.clear(brk, function(err3) {
+          assert.ifError(err3);
           done();
-        })
+        });
       });
       process.nextTick(foo.bind(null, 'test'));
     });
@@ -100,24 +101,21 @@ describe(__filename, function() {
     // TODO: Have this actually implement Breakpoint
     const brk: stackdriver.Breakpoint = {
       id: 'fake-id-1234',
-      location: { path: 'test-duplicate-nested-expressions-code.js', line: 5 }
+      location: {path: 'test-duplicate-nested-expressions-code.js', line: 5}
     } as stackdriver.Breakpoint;
-    api.set(brk, function(err) {
-      assert.ifError(err);
-      api.wait(brk, function(err) {
-        assert.ifError(err);
+    api.set(brk, function(err1) {
+      assert.ifError(err1);
+      api.wait(brk, function(err2) {
+        assert.ifError(err2);
         // TODO: Determine how to remove this cast to any.
         const frame = (brk as any).stackFrames[0];
         const args = frame.arguments;
         const locals = frame.locals;
         assert.equal(args.length, 0, 'There should be zero arguments');
         assert.equal(locals.length, 1, 'There should be one local');
-        assert.deepEqual(
-          locals[0],
-          {name: 'a', value: '10'}
-        );
-        api.clear(brk, function(err) {
-          assert.ifError(err);
+        assert.deepEqual(locals[0], {name: 'a', value: '10'});
+        api.clear(brk, function(err3) {
+          assert.ifError(err3);
           done();
         });
       });
@@ -125,65 +123,60 @@ describe(__filename, function() {
     });
   });
 
-  it('Should read an argument value after its value is modified', function(done) {
-    // TODO: Have this actually implement Breakpoint
-    const brk: stackdriver.Breakpoint = {
-      id: 'fake-id-1234',
-      location: { path: 'test-duplicate-nested-expressions-code.js', line: 6 }
-    } as stackdriver.Breakpoint;
-    api.set(brk, function(err) {
-      assert.ifError(err);
-      api.wait(brk, function(err) {
-        assert.ifError(err);
-        // TODO: Determine how to remove this cast to any.
-        const frame = (brk as any).stackFrames[0];
-        const args = frame.arguments;
-        const locals = frame.locals;
-        assert.equal(args.length, 0, 'There should be zero arguments');
-        assert.equal(locals.length, 1, 'There should be one local');
-        assert.deepEqual(
-          locals[0],
-          {name: 'a', value: '11'}
-        );
-        api.clear(brk, function(err) {
-          assert.ifError(err);
-          done();
-        });
-      });
-      process.nextTick(foo.bind(null, 'test'));
-    });
-  });
+  it('Should read an argument value after its value is modified',
+     function(done) {
+       // TODO: Have this actually implement Breakpoint
+       const brk: stackdriver.Breakpoint = {
+         id: 'fake-id-1234',
+         location:
+             {path: 'test-duplicate-nested-expressions-code.js', line: 6}
+       } as stackdriver.Breakpoint;
+       api.set(brk, function(err1) {
+         assert.ifError(err1);
+         api.wait(brk, function(err2) {
+           assert.ifError(err2);
+           // TODO: Determine how to remove this cast to any.
+           const frame = (brk as any).stackFrames[0];
+           const args = frame.arguments;
+           const locals = frame.locals;
+           assert.equal(args.length, 0, 'There should be zero arguments');
+           assert.equal(locals.length, 1, 'There should be one local');
+           assert.deepEqual(locals[0], {name: 'a', value: '11'});
+           api.clear(brk, function(err3) {
+             assert.ifError(err3);
+             done();
+           });
+         });
+         process.nextTick(foo.bind(null, 'test'));
+       });
+     });
 
-  it('Should represent a const name at its local-scope when clearly defined', function(done) {
-    // TODO: Have this actually implement Breakpoint
-    const brk: stackdriver.Breakpoint = {
-      id: 'fake-id-1234',
-      location: { path: 'test-duplicate-nested-expressions-code.js', line: 8 }
-    } as stackdriver.Breakpoint;
-    api.set(brk, function(err) {
-      assert.ifError(err);
-      api.wait(brk, function(err) {
-        assert.ifError(err);
-        // TODO: Determine how to remove this cast to any.
-        const frame = (brk as any).stackFrames[0];
-        const args = frame.arguments;
-        const locals = frame.locals;
-        assert.equal(args.length, 0, 'There should be zero arguments');
-        assert.equal(locals.length, 2, 'There should be two locals');
-        assert.deepEqual(
-          locals[0],
-          {name: 'b', value: 'undefined'}
-        );
-        assert.deepEqual(
-          locals[1],
-          {name: 'a', value: 'true'}
-        );
-        api.clear(brk, function(err) {
-          assert.ifError(err);
-          done();
-        });
-      });
-      process.nextTick(foo.bind(null, 'test'));
-    });
-  });
+  it('Should represent a const name at its local-scope when clearly defined',
+     function(done) {
+       // TODO: Have this actually implement Breakpoint
+       const brk: stackdriver.Breakpoint = {
+         id: 'fake-id-1234',
+         location:
+             {path: 'test-duplicate-nested-expressions-code.js', line: 8}
+       } as stackdriver.Breakpoint;
+       api.set(brk, function(err1) {
+         assert.ifError(err1);
+         api.wait(brk, function(err2) {
+           assert.ifError(err2);
+           // TODO: Determine how to remove this cast to any.
+           const frame = (brk as any).stackFrames[0];
+           const args = frame.arguments;
+           const locals = frame.locals;
+           assert.equal(args.length, 0, 'There should be zero arguments');
+           assert.equal(locals.length, 2, 'There should be two locals');
+           assert.deepEqual(locals[0], {name: 'b', value: 'undefined'});
+           assert.deepEqual(locals[1], {name: 'a', value: 'true'});
+           api.clear(brk, function(err3) {
+             assert.ifError(err3);
+             done();
+           });
+         });
+         process.nextTick(foo.bind(null, 'test'));
+       });
+     });
 });

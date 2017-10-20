@@ -24,24 +24,24 @@ import {DebugApi} from './debugapi';
 
 export class DummyDebugApi implements DebugApi {
   constructor(
-      logger: Logger, _config: DebugAgentConfig, _jsFiles: ScanStats,
-      _sourcemapper: SourceMapper) {
+      logger: Logger, config: DebugAgentConfig, jsFiles: ScanStats,
+      sourcemapper: SourceMapper) {
     logger.error(
         'Debug agent cannot get node version. Cloud debugger is disabled.');
   }
-  set(_breakpoint: stackdriver.Breakpoint,
+  set(breakpoint: stackdriver.Breakpoint,
       cb: (err: Error|null) => void): void {
     return setImmediate(() => {
       cb(new Error('no debugapi running.'));
     });
   }
-  clear(_breakpoint: stackdriver.Breakpoint, cb: (err: Error|null) => void):
+  clear(breakpoint: stackdriver.Breakpoint, cb: (err: Error|null) => void):
       void {
     return setImmediate(() => {
       cb(new Error('no debugapi running.'));
     });
   }
-  wait(_breakpoint: stackdriver.Breakpoint, cb: (err?: Error) => void): void {
+  wait(breakpoint: stackdriver.Breakpoint, cb: (err?: Error) => void): void {
     return setImmediate(() => {
       cb(new Error('no debugapi running.'));
     });
@@ -51,6 +51,10 @@ export class DummyDebugApi implements DebugApi {
        print: (format: string, exps: string[]) => void,
        shouldStop: () => boolean) => void;
   disconnect: () => void;
-  numBreakpoints_: () => number;
-  numListeners_: () => number;
+  numBreakpoints_() {
+    return 0;
+  }
+  numListeners_() {
+    return 0;
+  }
 }

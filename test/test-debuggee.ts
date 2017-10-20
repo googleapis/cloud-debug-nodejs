@@ -32,14 +32,23 @@ describe('Debuggee', function() {
   });
 
   it('should throw on invalid input', function() {
-    assert.throws(function() { new Debuggee({}); });
-    assert.throws(function() { new Debuggee({project: '5'}); });
-    assert.throws(function() { new Debuggee({project: undefined}); });
-    assert.throws(function() { new Debuggee({project: 'test'}); });
     assert.throws(function() {
+      return new Debuggee({});
+    });
+    assert.throws(function() {
+      return new Debuggee({project: '5'});
+    });
+    assert.throws(function() {
+      return new Debuggee({project: undefined});
+    });
+    assert.throws(function() {
+      return new Debuggee({project: 'test'});
+    });
+    assert.throws(function() {
+      // tslint:disable-next-line:no-unused-expression
       new Debuggee({project: 'test', uniquifier: undefined});
       assert.throws(function() {
-        new Debuggee({project: 'test', uniquifier: 'uid'});
+        return new Debuggee({project: 'test', uniquifier: 'uid'});
       });
     });
   });

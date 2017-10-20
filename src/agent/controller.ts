@@ -33,7 +33,7 @@ import * as stackdriver from '../types/stackdriver';
 const API = 'https://clouddebugger.googleapis.com/v2/controller';
 
 export class Controller extends common.ServiceObject {
-  private nextWaitToken_: string|null;
+  private nextWaitToken: string|null;
 
   /**
    * @constructor
@@ -42,7 +42,7 @@ export class Controller extends common.ServiceObject {
     super({parent: debug, baseUrl: '/controller'});
 
     /** @private {string} */
-    this.nextWaitToken_ = null;
+    this.nextWaitToken = null;
   }
 
   /**
@@ -91,8 +91,8 @@ export class Controller extends common.ServiceObject {
     const that = this;
     assert(debuggee.id, 'should have a registered debuggee');
     const query: stackdriver.ListBreakpointsQuery = {successOnTimeout: true};
-    if (that.nextWaitToken_) {
-      query.waitToken = that.nextWaitToken_;
+    if (that.nextWaitToken) {
+      query.waitToken = that.nextWaitToken;
     }
 
     const uri = API + '/debuggees/' + encodeURIComponent(debuggee.id) +
@@ -116,7 +116,7 @@ export class Controller extends common.ServiceObject {
             return;
           } else {
             body = body || {};
-            that.nextWaitToken_ = body.nextWaitToken;
+            that.nextWaitToken = body.nextWaitToken;
             callback(null, response, body);
           }
         });

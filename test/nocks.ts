@@ -45,7 +45,7 @@ export function register(validator?: (body: any) => boolean): nock.Scope {
 
 export function projectId(reply: string): nock.Scope {
   return nock('http://metadata.google.internal')
-    .get('/computeMetadata/v1/project/project-id')
-    .once()
-    .reply(200, reply);
+      .get('/computeMetadata/v1/project/project-id')
+      .once()
+      .reply(200, reply);
 }
