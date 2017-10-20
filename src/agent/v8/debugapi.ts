@@ -41,12 +41,9 @@ interface DebugApiConstructor {
 }
 
 let debugApiConstructor: DebugApiConstructor;
-const nodeVersion = /v(\d+\.\d+\.\d+)/.exec(process.version);
 
-if (!nodeVersion || nodeVersion.length < 2) {
-  const dummyapi = require('./dummy-debugapi');
-  debugApiConstructor = dummyapi.DummyDebugApi;
-} else if (semver.satisfies(nodeVersion[1], '>=8')) {
+if (semver.satisfies(process.version, '>=8') &&
+    process.env.GCLOUD_USE_INSPECTOR) {
   const inspectorapi = require('./inspector-debugapi');
   debugApiConstructor = inspectorapi.InspectorDebugApi;
 } else {

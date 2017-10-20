@@ -19,6 +19,9 @@ install:
 test_script:
   # run tests
   - npm run build
+  - SET GCLOUD_USE_INSPECTOR=
+  - node_modules/.bin/mocha build/test --timeout 4000 --R
+  - SET GCLOUD_USE_INSPECTOR=1
   - node_modules/.bin/mocha build/test --timeout 4000 --R
 
 # Don't actually build using MSBuild

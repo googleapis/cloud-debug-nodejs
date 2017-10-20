@@ -28,7 +28,9 @@ export const messages = {
   ASYNC_TRACES_WARNING:
       'The Stackdriver Debugger for Node.js does not require V8 Inspector ' +
       'async stack traces. The INSPECTOR_ASYNC_STACK_TRACES_NOT_AVAILABLE ' +
-      'can be ignored.'
+      'can be ignored.',
+  INSPECTOR_NOT_AVAILABLE:
+      'The V8 Inspector protocol is only available in Node 8+'
 };
 
 export interface Listener {
