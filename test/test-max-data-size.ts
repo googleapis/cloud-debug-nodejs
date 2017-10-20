@@ -32,32 +32,34 @@ let api: debugapi.DebugApi;
 // TODO: Have this actually implement Breakpoint
 const breakpointInFoo: stackdriver.Breakpoint = {
   id: 'fake-id-123',
-  location: { path: 'build/test/test-max-data-size-code.js', line: 4 }
+  location: {path: 'build/test/test-max-data-size-code.js', line: 4}
 } as stackdriver.Breakpoint;
 
 describe('maxDataSize', function() {
-  const config = extend({}, defaultConfig, {
-    forceNewAgent_: true
-  });
+  const config = extend({}, defaultConfig, {forceNewAgent_: true});
 
   before(function(done) {
     if (!api) {
       // TODO: It appears `logLevel` is a typo and should be `level`.  However,
       //       with this change, the tests fail.  Resolve this.
-      const logger = new common.logger({ levelLevel: config.logLevel } as any as LoggerOptions);
+      const logger = new common.logger(
+          {levelLevel: config.logLevel} as any as LoggerOptions);
       scanner.scan(true, config.workingDirectory, /.js$/)
-        .then(function (fileStats) {
-          const jsStats = fileStats.selectStats(/.js$/);
-          const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
-          SourceMapper.create(mapFiles, function (err, mapper) {
-            assert(!err);
+          .then(function(fileStats) {
+            const jsStats = fileStats.selectStats(/.js$/);
+            const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
+            SourceMapper.create(mapFiles, function(err, mapper) {
+              assert(!err);
 
-            // TODO: Handle the case when mapper is undefined
-            // TODO: Handle the case when v8debugapi.create returns null
-            api = debugapi.create(logger, config, jsStats, mapper as SourceMapper.SourceMapper) as debugapi.DebugApi;
-            done();
+              // TODO: Handle the case when mapper is undefined
+              // TODO: Handle the case when v8debugapi.create returns null
+              api =
+                  debugapi.create(
+                      logger, config, jsStats,
+                      mapper as SourceMapper.SourceMapper) as debugapi.DebugApi;
+              done();
+            });
           });
-        });
     } else {
       done();
     }
@@ -68,7 +70,10 @@ describe('maxDataSize', function() {
     config.capture.maxDataSize = 5;
     // clone a clean breakpointInFoo
     // TODO: Have this actually implement Breakpoint.
-    const bp: stackdriver.Breakpoint = {id: breakpointInFoo.id, location: breakpointInFoo.location} as stackdriver.Breakpoint;
+    const bp: stackdriver.Breakpoint = {
+      id: breakpointInFoo.id,
+      location: breakpointInFoo.location
+    } as stackdriver.Breakpoint;
     // TODO: Determine how to remove this cast to any.
     api.set(bp, function(err1: Error) {
       assert.ifError(err1);
@@ -79,7 +84,8 @@ describe('maxDataSize', function() {
         assert(bp.variableTable.some(function(v) {
           // TODO: Handle the case when v is undefined
           // TODO: Handle the case when v.status is undefined
-          return ((v as any).status as any).description.format === 'Max data size reached';
+          return ((v as any).status as any).description.format ===
+              'Max data size reached';
         }));
         // TODO: Determine how to remove this cast to any.
         api.clear(bp, function(err3) {
@@ -88,7 +94,9 @@ describe('maxDataSize', function() {
           done();
         });
       });
-      process.nextTick(function() {foo(2);});
+      process.nextTick(function() {
+        foo(2);
+      });
     });
   });
 
@@ -97,7 +105,10 @@ describe('maxDataSize', function() {
     config.capture.maxDataSize = 0;
     // clone a clean breakpointInFoo
     // TODO: Have this actually implement breakpoint
-    const bp: stackdriver.Breakpoint = {id: breakpointInFoo.id, location: breakpointInFoo.location} as stackdriver.Breakpoint;
+    const bp: stackdriver.Breakpoint = {
+      id: breakpointInFoo.id,
+      location: breakpointInFoo.location
+    } as stackdriver.Breakpoint;
     api.set(bp, function(err1: Error) {
       assert.ifError(err1);
       api.wait(bp, function(err2: Error) {
@@ -105,19 +116,25 @@ describe('maxDataSize', function() {
         // TODO: Determine how to remove this cast to any.
         // TODO: The function supplied to reduce is of the wrong type.
         //       Fix this.
-        assert(bp.variableTable.reduce(function(acc: Function, elem: stackdriver.Variable) {
-          return acc &&
-                 (!elem.status ||
-                   elem.status.description.format !== 'Max data size reached');
-        // TODO: Fix this incorrect method signature.
-        } as any), true as any as string);
+        assert(
+            bp.variableTable.reduce(
+                function(acc: Function, elem: stackdriver.Variable) {
+                  return acc &&
+                      (!elem.status ||
+                       elem.status.description.format !==
+                           'Max data size reached');
+                  // TODO: Fix this incorrect method signature.
+                } as any),
+            true as any as string);
         api.clear(bp, function(err3) {
           config.capture.maxDataSize = oldMaxData;
           assert.ifError(err3);
           done();
         });
       });
-      process.nextTick(function() {foo(2);});
+      process.nextTick(function() {
+        foo(2);
+      });
     });
   });
 });

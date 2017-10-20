@@ -187,7 +187,7 @@ class StateResolver {
                this.rawVariableTable.length &&  // NOTE: length changes in loop
            (this.totalSize < this.config.capture.maxDataSize || noLimit)) {
       assert(!this.resolvedVariableTable[index]);  // shouldn't have it
-                                                    // resolved yet
+                                                   // resolved yet
       const isEvaluated = evalIndexSet.has(index);
       if (this.rawVariableTable[index].objectId) {
         this.resolvedVariableTable[index] = this.resolveRemoteObject_(
@@ -227,8 +227,7 @@ class StateResolver {
         if (variable.varTableIndex && variable.varTableIndex >= fromIndex) {
           // make it point to the sentinel 'buffer full' value
           variable.varTableIndex = BUFFER_FULL_MESSAGE_INDEX;
-          variable.status =
-              that.messageTable[BUFFER_FULL_MESSAGE_INDEX].status;
+          variable.status = that.messageTable[BUFFER_FULL_MESSAGE_INDEX].status;
         }
         if (variable.members) {
           processBufferFull(variable.members);

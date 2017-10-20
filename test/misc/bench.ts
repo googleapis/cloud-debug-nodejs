@@ -34,10 +34,7 @@ function bench(message: any, f: any) {
 
 bench('100x set', function() {
   for (let i = 0; i < 100; i++) {
-    const bp = {
-    id: 'fake-breakpoint',
-    location: { path: __filename, line: 4}
-    };
+    const bp = {id: 'fake-breakpoint', location: {path: __filename, line: 4}};
     v8debugapi.set(bp);
     v8debugapi.clear(bp);
   }
@@ -55,20 +52,20 @@ bench('100x set + validate', function() {
   }
 });
 
-bench('fib(29)', function() {fib(29);});
+bench('fib(29)', function() {
+  fib(29);
+});
 
 // FIXME: the following test isn't really working because of a V8 bug.
 (function() {
-  const bp = {
-    id: 'breakpoint1',
-    location: {path: __filename, line: 4},
-    condition: 'n > 50000'
-  };
-  v8debugapi.set(bp);
-  bench('fib(29) with breakpoint: ', function() {
-    fib(29);
-  });
-  v8debugapi.clear(bp);
+const bp = {
+  id: 'breakpoint1',
+  location: {path: __filename, line: 4},
+  condition: 'n > 50000'
+};
+v8debugapi.set(bp);
+bench('fib(29) with breakpoint: ', function() {
+  fib(29);
+});
+v8debugapi.clear(bp);
 })();
-
-

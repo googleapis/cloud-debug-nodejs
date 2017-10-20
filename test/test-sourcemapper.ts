@@ -38,7 +38,9 @@ const BASE_PATH = path.join(__dirname, 'fixtures', 'sourcemapper');
  *
  *  Note: The line numbers are zero-based
  */
-function testTool(tool: string, relativeMapFilePath: string, relativeInputFilePath: string, relativeOutputFilePath: string, inToOutLineNums: Array<Array<number>>) {
+function testTool(
+    tool: string, relativeMapFilePath: string, relativeInputFilePath: string,
+    relativeOutputFilePath: string, inToOutLineNums: Array<Array<number>>) {
   const mapFilePath = path.join(BASE_PATH, relativeMapFilePath);
   const inputFilePath = path.join(BASE_PATH, relativeInputFilePath);
   const outputFilePath = path.join(BASE_PATH, relativeOutputFilePath);
@@ -46,158 +48,94 @@ function testTool(tool: string, relativeMapFilePath: string, relativeInputFilePa
   describe('sourcemapper for tool ' + tool, function() {
     let sourcemapper: sm.SourceMapper;
 
-    it('for tool ' + tool,
-      function(done) {
-        setTimeout(function() {
-          assert.ok(sourcemapper, 'should create the SourceMapper quickly');
-          done();
-        }, 300);
+    it('for tool ' + tool, function(done) {
+      setTimeout(function() {
+        assert.ok(sourcemapper, 'should create the SourceMapper quickly');
+        done();
+      }, 300);
 
-        sm.create([mapFilePath], function(err, mapper) {
-          assert.ifError(err);
-          // TODO: Handle the case when sourceMapper is undefined
-          sourcemapper = mapper as sm.SourceMapper;
-        });
+      sm.create([mapFilePath], function(err, mapper) {
+        assert.ifError(err);
+        // TODO: Handle the case when sourceMapper is undefined
+        sourcemapper = mapper as sm.SourceMapper;
+      });
     });
 
     it('for tool ' + tool +
-      ' it states that it has mapping info for files it knows about',
-      function(done) {
-        assert.equal(sourcemapper.hasMappingInfo(inputFilePath), true);
-        done();
-    });
+           ' it states that it has mapping info for files it knows about',
+       function(done) {
+         assert.equal(sourcemapper.hasMappingInfo(inputFilePath), true);
+         done();
+       });
 
     it('for tool ' + tool +
-      ' it states that it has mapping info for files with a path' +
-      ' similar to a path it knows about',
-      function(done) {
-        assert.equal(sourcemapper.hasMappingInfo(relativeInputFilePath), true);
-        const movedPath = path.join('/some/other/base/dir/', relativeInputFilePath);
-        assert.equal(sourcemapper.hasMappingInfo(movedPath), true);
-        done();
-    });
+           ' it states that it has mapping info for files with a path' +
+           ' similar to a path it knows about',
+       function(done) {
+         assert.equal(sourcemapper.hasMappingInfo(relativeInputFilePath), true);
+         const movedPath =
+             path.join('/some/other/base/dir/', relativeInputFilePath);
+         assert.equal(sourcemapper.hasMappingInfo(movedPath), true);
+         done();
+       });
 
     it('for tool ' + tool +
-      ' it states that it does not have mapping info for a file it ' +
-      'doesn\'t recognize',
-      function(done) {
-        assert.equal(sourcemapper.hasMappingInfo(inputFilePath + '_INVALID'), false);
-        done();
-    });
+           ' it states that it does not have mapping info for a file it ' +
+           'doesn\'t recognize',
+       function(done) {
+         assert.equal(
+             sourcemapper.hasMappingInfo(inputFilePath + '_INVALID'), false);
+         done();
+       });
 
-    const testLineMapping = function(inputLine: number, expectedOutputLine: number) {
+    const testLineMapping = function(
+        inputLine: number, expectedOutputLine: number) {
       const info = sourcemapper.mappingInfo(inputFilePath, inputLine, 0);
-      assert.notEqual(info, null,
-        'The mapping info for file ' + inputFilePath + ' must be non-null');
+      assert.notEqual(
+          info, null,
+          'The mapping info for file ' + inputFilePath + ' must be non-null');
       // TODO: Handle the case when info is undefined
       assert.equal((info as any).file, outputFilePath);
-      assert.equal((info as any).line, expectedOutputLine,
-        ' invalid mapping for input line ' + inputLine);
+      assert.equal(
+          (info as any).line, expectedOutputLine,
+          ' invalid mapping for input line ' + inputLine);
     };
 
-    it('for tool ' + tool + ' it properly maps line numbers',
-      function(done) {
-        inToOutLineNums.forEach(function(inToOutPair) {
-          testLineMapping(inToOutPair[0], inToOutPair[1]);
-        });
+    it('for tool ' + tool + ' it properly maps line numbers', function(done) {
+      inToOutLineNums.forEach(function(inToOutPair) {
+        testLineMapping(inToOutPair[0], inToOutPair[1]);
+      });
 
-        done();
+      done();
     });
   });
 }
 
-testTool('Babel',
-  path.join('babel', 'out.js.map'),
-  path.join('babel', 'in.js'),
-  path.join('babel', 'out.js'), [
-  [1, 14],
-  [2, 15],
-  [3, 16],
-  [4, 17],
-  [5, 18],
-  [6, 19],
-  [8, 21],
-  [9, 22],
-  [11, 24],
-  [12, 26],
-  [13, 27],
-  [14, 30],
-  [15, 31],
-  [16, 32],
-  [18, 36],
-  [19, 37],
-  [20, 38],
-  [21, 39],
-  [23, 42],
-  [24, 43],
-  [25, 44],
-  [28, 50],
-  [29, 53],
-  [30, 56],
-  [31, 58],
-  [32, 60],
-  [34, 64],
-  [35, 65],
-  [36, 66],
-  [37, 67],
-  [39, 70],
-  [40, 71],
-  [44, 78],
-  [45, 81],
-  [47, 83],
-  [50, 85],
-  [54, 88],
-  [55, 89],
-  [56, 90],
-  [59, 93],
-  [62, 99],
-  [63, 102],
-  [66, 105],
-  [69, 108],
-  [70, 109],
-  [73, 112],
-  [74, 113],
-  [77, 116],
-  [78, 117],
-  [79, 118]
-]);
+testTool(
+    'Babel', path.join('babel', 'out.js.map'), path.join('babel', 'in.js'),
+    path.join('babel', 'out.js'), [
+      [1, 14],   [2, 15],   [3, 16],   [4, 17],   [5, 18],   [6, 19],
+      [8, 21],   [9, 22],   [11, 24],  [12, 26],  [13, 27],  [14, 30],
+      [15, 31],  [16, 32],  [18, 36],  [19, 37],  [20, 38],  [21, 39],
+      [23, 42],  [24, 43],  [25, 44],  [28, 50],  [29, 53],  [30, 56],
+      [31, 58],  [32, 60],  [34, 64],  [35, 65],  [36, 66],  [37, 67],
+      [39, 70],  [40, 71],  [44, 78],  [45, 81],  [47, 83],  [50, 85],
+      [54, 88],  [55, 89],  [56, 90],  [59, 93],  [62, 99],  [63, 102],
+      [66, 105], [69, 108], [70, 109], [73, 112], [74, 113], [77, 116],
+      [78, 117], [79, 118]
+    ]);
 
-testTool('Typescript',
-  path.join('typescript', 'out.js.map'),
-  path.join('typescript', 'in.ts'),
-  path.join('typescript', 'out.js'), [
-  [1, 5],
-  [2, 6],
-  [3, 9],
-  [4, 10],
-  [7, 12],
-  [8, 13],
-  [12, 17],
-  [13, 19],
-  [14, 20],
-  [18, 24],
-  [19, 25],
-  [22, 27],
-  [23, 28]
-]);
+testTool(
+    'Typescript', path.join('typescript', 'out.js.map'),
+    path.join('typescript', 'in.ts'), path.join('typescript', 'out.js'), [
+      [1, 5], [2, 6], [3, 9], [4, 10], [7, 12], [8, 13], [12, 17], [13, 19],
+      [14, 20], [18, 24], [19, 25], [22, 27], [23, 28]
+    ]);
 
-testTool('Coffeescript',
-  path.join('coffeescript', 'in.js.map'),
-  path.join('coffeescript', 'in.coffee'),
-  path.join('coffeescript', 'in.js'),[
-  [1, 1],
-  [2, 7],
-  [3, 8],
-  [4, 9],
-  [6, 12],
-  [7, 13],
-  [9, 20],
-  [10, 23],
-  [11, 24],
-  [13, 31],
-  [15, 33],
-  [17, 36],
-  [19, 38],
-  [20, 40],
-  [21, 44]
-]);
+testTool(
+    'Coffeescript', path.join('coffeescript', 'in.js.map'),
+    path.join('coffeescript', 'in.coffee'), path.join('coffeescript', 'in.js'),
+    [
+      [1, 1], [2, 7], [3, 8], [4, 9], [6, 12], [7, 13], [9, 20], [10, 23],
+      [11, 24], [13, 31], [15, 33], [17, 36], [19, 38], [20, 40], [21, 44]
+    ]);

@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-import * as stackdriver from '../src/types/stackdriver';
-import {DebugAgentConfig} from '../src/agent/config';
-import {Debuggee} from '../src/debuggee';
-import * as semver from 'semver';
-
+import * as assert from 'assert';
 import * as _ from 'lodash';
 import * as path from 'path';
-import * as assert from 'assert';
+import * as semver from 'semver';
+
+import {DebugAgentConfig} from '../src/agent/config';
 import DEFAULT_CONFIG from '../src/agent/config';
+import {Debuggee} from '../src/debuggee';
+import * as stackdriver from '../src/types/stackdriver';
+
 (DEFAULT_CONFIG as any).allowExpressions = true;
 (DEFAULT_CONFIG as any).workingDirectory = path.join(__dirname, '..', '..');
 import {Debuglet} from '../src/agent/debuglet';
@@ -54,7 +55,8 @@ const defaultConfig = extend(true, {}, DEFAULT_CONFIG, {logLevel: 0});
 
 let oldGP: string|undefined;
 
-declare type MetadataCallback = (err: Error|null, ob?: any, result?: string) => void;
+declare type MetadataCallback = (err: Error|null, ob?: any, result?: string) =>
+    void;
 
 // TODO: Have this actually implement Breakpoint.
 const bp: stackdriver.Breakpoint = {
@@ -93,11 +95,14 @@ describe('Debuglet', function() {
       // TODO: Fix this cast to any that is caused by the fact that `lookup`
       //       is a readonly property.
       // TODO: Determine if the hostname parameter should be used.
-      (dns as any).lookup = (hostname: string|null, cb: (err: Error|null, param: {address: string, family: string}) => void) => {
-        setImmediate(() => {
-          cb(null, { address: '700.800.900.fake', family: 'Addams'});
-        });
-      };
+      (dns as any).lookup =
+          (hostname: string|null,
+           cb: (err: Error|null, param: {address: string, family: string}) =>
+               void) => {
+            setImmediate(() => {
+              cb(null, {address: '700.800.900.fake', family: 'Addams'});
+            });
+          };
 
       Debuglet.runningOnGCP().then((onGCP) => {
         assert.strictEqual(onGCP, true);
@@ -163,7 +168,9 @@ describe('Debuglet', function() {
 
       // TODO: Determine if the path parameter should be used.
       metadata.project = (instancePath: string, cb: MetadataCallback) => {
-        setImmediate(() => { cb(new Error()); });
+        setImmediate(() => {
+          cb(new Error());
+        });
       };
 
       // TODO: Determine if the err parameter should be used.
@@ -211,7 +218,9 @@ describe('Debuglet', function() {
 
       // TODO: Determine if the path parameter should be used.
       metadata.instance = (instancePath: string, cb: MetadataCallback) => {
-        setImmediate(() => { cb(new Error()); });
+        setImmediate(() => {
+          cb(new Error());
+        });
       };
 
       // TODO: Determine if the err parameter should be used.
@@ -239,7 +248,7 @@ describe('Debuglet', function() {
         // TODO: Determine if this should be used here.
         return Promise.reject('');
       };
-      Debuglet.getProjectId({ projectId: 'from-config' }).then((projectId) => {
+      Debuglet.getProjectId({projectId: 'from-config'}).then((projectId) => {
         assert.strictEqual(projectId, 'from-config');
         done();
       });
@@ -300,7 +309,9 @@ describe('Debuglet', function() {
       oldGP = process.env.GCLOUD_PROJECT;
     });
 
-    after(function() { process.env.GCLOUD_PROJECT = oldGP; });
+    after(function() {
+      process.env.GCLOUD_PROJECT = oldGP;
+    });
     beforeEach(function() {
       delete process.env.GCLOUD_PROJECT;
       nocks.oauth2();
@@ -314,11 +325,14 @@ describe('Debuglet', function() {
       const testValue = 2 * defaultConfig.capture.maxExpandFrames;
       const config = {capture: {maxExpandFrames: testValue}};
 
-      // TODO: Fix this so that config does not have to be cast as DebugAgentConfig.
-      const mergedConfig = Debuglet.normalizeConfig_(config as DebugAgentConfig);
+      // TODO: Fix this so that config does not have to be cast as
+      // DebugAgentConfig.
+      const mergedConfig =
+          Debuglet.normalizeConfig_(config as DebugAgentConfig);
       // TODO: Debuglet.normalizeConfig_() expects 1 parameter but the original
       //       test code had zero arguments here.  Determine which is correct.
-      const compareConfig = Debuglet.normalizeConfig_(null as any as DebugAgentConfig);
+      const compareConfig =
+          Debuglet.normalizeConfig_(null as any as DebugAgentConfig);
       // The actual config should be exactly defaultConfig with only
       // maxExpandFrames adjusted.
       compareConfig.capture.maxExpandFrames = testValue;
@@ -358,8 +372,8 @@ describe('Debuglet', function() {
         done();
       });
 
-      debuglet.start();
-    });
+         debuglet.start();
+       });
 
     it('should not start when projectId is not available', function(done) {
       const savedGetProjectId = Debuglet.getProjectId;
@@ -410,9 +424,9 @@ describe('Debuglet', function() {
       const debuglet = new Debuglet(debug, defaultConfig);
 
       nocks.projectId('project-via-metadata');
-      const scope = nock(API)
-                      .post(REGISTER_PATH)
-                      .reply(200, {debuggee: {id: DEBUGGEE_ID}});
+      const scope = nock(API).post(REGISTER_PATH).reply(200, {
+        debuggee: {id: DEBUGGEE_ID}
+      });
 
       debuglet.once('registered', function(id: string) {
         assert.equal(id, DEBUGGEE_ID);
@@ -427,9 +441,13 @@ describe('Debuglet', function() {
     });
 
     describe('environment variables', function() {
-      let env: { [key: string]: string };
-      beforeEach(function() { env = extend({}, process.env); });
-      afterEach(function() { process.env = extend({}, env); });
+      let env: {[key: string]: string};
+      beforeEach(function() {
+        env = extend({}, process.env);
+      });
+      afterEach(function() {
+        process.env = extend({}, env);
+      });
 
       it('should use GCLOUD_PROJECT in lieu of config.projectId', function(
                                                                       done) {
@@ -437,22 +455,24 @@ describe('Debuglet', function() {
         const debug = new Debug({credentials: fakeCredentials}, packageInfo);
         const debuglet = new Debuglet(debug, defaultConfig);
 
-        nocks.projectId('project-via-metadata');
-        const scope = nock(API)
-                        .post(REGISTER_PATH)
-                        .reply(200, {debuggee: {id: DEBUGGEE_ID}});
+           nocks.projectId('project-via-metadata');
+           const scope = nock(API).post(REGISTER_PATH).reply(200, {
+             debuggee: {id: DEBUGGEE_ID}
+           });
 
-        debuglet.once('registered', function(id: string) {
-          assert.equal(id, DEBUGGEE_ID);
-          // TODO: Handle the case where debuglet.debuggee_ is undefined
-          assert.equal((debuglet.debuggee as any).project, process.env.GCLOUD_PROJECT);
-          debuglet.stop();
-          scope.done();
-          done();
-        });
+           debuglet.once('registered', function(id: string) {
+             assert.equal(id, DEBUGGEE_ID);
+             // TODO: Handle the case where debuglet.debuggee_ is undefined
+             assert.equal(
+                 (debuglet.debuggee as any).project,
+                 process.env.GCLOUD_PROJECT);
+             debuglet.stop();
+             scope.done();
+             done();
+           });
 
-        debuglet.start();
-      });
+           debuglet.start();
+         });
 
       it('should use options.projectId in preference to the environment variable',
          function(done) {
@@ -464,14 +484,15 @@ describe('Debuglet', function() {
            const debuglet = new Debuglet(debug, defaultConfig);
 
            nocks.projectId('project-via-metadata');
-           const scope = nock(API)
-                           .post(REGISTER_PATH)
-                           .reply(200, {debuggee: {id: DEBUGGEE_ID}});
+           const scope = nock(API).post(REGISTER_PATH).reply(200, {
+             debuggee: {id: DEBUGGEE_ID}
+           });
 
            debuglet.once('registered', function(id: string) {
              assert.equal(id, DEBUGGEE_ID);
              // TODO: Handle the case where debuglet.debuggee_ is undefined
-             assert.equal((debuglet.debuggee as any).project, 'project-via-options');
+             assert.equal(
+                 (debuglet.debuggee as any).project, 'project-via-options');
              debuglet.stop();
              scope.done();
              done();
@@ -487,9 +508,9 @@ describe('Debuglet', function() {
         const debuglet = new Debuglet(debug, defaultConfig);
 
         nocks.projectId('project-via-metadata');
-        const scope = nock(API)
-                        .post(REGISTER_PATH)
-                        .reply(200, {debuggee: {id: DEBUGGEE_ID}});
+        const scope = nock(API).post(REGISTER_PATH).reply(200, {
+          debuggee: {id: DEBUGGEE_ID}
+        });
 
         debuglet.once('registered', function() {
           const logger = debuglet.logger;
@@ -499,7 +520,9 @@ describe('Debuglet', function() {
           let buffer = '';
           const oldLog = console.log;
 
-          console.log = function(str) { buffer += str; };
+          console.log = function(str) {
+            buffer += str;
+          };
           logger.info(STRING1);
           logger.debug(STRING2);
           console.log = oldLog;
@@ -522,10 +545,10 @@ describe('Debuglet', function() {
         const debuglet = new Debuglet(debug, defaultConfig);
         assert.ok(debuglet.config);
         assert.ok(debuglet.config.serviceContext);
-        assert.strictEqual(debuglet.config.serviceContext.service,
-                           'fake-gae-service');
-        assert.strictEqual(debuglet.config.serviceContext.version,
-                           'fake-gae-version');
+        assert.strictEqual(
+            debuglet.config.serviceContext.service, 'fake-gae-service');
+        assert.strictEqual(
+            debuglet.config.serviceContext.version, 'fake-gae-version');
       });
 
       it('should respect GAE_MODULE_NAME and GAE_MODULE_VERSION env. vars.',
@@ -536,10 +559,10 @@ describe('Debuglet', function() {
            const debuglet = new Debuglet(debug, defaultConfig);
            assert.ok(debuglet.config);
            assert.ok(debuglet.config.serviceContext);
-           assert.strictEqual(debuglet.config.serviceContext.service,
-                              'fake-gae-service');
-           assert.strictEqual(debuglet.config.serviceContext.version,
-                              'fake-gae-version');
+           assert.strictEqual(
+               debuglet.config.serviceContext.service, 'fake-gae-service');
+           assert.strictEqual(
+               debuglet.config.serviceContext.version, 'fake-gae-version');
          });
 
       it('should respect FUNCTION_NAME env. var.',
@@ -564,10 +587,10 @@ describe('Debuglet', function() {
         const debuglet = new Debuglet(debug, defaultConfig);
         assert.ok(debuglet.config);
         assert.ok(debuglet.config.serviceContext);
-        assert.strictEqual(debuglet.config.serviceContext.service,
-                           'fake-gae-service');
-        assert.strictEqual(debuglet.config.serviceContext.version,
-                           'fake-gae-version');
+        assert.strictEqual(
+            debuglet.config.serviceContext.service, 'fake-gae-service');
+        assert.strictEqual(
+            debuglet.config.serviceContext.version, 'fake-gae-version');
       });
 
       it('should respect GAE_MINOR_VERSION env. var. when available',
@@ -577,8 +600,9 @@ describe('Debuglet', function() {
            const debuglet = new Debuglet(debug, defaultConfig);
            assert.ok(debuglet.config);
            assert.ok(debuglet.config.serviceContext);
-           assert.strictEqual(debuglet.config.serviceContext.minorVersion_,
-                              'some minor version');
+           assert.strictEqual(
+               debuglet.config.serviceContext.minorVersion_,
+               'some minor version');
          });
 
       it('should conjure a fake minor version when running on flex',
@@ -602,7 +626,8 @@ describe('Debuglet', function() {
                //       is.  That is, if minorVersion is replaced with the
                //       correctly named minorVersion_, then the test fails.
                //       Resolve this.
-               _.isUndefined((debuglet.config.serviceContext as any).minorVersion));
+               _.isUndefined(
+                   (debuglet.config.serviceContext as any).minorVersion));
          });
 
       it('should not provide minorversion upon registration on non flex',
@@ -611,12 +636,16 @@ describe('Debuglet', function() {
                {projectId: 'fake-project', credentials: fakeCredentials}, packageInfo);
            const debuglet = new Debuglet(debug, defaultConfig);
 
-           const scope =
-               nock(API).post(REGISTER_PATH, function(body: any) {
-                          assert.ok(
-                              _.isUndefined(body.debuggee.labels.minorversion));
-                          return true;
-                        }).once().reply(200, {debuggee: {id: DEBUGGEE_ID}});
+           const scope = nock(API)
+                             .post(
+                                 REGISTER_PATH,
+                                 function(body: any) {
+                                   assert.ok(_.isUndefined(
+                                       body.debuggee.labels.minorversion));
+                                   return true;
+                                 })
+                             .once()
+                             .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
            // TODO: Determine if the id parameter should be used.
            debuglet.once('registered', function(id: string) {
@@ -641,14 +670,14 @@ describe('Debuglet', function() {
                        return true;
                      }).once().reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
-        // TODO: Determine if the response parameter should be used.
-        debuglet.once('registered', function(id: string) {
-          debuglet.stop();
-          scope.done();
-          done();
-        });
-        debuglet.start();
-      });
+           // TODO: Determine if the response parameter should be used.
+           debuglet.once('registered', function(id: string) {
+             debuglet.stop();
+             scope.done();
+             done();
+           });
+           debuglet.start();
+         });
     });
 
     it('should retry on failed registration', function(done) {
@@ -658,12 +687,12 @@ describe('Debuglet', function() {
       const debuglet = new Debuglet(debug, defaultConfig);
 
       const scope = nock(API)
-                      .post(REGISTER_PATH)
-                      .reply(404)
-                      .post(REGISTER_PATH)
-                      .reply(509)
-                      .post(REGISTER_PATH)
-                      .reply(200, {debuggee: {id: DEBUGGEE_ID}});
+                        .post(REGISTER_PATH)
+                        .reply(404)
+                        .post(REGISTER_PATH)
+                        .reply(509)
+                        .post(REGISTER_PATH)
+                        .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
       debuglet.once('registered', function(id: string) {
         assert.equal(id, DEBUGGEE_ID);
@@ -696,9 +725,9 @@ describe('Debuglet', function() {
       const debuglet = new Debuglet(debug, defaultConfig);
 
       nocks.oauth2();
-      const scope = nock(API)
-                      .post(REGISTER_PATH)
-                      .reply(200, {debuggee: {id: DEBUGGEE_ID}});
+      const scope = nock(API).post(REGISTER_PATH).reply(200, {
+        debuggee: {id: DEBUGGEE_ID}
+      });
 
       debuglet.once('registered', function(id: string) {
         assert.equal(id, DEBUGGEE_ID);
@@ -717,18 +746,18 @@ describe('Debuglet', function() {
       };
       const clusterScope =
           nock('http://metadata.google.internal')
-            .get('/computeMetadata/v1/instance/attributes/cluster-name')
-            .once()
-            .reply(200, 'cluster-name-from-metadata');
+              .get('/computeMetadata/v1/instance/attributes/cluster-name')
+              .once()
+              .reply(200, 'cluster-name-from-metadata');
 
       const debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials}, packageInfo);
       const debuglet = new Debuglet(debug, defaultConfig);
 
       nocks.oauth2();
-      const scope = nock(API)
-                      .post(REGISTER_PATH)
-                      .reply(200, {debuggee: {id: DEBUGGEE_ID}});
+      const scope = nock(API).post(REGISTER_PATH).reply(200, {
+        debuggee: {id: DEBUGGEE_ID}
+      });
 
       debuglet.once('registered', function(id: string) {
         assert.equal(id, DEBUGGEE_ID);
@@ -747,7 +776,7 @@ describe('Debuglet', function() {
           {projectId: 'fake-project', credentials: fakeCredentials}, packageInfo);
       const old = Debuglet.prototype.getSourceContext_;
       Debuglet.prototype.getSourceContext_ = function(cb) {
-        setImmediate(function () {
+        setImmediate(function() {
           // TODO: Determine if 5 should be converted to a string or if the
           //       the object literal should allow keys with values that are
           //       numbers.
@@ -758,10 +787,14 @@ describe('Debuglet', function() {
       };
       const debuglet = new Debuglet(debug, defaultConfig);
 
-      const scope = nock(API).post(REGISTER_PATH, function(body: any) {
-                             return body.debuggee.sourceContexts[0] &&
-                                    body.debuggee.sourceContexts[0].a === 5;
-                           }).reply(200, {debuggee: {id: DEBUGGEE_ID}});
+      const scope = nock(API)
+                        .post(
+                            REGISTER_PATH,
+                            function(body: any) {
+                              return body.debuggee.sourceContexts[0] &&
+                                  body.debuggee.sourceContexts[0].a === 5;
+                            })
+                        .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
       debuglet.once('registered', function(id: string) {
         Debuglet.prototype.getSourceContext_ = old;
@@ -781,10 +814,9 @@ describe('Debuglet', function() {
              {projectId: 'fake-project', credentials: fakeCredentials}, packageInfo);
          const debuglet = new Debuglet(debug, defaultConfig);
 
-         const scope =
-             nock(API)
-                 .post(REGISTER_PATH)
-                 .reply(200, {debuggee: {id: DEBUGGEE_ID, isDisabled: true}});
+         const scope = nock(API).post(REGISTER_PATH).reply(200, {
+           debuggee: {id: DEBUGGEE_ID, isDisabled: true}
+         });
 
          debuglet.once('remotelyDisabled', function() {
            assert.ok(!debuglet.fetcherActive);
@@ -832,12 +864,12 @@ describe('Debuglet', function() {
       const debuglet = new Debuglet(debug, defaultConfig);
 
       const scope = nock(API)
-                      .post(REGISTER_PATH)
-                      .reply(200, {debuggee: {id: DEBUGGEE_ID}})
-                      .get(BPS_PATH + '?successOnTimeout=true')
-                      .reply(404)
-                      .post(REGISTER_PATH)
-                      .reply(200, {debuggee: {id: DEBUGGEE_ID}});
+                        .post(REGISTER_PATH)
+                        .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+                        .get(BPS_PATH + '?successOnTimeout=true')
+                        .reply(404)
+                        .post(REGISTER_PATH)
+                        .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
       debuglet.once('registered', function(id1: string) {
         assert.equal(id1, DEBUGGEE_ID);
@@ -859,10 +891,10 @@ describe('Debuglet', function() {
       const debuglet = new Debuglet(debug, defaultConfig);
 
       const scope = nock(API)
-                      .post(REGISTER_PATH)
-                      .reply(200, {debuggee: {id: DEBUGGEE_ID}})
-                      .get(BPS_PATH + '?successOnTimeout=true')
-                      .reply(200, {breakpoints: [bp]});
+                        .post(REGISTER_PATH)
+                        .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+                        .get(BPS_PATH + '?successOnTimeout=true')
+                        .reply(200, {breakpoints: [bp]});
 
       debuglet.once('registered', function reg(id: string) {
         assert.equal(id, DEBUGGEE_ID);
@@ -901,19 +933,19 @@ describe('Debuglet', function() {
              verifyBreakpointRejection.bind(null, EXPRESSIONS_REGEX))
         .reply(200);
 
-      debuglet.once('registered', function reg(id: string) {
-        assert.equal(id, DEBUGGEE_ID);
-        setTimeout(function() {
-          assert.ok(!debuglet.activeBreakpointMap.test);
-          debuglet.stop();
-          debuglet.config.allowExpressions = true;
-          scope.done();
-          done();
-        }, 1000);
-      });
+         debuglet.once('registered', function reg(id: string) {
+           assert.equal(id, DEBUGGEE_ID);
+           setTimeout(function() {
+             assert.ok(!debuglet.activeBreakpointMap.test);
+             debuglet.stop();
+             debuglet.config.allowExpressions = true;
+             scope.done();
+             done();
+           }, 1000);
+         });
 
-      debuglet.start();
-    });
+         debuglet.start();
+       });
 
     it('should reject breakpoints with expressions when allowExpressions=false',
         function(done) {
@@ -939,19 +971,19 @@ describe('Debuglet', function() {
              verifyBreakpointRejection.bind(null, EXPRESSIONS_REGEX))
         .reply(200);
 
-      debuglet.once('registered', function reg(id: string) {
-        assert.equal(id, DEBUGGEE_ID);
-        setTimeout(function() {
-          assert.ok(!debuglet.activeBreakpointMap.test);
-          debuglet.stop();
-          debuglet.config.allowExpressions = true;
-          scope.done();
-          done();
-        }, 1000);
-      });
+         debuglet.once('registered', function reg(id: string) {
+           assert.equal(id, DEBUGGEE_ID);
+           setTimeout(function() {
+             assert.ok(!debuglet.activeBreakpointMap.test);
+             debuglet.stop();
+             debuglet.config.allowExpressions = true;
+             scope.done();
+             done();
+           }, 1000);
+         });
 
-      debuglet.start();
-    });
+         debuglet.start();
+       });
 
     it('should re-fetch breakpoints on error', function(done) {
       this.timeout(6000);
@@ -961,24 +993,25 @@ describe('Debuglet', function() {
       const debuglet = new Debuglet(debug, defaultConfig);
 
       const scope = nock(API)
-                      .post(REGISTER_PATH)
-                      .reply(200, {debuggee: {id: DEBUGGEE_ID}})
-                      .post(REGISTER_PATH)
-                      .reply(200, {debuggee: {id: DEBUGGEE_ID}})
-                      .get(BPS_PATH + '?successOnTimeout=true')
-                      .reply(404)
-                      .get(BPS_PATH + '?successOnTimeout=true')
-                      .reply(200, {waitExpired: true})
-                      .get(BPS_PATH + '?successOnTimeout=true')
-                      .reply(200, {breakpoints: [bp, errorBp]})
-                      .put(BPS_PATH + '/' + errorBp.id,
-                           function(body: any) {
-                             const status = body.breakpoint.status;
-                             return status.isError &&
-                                    status.description.format.indexOf(
-                                        'actions are CAPTURE') !== -1;
-                           })
-                      .reply(200);
+                        .post(REGISTER_PATH)
+                        .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+                        .post(REGISTER_PATH)
+                        .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+                        .get(BPS_PATH + '?successOnTimeout=true')
+                        .reply(404)
+                        .get(BPS_PATH + '?successOnTimeout=true')
+                        .reply(200, {waitExpired: true})
+                        .get(BPS_PATH + '?successOnTimeout=true')
+                        .reply(200, {breakpoints: [bp, errorBp]})
+                        .put(
+                            BPS_PATH + '/' + errorBp.id,
+                            function(body: any) {
+                              const status = body.breakpoint.status;
+                              return status.isError &&
+                                  status.description.format.indexOf(
+                                      'actions are CAPTURE') !== -1;
+                            })
+                        .reply(200);
 
       debuglet.once('registered', function reg(id: string) {
         assert.equal(id, DEBUGGEE_ID);
@@ -1001,19 +1034,20 @@ describe('Debuglet', function() {
                           {breakpointExpirationSec: 1, forceNewAgent_: true});
       this.timeout(6000);
 
-      const scope =
-          nock(API)
-              .post(REGISTER_PATH)
-              .reply(200, {debuggee: {id: DEBUGGEE_ID}})
-              .get(BPS_PATH + '?successOnTimeout=true')
-              .reply(200, {breakpoints: [bp]})
-              .put(BPS_PATH + '/test',
-                   function(body: any) {
-                     const status = body.breakpoint.status;
-                     return status.description.format === 'The snapshot has expired' &&
-                            status.refersTo === 'BREAKPOINT_AGE';
-                   })
-              .reply(200);
+      const scope = nock(API)
+                        .post(REGISTER_PATH)
+                        .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+                        .get(BPS_PATH + '?successOnTimeout=true')
+                        .reply(200, {breakpoints: [bp]})
+                        .put(
+                            BPS_PATH + '/test',
+                            function(body: any) {
+                              const status = body.breakpoint.status;
+                              return status.description.format ===
+                                  'The snapshot has expired' &&
+                                  status.refersTo === 'BREAKPOINT_AGE';
+                            })
+                        .reply(200);
 
       const debuglet = new Debuglet(debug, config);
       debuglet.once('registered', function(id: string) {
@@ -1055,11 +1089,12 @@ describe('Debuglet', function() {
               .reply(200, {debuggee: {id: DEBUGGEE_ID}})
               .get(BPS_PATH + '?successOnTimeout=true')
               .reply(200, {breakpoints: [bp]})
-              .put(BPS_PATH + '/test',
-                   function(body: any) {
-                     return body.breakpoint.status.description.format ===
-                            'The snapshot has expired';
-                   })
+              .put(
+                  BPS_PATH + '/test',
+                  function(body: any) {
+                    return body.breakpoint.status.description.format ===
+                        'The snapshot has expired';
+                  })
               .reply(200)
               .get(BPS_PATH + '?successOnTimeout=true')
               .times(4)
@@ -1102,17 +1137,28 @@ describe('Debuglet', function() {
       // TODO: Determine if Debuglet.format() should allow a number[]
       //       or if only string[] should be allowed.
       assert.deepEqual(Debuglet.format('hi', [5] as any as string[]), 'hi');
-      assert.deepEqual(Debuglet.format('hi $0', [5] as any as string[]), 'hi 5');
-      assert.deepEqual(Debuglet.format('hi $0 $1', [5, 'there'] as any as string[]), 'hi 5 there');
-      assert.deepEqual(Debuglet.format('hi $0 $1', [5] as any as string[]), 'hi 5 $1');
-      assert.deepEqual(Debuglet.format('hi $0 $1 $0', [5] as any as string[]), 'hi 5 $1 5');
-      assert.deepEqual(Debuglet.format('hi $$', [5] as any as string[]), 'hi $');
-      assert.deepEqual(Debuglet.format('hi $$0', [5] as any as string[]), 'hi $0');
-      assert.deepEqual(Debuglet.format('hi $00', [5] as any as string[]), 'hi 50');
-      assert.deepEqual(Debuglet.format('hi $0', ['$1', 5] as any as string[]), 'hi $1');
       assert.deepEqual(
-          Debuglet.format('hi $11',
-                          [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd'] as any as string[]),
+          Debuglet.format('hi $0', [5] as any as string[]), 'hi 5');
+      assert.deepEqual(
+          Debuglet.format('hi $0 $1', [5, 'there'] as any as string[]),
+          'hi 5 there');
+      assert.deepEqual(
+          Debuglet.format('hi $0 $1', [5] as any as string[]), 'hi 5 $1');
+      assert.deepEqual(
+          Debuglet.format('hi $0 $1 $0', [5] as any as string[]), 'hi 5 $1 5');
+      assert.deepEqual(
+          Debuglet.format('hi $$', [5] as any as string[]), 'hi $');
+      assert.deepEqual(
+          Debuglet.format('hi $$0', [5] as any as string[]), 'hi $0');
+      assert.deepEqual(
+          Debuglet.format('hi $00', [5] as any as string[]), 'hi 50');
+      assert.deepEqual(
+          Debuglet.format('hi $0', ['$1', 5] as any as string[]), 'hi $1');
+      assert.deepEqual(
+          Debuglet.format(
+              'hi $11',
+              [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd'] as any as
+                  string[]),
           'hi b');
     });
   });
@@ -1151,43 +1197,35 @@ describe('Debuglet', function() {
        });
   });
 
-  describe('_createUniquifier', function () {
-    it('should create a unique string', function () {
+  describe('_createUniquifier', function() {
+    it('should create a unique string', function() {
       const fn = Debuglet._createUniquifier;
 
       const desc = 'description';
       const version = 'version';
       const uid = 'uid';
-      const sourceContext = {
-        git: 'something'
-      };
-      const labels = {
-        key: 'value'
-      };
+      const sourceContext = {git: 'something'};
+      const labels = {key: 'value'};
 
       const u1 = fn(desc, version, uid, sourceContext, labels);
 
       assert.strictEqual(fn(desc, version, uid, sourceContext, labels), u1);
 
       assert.notStrictEqual(
-        fn('foo', version, uid, sourceContext, labels),
-        u1,
-        'changing the description should change the result');
+          fn('foo', version, uid, sourceContext, labels), u1,
+          'changing the description should change the result');
       assert.notStrictEqual(
-        fn(desc, '1.2', uid, sourceContext, labels),
-        u1,
-        'changing the version should change the result');
+          fn(desc, '1.2', uid, sourceContext, labels), u1,
+          'changing the version should change the result');
       assert.notStrictEqual(
-        fn(desc, version, '5', sourceContext, labels), u1,
-        'changing the description should change the result');
+          fn(desc, version, '5', sourceContext, labels), u1,
+          'changing the description should change the result');
       assert.notStrictEqual(
-        fn(desc, version, uid, { git: 'blah' }, labels),
-        u1,
-        'changing the sourceContext should change the result');
+          fn(desc, version, uid, {git: 'blah'}, labels), u1,
+          'changing the sourceContext should change the result');
       assert.notStrictEqual(
-        fn(desc, version, uid, sourceContext, { key1: 'value2' }),
-        u1,
-        'changing the labels should change the result');
+          fn(desc, version, uid, sourceContext, {key1: 'value2'}), u1,
+          'changing the labels should change the result');
     });
   });
 });
