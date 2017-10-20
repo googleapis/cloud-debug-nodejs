@@ -425,8 +425,8 @@ describe('v8debugapi', function() {
       '0o70000',
       // Disabled because of suspect acorn issues?
       // https://tonicdev.com/575b00351a0e0a1300505d00/575b00351a0e0a1300505d01
-      //'{["foo"]: 1}',
-      //'{ foo (a,b) {}}'
+      // '{["foo"]: 1}',
+      // '{ foo (a,b) {}}'
     ]);
   }
 
