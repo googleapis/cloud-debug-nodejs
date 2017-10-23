@@ -1,5 +1,9 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## 2017-10-23, Version 2.2.1 (Beta), @dominickramer
+
+This release is identical to version 2.2.0 and only exists because a publishing error occurred that prevented the release of version 2.2.0.
+
 ## 2017-10-23, Version 2.2.0 (Beta), @dominickramer
 
 * This release includes experimental support for the new [V8 Inspector Protocol](https://chromedevtools.github.io/debugger-protocol-viewer/v8/) ([#329](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/329)) and fixes an issue with setting snapshots on lines that cannot directly have snapshots set, such as comments ([#330](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/330)).
