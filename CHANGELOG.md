@@ -1,5 +1,39 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## 2017-10-23, Version 2.2.0 (Beta), @dominickramer
+
+* This release includes experimental support for the new [V8 Inspector Protocol](https://chromedevtools.github.io/debugger-protocol-viewer/v8/) ([#329](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/329)) and fixes an issue with setting snapshots on lines that cannot directly have snapshots set, such as comments ([#330](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/330)).
+
+  * The Stackdriver Debugger will use the V8 Inspector Protocol if and only if the `GCLOUD_USE_INSPECTOR` environment variable is set and the running version of Node supports the inspector protocol (Node 8+).
+
+  * If the `GCLOUD_USE_INSPECTOR` environment variable is set, but the running version of Node does not support the inspector protocol, the agent will fall back to the legacy debugger protocol and a warning message will be logged.
+
+### Commits
+* [[`c15872df2c`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/c15872df2c)] - Inspector only enabled when specified (#343) (Michael Gao)
+* [[`964cc31a0f`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/964cc31a0f)] - Elaborate on async stack trace warning (#340) (Michael Gao)
+* [[`82fb478bca`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/82fb478bca)] - Reorganize code (#337) (Dominic Kramer)
+* [[`d4cf182924`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/d4cf182924)] - Remove powerscript in appveyor config (#339) (Michael Gao)
+* [[`fa41721e96`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/fa41721e96)] - Fix system test break (#333) (Michael Gao)
+* [[`be0f2fde64`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/be0f2fde64)] - **fix**: update dep gcp-metadata (#334) (Ali Ijaz Sheikh)
+* [[`3114892715`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/3114892715)] - Implement v8 Inspector Protocol (#329) (Michael Gao)
+* [[`015f29c842`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/015f29c842)] - Add dependency on extend@3 (#332) (Kelvin Jin) [#332](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/332)
+* [[`7a7b20dcd9`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/7a7b20dcd9)] - Adjust api breakpoint if resolved in another line (#330) (Michael Gao)
+* [[`bd4a59c5ec`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/bd4a59c5ec)] - Remove args in state.ts#resolveLocalList (#331) (Michael Gao)
+* [[`9ecff8bd9b`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/9ecff8bd9b)] - Change v8debugAPI clear to async. (#327) (Michael Gao)
+* [[`fa36973fbf`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/fa36973fbf)] - Address a formating error across Node versions (#328) (Dominic Kramer)
+* [[`17be882a3a`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/17be882a3a)] - Fix `.ts` files being copied to the build dir (#325) (Dominic Kramer)
+* [[`b58b2f7308`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/b58b2f7308)] - Address Some TODOs (#324) (Dominic Kramer)
+* [[`1a253cee5b`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/1a253cee5b)] - Update `package-lock.json` for tests to Typescript (#323) (Dominic Kramer)
+* [[`e8bd0cf56b`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/e8bd0cf56b)] - Enable checking test linting/formatting errors (#322) (Dominic Kramer)
+* [[`40365fbcac`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/40365fbcac)] - Enable all compiler options (#321) (Dominic Kramer)
+* [[`29ba46bf4e`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/29ba46bf4e)] - Add type annotations (#320) (Dominic Kramer)
+* [[`3bf2276165`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/3bf2276165)] - Remove usage of `use strict` (#319) (Dominic Kramer)
+* [[`3c2dbba02c`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/3c2dbba02c)] - The `test/debugger.ts` file uses class syntax (#318) (Dominic Kramer)
+* [[`7952610ad0`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/7952610ad0)] - Update tests to use `let` or `const` instead of `var` (#317) (Dominic Kramer)
+* [[`df2c5651d7`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/df2c5651d7)] - Update the tests to use `import` syntax (#316) (Dominic Kramer)
+* [[`a21c83d920`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/a21c83d920)] - Update test files to use the `.ts` extension (#315) (Dominic Kramer)
+* [[`232e494774`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/232e494774)] - Run tests from within the `build` directory (#314) (Dominic Kramer) [#314](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/pull/314)
+
 ## 2017-07-17, Version 2.1.3 (Beta), @ofrobots
 
 This module is now in Beta. This release (re)-fixes the naming of debug targets on GKE (#308) along with a fuzzy search for sourcemaps (#306).
