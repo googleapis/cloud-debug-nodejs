@@ -174,6 +174,19 @@ Further, you do not need to deploy the original source files to the deployment e
 
 In the Debug UI, you only need to provide the original source code -- you don't need the transpiled output files or the sourcemaps. When you set a snapshot in an original source file in the Debug UI, the corresponding file and line in the transpiled code is automatically determined based on the sourcemap files provided with the transpiled code at runtime.  See the [Using the Debugger](#using-the-debugger) section for more information about using the Debug UI.  In addition, the exact directory layout of the original source is somewhat flexible, just as it is with the use of non-transpiled code as described in the [Using the Debugger](#using-the-debugger) section.
 
+## Experimental Features
+
+The Stackdriver Debugger includes experimental support for the new [V8 Inspector Protocol](https://chromedevtools.github.io/debugger-protocol-viewer/v8/) and will use it if and only if the `GCLOUD_USE_INSPECTOR` environment variable is set and the running version of Node supports the inspector protocol (Node 8+).
+
+If the `GCLOUD_USE_INSPECTOR` environment variable is set, but the running version of Node does not support the inspector protocol, the agent will fall back to the legacy debugger protocol and a warning message will be logged.
+
+The `GCLOUD_USE_INSPECTOR` can be set programmatically, but must be set before calling the `start` method as illustrated below:
+
+```js
+process.env['GCLOUD_USE_INSPECTOR'] = true;
+require('@google-cloud/debug-agent').start({ ... });
+```
+
 ## Limitations and Requirements
 * The root directory of your application needs to contain a `package.json` file.
 * You can set snapshot conditions and watch expressions to be evaluated in the context of your application. This leads to some issues you should be aware of
@@ -181,7 +194,6 @@ In the Debug UI, you only need to provide the original source code -- you don't 
   * The debug agent tries to ensure that all conditions and watchpoints you add are read-only and have no side effects. It catches, and disallows, all expressions that may have static side effects to prevent accidental state change. However, it presently does not catch expressions that have dynamic side-effects. For example, `o.f` looks like a property access, but dynamically, it may end up calling a getter function. We presently do NOT detect such dynamic-side effects.
 * With Node.js 4.x and older, your application may experience a performance impact when there are snapshots active. There should be no impact to performance when no snapshots are active. Node.js v5.x does not have this issue.
 * Node.js v0.10.x or older are not supported as they lack some necessary APIs to avoid a permanent (life of the application) performance hit.
-
 
 [cloud-debugger]: https://cloud.google.com/tools/cloud-debugger/
 [setting-up-nodejs]: https://cloud.google.com/debugger/docs/setup/nodejs

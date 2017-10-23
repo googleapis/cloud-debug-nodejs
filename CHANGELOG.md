@@ -1,13 +1,16 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
-## 2017-10-04, Version 2.2.0 (Beta), @dominickramer
+## 2017-10-23, Version 2.2.0 (Beta), @dominickramer
 
-This release includes support for the new [v8 Inspector Protocol]
-(https://chromedevtools.github.io/debugger-protocol-viewer/v8/) (#329) and
-fixes an issue with setting snapshots on lines that cannot directly have
-snapshots set, such as comments (#330).
+This release includes experimental support for the new [V8 Inspector Protocol](https://chromedevtools.github.io/debugger-protocol-viewer/v8/) (#329) and fixes an issue with setting snapshots on lines that cannot directly have snapshots set, such as comments (#330).
+
+The Stackdriver Debugger will use the V8 Inspector Protocol if and only if the `GCLOUD_USE_INSPECTOR` environment variable is set and the running version of Node supports the inspector protocol (Node 8+).  If the `GCLOUD_USE_INSPECTOR` environment variable is set, but the running version of Node does not support the inspector protocol, the agent will fall back to the legacy debugger protocol and a warning message will be logged.
 
 ### Commits
+* [[`c15872df2c`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/c15872df2c)] - Inspector only enabled when specified (#343) (Michael Gao)
+* [[`964cc31a0f`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/964cc31a0f)] - Elaborate on async stack trace warning (#340) (Michael Gao)
+* [[`82fb478bca`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/82fb478bca)] - Reorganize code (#337) (Dominic Kramer)
+* [[`d4cf182924`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/d4cf182924)] - Remove powerscript in appveyor config (#339) (Michael Gao)
 * [[`fa41721e96`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/fa41721e96)] - Fix system test break (#333) (Michael Gao)
 * [[`be0f2fde64`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/be0f2fde64)] - **fix**: update dep gcp-metadata (#334) (Ali Ijaz Sheikh)
 * [[`3114892715`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/3114892715)] - Implement v8 Inspector Protocol (#329) (Michael Gao)
