@@ -15,6 +15,7 @@
  */
 
 import {DebugAgentConfig} from '../src/agent/config';
+import {Debug} from '../src/client/stackdriver/debug';
 
 import * as path from 'path';
 import * as assert from 'assert';
@@ -25,6 +26,10 @@ import * as config from '../src/agent/config';
 import {Debuglet} from '../src/agent/debuglet';
 
 const envProject = process.env.GCLOUD_PROJECT;
+const appInfo = {
+  name: 'Some name',
+  version: 'Some version'
+};
 
 nock.disableNetConnect();
 
@@ -50,7 +55,7 @@ describe('test-options-credentials', function() {
       projectId: 'fake-project',
       keyFilename: path.join(__dirname, 'fixtures', 'gcloud-credentials.json')
     });
-    const debug = require('../src/client/stackdriver/debug.js').Debug(options);
+    const debug = new Debug(options, appInfo);
     const scope = nocks.oauth2(function(body) {
       assert.equal(body.client_id, credentials.client_id);
       assert.equal(body.client_secret, credentials.client_secret);
@@ -74,7 +79,7 @@ describe('test-options-credentials', function() {
       projectId: 'fake-project',
       credentials: require('./fixtures/gcloud-credentials.json')
     });
-    const debug = require('../src/client/stackdriver/debug.js').Debug(options);
+    const debug = new Debug(options, appInfo);
     const scope = nocks.oauth2(function(body) {
       assert.equal(body.client_id, options.credentials.client_id);
       assert.equal(body.client_secret, options.credentials.client_secret);
@@ -106,7 +111,7 @@ describe('test-options-credentials', function() {
       keyFilename: path.join('test', 'fixtures', 'gcloud-credentials.json'),
       credentials: credentials
     });
-    const debug = require('../src/client/stackdriver/debug.js').Debug(options);
+    const debug = new Debug(options, appInfo);
     const scope = nocks.oauth2(function(body) {
       assert.equal(body.client_id, credentials.client_id);
       assert.equal(body.client_secret, credentials.client_secret);

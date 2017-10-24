@@ -17,8 +17,11 @@
 import {AuthenticationConfig, Common} from '../../types/common';
 export const common: Common = require('@google-cloud/common');
 
+import {AppInfo} from '../../debuggee';
+
 export class Debug extends common.Service {
   options: AuthenticationConfig;
+  appInfo: AppInfo;
 
   /**
    * <p class="notice">
@@ -43,17 +46,17 @@ export class Debug extends common.Service {
    *
    * @param options - [Authentication options](#/docs)
    */
-  constructor(options: AuthenticationConfig) {
+  constructor(options: AuthenticationConfig, packageJson: any) {
     if (new.target !== Debug) {
       options = common.util.normalizeArguments(null, options);
-      return new Debug(options);
+      return new Debug(options, packageJson);
     }
 
     const config = {
       projectIdRequired: false,
       baseUrl: 'https://clouddebugger.googleapis.com/v2',
       scopes: ['https://www.googleapis.com/auth/cloud_debugger'],
-      packageJson: require('../../../../package.json')
+      packageJson: packageJson
     };
 
     // TODO: Update Service to provide types
@@ -67,5 +70,7 @@ export class Debug extends common.Service {
     // https://github.com/GoogleCloudPlatform/google-cloud-node/issues/1891
     // is resolved.
     this.options = options;
+
+    this.appInfo = {name: packageJson.name, version: packageJson.version};
   }
 }

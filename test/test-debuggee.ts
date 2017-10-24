@@ -17,29 +17,34 @@
 import * as assert from 'assert';
 import {Debuggee} from '../src/debuggee';
 
+const appInfo = {
+  name: 'Some name',
+  version: 'Some version'
+};
+
 describe('Debuggee', function() {
 
   it('should create a Debuggee instance on valid input', function() {
     const debuggee = new Debuggee(
-        {project: 'project', uniquifier: 'uid', description: 'unit test'});
+        {project: 'project', uniquifier: 'uid', description: 'unit test'}, appInfo);
     assert.ok(debuggee instanceof Debuggee);
   });
 
   it('should create a Debuggee on a call without new', function() {
     const debuggee = new Debuggee(
-        {project: 'project', uniquifier: 'uid', description: 'unit test'});
+        {project: 'project', uniquifier: 'uid', description: 'unit test'}, appInfo);
     assert.ok(debuggee instanceof Debuggee);
   });
 
   it('should throw on invalid input', function() {
-    assert.throws(function() { new Debuggee({}); });
-    assert.throws(function() { new Debuggee({project: '5'}); });
-    assert.throws(function() { new Debuggee({project: undefined}); });
-    assert.throws(function() { new Debuggee({project: 'test'}); });
+    assert.throws(function() { new Debuggee({}, appInfo); });
+    assert.throws(function() { new Debuggee({project: '5'}, appInfo); });
+    assert.throws(function() { new Debuggee({project: undefined}, appInfo); });
+    assert.throws(function() { new Debuggee({project: 'test'}, appInfo); });
     assert.throws(function() {
-      new Debuggee({project: 'test', uniquifier: undefined});
+      new Debuggee({project: 'test', uniquifier: undefined}, appInfo);
       assert.throws(function() {
-        new Debuggee({project: 'test', uniquifier: 'uid'});
+        new Debuggee({project: 'test', uniquifier: 'uid'}, appInfo);
       });
     });
   });

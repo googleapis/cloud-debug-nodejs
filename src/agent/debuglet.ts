@@ -34,7 +34,7 @@ import * as utils from './util/utils';
 import * as http from 'http';
 
 import {Controller} from './controller';
-import {Debuggee} from '../debuggee';
+import {AppInfo, Debuggee} from '../debuggee';
 import {StatusMessage} from '../client/stackdriver/status-message';
 
 // The following import syntax is used because './config' has a default export
@@ -42,8 +42,6 @@ import defaultConfig from './config';
 import * as scanner from './io/scanner';
 import * as SourceMapper from './io/sourcemapper';
 import * as debugapi from './v8/debugapi';
-
-const pjson = require('../../../package.json');
 
 import * as assert from 'assert';
 
@@ -161,8 +159,10 @@ export class Debuglet extends EventEmitter {
     this.fetcherActive_ = false;
 
     /** @private {common.logger} */
-    this.logger_ = new common.logger(
-        {level: common.logger.LEVELS[this.config_.logLevel], tag: pjson.name});
+    this.logger_ = new common.logger({
+      level: common.logger.LEVELS[this.config_.logLevel],
+      tag: this.debug_.appInfo.name
+    });
 
     /** @private {DebugletApi} */
     this.controller_ = new Controller(this.debug_);
@@ -315,7 +315,7 @@ export class Debuglet extends EventEmitter {
         that.debuggee_ = Debuglet.createDebuggee(
             // TODO: Address the case when `id` is `undefined`.
             project, id as string, that.config_.serviceContext, sourceContext,
-            onGCP, that.config_.description, undefined);
+            onGCP, that.debug_.appInfo, that.config_.description, undefined);
         that.scheduleRegistration_(0 /* immediately */);
         that.emit('started');
       });
@@ -331,13 +331,13 @@ export class Debuglet extends EventEmitter {
       projectId: string, uid: string,
       serviceContext:
           {service?: string, version?: string, minorVersion_?: string},
-      sourceContext: {[key: string]: string}, onGCP: boolean,
+      sourceContext: {[key: string]: string}, onGCP: boolean, appInfo: AppInfo,
       description?: string, errorMessage?: string): Debuggee {
     const cwd = process.cwd();
     const mainScript = path.relative(cwd, process.argv[1]);
 
     const version = 'google.com/node-' + (onGCP ? 'gcp' : 'standalone') + '/v' +
-        pjson.version;
+        appInfo.version;
     let desc = process.title + ' ' + mainScript;
 
     const labels: {[key: string]: string} = {
@@ -345,8 +345,8 @@ export class Debuglet extends EventEmitter {
       'process.title': process.title,
       'node version': process.versions.node,
       'V8 version': process.versions.v8,
-      'agent.name': pjson.name,
-      'agent.version': pjson.version,
+      'agent.name': appInfo.name,
+      'agent.version': appInfo.version,
       'projectid': projectId
     };
 
@@ -394,7 +394,7 @@ export class Debuglet extends EventEmitter {
       statusMessage: statusMessage,
       sourceContexts: [sourceContext]
     };
-    return new Debuggee(properties);
+    return new Debuggee(properties, appInfo);
   }
 
   static async getProjectId(options: AuthenticationConfig): Promise<string> {

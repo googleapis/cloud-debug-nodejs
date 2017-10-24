@@ -33,6 +33,11 @@ const fakeDebug: Debug = {
   request: request
 } as any as Debug;
 
+const appInfo = {
+  name: 'Some name',
+  version: 'Some version'
+};
+
 const url = 'https://clouddebugger.googleapis.com';
 const api = '/v2/controller';
 
@@ -51,7 +56,7 @@ describe('Controller API', function() {
         project: 'fake-project',
         uniquifier: 'fake-id',
         description: 'unit test'
-      });
+      }, appInfo);
       const controller = new Controller(fakeDebug);
       // TODO: Determine if this type signature is correct.
       controller.register(debuggee, function(err: Error|null, result: { debuggee: Debuggee }) {
@@ -74,7 +79,7 @@ describe('Controller API', function() {
            project: 'fake-project',
            uniquifier: 'fake-id',
            description: 'unit test'
-         });
+         }, appInfo);
          const controller = new Controller(fakeDebug);
          controller.register(debuggee, function(err: Error, result: {debuggee: Debuggee}) {
            // TODO: Fix this incorrect method signature.
@@ -102,7 +107,7 @@ describe('Controller API', function() {
         project: 'fake-project',
         uniquifier: 'fake-id',
         description: 'unit test'
-      });
+      }, appInfo);
       const controller = new Controller(fakeDebug);
       controller.register(debuggee, function(err/*, result*/) {
         assert.ifError(err);

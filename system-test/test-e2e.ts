@@ -52,7 +52,8 @@ describe('@google-cloud/debug end-to-end behavior', function () {
 
   before(function() {
     promisifyAll(Debugger);
-    api = new Debugger(new Debug({}));
+    const appInfo = { name: 'Some name', vesion: 'Some version' };
+    api = new Debugger(new Debug({}, appInfo));
   });
 
   beforeEach(function() {

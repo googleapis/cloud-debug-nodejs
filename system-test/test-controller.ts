@@ -26,10 +26,11 @@ assert.ok(
 
 import * as stackdriver from '../src/types/stackdriver';
 import {Controller} from '../src/agent/controller';
-import {Debuggee} from '../src/debuggee';
+import {AppInfo, Debuggee} from '../src/debuggee';
 import {Debug} from '../src/client/stackdriver/debug';
-const debug = new Debug({});
 
+const appInfo: AppInfo = { name: 'Some name', version: 'Some Version' };
+const debug = new Debug({}, appInfo);
 
 describe('Controller', function() {
   this.timeout(60 * 1000);
@@ -41,7 +42,7 @@ describe('Controller', function() {
           project: process.env.GCLOUD_PROJECT,
           uniquifier: 'test-uid-' + Date.now(),
           description: 'this is a system test'
-        });
+        }, appInfo);
 
     controller.register(debuggee, function(err, maybeBody) {
       assert.ifError(err);
@@ -60,7 +61,7 @@ describe('Controller', function() {
           project: process.env.GCLOUD_PROJECT,
           uniquifier: 'test-uid-' + Date.now(),
           description: 'this is a system test'
-        });
+        }, appInfo);
     // TODO: Determine if the body parameter should be used.
     controller.register(debuggee, function(err, _body) {
       assert.ifError(err);
@@ -84,7 +85,7 @@ describe('Controller', function() {
           project: process.env.GCLOUD_PROJECT,
           uniquifier: 'test-uid-' + Date.now(),
           description: 'this is a system test'
-        });
+        }, appInfo);
     // TODO: Determine if the body parameter should be used.
     controller.register(debuggee, function(err, _body) {
       assert.ifError(err);

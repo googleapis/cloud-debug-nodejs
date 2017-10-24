@@ -18,6 +18,8 @@ import {DebugAgentConfig, StackdriverConfig} from './agent/config';
 import {Debuglet} from './agent/debuglet';
 import {Debug} from './client/stackdriver/debug';
 
+const pjson = require('../../package.json');
+
 // Singleton.
 let debuglet: Debuglet;
 
@@ -44,7 +46,7 @@ export function start(options: DebugAgentConfig|StackdriverConfig): Debuglet|
     throw new Error('Debug Agent has already been started');
   }
 
-  const debug = new Debug(options);
+  const debug = new Debug(options, pjson);
   debuglet = new Debuglet(debug, agentConfig);
   debuglet.start();
 
