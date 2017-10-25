@@ -108,17 +108,12 @@ gulp.task('test.system.compile', ['compile', 'test.system.copy'], () => {
   ]);
 });
 
-gulp.task('test.packagejson.copy', () => {
-  return gulp.src(['package.json'])
-             .pipe(gulp.dest(`${outDir}`));
-});
-
 gulp.task('test.unit.copy', () => {
   return gulp.src(unitTestsSupportFiles)
              .pipe(gulp.dest(`${outDir}/test`));
 });
 
-gulp.task('test.unit.compile', ['test.unit.copy', 'test.packagejson.copy', 'compile'], () => {
+gulp.task('test.unit.compile', ['test.unit.copy', 'compile'], () => {
   const tsResult = gulp.src(unitTests)
                        .pipe(sourcemaps.init())
                        .pipe(ts.createProject(tsconfigPath)())
