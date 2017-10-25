@@ -17,7 +17,10 @@
 import {AuthenticationConfig, Common} from '../../types/common';
 export const common: Common = require('@google-cloud/common');
 
-import {PackageInfo} from '../../debuggee';
+export interface PackageInfo {
+  name: string;
+  version: string;
+}
 
 export class Debug extends common.Service {
   options: AuthenticationConfig;

@@ -33,11 +33,7 @@ const fakeDebug: Debug = {
   request: request
 } as any as Debug;
 
-const packageInfo = {
-  name: 'Some name',
-  version: 'Some version'
-};
-
+const agentVersion = `SomeName/client/SomeVersion`;
 const url = 'https://clouddebugger.googleapis.com';
 const api = '/v2/controller';
 
@@ -56,7 +52,7 @@ describe('Controller API', function() {
         project: 'fake-project',
         uniquifier: 'fake-id',
         description: 'unit test',
-        packageInfo: packageInfo
+        agentVersion: agentVersion
       });
       const controller = new Controller(fakeDebug);
       // TODO: Determine if this type signature is correct.
@@ -80,7 +76,7 @@ describe('Controller API', function() {
            project: 'fake-project',
            uniquifier: 'fake-id',
            description: 'unit test',
-           packageInfo: packageInfo
+           agentVersion: agentVersion
          });
          const controller = new Controller(fakeDebug);
          controller.register(debuggee, function(err: Error, result: {debuggee: Debuggee}) {
@@ -109,7 +105,7 @@ describe('Controller API', function() {
         project: 'fake-project',
         uniquifier: 'fake-id',
         description: 'unit test',
-        packageInfo: packageInfo
+        agentVersion: agentVersion
       });
       const controller = new Controller(fakeDebug);
       controller.register(debuggee, function(err/*, result*/) {

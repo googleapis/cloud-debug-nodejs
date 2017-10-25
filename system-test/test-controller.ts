@@ -26,10 +26,12 @@ assert.ok(
 
 import * as stackdriver from '../src/types/stackdriver';
 import {Controller} from '../src/agent/controller';
-import {PackageInfo, Debuggee} from '../src/debuggee';
-import {Debug} from '../src/client/stackdriver/debug';
+import {Debuggee} from '../src/debuggee';
+import {Debug, PackageInfo} from '../src/client/stackdriver/debug';
 
-const packageInfo: PackageInfo = { name: 'Some name', version: 'Some Version' };
+const packageInfo: PackageInfo = { name: 'SomeName', version: 'SomeVersion' };
+const agentVersion = `${packageInfo.name}/client/${packageInfo.version}`;
+
 const debug = new Debug({}, packageInfo);
 
 describe('Controller', function() {
@@ -42,7 +44,7 @@ describe('Controller', function() {
           project: process.env.GCLOUD_PROJECT,
           uniquifier: 'test-uid-' + Date.now(),
           description: 'this is a system test',
-          packageInfo: packageInfo
+          agentVersion: agentVersion
         });
 
     controller.register(debuggee, function(err, maybeBody) {
@@ -62,7 +64,7 @@ describe('Controller', function() {
           project: process.env.GCLOUD_PROJECT,
           uniquifier: 'test-uid-' + Date.now(),
           description: 'this is a system test',
-          packageInfo: packageInfo
+          agentVersion: agentVersion
         });
     // TODO: Determine if the body parameter should be used.
     controller.register(debuggee, function(err, _body) {
@@ -87,7 +89,7 @@ describe('Controller', function() {
           project: process.env.GCLOUD_PROJECT,
           uniquifier: 'test-uid-' + Date.now(),
           description: 'this is a system test',
-          packageInfo: packageInfo
+          agentVersion: agentVersion
         });
     // TODO: Determine if the body parameter should be used.
     controller.register(debuggee, function(err, _body) {

@@ -25,18 +25,12 @@ export interface DebuggeeProperties {
   project?: string;
   uniquifier?: string;
   description?: string;
-  agentVersion?: string;
+  agentVersion: string;
   labels?: {
     [key: string]: string,
   };
   sourceContexts?: Array<{[key: string]: any}>;
   statusMessage?: StatusMessage;
-  packageInfo: PackageInfo;
-}
-
-export interface PackageInfo {
-  name: string;
-  version: string;
 }
 
 export class Debuggee {
@@ -100,9 +94,7 @@ export class Debuggee {
     this.project = properties.project;
     this.uniquifier = properties.uniquifier;
     this.description = properties.description;
-    this.agentVersion = properties.agentVersion ||
-        (properties.packageInfo.name + '/client/v' +
-         properties.packageInfo.version);
+    this.agentVersion = properties.agentVersion;
     if (properties.labels) {
       this.labels = properties.labels;
     }

@@ -17,34 +17,31 @@
 import * as assert from 'assert';
 import {Debuggee} from '../src/debuggee';
 
-const packageInfo = {
-  name: 'Some name',
-  version: 'Some version'
-};
+const agentVersion = `SomeName/client/SomeVersion`;
 
 describe('Debuggee', function() {
 
   it('should create a Debuggee instance on valid input', function() {
     const debuggee = new Debuggee(
-        {project: 'project', uniquifier: 'uid', description: 'unit test', packageInfo: packageInfo});
+        {project: 'project', uniquifier: 'uid', description: 'unit test', agentVersion: agentVersion});
     assert.ok(debuggee instanceof Debuggee);
   });
 
   it('should create a Debuggee on a call without new', function() {
     const debuggee = new Debuggee(
-        {project: 'project', uniquifier: 'uid', description: 'unit test', packageInfo: packageInfo});
+        {project: 'project', uniquifier: 'uid', description: 'unit test', agentVersion: agentVersion});
     assert.ok(debuggee instanceof Debuggee);
   });
 
   it('should throw on invalid input', function() {
-    assert.throws(function() { new Debuggee({packageInfo: packageInfo}); });
-    assert.throws(function() { new Debuggee({project: '5', packageInfo: packageInfo}); });
-    assert.throws(function() { new Debuggee({project: undefined, packageInfo: packageInfo}); });
-    assert.throws(function() { new Debuggee({project: 'test', packageInfo: packageInfo}); });
+    assert.throws(function() { new Debuggee({agentVersion: agentVersion}); });
+    assert.throws(function() { new Debuggee({project: '5', agentVersion: agentVersion}); });
+    assert.throws(function() { new Debuggee({project: undefined, agentVersion: agentVersion}); });
+    assert.throws(function() { new Debuggee({project: 'test', agentVersion: agentVersion}); });
     assert.throws(function() {
-      new Debuggee({project: 'test', uniquifier: undefined, packageInfo: packageInfo});
+      new Debuggee({project: 'test', uniquifier: undefined, agentVersion: agentVersion});
       assert.throws(function() {
-        new Debuggee({project: 'test', uniquifier: 'uid', packageInfo: packageInfo});
+        new Debuggee({project: 'test', uniquifier: 'uid', agentVersion: agentVersion});
       });
     });
   });

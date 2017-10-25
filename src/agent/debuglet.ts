@@ -34,7 +34,7 @@ import * as utils from './util/utils';
 import * as http from 'http';
 
 import {Controller} from './controller';
-import {PackageInfo, Debuggee} from '../debuggee';
+import {Debuggee} from '../debuggee';
 import {StatusMessage} from '../client/stackdriver/status-message';
 
 // The following import syntax is used because './config' has a default export
@@ -47,7 +47,7 @@ import * as assert from 'assert';
 
 import * as stackdriver from '../types/stackdriver';
 import {DebugAgentConfig} from './config';
-import {Debug} from '../client/stackdriver/debug';
+import {Debug, PackageInfo} from '../client/stackdriver/debug';
 import {Logger} from '../types/common';
 import {DebugApi} from './v8/debugapi';
 
