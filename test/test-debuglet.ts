@@ -24,7 +24,7 @@ import * as path from 'path';
 import * as assert from 'assert';
 import DEFAULT_CONFIG from '../src/agent/config';
 (DEFAULT_CONFIG as any).allowExpressions = true;
-(DEFAULT_CONFIG as any).workingDirectory = path.join(__dirname, '..');
+(DEFAULT_CONFIG as any).workingDirectory = path.join(__dirname, '..', '..');
 import {Debuglet} from '../src/agent/debuglet';
 import * as dns from 'dns';
 import * as extend from 'extend';
@@ -60,13 +60,13 @@ declare type MetadataCallback = (err: Error|null, ob?: any, result?: string) => 
 const bp: stackdriver.Breakpoint = {
   id: 'test',
   action: 'CAPTURE',
-  location: {path: 'fixtures/foo.js', line: 2}
+  location: {path: 'build/test/fixtures/foo.js', line: 2}
 } as stackdriver.Breakpoint;
 // TODO: Have this actually implement Breakpoint.
 const errorBp: stackdriver.Breakpoint = {
   id: 'testLog',
   action: 'FOO',
-  location: {path: 'fixtures/foo.js', line: 2}
+  location: {path: 'build/test/fixtures/foo.js', line: 2}
 } as any as stackdriver.Breakpoint;
 
 function verifyBreakpointRejection(re: RegExp, body: {breakpoint: any}) {
