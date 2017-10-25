@@ -41,7 +41,7 @@ const EXPRESSIONS_REGEX =
 
 const fakeCredentials = require('./fixtures/gcloud-credentials.json');
 
-const appInfo = {
+const packageInfo = {
   name: 'Some name',
   version: 'Some version'
 };
@@ -329,7 +329,7 @@ describe('Debuglet', function() {
         function(done) {
       const projectId = '11020304f2934-a';
       const debug = new Debug(
-          {projectId: projectId, credentials: fakeCredentials}, appInfo);
+          {projectId: projectId, credentials: fakeCredentials}, packageInfo);
       const debuglet = new Debuglet(debug, defaultConfig);
       let logText = '';
       debuglet.logger_.info = function(s: string) {
@@ -366,7 +366,7 @@ describe('Debuglet', function() {
         return Promise.reject(new Error('no project id'));
       };
 
-      const debug = new Debug({}, appInfo);
+      const debug = new Debug({}, packageInfo);
       const debuglet = new Debuglet(debug, defaultConfig);
 
       debuglet.once('initError', function(err: Error) {
@@ -388,7 +388,7 @@ describe('Debuglet', function() {
         return Promise.reject(new Error('no project id'));
       };
 
-      const debug = new Debug({}, appInfo);
+      const debug = new Debug({}, packageInfo);
       const debuglet = new Debuglet(debug, defaultConfig);
 
       debuglet.once('started', function() {
@@ -405,7 +405,7 @@ describe('Debuglet', function() {
     it('should use config.projectId', function(done) {
       const projectId = '11020304f2934-a';
       const debug = new Debug(
-          {projectId: projectId, credentials: fakeCredentials}, appInfo);
+          {projectId: projectId, credentials: fakeCredentials}, packageInfo);
       const debuglet = new Debuglet(debug, defaultConfig);
 
       nocks.projectId('project-via-metadata');
@@ -433,7 +433,7 @@ describe('Debuglet', function() {
       it('should use GCLOUD_PROJECT in lieu of config.projectId', function(
                                                                       done) {
         process.env.GCLOUD_PROJECT = '11020304f2934-b';
-        const debug = new Debug({credentials: fakeCredentials}, appInfo);
+        const debug = new Debug({credentials: fakeCredentials}, packageInfo);
         const debuglet = new Debuglet(debug, defaultConfig);
 
         nocks.projectId('project-via-metadata');
@@ -459,7 +459,7 @@ describe('Debuglet', function() {
            const debug = new Debug({
              projectId: 'project-via-options',
              credentials: fakeCredentials
-           }, appInfo);
+           }, packageInfo);
            const debuglet = new Debuglet(debug, defaultConfig);
 
            nocks.projectId('project-via-metadata');
@@ -482,7 +482,7 @@ describe('Debuglet', function() {
       it('should respect GCLOUD_DEBUG_LOGLEVEL', function(done) {
         process.env.GCLOUD_PROJECT = '11020304f2934';
         process.env.GCLOUD_DEBUG_LOGLEVEL = '3';
-        const debug = new Debug({credentials: fakeCredentials}, appInfo);
+        const debug = new Debug({credentials: fakeCredentials}, packageInfo);
         const debuglet = new Debuglet(debug, defaultConfig);
 
         nocks.projectId('project-via-metadata');
@@ -517,7 +517,7 @@ describe('Debuglet', function() {
       it('should respect GAE_SERVICE and GAE_VERSION env. vars.', function() {
         process.env.GAE_SERVICE = 'fake-gae-service';
         process.env.GAE_VERSION = 'fake-gae-version';
-        const debug = new Debug({}, appInfo);
+        const debug = new Debug({}, packageInfo);
         const debuglet = new Debuglet(debug, defaultConfig);
         assert.ok(debuglet.config_);
         assert.ok(debuglet.config_.serviceContext);
@@ -531,7 +531,7 @@ describe('Debuglet', function() {
          function() {
            process.env.GAE_MODULE_NAME = 'fake-gae-service';
            process.env.GAE_MODULE_VERSION = 'fake-gae-version';
-           const debug = new Debug({}, appInfo);
+           const debug = new Debug({}, packageInfo);
            const debuglet = new Debuglet(debug, defaultConfig);
            assert.ok(debuglet.config_);
            assert.ok(debuglet.config_.serviceContext);
@@ -544,7 +544,7 @@ describe('Debuglet', function() {
       it('should respect FUNCTION_NAME env. var.',
          function() {
            process.env.FUNCTION_NAME = 'fake-fn-name';
-           const debug = new Debug({}, appInfo);
+           const debug = new Debug({}, packageInfo);
            const debuglet = new Debuglet(debug, defaultConfig);
            assert.ok(debuglet.config_);
            assert.ok(debuglet.config_.serviceContext);
@@ -559,7 +559,7 @@ describe('Debuglet', function() {
         process.env.GAE_MODULE_VERSION = 'fake-gae-module-version';
         process.env.GAE_SERVICE = 'fake-gae-service';
         process.env.GAE_VERSION = 'fake-gae-version';
-        const debug = new Debug({}, appInfo);
+        const debug = new Debug({}, packageInfo);
         const debuglet = new Debuglet(debug, defaultConfig);
         assert.ok(debuglet.config_);
         assert.ok(debuglet.config_.serviceContext);
@@ -572,7 +572,7 @@ describe('Debuglet', function() {
       it('should respect GAE_MINOR_VERSION env. var. when available',
          function() {
            process.env.GAE_MINOR_VERSION = 'some minor version';
-           const debug = new Debug({}, appInfo);
+           const debug = new Debug({}, packageInfo);
            const debuglet = new Debuglet(debug, defaultConfig);
            assert.ok(debuglet.config_);
            assert.ok(debuglet.config_.serviceContext);
@@ -583,7 +583,7 @@ describe('Debuglet', function() {
       it('should conjure a fake minor version when running on flex',
          function() {
            process.env.GAE_SERVICE = 'fake-gae-service';
-           const debug = new Debug({}, appInfo);
+           const debug = new Debug({}, packageInfo);
            const debuglet = new Debuglet(debug, defaultConfig);
            assert.ok(debuglet.config_);
            assert.ok(debuglet.config_.serviceContext);
@@ -592,7 +592,7 @@ describe('Debuglet', function() {
 
       it('should not have minorVersion unless enviroment provides it',
          function() {
-           const debug = new Debug({}, appInfo);
+           const debug = new Debug({}, packageInfo);
            const debuglet = new Debuglet(debug, defaultConfig);
            assert.ok(debuglet.config_);
            assert.ok(debuglet.config_.serviceContext);
@@ -607,7 +607,7 @@ describe('Debuglet', function() {
       it('should not provide minorversion upon registration on non flex',
          function(done) {
            const debug = new Debug(
-               {projectId: 'fake-project', credentials: fakeCredentials}, appInfo);
+               {projectId: 'fake-project', credentials: fakeCredentials}, packageInfo);
            const debuglet = new Debuglet(debug, defaultConfig);
 
            const scope =
@@ -630,7 +630,7 @@ describe('Debuglet', function() {
                                                                          done) {
         process.env.GAE_SERVICE = 'fake-service';
         const debug = new Debug(
-            {projectId: 'fake-project', credentials: fakeCredentials}, appInfo);
+            {projectId: 'fake-project', credentials: fakeCredentials}, packageInfo);
         const debuglet = new Debuglet(debug, defaultConfig);
 
         nocks.oauth2();
@@ -653,7 +653,7 @@ describe('Debuglet', function() {
     it('should retry on failed registration', function(done) {
       this.timeout(10000);
       const debug = new Debug(
-          {projectId: '11020304f2934', credentials: fakeCredentials}, appInfo);
+          {projectId: '11020304f2934', credentials: fakeCredentials}, packageInfo);
       const debuglet = new Debuglet(debug, defaultConfig);
 
       const scope = nock(API)
@@ -676,7 +676,7 @@ describe('Debuglet', function() {
 
     it('should error if a package.json doesn\'t exist', function(done) {
       const debug = new Debug(
-          {projectId: 'fake-project', credentials: fakeCredentials}, appInfo);
+          {projectId: 'fake-project', credentials: fakeCredentials}, packageInfo);
       const config = extend({}, defaultConfig,
                           {workingDirectory: __dirname, forceNewAgent_: true});
       const debuglet = new Debuglet(debug, config);
@@ -691,7 +691,7 @@ describe('Debuglet', function() {
 
     it('should register successfully otherwise', function(done) {
       const debug = new Debug(
-          {projectId: 'fake-project', credentials: fakeCredentials}, appInfo);
+          {projectId: 'fake-project', credentials: fakeCredentials}, packageInfo);
       const debuglet = new Debuglet(debug, defaultConfig);
 
       nocks.oauth2();
@@ -721,7 +721,7 @@ describe('Debuglet', function() {
             .reply(200, 'cluster-name-from-metadata');
 
       const debug = new Debug(
-          {projectId: 'fake-project', credentials: fakeCredentials}, appInfo);
+          {projectId: 'fake-project', credentials: fakeCredentials}, packageInfo);
       const debuglet = new Debuglet(debug, defaultConfig);
 
       nocks.oauth2();
@@ -743,7 +743,7 @@ describe('Debuglet', function() {
 
     it('should pass source context to api if present', function(done) {
       const debug = new Debug(
-          {projectId: 'fake-project', credentials: fakeCredentials}, appInfo);
+          {projectId: 'fake-project', credentials: fakeCredentials}, packageInfo);
       const old = Debuglet.prototype.getSourceContext_;
       Debuglet.prototype.getSourceContext_ = function(cb) {
         setImmediate(function () {
@@ -777,7 +777,7 @@ describe('Debuglet', function() {
        function(done) {
          this.timeout(4000);
          const debug = new Debug(
-             {projectId: 'fake-project', credentials: fakeCredentials}, appInfo);
+             {projectId: 'fake-project', credentials: fakeCredentials}, packageInfo);
          const debuglet = new Debuglet(debug, defaultConfig);
 
          const scope =
@@ -798,7 +798,7 @@ describe('Debuglet', function() {
     it('should retry after a isDisabled request', function(done) {
       this.timeout(4000);
       const debug = new Debug(
-          {projectId: 'fake-project', credentials: fakeCredentials}, appInfo);
+          {projectId: 'fake-project', credentials: fakeCredentials}, packageInfo);
       const debuglet = new Debuglet(debug, defaultConfig);
 
       const scope =
@@ -827,7 +827,7 @@ describe('Debuglet', function() {
 
     it('should re-register when registration expires', function(done) {
       const debug = new Debug(
-          {projectId: 'fake-project', credentials: fakeCredentials}, appInfo);
+          {projectId: 'fake-project', credentials: fakeCredentials}, packageInfo);
       const debuglet = new Debuglet(debug, defaultConfig);
 
       const scope = nock(API)
@@ -854,7 +854,7 @@ describe('Debuglet', function() {
     it('should fetch and add breakpoints', function(done) {
       this.timeout(2000);
       const debug = new Debug(
-          {projectId: 'fake-project', credentials: fakeCredentials}, appInfo);
+          {projectId: 'fake-project', credentials: fakeCredentials}, packageInfo);
       const debuglet = new Debuglet(debug, defaultConfig);
 
       const scope = nock(API)
@@ -880,7 +880,7 @@ describe('Debuglet', function() {
         function(done) {
       this.timeout(2000);
       const debug = new Debug(
-          {projectId: 'fake-project', credentials: fakeCredentials}, appInfo);
+          {projectId: 'fake-project', credentials: fakeCredentials}, packageInfo);
       const debuglet = new Debuglet(debug, defaultConfig);
       debuglet.config_.allowExpressions = false;
 
@@ -918,7 +918,7 @@ describe('Debuglet', function() {
         function(done) {
       this.timeout(2000);
       const debug = new Debug(
-          {projectId: 'fake-project', credentials: fakeCredentials}, appInfo);
+          {projectId: 'fake-project', credentials: fakeCredentials}, packageInfo);
       const debuglet = new Debuglet(debug, defaultConfig);
       debuglet.config_.allowExpressions = false;
 
@@ -956,7 +956,7 @@ describe('Debuglet', function() {
       this.timeout(6000);
 
       const debug = new Debug(
-          {projectId: 'fake-project', credentials: fakeCredentials}, appInfo);
+          {projectId: 'fake-project', credentials: fakeCredentials}, packageInfo);
       const debuglet = new Debuglet(debug, defaultConfig);
 
       const scope = nock(API)
@@ -995,7 +995,7 @@ describe('Debuglet', function() {
 
     it('should expire stale breakpoints', function(done) {
       const debug = new Debug(
-          {projectId: 'fake-project', credentials: fakeCredentials}, appInfo);
+          {projectId: 'fake-project', credentials: fakeCredentials}, packageInfo);
       const config = extend({}, defaultConfig,
                           {breakpointExpirationSec: 1, forceNewAgent_: true});
       this.timeout(6000);
@@ -1040,7 +1040,7 @@ describe('Debuglet', function() {
     // is only expired with the server once.
     it('should not update expired breakpoints', function(done) {
       const debug = new Debug(
-          {projectId: 'fake-project', credentials: fakeCredentials}, appInfo);
+          {projectId: 'fake-project', credentials: fakeCredentials}, packageInfo);
       const config = extend({}, defaultConfig, {
         breakpointExpirationSec: 1,
         breakpointUpdateIntervalSec: 1,
@@ -1121,7 +1121,7 @@ describe('Debuglet', function() {
       const debuggee = Debuglet.createDebuggee(
           'some project', 'id',
           {service: 'some-service', version: 'production'},
-          {}, false, appInfo);
+          {}, false, packageInfo);
       assert.ok(debuggee);
       assert.ok(debuggee.labels);
       // TODO: Handle the case where debuggee.labels is undefined
@@ -1133,7 +1133,7 @@ describe('Debuglet', function() {
       const debuggee =
           Debuglet.createDebuggee('fancy-project', 'very-unique',
                                   {service: 'default', version: 'yellow.5'},
-                                  {}, false, appInfo);
+                                  {}, false, packageInfo);
       assert.ok(debuggee);
       assert.ok(debuggee.labels);
       // TODO: Handle the case where debuggee.labels is undefined
@@ -1144,7 +1144,7 @@ describe('Debuglet', function() {
     it('should have an error statusMessage with the appropriate arg',
        function() {
          const debuggee = Debuglet.createDebuggee(
-             'a', 'b', {}, {}, false, appInfo, undefined, 'Some Error Message');
+             'a', 'b', {}, {}, false, packageInfo, undefined, 'Some Error Message');
          assert.ok(debuggee);
          assert.ok(debuggee.statusMessage);
        });
