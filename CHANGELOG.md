@@ -1,5 +1,15 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## 2017-10-25, Version 2.2.2 (Beta), @dominickramer
+
+This release fixes an issue that prevented this module from being published, and it contains all of the changes that would have been in the 2.2.0 and 2.2.1 releases (if those releases would have actually been successfully published).
+
+### Commits
+* [[`bc486043b8`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/bc486043b8)] - Remove `package.json` from `build` directory (#349) (Dominic Kramer)
+* [[`c4d61f2435`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/c4d61f2435)] - **chore**: update dep: gcp-metadata (#346) (Ali Ijaz Sheikh)
+* [[`b9085453fe`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/b9085453fe)] - Allow a single direct access point to package.json (#347) (Dominic Kramer)
+
+
 ## 2017-10-23, Version 2.2.1 (Beta), @dominickramer
 
 This release is identical to version 2.2.0 and only exists because a publishing error occurred that prevented the release of version 2.2.0.
