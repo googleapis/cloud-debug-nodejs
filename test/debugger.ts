@@ -23,7 +23,6 @@ import * as stackdriver from '../src/types/stackdriver';
 import {Debug} from '../src/client/stackdriver/debug';
 import {Debuggee} from '../src/debuggee';
 
-const pjson = require('../../package.json');
 export const common: commonTypes.Common = require('@google-cloud/common');
 // TODO: Verify these types are correct.
 const qs: { parse: (qs: any, sep?: string, eq?: string,
@@ -50,7 +49,7 @@ export class Debugger extends common.ServiceObject {
     /** @private {string} */
     this.nextWaitToken_ = null;
 
-    this.clientVersion_ = pjson.name + '/client-for-testing/v' + pjson.version;
+    this.clientVersion_ = debug.packageInfo.name + '/client-for-testing/v' + debug.packageInfo.version;
   }
 
   /**

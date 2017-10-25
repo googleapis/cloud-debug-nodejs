@@ -43,13 +43,11 @@ import * as scanner from './io/scanner';
 import * as SourceMapper from './io/sourcemapper';
 import * as debugapi from './v8/debugapi';
 
-const pjson = require('../../../package.json');
-
 import * as assert from 'assert';
 
 import * as stackdriver from '../types/stackdriver';
 import {DebugAgentConfig} from './config';
-import {Debug} from '../client/stackdriver/debug';
+import {Debug, PackageInfo} from '../client/stackdriver/debug';
 import {Logger} from '../types/common';
 import {DebugApi} from './v8/debugapi';
 
@@ -161,8 +159,10 @@ export class Debuglet extends EventEmitter {
     this.fetcherActive_ = false;
 
     /** @private {common.logger} */
-    this.logger_ = new common.logger(
-        {level: common.logger.LEVELS[this.config_.logLevel], tag: pjson.name});
+    this.logger_ = new common.logger({
+      level: common.logger.LEVELS[this.config_.logLevel],
+      tag: this.debug_.packageInfo.name
+    });
 
     /** @private {DebugletApi} */
     this.controller_ = new Controller(this.debug_);
@@ -315,7 +315,8 @@ export class Debuglet extends EventEmitter {
         that.debuggee_ = Debuglet.createDebuggee(
             // TODO: Address the case when `id` is `undefined`.
             project, id as string, that.config_.serviceContext, sourceContext,
-            onGCP, that.config_.description, undefined);
+            onGCP, that.debug_.packageInfo, that.config_.description,
+            undefined);
         that.scheduleRegistration_(0 /* immediately */);
         that.emit('started');
       });
@@ -332,12 +333,13 @@ export class Debuglet extends EventEmitter {
       serviceContext:
           {service?: string, version?: string, minorVersion_?: string},
       sourceContext: {[key: string]: string}, onGCP: boolean,
-      description?: string, errorMessage?: string): Debuggee {
+      packageInfo: PackageInfo, description?: string,
+      errorMessage?: string): Debuggee {
     const cwd = process.cwd();
     const mainScript = path.relative(cwd, process.argv[1]);
 
     const version = 'google.com/node-' + (onGCP ? 'gcp' : 'standalone') + '/v' +
-        pjson.version;
+        packageInfo.version;
     let desc = process.title + ' ' + mainScript;
 
     const labels: {[key: string]: string} = {
@@ -345,8 +347,8 @@ export class Debuglet extends EventEmitter {
       'process.title': process.title,
       'node version': process.versions.node,
       'V8 version': process.versions.v8,
-      'agent.name': pjson.name,
-      'agent.version': pjson.version,
+      'agent.name': packageInfo.name,
+      'agent.version': packageInfo.version,
       'projectid': projectId
     };
 
@@ -392,7 +394,8 @@ export class Debuglet extends EventEmitter {
       agentVersion: version,
       labels: labels,
       statusMessage: statusMessage,
-      sourceContexts: [sourceContext]
+      sourceContexts: [sourceContext],
+      packageInfo: packageInfo
     };
     return new Debuggee(properties);
   }

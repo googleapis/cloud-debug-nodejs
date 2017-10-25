@@ -15,7 +15,6 @@
  */
 
 import * as assert from 'assert';
-// TODO: Determine how to not have a type declaration here.
 const module: NodeModule = require('../..');
 import * as nock from 'nock';
 import * as nocks from './nocks';

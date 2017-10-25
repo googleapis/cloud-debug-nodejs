@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-const pjson = require('../../package.json');
 import * as _ from 'lodash';
 import {StatusMessage} from './client/stackdriver/status-message';
 
@@ -26,7 +25,7 @@ export interface DebuggeeProperties {
   project?: string;
   uniquifier?: string;
   description?: string;
-  agentVersion?: string;
+  agentVersion: string;
   labels?: {
     [key: string]: string,
   };
@@ -95,8 +94,7 @@ export class Debuggee {
     this.project = properties.project;
     this.uniquifier = properties.uniquifier;
     this.description = properties.description;
-    this.agentVersion =
-        properties.agentVersion || (pjson.name + '/client/v' + pjson.version);
+    this.agentVersion = properties.agentVersion;
     if (properties.labels) {
       this.labels = properties.labels;
     }
