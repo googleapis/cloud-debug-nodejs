@@ -17,7 +17,7 @@
 import * as assert from 'assert';
 import {Debuggee} from '../src/debuggee';
 
-const appInfo = {
+const packageInfo = {
   name: 'Some name',
   version: 'Some version'
 };
@@ -26,25 +26,25 @@ describe('Debuggee', function() {
 
   it('should create a Debuggee instance on valid input', function() {
     const debuggee = new Debuggee(
-        {project: 'project', uniquifier: 'uid', description: 'unit test'}, appInfo);
+        {project: 'project', uniquifier: 'uid', description: 'unit test', packageInfo: packageInfo});
     assert.ok(debuggee instanceof Debuggee);
   });
 
   it('should create a Debuggee on a call without new', function() {
     const debuggee = new Debuggee(
-        {project: 'project', uniquifier: 'uid', description: 'unit test'}, appInfo);
+        {project: 'project', uniquifier: 'uid', description: 'unit test', packageInfo: packageInfo});
     assert.ok(debuggee instanceof Debuggee);
   });
 
   it('should throw on invalid input', function() {
-    assert.throws(function() { new Debuggee({}, appInfo); });
-    assert.throws(function() { new Debuggee({project: '5'}, appInfo); });
-    assert.throws(function() { new Debuggee({project: undefined}, appInfo); });
-    assert.throws(function() { new Debuggee({project: 'test'}, appInfo); });
+    assert.throws(function() { new Debuggee({packageInfo: packageInfo}); });
+    assert.throws(function() { new Debuggee({project: '5', packageInfo: packageInfo}); });
+    assert.throws(function() { new Debuggee({project: undefined, packageInfo: packageInfo}); });
+    assert.throws(function() { new Debuggee({project: 'test', packageInfo: packageInfo}); });
     assert.throws(function() {
-      new Debuggee({project: 'test', uniquifier: undefined}, appInfo);
+      new Debuggee({project: 'test', uniquifier: undefined, packageInfo: packageInfo});
       assert.throws(function() {
-        new Debuggee({project: 'test', uniquifier: 'uid'}, appInfo);
+        new Debuggee({project: 'test', uniquifier: 'uid', packageInfo: packageInfo});
       });
     });
   });

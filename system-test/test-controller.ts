@@ -41,8 +41,9 @@ describe('Controller', function() {
         new Debuggee({
           project: process.env.GCLOUD_PROJECT,
           uniquifier: 'test-uid-' + Date.now(),
-          description: 'this is a system test'
-        }, packageInfo);
+          description: 'this is a system test',
+          packageInfo: packageInfo
+        });
 
     controller.register(debuggee, function(err, maybeBody) {
       assert.ifError(err);
@@ -60,8 +61,9 @@ describe('Controller', function() {
         new Debuggee({
           project: process.env.GCLOUD_PROJECT,
           uniquifier: 'test-uid-' + Date.now(),
-          description: 'this is a system test'
-        }, packageInfo);
+          description: 'this is a system test',
+          packageInfo: packageInfo
+        });
     // TODO: Determine if the body parameter should be used.
     controller.register(debuggee, function(err, _body) {
       assert.ifError(err);
@@ -84,8 +86,9 @@ describe('Controller', function() {
         new Debuggee({
           project: process.env.GCLOUD_PROJECT,
           uniquifier: 'test-uid-' + Date.now(),
-          description: 'this is a system test'
-        }, packageInfo);
+          description: 'this is a system test',
+          packageInfo: packageInfo
+        });
     // TODO: Determine if the body parameter should be used.
     controller.register(debuggee, function(err, _body) {
       assert.ifError(err);

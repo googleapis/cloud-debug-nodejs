@@ -394,9 +394,10 @@ export class Debuglet extends EventEmitter {
       agentVersion: version,
       labels: labels,
       statusMessage: statusMessage,
-      sourceContexts: [sourceContext]
+      sourceContexts: [sourceContext],
+      packageInfo: packageInfo
     };
-    return new Debuggee(properties, packageInfo);
+    return new Debuggee(properties);
   }
 
   static async getProjectId(options: AuthenticationConfig): Promise<string> {
