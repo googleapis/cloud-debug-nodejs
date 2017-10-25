@@ -33,7 +33,7 @@ export interface DebuggeeProperties {
   statusMessage?: StatusMessage;
 }
 
-export interface AppInfo {
+export interface PackageInfo {
   name: string;
   version: string;
 }
@@ -79,9 +79,9 @@ export class Debuggee {
    *     that the user has a way of noticing.
    *     TODO(ofrobots): has this been renamed to `status` in the API?
    */
-  constructor(properties: DebuggeeProperties, appInfo: AppInfo) {
+  constructor(properties: DebuggeeProperties, packageInfo: PackageInfo) {
     if (!(this instanceof Debuggee)) {
-      return new Debuggee(properties, appInfo);
+      return new Debuggee(properties, packageInfo);
     }
 
     properties = properties || {};
@@ -100,7 +100,7 @@ export class Debuggee {
     this.uniquifier = properties.uniquifier;
     this.description = properties.description;
     this.agentVersion = properties.agentVersion ||
-        (appInfo.name + '/client/v' + appInfo.version);
+        (packageInfo.name + '/client/v' + packageInfo.version);
     if (properties.labels) {
       this.labels = properties.labels;
     }

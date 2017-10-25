@@ -17,11 +17,11 @@
 import {AuthenticationConfig, Common} from '../../types/common';
 export const common: Common = require('@google-cloud/common');
 
-import {AppInfo} from '../../debuggee';
+import {PackageInfo} from '../../debuggee';
 
 export class Debug extends common.Service {
   options: AuthenticationConfig;
-  appInfo: AppInfo;
+  packageInfo: PackageInfo;
 
   /**
    * <p class="notice">
@@ -71,6 +71,6 @@ export class Debug extends common.Service {
     // is resolved.
     this.options = options;
 
-    this.appInfo = {name: packageJson.name, version: packageJson.version};
+    this.packageInfo = {name: packageJson.name, version: packageJson.version};
   }
 }

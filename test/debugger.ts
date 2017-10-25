@@ -49,7 +49,7 @@ export class Debugger extends common.ServiceObject {
     /** @private {string} */
     this.nextWaitToken_ = null;
 
-    this.clientVersion_ = debug.appInfo.name + '/client-for-testing/v' + debug.appInfo.version;
+    this.clientVersion_ = debug.packageInfo.name + '/client-for-testing/v' + debug.packageInfo.version;
   }
 
   /**

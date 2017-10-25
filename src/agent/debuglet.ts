@@ -34,7 +34,7 @@ import * as utils from './util/utils';
 import * as http from 'http';
 
 import {Controller} from './controller';
-import {AppInfo, Debuggee} from '../debuggee';
+import {PackageInfo, Debuggee} from '../debuggee';
 import {StatusMessage} from '../client/stackdriver/status-message';
 
 // The following import syntax is used because './config' has a default export
@@ -161,7 +161,7 @@ export class Debuglet extends EventEmitter {
     /** @private {common.logger} */
     this.logger_ = new common.logger({
       level: common.logger.LEVELS[this.config_.logLevel],
-      tag: this.debug_.appInfo.name
+      tag: this.debug_.packageInfo.name
     });
 
     /** @private {DebugletApi} */
@@ -315,7 +315,8 @@ export class Debuglet extends EventEmitter {
         that.debuggee_ = Debuglet.createDebuggee(
             // TODO: Address the case when `id` is `undefined`.
             project, id as string, that.config_.serviceContext, sourceContext,
-            onGCP, that.debug_.appInfo, that.config_.description, undefined);
+            onGCP, that.debug_.packageInfo, that.config_.description,
+            undefined);
         that.scheduleRegistration_(0 /* immediately */);
         that.emit('started');
       });
@@ -331,13 +332,14 @@ export class Debuglet extends EventEmitter {
       projectId: string, uid: string,
       serviceContext:
           {service?: string, version?: string, minorVersion_?: string},
-      sourceContext: {[key: string]: string}, onGCP: boolean, appInfo: AppInfo,
-      description?: string, errorMessage?: string): Debuggee {
+      sourceContext: {[key: string]: string}, onGCP: boolean,
+      packageInfo: PackageInfo, description?: string,
+      errorMessage?: string): Debuggee {
     const cwd = process.cwd();
     const mainScript = path.relative(cwd, process.argv[1]);
 
     const version = 'google.com/node-' + (onGCP ? 'gcp' : 'standalone') + '/v' +
-        appInfo.version;
+        packageInfo.version;
     let desc = process.title + ' ' + mainScript;
 
     const labels: {[key: string]: string} = {
@@ -345,8 +347,8 @@ export class Debuglet extends EventEmitter {
       'process.title': process.title,
       'node version': process.versions.node,
       'V8 version': process.versions.v8,
-      'agent.name': appInfo.name,
-      'agent.version': appInfo.version,
+      'agent.name': packageInfo.name,
+      'agent.version': packageInfo.version,
       'projectid': projectId
     };
 
@@ -394,7 +396,7 @@ export class Debuglet extends EventEmitter {
       statusMessage: statusMessage,
       sourceContexts: [sourceContext]
     };
-    return new Debuggee(properties, appInfo);
+    return new Debuggee(properties, packageInfo);
   }
 
   static async getProjectId(options: AuthenticationConfig): Promise<string> {
