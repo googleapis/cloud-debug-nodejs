@@ -116,8 +116,8 @@ export class Debuglet extends EventEmitter {
   private completedBreakpointMap_: {[key: string]: boolean};
 
   private promise_: Promise<void>|null;
-  private promiseResolve_: (value?: void|PromiseLike<void>|undefined) => void;
-  private promiseResolvedTimestamp_: [number, number];
+  private promiseResolve_: () => void;
+  private promiseResolvedTimestamp_: number;
   // Exposed for testing
   config_: DebugAgentConfig;
   fetcherActive_: boolean;
@@ -180,7 +180,7 @@ export class Debuglet extends EventEmitter {
     this.completedBreakpointMap_ = {};
 
     /** @private {Array<number>} */
-    this.promiseResolvedTimestamp_ = [0, 0];
+    this.promiseResolvedTimestamp_ = Date.now();
   }
 
   static normalizeConfig_(config: DebugAgentConfig): DebugAgentConfig {
@@ -330,8 +330,8 @@ export class Debuglet extends EventEmitter {
     });
   }
   checkReady() {
-    const diff = process.hrtime(this.promiseResolvedTimestamp_);
-    if (diff[0] < PROMISE_RESOLVE_CUT_OFF_IN_SECONDS) {
+    const diff = Date.now() - this.promiseResolvedTimestamp_;
+    if (diff < PROMISE_RESOLVE_CUT_OFF_IN_SECONDS * 1000) {
       return Promise.resolve();
     }
     this.promise_ = new Promise<void>((resolve) => {
@@ -618,7 +618,7 @@ export class Debuglet extends EventEmitter {
                     that.config_.breakpointUpdateIntervalSec);
                 if (that.promise_) {
                   that.promiseResolve_();
-                  that.promiseResolvedTimestamp_ = process.hrtime();
+                  that.promiseResolvedTimestamp_ = Date.now();
                   that.promise_ = null;
                 }
                 return;
