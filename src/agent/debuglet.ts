@@ -61,6 +61,7 @@ const NODE_VERSION_MESSAGE =
 const BREAKPOINT_ACTION_MESSAGE =
     'The only currently supported breakpoint actions' +
     ' are CAPTURE and LOG.';
+const PROMISE_RESOLVE_CUT_OFF_IN_SECONDS = 30;
 
 /**
  * Formats a breakpoint object prefixed with a provided message as a string
@@ -113,9 +114,10 @@ export class Debuglet extends EventEmitter {
   private project_: string|null;
   private controller_: Controller;
   private completedBreakpointMap_: {[key: string]: boolean};
-  private promiseInitialized_: boolean;
-  private promiseResolve_: (value?: void|PromiseLike<void>|undefined) => void;
 
+  private promise_: Promise<void>|null;
+  private promiseResolve_: (value?: void|PromiseLike<void>|undefined) => void;
+  private promiseResolvedTimestamp_: [number, number];
   // Exposed for testing
   config_: DebugAgentConfig;
   fetcherActive_: boolean;
@@ -177,8 +179,8 @@ export class Debuglet extends EventEmitter {
     /** @private {Object.<string, Boolean>} */
     this.completedBreakpointMap_ = {};
 
-    /** @private {boolean} */
-    this.promiseInitialized_ = false;
+    /** @private {Array<number>} */
+    this.promiseResolvedTimestamp_ = [0, 0];
   }
 
   static normalizeConfig_(config: DebugAgentConfig): DebugAgentConfig {
@@ -327,13 +329,17 @@ export class Debuglet extends EventEmitter {
 
     });
   }
-  initializePromise() {
-    this.promiseInitialized_ = true;
-    return new Promise<void>((resolve) => {
+  checkReady() {
+    const diff = process.hrtime(this.promiseResolvedTimestamp_);
+    if (diff[0] < PROMISE_RESOLVE_CUT_OFF_IN_SECONDS) {
+      return Promise.resolve();
+    }
+    this.promise_ = new Promise<void>((resolve) => {
       this.promiseResolve_ = () => {
         resolve();
       };
     });
+    return this.promise_;
   }
 
   /**
@@ -562,6 +568,7 @@ export class Debuglet extends EventEmitter {
                   that.config_.internal.registerDelayOnFetcherErrorSec);
               return;
             }
+
             // TODO: Address the case where `response` is `undefined`.
             switch ((response as http.ServerResponse).statusCode) {
               case 404:
@@ -609,9 +616,10 @@ export class Debuglet extends EventEmitter {
                 }
                 that.scheduleBreakpointFetch_(
                     that.config_.breakpointUpdateIntervalSec);
-                if (that.promiseInitialized_) {
+                if (that.promise_) {
                   that.promiseResolve_();
-                  that.promiseInitialized_ = false;
+                  that.promiseResolvedTimestamp_ = process.hrtime();
+                  that.promise_ = null;
                 }
                 return;
             }
