@@ -23,8 +23,7 @@ import * as extend from 'extend';
 import * as dns from 'dns';
 import * as fs from 'fs';
 
-import * as gcpMetadata from '../types/gcp-metadata';
-const metadata: gcpMetadata.GcpMetadata = require('gcp-metadata');
+import * as metadata from 'gcp-metadata';
 
 import * as _ from 'lodash';
 import * as path from 'path';
@@ -426,8 +425,7 @@ export class Debuglet extends EventEmitter {
   static getProjectIdFromMetadata(): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       metadata.project(
-          'project-id',
-          (err: Error, _res: http.ServerResponse, projectId: string) => {
+          'project-id', (err: Error, _res: any, projectId: string) => {
             err ? reject(err) : resolve(projectId);
           });
     });
@@ -437,7 +435,7 @@ export class Debuglet extends EventEmitter {
     return new Promise<string>((resolve, reject) => {
       metadata.instance(
           'attributes/cluster-name',
-          (err: Error, _res: http.ServerResponse, clusterName: string) => {
+          (err: Error, _res: any, clusterName: string) => {
             err ? reject(err) : resolve(clusterName);
           });
     });
