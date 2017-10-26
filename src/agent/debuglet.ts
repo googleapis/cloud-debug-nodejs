@@ -313,8 +313,7 @@ export class Debuglet extends EventEmitter {
         that.debuggee = Debuglet.createDebuggee(
             // TODO: Address the case when `id` is `undefined`.
             project, id as string, that.config.serviceContext, sourceContext,
-            onGCP, that.debug.packageInfo, that.config.description,
-            undefined);
+            onGCP, that.debug.packageInfo, that.config.description, undefined);
         that.scheduleRegistration_(0 /* immediately */);
         that.emit('started');
       });

@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-import {DebugAgentConfig} from '../src/agent/config';
-import {Debug} from '../src/client/stackdriver/debug';
-
-import * as path from 'path';
 import * as assert from 'assert';
 import * as extend from 'extend';
 import * as nock from 'nock';
+import * as path from 'path';
 
 import * as config from '../src/agent/config';
+import {DebugAgentConfig} from '../src/agent/config';
 import {Debuglet} from '../src/agent/debuglet';
+import {Debug} from '../src/client/stackdriver/debug';
 
 import * as nocks from './nocks';
 

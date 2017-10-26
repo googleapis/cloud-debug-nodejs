@@ -22,26 +22,44 @@ const agentVersion = `SomeName/client/SomeVersion`;
 describe('Debuggee', function() {
 
   it('should create a Debuggee instance on valid input', function() {
-    const debuggee = new Debuggee(
-        {project: 'project', uniquifier: 'uid', description: 'unit test', agentVersion: agentVersion});
+    const debuggee = new Debuggee({
+      project: 'project',
+      uniquifier: 'uid',
+      description: 'unit test',
+      agentVersion: agentVersion
+    });
     assert.ok(debuggee instanceof Debuggee);
   });
 
   it('should create a Debuggee on a call without new', function() {
-    const debuggee = new Debuggee(
-        {project: 'project', uniquifier: 'uid', description: 'unit test', agentVersion: agentVersion});
+    const debuggee = new Debuggee({
+      project: 'project',
+      uniquifier: 'uid',
+      description: 'unit test',
+      agentVersion: agentVersion
+    });
     assert.ok(debuggee instanceof Debuggee);
   });
 
   it('should throw on invalid input', function() {
-    assert.throws(function() { return new Debuggee({agentVersion: agentVersion}); });
-    assert.throws(function() { return new Debuggee({project: '5', agentVersion: agentVersion}); });
-    assert.throws(function() { return new Debuggee({project: undefined, agentVersion: agentVersion}); });
-    assert.throws(function() { return new Debuggee({project: 'test', agentVersion: agentVersion}); });
     assert.throws(function() {
-      const _ = new Debuggee({project: 'test', uniquifier: undefined, agentVersion: agentVersion});
+      return new Debuggee({agentVersion: agentVersion});
+    });
+    assert.throws(function() {
+      return new Debuggee({project: '5', agentVersion: agentVersion});
+    });
+    assert.throws(function() {
+      return new Debuggee({project: undefined, agentVersion: agentVersion});
+    });
+    assert.throws(function() {
+      return new Debuggee({project: 'test', agentVersion: agentVersion});
+    });
+    assert.throws(function() {
+      const _ = new Debuggee(
+          {project: 'test', uniquifier: undefined, agentVersion: agentVersion});
       assert.throws(function() {
-        return new Debuggee({project: 'test', uniquifier: 'uid', agentVersion: agentVersion});
+        return new Debuggee(
+            {project: 'test', uniquifier: 'uid', agentVersion: agentVersion});
       });
     });
   });
