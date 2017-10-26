@@ -61,7 +61,12 @@ const NODE_VERSION_MESSAGE =
 const BREAKPOINT_ACTION_MESSAGE =
     'The only currently supported breakpoint actions' +
     ' are CAPTURE and LOG.';
-const PROMISE_RESOLVE_CUT_OFF_IN_SECONDS = 30;
+
+// PROMISE_RESOLVE_CUT_OFF_IN_SECONDS is a heuristic that we set to force the
+// debug agent return a promise when checkReady is called. The value is selected
+// between Stackdriver debugger hanging get duration (40s) and TCP default
+// time-out (https://tools.ietf.org/html/rfc5482).
+const PROMISE_RESOLVE_CUT_OFF_IN_SECONDS = 60;
 
 /**
  * Formats a breakpoint object prefixed with a provided message as a string
@@ -330,6 +335,7 @@ export class Debuglet extends EventEmitter {
     });
   }
   checkReady() {
+    if (this.promise_) return this.promise_;
     const diff = Date.now() - this.promiseResolvedTimestamp_;
     if (diff < PROMISE_RESOLVE_CUT_OFF_IN_SECONDS * 1000) {
       return Promise.resolve();
@@ -618,9 +624,9 @@ export class Debuglet extends EventEmitter {
                     that.config_.breakpointUpdateIntervalSec);
                 if (that.promise_) {
                   that.promiseResolve_();
-                  that.promiseResolvedTimestamp_ = Date.now();
                   that.promise_ = null;
                 }
+                that.promiseResolvedTimestamp_ = Date.now();
                 return;
             }
           });
