@@ -880,7 +880,7 @@ describe('Debuglet', function() {
     it('should resolve promises before executing user functions', function(done) {
       this.timeout(2000);
       const debug = new Debug(
-          {projectId: 'fake-project', credentials: fakeCredentials});
+          {projectId: 'fake-project', credentials: fakeCredentials}, packageInfo);
       const debuglet = new Debuglet(debug, defaultConfig);
 
       const scope = nock(API)
