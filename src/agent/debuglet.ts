@@ -66,7 +66,7 @@ const BREAKPOINT_ACTION_MESSAGE =
 // debug agent return a promise when checkReady is called. The value is selected
 // between Stackdriver debugger hanging get duration (40s) and TCP default
 // time-out (https://tools.ietf.org/html/rfc5482).
-const PROMISE_RESOLVE_CUT_OFF_IN_SECONDS = 60;
+const PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS = 60 * 1000;
 
 /**
  * Formats a breakpoint object prefixed with a provided message as a string
@@ -120,9 +120,9 @@ export class Debuglet extends EventEmitter {
   private controller_: Controller;
   private completedBreakpointMap_: {[key: string]: boolean};
 
-  private promise_: Promise<void>|null;
-  private promiseResolve_: () => void;
-  private promiseResolvedTimestamp_: number;
+  private promise: Promise<void>;
+  private promiseResolve: (() => void)|null;
+  private promiseResolvedTimestamp: number;
   // Exposed for testing
   config_: DebugAgentConfig;
   fetcherActive_: boolean;
@@ -184,8 +184,7 @@ export class Debuglet extends EventEmitter {
     /** @private {Object.<string, Boolean>} */
     this.completedBreakpointMap_ = {};
 
-    /** @private {Array<number>} */
-    this.promiseResolvedTimestamp_ = Date.now();
+    this.promiseResolvedTimestamp = -Infinity;
   }
 
   static normalizeConfig_(config: DebugAgentConfig): DebugAgentConfig {
@@ -335,17 +334,15 @@ export class Debuglet extends EventEmitter {
     });
   }
   checkReady() {
-    if (this.promise_) return this.promise_;
-    const diff = Date.now() - this.promiseResolvedTimestamp_;
-    if (diff < PROMISE_RESOLVE_CUT_OFF_IN_SECONDS * 1000) {
-      return Promise.resolve();
+    const diff = Date.now() - this.promiseResolvedTimestamp;
+    if (diff > PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS) {
+      this.promise = new Promise<void>((resolve) => {
+        this.promiseResolve = () => {
+          resolve();
+        };
+      });
     }
-    this.promise_ = new Promise<void>((resolve) => {
-      this.promiseResolve_ = () => {
-        resolve();
-      };
-    });
-    return this.promise_;
+    return this.promise;
   }
 
   /**
@@ -622,11 +619,11 @@ export class Debuglet extends EventEmitter {
                 }
                 that.scheduleBreakpointFetch_(
                     that.config_.breakpointUpdateIntervalSec);
-                if (that.promise_) {
-                  that.promiseResolve_();
-                  that.promise_ = null;
+                that.promiseResolvedTimestamp = Date.now();
+                if (that.promiseResolve) {
+                  that.promiseResolve();
+                  that.promiseResolve = null;
                 }
-                that.promiseResolvedTimestamp_ = Date.now();
                 return;
             }
           });
