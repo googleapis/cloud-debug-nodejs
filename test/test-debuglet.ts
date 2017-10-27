@@ -25,7 +25,7 @@ import * as assert from 'assert';
 import DEFAULT_CONFIG from '../src/agent/config';
 (DEFAULT_CONFIG as any).allowExpressions = true;
 (DEFAULT_CONFIG as any).workingDirectory = path.join(__dirname, '..', '..');
-import {Debuglet} from '../src/agent/debuglet';
+import {Debuglet, IsReadyManager} from '../src/agent/debuglet';
 import * as dns from 'dns';
 import * as extend from 'extend';
 const metadata: {project: any, instance: any} = require('gcp-metadata');
@@ -74,6 +74,19 @@ function verifyBreakpointRejection(re: RegExp, body: {breakpoint: any}) {
   const hasCorrectDescription = status.description.format.match(re);
   return status.isError && hasCorrectDescription;
 }
+describe('IsReadyManager', function() {
+  it('IsReadyManager can proceed execute when makeReady is called', function(done) {
+    this.timeout(2000);
+    let isReadyManager = new IsReadyManager();
+    let promise = isReadyManager.isReady();
+    setTimeout(function(){
+      isReadyManager.makeReady();
+    }, 1000);
+    promise.then(() => {
+      done();
+    });
+  });
+});
 
 describe('Debuglet', function() {
   describe('runningOnGCP', () => {
@@ -877,7 +890,7 @@ describe('Debuglet', function() {
       debuglet.start();
     });
 
-    it('should resolve promises before executing user functions', function(done) {
+    it('should resolve promises before exiting user functions', function(done) {
       this.timeout(2000);
       const debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials}, packageInfo);
@@ -889,7 +902,7 @@ describe('Debuglet', function() {
                       .get(BPS_PATH + '?successOnTimeout=true')
                       .reply(200, {breakpoints: []});
       debuglet.start();
-      const debugPromise = debuglet.checkReady();
+      const debugPromise = debuglet.isReady();
 
       debuglet.once('registered', function reg(id: string) {
         assert.equal(id, DEBUGGEE_ID);

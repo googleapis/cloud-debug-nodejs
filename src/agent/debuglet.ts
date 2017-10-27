@@ -62,10 +62,11 @@ const BREAKPOINT_ACTION_MESSAGE =
     'The only currently supported breakpoint actions' +
     ' are CAPTURE and LOG.';
 
-// PROMISE_RESOLVE_CUT_OFF_IN_SECONDS is a heuristic that we set to force the
-// debug agent return a promise when checkReady is called. The value is selected
-// between Stackdriver debugger hanging get duration (40s) and TCP default
-// time-out (https://tools.ietf.org/html/rfc5482).
+// PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS is a heuristic that we set to force
+// the debug agent to return a promise when isReady is called in
+// isReadyManager. The value is selected between Stackdriver debugger hanging
+// get duration (40s) and TCP default time-out
+// (https://tools.ietf.org/html/rfc5482).
 const PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS = 60 * 1000;
 
 /**
@@ -112,6 +113,45 @@ const formatBreakpoints = function(
           .join('\n');
 };
 
+/**
+ * isReadyManager class is designed to support debug agent in Google Cloud
+ * Function (GCF). As GCF is a serverless environment and we wanted to make
+ * sure debug agent could always capture the snapshots. We designed this class
+ * so that GCF could wait the ListActiveBreakpoitns event completed before
+ * throttling CPU to 0. isReadyManager has two member functions.
+ * isReady is to create a initial promise, or create a promise to replace the
+ * old one if it steals. makeReady will resolve the promise at appropriate
+ * code location (in our case is after listActiveBreakpoints executed).
+ */
+export class IsReadyManager {
+  private promise: Promise<void>;
+  private promiseResolve: (() => void)|null;
+  private promiseResolvedTimestamp: number;
+  constructor() {
+    this.promiseResolvedTimestamp = -Infinity;
+  }
+  isReady() {
+    const diff = Date.now() - this.promiseResolvedTimestamp;
+    if (diff > PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS) {
+      this.promise = new Promise<void>((resolve) => {
+        this.promiseResolve = () => {
+          resolve();
+        };
+      });
+    }
+    assert(this.promise);
+    return this.promise;
+  }
+
+  makeReady() {
+    this.promiseResolvedTimestamp = Date.now();
+    if (this.promiseResolve) {
+      this.promiseResolve();
+      this.promiseResolve = null;
+    }
+  }
+}
+
 export class Debuglet extends EventEmitter {
   private debug_: Debug;
   private v8debug_: DebugApi|null;
@@ -120,9 +160,7 @@ export class Debuglet extends EventEmitter {
   private controller_: Controller;
   private completedBreakpointMap_: {[key: string]: boolean};
 
-  private promise: Promise<void>;
-  private promiseResolve: (() => void)|null;
-  private promiseResolvedTimestamp: number;
+  private isReadyManager: IsReadyManager;
   // Exposed for testing
   config_: DebugAgentConfig;
   fetcherActive_: boolean;
@@ -184,7 +222,7 @@ export class Debuglet extends EventEmitter {
     /** @private {Object.<string, Boolean>} */
     this.completedBreakpointMap_ = {};
 
-    this.promiseResolvedTimestamp = -Infinity;
+    this.isReadyManager = new IsReadyManager();
   }
 
   static normalizeConfig_(config: DebugAgentConfig): DebugAgentConfig {
@@ -333,16 +371,8 @@ export class Debuglet extends EventEmitter {
 
     });
   }
-  checkReady() {
-    const diff = Date.now() - this.promiseResolvedTimestamp;
-    if (diff > PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS) {
-      this.promise = new Promise<void>((resolve) => {
-        this.promiseResolve = () => {
-          resolve();
-        };
-      });
-    }
-    return this.promise;
+  isReady() {
+    return this.isReadyManager.isReady();
   }
 
   /**
@@ -619,11 +649,7 @@ export class Debuglet extends EventEmitter {
                 }
                 that.scheduleBreakpointFetch_(
                     that.config_.breakpointUpdateIntervalSec);
-                that.promiseResolvedTimestamp = Date.now();
-                if (that.promiseResolve) {
-                  that.promiseResolve();
-                  that.promiseResolve = null;
-                }
+                that.isReadyManager.makeReady();
                 return;
             }
           });
