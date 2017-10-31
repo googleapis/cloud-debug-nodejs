@@ -64,10 +64,9 @@ const BREAKPOINT_ACTION_MESSAGE =
 
 // PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS is a heuristic that we set to force
 // the debug agent to return a promise when isReady is called in
-// isReadyManager. The value is selected between Stackdriver debugger hanging
-// get duration (40s) and TCP default time-out
-// (https://tools.ietf.org/html/rfc5482).
-const PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS = 60 * 1000;
+// isReadyManager. The value is the average of Stackdriver debugger hanging
+// get duration (40s) and TCP time-out on GCF (540s)
+const PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS = 290 * 1000;
 
 /**
  * Formats a breakpoint object prefixed with a provided message as a string
@@ -114,25 +113,26 @@ const formatBreakpoints = function(
 };
 
 /**
- * isReadyManager class is designed to support debug agent in Google Cloud
+ * CachedPromise class is designed to support debug agent in Google Cloud
  * Function (GCF). As GCF is a serverless environment and we wanted to make
  * sure debug agent could always capture the snapshots. We designed this class
  * so that GCF could wait the ListActiveBreakpoitns event completed before
- * throttling CPU to 0. isReadyManager has two member functions.
- * isReady is to create a initial promise, or create a promise to replace the
- * old one if it steals. makeReady will resolve the promise at appropriate
- * code location (in our case is after listActiveBreakpoints executed).
+ * throttling CPU to 0. CachedPromise has two member functions.
+ * get() is to create or return an existing promise. resolve() will resolve
+ * the promise at appropriate code location (in our case is after
+ * listActiveBreakpoints executed).
  */
-export class IsReadyManager {
+export class CachedPromise {
   private promise: Promise<void>;
   private promiseResolve: (() => void)|null;
-  private promiseResolvedTimestamp: number;
-  constructor() {
-    this.promiseResolvedTimestamp = -Infinity;
+  private promiseResolvedTimestamp: number = -Infinity;
+  private refresh: number;
+  constructor(refresh: number) {
+    this.refresh = refresh;
   }
-  isReady() {
+  get(): Promise<void> {
     const diff = Date.now() - this.promiseResolvedTimestamp;
-    if (diff > PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS) {
+    if (diff > this.refresh) {
       this.promise = new Promise<void>((resolve) => {
         this.promiseResolve = () => {
           resolve();
@@ -143,7 +143,7 @@ export class IsReadyManager {
     return this.promise;
   }
 
-  makeReady() {
+  resolve(): void {
     this.promiseResolvedTimestamp = Date.now();
     if (this.promiseResolve) {
       this.promiseResolve();
@@ -160,7 +160,7 @@ export class Debuglet extends EventEmitter {
   private controller_: Controller;
   private completedBreakpointMap_: {[key: string]: boolean};
 
-  private isReadyManager: IsReadyManager;
+  private cachedPromise: CachedPromise;
   // Exposed for testing
   config_: DebugAgentConfig;
   fetcherActive_: boolean;
@@ -222,7 +222,8 @@ export class Debuglet extends EventEmitter {
     /** @private {Object.<string, Boolean>} */
     this.completedBreakpointMap_ = {};
 
-    this.isReadyManager = new IsReadyManager();
+    this.cachedPromise =
+        new CachedPromise(PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS);
   }
 
   static normalizeConfig_(config: DebugAgentConfig): DebugAgentConfig {
@@ -372,7 +373,7 @@ export class Debuglet extends EventEmitter {
     });
   }
   isReady() {
-    return this.isReadyManager.isReady();
+    return this.cachedPromise.get();
   }
 
   /**
@@ -649,7 +650,7 @@ export class Debuglet extends EventEmitter {
                 }
                 that.scheduleBreakpointFetch_(
                     that.config_.breakpointUpdateIntervalSec);
-                that.isReadyManager.makeReady();
+                that.cachedPromise.resolve();
                 return;
             }
           });

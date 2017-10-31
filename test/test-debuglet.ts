@@ -25,7 +25,7 @@ import * as assert from 'assert';
 import DEFAULT_CONFIG from '../src/agent/config';
 (DEFAULT_CONFIG as any).allowExpressions = true;
 (DEFAULT_CONFIG as any).workingDirectory = path.join(__dirname, '..', '..');
-import {Debuglet, IsReadyManager} from '../src/agent/debuglet';
+import {Debuglet, CachedPromise} from '../src/agent/debuglet';
 import * as dns from 'dns';
 import * as extend from 'extend';
 const metadata: {project: any, instance: any} = require('gcp-metadata');
@@ -74,13 +74,13 @@ function verifyBreakpointRejection(re: RegExp, body: {breakpoint: any}) {
   const hasCorrectDescription = status.description.format.match(re);
   return status.isError && hasCorrectDescription;
 }
-describe('IsReadyManager', function() {
-  it('IsReadyManager can proceed execute when makeReady is called', function(done) {
+describe('CachedPromise', function() {
+  it('CachedPromise can proceed execute when resolve is called', function(done) {
     this.timeout(2000);
-    let isReadyManager = new IsReadyManager();
-    let promise = isReadyManager.isReady();
+    let cachedPromise = new CachedPromise(60 * 1000);
+    let promise = cachedPromise.get();
     setTimeout(function(){
-      isReadyManager.makeReady();
+      cachedPromise.resolve();
     }, 1000);
     promise.then(() => {
       done();
