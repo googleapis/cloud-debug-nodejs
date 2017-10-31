@@ -115,15 +115,15 @@ const formatBreakpoints = function(
 /**
  * CachedPromise class is designed to support debug agent in Google Cloud
  * Function (GCF). As GCF is a serverless environment and we wanted to make
- * sure debug agent could always capture the snapshots. We designed this class
- * so that GCF could wait the ListActiveBreakpoitns event completed before
- * throttling CPU to 0. CachedPromise has two member functions.
+ * sure debug agent could always capture the snapshots, we designed this class
+ * so that GCF could wait until the listActiveBreakpoints event is completed
+ * before throttling CPU to 0. CachedPromise has two member functions.
  * get() is to create or return an existing promise. resolve() will resolve
  * the promise at appropriate code location (in our case is after
- * listActiveBreakpoints executed).
+ * listActiveBreakpoints is executed).
  */
 export class CachedPromise {
-  private promise: Promise<void>;
+  private promise: Promise<void>|undefined;
   private promiseResolve: (() => void)|null;
   private promiseResolvedTimestamp = -Infinity;
   private refresh: number;
@@ -134,13 +134,11 @@ export class CachedPromise {
     const diff = Date.now() - this.promiseResolvedTimestamp;
     if (diff > this.refresh) {
       this.promise = new Promise<void>((resolve) => {
-        this.promiseResolve = () => {
-          resolve();
-        };
+        this.promiseResolve = resolve;
       });
     }
     assert(this.promise);
-    return this.promise;
+    return this.promise as Promise<void>;
   }
 
   resolve(): void {
@@ -160,7 +158,8 @@ export class Debuglet extends EventEmitter {
   private controller_: Controller;
   private completedBreakpointMap_: {[key: string]: boolean};
 
-  private cachedPromise: CachedPromise;
+  private cachedPromise =
+      new CachedPromise(PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS);
   // Exposed for testing
   config_: DebugAgentConfig;
   fetcherActive_: boolean;
@@ -221,9 +220,6 @@ export class Debuglet extends EventEmitter {
 
     /** @private {Object.<string, Boolean>} */
     this.completedBreakpointMap_ = {};
-
-    this.cachedPromise =
-        new CachedPromise(PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS);
   }
 
   static normalizeConfig_(config: DebugAgentConfig): DebugAgentConfig {
@@ -372,7 +368,7 @@ export class Debuglet extends EventEmitter {
 
     });
   }
-  isReady() {
+  isReady(): Promise<void> {
     return this.cachedPromise.get();
   }
 

@@ -74,12 +74,13 @@ function verifyBreakpointRejection(re: RegExp, body: {breakpoint: any}) {
   const hasCorrectDescription = status.description.format.match(re);
   return status.isError && hasCorrectDescription;
 }
+
 describe('CachedPromise', function() {
-  it('CachedPromise can proceed execute when resolve is called', function(done) {
+  it('CachedPromise can proceed execute when resolve is called', (done) => {
     this.timeout(2000);
     let cachedPromise = new CachedPromise(60 * 1000);
     let promise = cachedPromise.get();
-    setTimeout(function(){
+    setTimeout(() => {
       cachedPromise.resolve();
     }, 1000);
     promise.then(() => {
