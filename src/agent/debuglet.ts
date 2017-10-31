@@ -125,7 +125,7 @@ const formatBreakpoints = function(
 export class CachedPromise {
   private promise: Promise<void>;
   private promiseResolve: (() => void)|null;
-  private promiseResolvedTimestamp: number = -Infinity;
+  private promiseResolvedTimestamp = -Infinity;
   private refresh: number;
   constructor(refresh: number) {
     this.refresh = refresh;
