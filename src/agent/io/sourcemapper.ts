@@ -114,7 +114,7 @@ function processSourcemap(
 }
 
 export class SourceMapper {
-  infoMap_: Map<string, MapInfoInput>;
+  infoMap: Map<string, MapInfoInput>;
 
   /**
    * @param {Array.<string>} sourcemapPaths An array of paths to .map sourcemap
@@ -125,7 +125,7 @@ export class SourceMapper {
    * @constructor
    */
   constructor() {
-    this.infoMap_ = new Map();
+    this.infoMap = new Map();
   }
 
   /**
@@ -140,14 +140,14 @@ export class SourceMapper {
    *  could possibly be associated with the given input path.
    */
   private getMappingInfo(inputPath: string): MapInfoInput|null {
-    if (this.infoMap_.has(path.normalize(inputPath))) {
-      return this.infoMap_.get(inputPath) as MapInfoInput;
+    if (this.infoMap.has(path.normalize(inputPath))) {
+      return this.infoMap.get(inputPath) as MapInfoInput;
     }
 
     const matches =
-        findScriptsFuzzy(inputPath, Array.from(this.infoMap_.keys()));
+        findScriptsFuzzy(inputPath, Array.from(this.infoMap.keys()));
     if (matches.length === 1) {
-      return this.infoMap_.get(matches[0]) as MapInfoInput;
+      return this.infoMap.get(matches[0]) as MapInfoInput;
     }
 
     return null;
@@ -248,7 +248,7 @@ export function create(
   const callList =
       Array.prototype.slice.call(sourcemapPaths).map(function(p: string) {
         return function(cb: (err: Error|null) => void) {
-          processSourcemap(mapper.infoMap_, p, cb);
+          processSourcemap(mapper.infoMap, p, cb);
         };
       });
 

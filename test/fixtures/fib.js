@@ -62,7 +62,7 @@ debuglet.once('registered', function() {
     }
   };
 
-  var debuggee = debuglet.debuggee_;
+  var debuggee = debuglet.debuggee;
   setErrorIfNotOk(debuggee, 'should create debuggee');
   setErrorIfNotOk(debuggee.project, 'debuggee should have a project');
   setErrorIfNotOk(debuggee.id, 'debuggee should have registered');

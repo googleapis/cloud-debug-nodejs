@@ -36,8 +36,8 @@ export interface DebugApi {
 }
 
 interface DebugApiConstructor {
-  new(logger_: Logger, config_: DebugAgentConfig, jsFiles_: ScanStats,
-      sourcemapper_: SourceMapper): DebugApi;
+  new(logger: Logger, config: DebugAgentConfig, jsFiles: ScanStats,
+      sourcemapper: SourceMapper): DebugApi;
 }
 
 let debugApiConstructor: DebugApiConstructor;

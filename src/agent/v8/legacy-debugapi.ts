@@ -60,14 +60,14 @@ export class V8DebugApi implements debugapi.DebugApi {
   numBreakpoints = 0;
 
   constructor(
-      logger_: Logger, config_: DebugAgentConfig, jsFiles_: ScanStats,
-      sourcemapper_: SourceMapper) {
-    this.sourcemapper = sourcemapper_;
+      logger: Logger, config: DebugAgentConfig, jsFiles: ScanStats,
+      sourcemapper: SourceMapper) {
+    this.sourcemapper = sourcemapper;
     this.v8 = vm.runInDebugContext('Debug');
-    this.config = config_;
-    this.fileStats = jsFiles_;
+    this.config = config;
+    this.fileStats = jsFiles;
     this.v8Version = /(\d+\.\d+\.\d+)\.\d+/.exec(process.versions.v8);
-    this.logger = logger_;
+    this.logger = logger;
     this.usePermanentListener = semver.satisfies(this.v8Version[1], '>=4.5');
     this.handleDebugEvents =
         (evt: v8.DebugEvent, execState: v8.ExecutionState,
@@ -194,7 +194,7 @@ export class V8DebugApi implements debugapi.DebugApi {
     let timesliceEnd = Date.now() + 1000;
     // TODO: Determine why the Error argument is not used.
     const listener =
-        this.onBreakpointHit.bind(this, breakpoint, function(_err: Error) {
+        this.onBreakpointHit.bind(this, breakpoint, function(err: Error) {
           const currTime = Date.now();
           if (currTime > timesliceEnd) {
             logsThisSecond = 0;
