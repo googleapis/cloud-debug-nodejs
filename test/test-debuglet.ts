@@ -25,7 +25,7 @@ import * as assert from 'assert';
 import DEFAULT_CONFIG from '../src/agent/config';
 (DEFAULT_CONFIG as any).allowExpressions = true;
 (DEFAULT_CONFIG as any).workingDirectory = path.join(__dirname, '..', '..');
-import {Debuglet} from '../src/agent/debuglet';
+import {Debuglet, CachedPromise} from '../src/agent/debuglet';
 import * as dns from 'dns';
 import * as extend from 'extend';
 const metadata: {project: any, instance: any} = require('gcp-metadata');
@@ -74,6 +74,53 @@ function verifyBreakpointRejection(re: RegExp, body: {breakpoint: any}) {
   const hasCorrectDescription = status.description.format.match(re);
   return status.isError && hasCorrectDescription;
 }
+
+describe('CachedPromise', function() {
+  it('CachedPromise can proceed execute when resolve is called', (done) => {
+    this.timeout(2000);
+    let cachedPromise = new CachedPromise(60 * 1000);
+    let promise = cachedPromise.get();
+    setTimeout(() => {
+      cachedPromise.resolve();
+    }, 1000);
+    promise.then(() => {
+      done();
+    });
+  });
+
+  it('Fresh promise should be resolved immediately if previously resolved', (done) => {
+    let cachedPromise = new CachedPromise(60 * 1000);
+    cachedPromise.resolve();
+    let resolved = false;
+    cachedPromise.get().then(() => {
+      resolved = true;
+    });
+    setTimeout(() => {
+      cachedPromise.resolve();
+      assert(resolved);
+      done();
+    }, 100);
+  });
+
+  it('Stale promise should not be resolved util CachedPromise explicitly resolve', (done) => {
+    let cachedPromise = new CachedPromise(100);
+    cachedPromise.resolve();
+    let resolved = false;
+    setTimeout(() => {
+      cachedPromise.get().then(() => {
+        assert(resolved);
+        done();
+      });
+      setTimeout(() => {
+        resolved = true;
+        cachedPromise.resolve();
+      }, 100);
+    }, 500);
+
+
+
+  });
+});
 
 describe('Debuglet', function() {
   describe('runningOnGCP', () => {
@@ -875,6 +922,34 @@ describe('Debuglet', function() {
       });
 
       debuglet.start();
+    });
+
+    it('should resolve promises before exiting user functions', function(done) {
+      this.timeout(2000);
+      const debug = new Debug(
+          {projectId: 'fake-project', credentials: fakeCredentials}, packageInfo);
+      const debuglet = new Debuglet(debug, defaultConfig);
+
+      const scope = nock(API)
+                      .post(REGISTER_PATH)
+                      .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+                      .get(BPS_PATH + '?successOnTimeout=true')
+                      .reply(200, {breakpoints: []});
+      debuglet.start();
+      const debugPromise = debuglet.isReady();
+
+      debuglet.once('registered', function reg(id: string) {
+        assert.equal(id, DEBUGGEE_ID);
+        debugPromise.then(() => {
+          setTimeout(function() {
+            debuglet.stop();
+            scope.done();
+            done();
+          }, 1000);
+        }).catch((err) => {
+          assert.ifError(err);
+        });
+      });
     });
 
     it('should reject breakpoints with conditions when allowExpressions=false',

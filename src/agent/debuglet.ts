@@ -62,6 +62,12 @@ const BREAKPOINT_ACTION_MESSAGE =
     'The only currently supported breakpoint actions' +
     ' are CAPTURE and LOG.';
 
+// PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS is a heuristic that we set to force
+// the debug agent to return a promise when isReady is called in
+// isReadyManager. The value is the average of Stackdriver debugger hanging
+// get duration (40s) and TCP time-out on GCF (540s)
+const PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS = 290 * 1000;
+
 /**
  * Formats a breakpoint object prefixed with a provided message as a string
  * intended for logging.
@@ -106,6 +112,41 @@ const formatBreakpoints = function(
           .join('\n');
 };
 
+/**
+ * CachedPromise stores a promise for a limited time. Its member function get()
+ * will initially create a promise, or create a promise when previous promise
+ * stales, then return that promise. resolve() will resolve the stored promise.
+ */
+export class CachedPromise {
+  private promise: Promise<void>;
+  private promiseResolve: (() => void)|null;
+  private promiseResolvedTimestamp = -Infinity;
+  private timeUntilStaleMS: number;
+  constructor(timeUntilStaleMS: number) {
+    this.timeUntilStaleMS = timeUntilStaleMS;
+    this.promise = new Promise<void>((resolve) => {
+      this.promiseResolve = resolve;
+    });
+  }
+  get(): Promise<void> {
+    const diff = Date.now() - this.promiseResolvedTimestamp;
+    if (diff > this.timeUntilStaleMS) {
+      this.promise = new Promise<void>((resolve) => {
+        this.promiseResolve = resolve;
+      });
+    }
+    return this.promise;
+  }
+
+  resolve(): void {
+    this.promiseResolvedTimestamp = Date.now();
+    if (this.promiseResolve) {
+      this.promiseResolve();
+      this.promiseResolve = null;
+    }
+  }
+}
+
 export class Debuglet extends EventEmitter {
   private debug_: Debug;
   private v8debug_: DebugApi|null;
@@ -114,6 +155,8 @@ export class Debuglet extends EventEmitter {
   private controller_: Controller;
   private completedBreakpointMap_: {[key: string]: boolean};
 
+  private cachedPromise =
+      new CachedPromise(PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS);
   // Exposed for testing
   config_: DebugAgentConfig;
   fetcherActive_: boolean;
@@ -321,6 +364,18 @@ export class Debuglet extends EventEmitter {
       });
 
     });
+  }
+
+  /**
+   * isReady is designed to support debug agent on Google Cloud Function (GCF).
+   * GCF is a serverless environment and we wanted to make sure debug agent
+   * always captures the snapshots. When using the debug agent with GCF, isReady
+   * needs to be called first to acquire a promise. This promise will be
+   * resolved after debug agent listing all breakpoints. GCF can complete and
+   * call the callback afterwards.
+   */
+  isReady(): Promise<void> {
+    return this.cachedPromise.get();
   }
 
   /**
@@ -597,6 +652,7 @@ export class Debuglet extends EventEmitter {
                 }
                 that.scheduleBreakpointFetch_(
                     that.config_.breakpointUpdateIntervalSec);
+                that.cachedPromise.resolve();
                 return;
             }
           });
