@@ -34,10 +34,10 @@ export interface DebuggeeProperties {
 }
 
 export class Debuggee {
-  private uniquifier: string;
-  private description: string;
-  private agentVersion?: string;
-  private sourceContexts?: Array<{[key: string]: any}>;
+  uniquifier: string;
+  description: string;
+  agentVersion?: string;
+  sourceContexts?: Array<{[key: string]: any}>;
 
   // Public to allow for testing
   project: string;
