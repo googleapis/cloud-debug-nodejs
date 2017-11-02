@@ -113,32 +113,29 @@ const formatBreakpoints = function(
 };
 
 /**
- * CachedPromise class is designed to support debug agent in Google Cloud
- * Function (GCF). As GCF is a serverless environment and we wanted to make
- * sure debug agent could always capture the snapshots, we designed this class
- * so that GCF could wait until the listActiveBreakpoints event is completed
- * before throttling CPU to 0. CachedPromise has two member functions.
- * get() is to create or return an existing promise. resolve() will resolve
- * the promise at appropriate code location (in our case is after
- * listActiveBreakpoints is executed).
+ * CachedPromise stores a promise for a limited time. Its member function get()
+ * will initially create a promise, or create a promise when previous promise
+ * stales, then return that promise. resolve() will resolve the stored promise.
  */
 export class CachedPromise {
-  private promise: Promise<void>|undefined;
+  private promise: Promise<void>;
   private promiseResolve: (() => void)|null;
   private promiseResolvedTimestamp = -Infinity;
-  private refresh: number;
-  constructor(refresh: number) {
-    this.refresh = refresh;
+  private timeUntilStaleMS: number;
+  constructor(timeUntilStaleMS: number) {
+    this.timeUntilStaleMS = timeUntilStaleMS;
+    this.promise = new Promise<void>((resolve) => {
+      this.promiseResolve = resolve;
+    });
   }
   get(): Promise<void> {
     const diff = Date.now() - this.promiseResolvedTimestamp;
-    if (diff > this.refresh) {
+    if (diff > this.timeUntilStaleMS) {
       this.promise = new Promise<void>((resolve) => {
         this.promiseResolve = resolve;
       });
     }
-    assert(this.promise);
-    return this.promise as Promise<void>;
+    return this.promise;
   }
 
   resolve(): void {
@@ -368,6 +365,15 @@ export class Debuglet extends EventEmitter {
 
     });
   }
+
+  /**
+   * isReady is designed to support debug agent on Google Cloud Function (GCF).
+   * As GCF is a serverless environment and we wanted to make sure debug agent
+   * always captures the snapshots, we used CachedPromise so that GCF could wait
+   * until the listActiveBreakpoints event is completed before throttling CPU to
+   * 0. Here the cachedPromise will be resolved after listActiveBreakpoints is
+   * executed).
+   */
   isReady(): Promise<void> {
     return this.cachedPromise.get();
   }

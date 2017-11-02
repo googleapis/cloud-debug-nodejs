@@ -87,6 +87,28 @@ describe('CachedPromise', function() {
       done();
     });
   });
+
+  it('CachedPromise should return the same promise if not staled', (done) => {
+    let cachedPromise = new CachedPromise(60 * 1000);
+    cachedPromise.resolve();
+    let promise1 = cachedPromise.get();
+    setTimeout(() => {
+      let promise2 = cachedPromise.get();
+      assert(promise1 === promise2);
+      done();
+    }, 1000);
+  });
+
+  it('CachedPromise should return a different promise if staled', (done) => {
+    let cachedPromise = new CachedPromise(500);
+    cachedPromise.resolve();
+    let promise1 = cachedPromise.get();
+    setTimeout(() => {
+      let promise2 = cachedPromise.get();
+      assert(promise1 !== promise2);
+      done();
+    }, 1000);
+  });
 });
 
 describe('Debuglet', function() {
