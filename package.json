@@ -49,7 +49,7 @@
     "request": "^2.81.0",
     "source-map-support": "^0.4.15",
     "tslint": "^5.4.3",
-    "typescript": "^2.4.1"
+    "typescript": "2.4.1"
   },
   "dependencies": {
     "@google-cloud/common": "^0.13.3",
