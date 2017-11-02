@@ -345,7 +345,8 @@ describe('Debuglet', function() {
         // TODO: Handle the case where debuglet.debuggee is undefined
         assert.equal((debuglet.debuggee_ as Debuggee).project, projectId);
         const arch = process.arch;
-        if (semver.satisfies(process.version, '>=8.5') &&
+        if (semver.satisfies(process.version, '>=8.5.0') &&
+            semver.satisfies(process.version, '<8.9.0') &&
             (arch === 'ia32' || arch === 'x86') &&
             process.env.GCLOUD_USE_INSPECTOR) {
           assert(logText.includes(utils.messages.ASYNC_TRACES_WARNING));
