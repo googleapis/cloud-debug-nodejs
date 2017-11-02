@@ -88,26 +88,37 @@ describe('CachedPromise', function() {
     });
   });
 
-  it('CachedPromise should return the same promise if not staled', (done) => {
+  it('Fresh promise should be resolved immediately if previously resolved', (done) => {
     let cachedPromise = new CachedPromise(60 * 1000);
     cachedPromise.resolve();
-    let promise1 = cachedPromise.get();
+    let resolved = false;
+    cachedPromise.get().then(() => {
+      resolved = true;
+    });
     setTimeout(() => {
-      let promise2 = cachedPromise.get();
-      assert(promise1 === promise2);
+      cachedPromise.resolve();
+      assert(resolved);
       done();
-    }, 1000);
+    }, 100);
   });
 
-  it('CachedPromise should return a different promise if staled', (done) => {
-    let cachedPromise = new CachedPromise(500);
+  it('Stale promise should not be resolved util CachedPromise explicitly resolve', (done) => {
+    let cachedPromise = new CachedPromise(100);
     cachedPromise.resolve();
-    let promise1 = cachedPromise.get();
+    let resolved = false;
     setTimeout(() => {
-      let promise2 = cachedPromise.get();
-      assert(promise1 !== promise2);
-      done();
-    }, 1000);
+      cachedPromise.get().then(() => {
+        assert(resolved);
+        done();
+      });
+      setTimeout(() => {
+        resolved = true;
+        cachedPromise.resolve();
+      }, 100);
+    }, 500);
+
+
+
   });
 });
 

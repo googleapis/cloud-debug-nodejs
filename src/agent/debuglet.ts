@@ -368,11 +368,11 @@ export class Debuglet extends EventEmitter {
 
   /**
    * isReady is designed to support debug agent on Google Cloud Function (GCF).
-   * As GCF is a serverless environment and we wanted to make sure debug agent
-   * always captures the snapshots, we used CachedPromise so that GCF could wait
-   * until the listActiveBreakpoints event is completed before throttling CPU to
-   * 0. Here the cachedPromise will be resolved after listActiveBreakpoints is
-   * executed).
+   * GCF is a serverless environment and we wanted to make sure debug agent
+   * always captures the snapshots. When using the debug agent with GCF, isReady
+   * needs to be called first to acquire a promise. This promise will be
+   * resolved after debug agent listing all breakpoints. GCF can complete and
+   * call the callback afterwards.
    */
   isReady(): Promise<void> {
     return this.cachedPromise.get();
