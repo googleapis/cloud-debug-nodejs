@@ -22,7 +22,9 @@ const pretty = require('pretty-hrtime');
 // const util = require('util');
 const fib = require('./bench-code.js');
 
-const logger = new (require('../src/logger.js'))(config.logLevel);
+// tslint:disable:variable-name
+const Logger = require('../src/logger.js');
+const logger = new Logger(config.logLevel);
 assert.ok(v8debugapi.init(logger, config));
 
 function bench(message: any, f: any) {

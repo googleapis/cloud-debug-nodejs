@@ -4,7 +4,10 @@ const v8debugapi = require('../src/v8debugapi.js');
 const config = require('../config.js').default;
 import * as assert from 'assert';
 import * as util from 'util';
-const logger = new (require('../src/logger.js'))(config.logLevel);
+
+// tslint:disable:variable-name
+const Logger = require('../src/logger.js');
+const logger = new Logger(config.logLevel);
 
 assert.ok(v8debugapi.init(logger, config));
 
