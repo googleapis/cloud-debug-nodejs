@@ -24,6 +24,7 @@ import * as dns from 'dns';
 import * as fs from 'fs';
 
 import * as metadata from 'gcp-metadata';
+import * as request from 'request';
 
 import * as _ from 'lodash';
 import * as path from 'path';
@@ -420,20 +421,20 @@ export class Debuglet extends EventEmitter {
     }
   }
 
-  static getProjectIdFromMetadata(): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
+  static getProjectIdFromMetadata(): Promise<string|undefined> {
+    return new Promise<string|undefined>((resolve, reject) => {
       metadata.project(
-          'project-id', (err: Error, res: any, projectId: string) => {
+          'project-id', (err: Error|null, res?: request.RequestResponse, projectId?: string) => {
             err ? reject(err) : resolve(projectId);
           });
     });
   }
 
-  static getClusterNameFromMetadata(): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
+  static getClusterNameFromMetadata(): Promise<string|undefined> {
+    return new Promise<string|undefined>((resolve, reject) => {
       metadata.instance(
           'attributes/cluster-name',
-          (err: Error, res: any, clusterName: string) => {
+          (err: Error|null, res?: request.RequestResponse, clusterName?: string) => {
             err ? reject(err) : resolve(clusterName);
           });
     });
@@ -535,7 +536,7 @@ export class Debuglet extends EventEmitter {
       that.logger.info('Fetching breakpoints');
       // TODO: Address the case when `that.debuggee` is `null`.
       that.controller.listBreakpoints(
-          (that.debuggee as Debuggee), function(err: Error, response, body) {
+          (that.debuggee as Debuggee), function(err: Error|null, response, body) {
             if (err) {
               that.logger.error(
                   'Unable to fetch breakpoints – stopping fetcher', err);

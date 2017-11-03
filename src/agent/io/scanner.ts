@@ -151,7 +151,7 @@ function computeStats(
   fileList.forEach(function(filename) {
     statsForFile(
         filename, shouldHash,
-        function(err: Error, fileStats: FileStats|undefined) {
+        function(err: Error|null, fileStats?: FileStats) {
           if (err) {
             callback(err);
             return;

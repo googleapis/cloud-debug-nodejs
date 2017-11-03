@@ -57,9 +57,10 @@ describe('Controller API', function() {
       const controller = new Controller(fakeDebug);
       // TODO: Determine if this type signature is correct.
       controller.register(
-          debuggee, function(err: Error|null, result: {debuggee: Debuggee}) {
+          debuggee, function(err: Error|null, result?: {debuggee: Debuggee}) {
             assert(!err, 'not expecting an error');
-            assert.equal(result.debuggee.id, 'fake-debuggee');
+            assert.ok(result);
+            assert.equal(result!.debuggee.id, 'fake-debuggee');
             scope.done();
             done();
           });
@@ -79,11 +80,12 @@ describe('Controller API', function() {
          });
          const controller = new Controller(fakeDebug);
          controller.register(
-             debuggee, function(err: Error, result: {debuggee: Debuggee}) {
+             debuggee, function(err: Error|null, result?: {debuggee: Debuggee}) {
                // TODO: Fix this incorrect method signature.
                (assert as any).ifError(err, 'not expecting an error');
-               assert.equal(result.debuggee.id, 'fake-debuggee');
-               assert.ok(result.debuggee.isDisabled);
+               assert.ok(result);
+               assert.equal(result!.debuggee.id, 'fake-debuggee');
+               assert.ok(result!.debuggee.isDisabled);
                scope.done();
                done();
              });
@@ -232,11 +234,12 @@ describe('Controller API', function() {
         controller.listBreakpoints(
             debuggee,
             function(
-                err: Error|null, response: http.ServerResponse,
-                result: stackdriver.ListBreakpointsResponse) {
+                err: Error|null, response?: http.ServerResponse,
+                result?: stackdriver.ListBreakpointsResponse) {
               assert(!err, 'not expecting an error');
-              assert(result.breakpoints, 'should have a breakpoints property');
-              const bps = result.breakpoints;
+              assert.ok(result);
+              assert(result!.breakpoints, 'should have a breakpoints property');
+              const bps = result!.breakpoints;
               assert.deepEqual(bps, breakpoints, 'breakpoints mismatch');
               scope.done();
               done();
