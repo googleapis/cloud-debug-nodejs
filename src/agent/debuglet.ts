@@ -424,7 +424,7 @@ export class Debuglet extends EventEmitter {
   static getProjectIdFromMetadata() {
     return new Promise<string>((resolve, reject) => {
       metadata.project(
-          'project-id', (err: Error|null, res?: request.RequestResponse, projectId?: string) => {
+          'project-id', (err, res, projectId) => {
             err ? reject(err) : resolve(projectId);
           });
     });
@@ -434,7 +434,7 @@ export class Debuglet extends EventEmitter {
     return new Promise<string>((resolve, reject) => {
       metadata.instance(
           'attributes/cluster-name',
-          (err: Error|null, res?: request.RequestResponse, clusterName?: string) => {
+          (err, res, clusterName) => {
             err ? reject(err) : resolve(clusterName);
           });
     });
@@ -536,7 +536,7 @@ export class Debuglet extends EventEmitter {
       that.logger.info('Fetching breakpoints');
       // TODO: Address the case when `that.debuggee` is `null`.
       that.controller.listBreakpoints(
-          (that.debuggee as Debuggee), function(err: Error|null, response, body) {
+          (that.debuggee as Debuggee), function(err, response, body) {
             if (err) {
               that.logger.error(
                   'Unable to fetch breakpoints – stopping fetcher', err);
