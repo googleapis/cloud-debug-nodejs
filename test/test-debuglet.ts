@@ -231,7 +231,7 @@ describe('Debuglet', function() {
   });
 
   describe('getProjectId', () => {
-    let savedGetProjectIdFromMetadata: () => Promise<string|undefined>;
+    let savedGetProjectIdFromMetadata: () => Promise<string>;
 
     beforeEach(() => {
       savedGetProjectIdFromMetadata = Debuglet.getProjectIdFromMetadata;
