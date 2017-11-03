@@ -421,7 +421,7 @@ export class Debuglet extends EventEmitter {
     }
   }
 
-  static getProjectIdFromMetadata(): Promise<string> {
+  static getProjectIdFromMetadata() {
     return new Promise<string>((resolve, reject) => {
       metadata.project(
           'project-id', (err: Error|null, res?: request.RequestResponse, projectId?: string) => {
@@ -430,7 +430,7 @@ export class Debuglet extends EventEmitter {
     });
   }
 
-  static getClusterNameFromMetadata(): Promise<string> {
+  static getClusterNameFromMetadata() {
     return new Promise<string>((resolve, reject) => {
       metadata.instance(
           'attributes/cluster-name',
