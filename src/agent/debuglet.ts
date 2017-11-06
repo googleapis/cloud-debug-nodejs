@@ -24,6 +24,7 @@ import * as dns from 'dns';
 import * as fs from 'fs';
 
 import * as metadata from 'gcp-metadata';
+import * as request from 'request';
 
 import * as _ from 'lodash';
 import * as path from 'path';
@@ -420,20 +421,20 @@ export class Debuglet extends EventEmitter {
     }
   }
 
-  static getProjectIdFromMetadata(): Promise<string> {
+  static getProjectIdFromMetadata() {
     return new Promise<string>((resolve, reject) => {
       metadata.project(
-          'project-id', (err: Error, res: any, projectId: string) => {
+          'project-id', (err, res, projectId) => {
             err ? reject(err) : resolve(projectId);
           });
     });
   }
 
-  static getClusterNameFromMetadata(): Promise<string> {
+  static getClusterNameFromMetadata() {
     return new Promise<string>((resolve, reject) => {
       metadata.instance(
           'attributes/cluster-name',
-          (err: Error, res: any, clusterName: string) => {
+          (err, res, clusterName) => {
             err ? reject(err) : resolve(clusterName);
           });
     });
@@ -535,7 +536,7 @@ export class Debuglet extends EventEmitter {
       that.logger.info('Fetching breakpoints');
       // TODO: Address the case when `that.debuggee` is `null`.
       that.controller.listBreakpoints(
-          (that.debuggee as Debuggee), function(err: Error, response, body) {
+          (that.debuggee as Debuggee), function(err, response, body) {
             if (err) {
               that.logger.error(
                   'Unable to fetch breakpoints – stopping fetcher', err);

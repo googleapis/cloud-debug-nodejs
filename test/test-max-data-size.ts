@@ -75,10 +75,10 @@ describe('maxDataSize', function() {
       location: breakpointInFoo.location
     } as stackdriver.Breakpoint;
     // TODO: Determine how to remove this cast to any.
-    api.set(bp, function(err1: Error) {
+    api.set(bp, function(err1) {
       assert.ifError(err1);
       // TODO: Determine how to remove this cast to any.
-      api.wait(bp, function(err2: Error) {
+      api.wait(bp, function(err2?: Error) {
         assert.ifError(err2);
         // TODO: Determine how to remove this cast to any.
         assert(bp.variableTable.some(function(v) {
@@ -109,9 +109,9 @@ describe('maxDataSize', function() {
       id: breakpointInFoo.id,
       location: breakpointInFoo.location
     } as stackdriver.Breakpoint;
-    api.set(bp, function(err1: Error) {
+    api.set(bp, function(err1) {
       assert.ifError(err1);
-      api.wait(bp, function(err2: Error) {
+      api.wait(bp, function(err2?: Error) {
         assert.ifError(err2);
         // TODO: Determine how to remove this cast to any.
         // TODO: The function supplied to reduce is of the wrong type.

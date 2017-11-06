@@ -372,7 +372,7 @@ class StateResolver {
    * @returns {Array<Object>} - returns an array containing data about selected
    *  variables
    */
-  resolveLocalsList_(frame: v8.FrameMirror): v8.ScopeMirror[] {
+  resolveLocalsList_(frame: v8.FrameMirror): stackdriver.Variable[] {
     const self = this;
     const usedNames: {[name: string]: boolean} = {};
     const makeMirror = this.ctx.MakeMirror;
@@ -397,40 +397,43 @@ class StateResolver {
       scopes = allScopes.slice(0, -2);
     }
 
-    return flatten(scopes.map(function(scope: v8.ScopeMirror) {
-             return transform(
-                 // TODO: Update this so that `locals` is not of type `any[]`.
-                 scope.details().object(),
-                 function(locals: any[], value, name: string) {
-                   const trg = makeMirror(value);
-                   if (!usedNames[name]) {
-                     // It's a valid variable that belongs in the locals list
-                     // and wasn't discovered at a lower-scope
-                     usedNames[name] = true;
-                     // TODO: Determine how to not have an explicit down cast to
-                     // ValueMirror
-                     locals.push(self.resolveVariable_(
-                         name, trg as v8.ValueMirror, false));
-                   }  // otherwise another same-named variable occured at a
-                      // lower scope
-                   return locals;
-                 },
-                 []);
-           }))
-        .concat((function() {
-          // The frame receiver is the 'this' context that is present during
-          // invocation. Check to see whether a receiver context is substantive,
-          // (invocations may be bound to null) if so: store in the locals list
-          // under the name 'context' which is used by the Chrome DevTools.
-          const ctx = frame.details().receiver();
-          if (ctx) {
-            // TODO: Determine how to not have an explicit down cast to
-            // ValueMirror
-            return [self.resolveVariable_(
-                'context', makeMirror(ctx) as v8.ValueMirror, false)];
-          }
-          return [];
-        }()));
+    const fromScopes: stackdriver.Variable[][] = scopes.map(function(scope: v8.ScopeMirror) {
+      return transform(
+          // TODO: Update this so that `locals` is not of type `any[]`.
+          scope.details().object(),
+          function(locals: stackdriver.Variable[], value, name: string) {
+            const trg = makeMirror(value);
+            if (!usedNames[name]) {
+              // It's a valid variable that belongs in the locals list
+              // and wasn't discovered at a lower-scope
+              usedNames[name] = true;
+              // TODO: Determine how to not have an explicit down cast to
+              // ValueMirror
+              locals.push(self.resolveVariable_(
+                  name, trg as v8.ValueMirror, false));
+            }  // otherwise another same-named variable occured at a
+               // lower scope
+            return locals;
+          },
+          []);
+    });
+
+    function resolveFromReceiver(): stackdriver.Variable[] {
+      // The frame receiver is the 'this' context that is present during
+      // invocation. Check to see whether a receiver context is substantive,
+      // (invocations may be bound to null) if so: store in the locals list
+      // under the name 'context' which is used by the Chrome DevTools.
+      const ctx = frame.details().receiver();
+      if (ctx) {
+        // TODO: Determine how to not have an explicit down cast to
+        // ValueMirror
+        return [self.resolveVariable_(
+            'context', makeMirror(ctx) as v8.ValueMirror, false)];
+      }
+      return [];
+    }
+
+    return flatten(fromScopes).concat(resolveFromReceiver());
   }
 
   /**

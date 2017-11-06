@@ -49,23 +49,26 @@ function stateIsClean(api: DebugApi): boolean {
   return true;
 }
 
-function validateVariable(variable: stackdriver.Variable): void {
-  if (variable.name) {
-    assert.equal(typeof variable.name, 'string');
-  }
-  if (variable.value) {
-    assert.equal(typeof variable.value, 'string');
-  }
-  if (variable.type) {
-    assert.equal(typeof variable.type, 'string');
-  }
-  if (variable.members) {
-    variable.members.forEach(validateVariable);
-  }
-  if (variable.varTableIndex) {
-    assert.ok(
-        Number.isInteger(variable.varTableIndex) &&
-        variable.varTableIndex >= 0 && variable.varTableIndex <= MAX_INT);
+function validateVariable(variable: stackdriver.Variable|null): void {
+  assert.ok(variable);
+  if (variable) {
+    if (variable.name) {
+      assert.equal(typeof variable.name, 'string');
+    }
+    if (variable.value) {
+      assert.equal(typeof variable.value, 'string');
+    }
+    if (variable.type) {
+      assert.equal(typeof variable.type, 'string');
+    }
+    if (variable.members) {
+      variable.members.forEach(validateVariable);
+    }
+    if (variable.varTableIndex) {
+      assert.ok(
+          Number.isInteger(variable.varTableIndex) &&
+          variable.varTableIndex >= 0 && variable.varTableIndex <= MAX_INT);
+    }
   }
 }
 
