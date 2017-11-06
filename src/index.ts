@@ -50,6 +50,5 @@ export function start(options: DebugAgentConfig|StackdriverConfig): Debuglet|
   debuglet = new Debuglet(debug, agentConfig);
   debuglet.start();
 
-  // We return the debuglet to facilitate testing.
-  return agentConfig.testMode_ ? debuglet : undefined;
+  return debuglet;
 }

@@ -952,6 +952,34 @@ describe('Debuglet', function() {
       debuglet.start();
     });
 
+    it('should resolve promises before exiting user functions', function(done) {
+      this.timeout(2000);
+      const debug = new Debug(
+          {projectId: 'fake-project', credentials: fakeCredentials},
+          packageInfo);
+      const debuglet = new Debuglet(debug, defaultConfig);
+
+      const scope = nock(API)
+                        .post(REGISTER_PATH)
+                        .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+                        .get(BPS_PATH + '?successOnTimeout=true')
+                        .reply(200, {breakpoints: []});
+      debuglet.start();
+      const debugPromise = debuglet.isReady();
+      debugPromise
+          .then(() => {
+            setTimeout(function() {
+              debuglet.stop();
+              scope.done();
+              done();
+            }, 1000);
+          })
+          .catch((err) => {
+            assert.ifError(err);
+          });
+
+    });
+
     it('should reject breakpoints with conditions when allowExpressions=false',
        function(done) {
          this.timeout(2000);
