@@ -150,8 +150,7 @@ function computeStats(
   const statistics: ScanStats = {};
   fileList.forEach(function(filename) {
     statsForFile(
-        filename, shouldHash,
-        function(err: Error|null, fileStats?: FileStats) {
+        filename, shouldHash, function(err: Error|null, fileStats?: FileStats) {
           if (err) {
             callback(err);
             return;

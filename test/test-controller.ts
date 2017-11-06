@@ -56,14 +56,13 @@ describe('Controller API', function() {
       });
       const controller = new Controller(fakeDebug);
       // TODO: Determine if this type signature is correct.
-      controller.register(
-          debuggee, function(err, result) {
-            assert(!err, 'not expecting an error');
-            assert.ok(result);
-            assert.equal(result!.debuggee.id, 'fake-debuggee');
-            scope.done();
-            done();
-          });
+      controller.register(debuggee, function(err, result) {
+        assert(!err, 'not expecting an error');
+        assert.ok(result);
+        assert.equal(result!.debuggee.id, 'fake-debuggee');
+        scope.done();
+        done();
+      });
     });
 
     it('should not return an error when the debuggee isDisabled',
@@ -79,16 +78,15 @@ describe('Controller API', function() {
            agentVersion: agentVersion
          });
          const controller = new Controller(fakeDebug);
-         controller.register(
-             debuggee, function(err, result) {
-               // TODO: Fix this incorrect method signature.
-               (assert as any).ifError(err, 'not expecting an error');
-               assert.ok(result);
-               assert.equal(result!.debuggee.id, 'fake-debuggee');
-               assert.ok(result!.debuggee.isDisabled);
-               scope.done();
-               done();
-             });
+         controller.register(debuggee, function(err, result) {
+           // TODO: Fix this incorrect method signature.
+           (assert as any).ifError(err, 'not expecting an error');
+           assert.ok(result);
+           assert.equal(result!.debuggee.id, 'fake-debuggee');
+           assert.ok(result!.debuggee.isDisabled);
+           scope.done();
+           done();
+         });
        });
 
   });
@@ -231,17 +229,15 @@ describe('Controller API', function() {
         const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
         const controller = new Controller(fakeDebug);
         // TODO: Determine if the response parameter should be used.
-        controller.listBreakpoints(
-            debuggee,
-            function(err, response, result) {
-              assert(!err, 'not expecting an error');
-              assert.ok(result);
-              assert(result!.breakpoints, 'should have a breakpoints property');
-              const bps = result!.breakpoints;
-              assert.deepEqual(bps, breakpoints, 'breakpoints mismatch');
-              scope.done();
-              done();
-            });
+        controller.listBreakpoints(debuggee, function(err, response, result) {
+          assert(!err, 'not expecting an error');
+          assert.ok(result);
+          assert(result!.breakpoints, 'should have a breakpoints property');
+          const bps = result!.breakpoints;
+          assert.deepEqual(bps, breakpoints, 'breakpoints mismatch');
+          scope.done();
+          done();
+        });
       });
     });
   });

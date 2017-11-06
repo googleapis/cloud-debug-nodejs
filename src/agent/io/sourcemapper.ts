@@ -66,7 +66,10 @@ function processSourcemap(
       // TODO: Determine how to reconsile the type conflict where `consumer`
       //       is constructed as a SourceMapConsumer but is used as a
       //       RawSourceMap.
-      consumer = new sourceMap.SourceMapConsumer(data) as any as
+      // TODO: Resolve the cast of `data as any` (This is needed because the
+      //       type is expected to be of `RawSourceMap` but the existing
+      //       working code uses a string.)
+      consumer = new sourceMap.SourceMapConsumer(data as any) as any as
           sourceMap.RawSourceMap;
     } catch (e) {
       return callback(new Error(

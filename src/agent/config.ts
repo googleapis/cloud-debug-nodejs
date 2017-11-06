@@ -17,7 +17,7 @@
 import * as common from '../types/common';
 
 export interface DebugAgentConfig extends common.AuthenticationConfig {
-  workingDirectory?: string;
+  workingDirectory: string;
 
   /**
    * A user specified way of identifying the service

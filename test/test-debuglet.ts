@@ -354,23 +354,23 @@ describe('Debuglet', function() {
            debuggee: {id: DEBUGGEE_ID}
          });
 
-      debuglet.once('registered', function(id: string) {
-        assert.equal(id, DEBUGGEE_ID);
-        // TODO: Handle the case where debuglet.debuggee is undefined
-        assert.equal((debuglet.debuggee as Debuggee).project, projectId);
-        const arch = process.arch;
-        if (semver.satisfies(process.version, '>=8.5.0') &&
-            semver.satisfies(process.version, '<8.9.0') &&
-            (arch === 'ia32' || arch === 'x86') &&
-            process.env.GCLOUD_USE_INSPECTOR) {
-          assert(logText.includes(utils.messages.ASYNC_TRACES_WARNING));
-        } else {
-          assert(!logText.includes(utils.messages.ASYNC_TRACES_WARNING));
-        }
-        debuglet.stop();
-        scope.done();
-        done();
-      });
+         debuglet.once('registered', function(id: string) {
+           assert.equal(id, DEBUGGEE_ID);
+           // TODO: Handle the case where debuglet.debuggee is undefined
+           assert.equal((debuglet.debuggee as Debuggee).project, projectId);
+           const arch = process.arch;
+           if (semver.satisfies(process.version, '>=8.5.0') &&
+               semver.satisfies(process.version, '<8.9.0') &&
+               (arch === 'ia32' || arch === 'x86') &&
+               process.env.GCLOUD_USE_INSPECTOR) {
+             assert(logText.includes(utils.messages.ASYNC_TRACES_WARNING));
+           } else {
+             assert(!logText.includes(utils.messages.ASYNC_TRACES_WARNING));
+           }
+           debuglet.stop();
+           scope.done();
+           done();
+         });
 
          debuglet.start();
        });
@@ -441,7 +441,7 @@ describe('Debuglet', function() {
     });
 
     describe('environment variables', function() {
-      let env: {[key: string]: string};
+      let env: NodeJS.ProcessEnv;
       beforeEach(function() {
         env = extend({}, process.env);
       });

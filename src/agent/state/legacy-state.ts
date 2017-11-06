@@ -397,26 +397,27 @@ class StateResolver {
       scopes = allScopes.slice(0, -2);
     }
 
-    const fromScopes: stackdriver.Variable[][] = scopes.map(function(scope: v8.ScopeMirror) {
-      return transform(
-          // TODO: Update this so that `locals` is not of type `any[]`.
-          scope.details().object(),
-          function(locals: stackdriver.Variable[], value, name: string) {
-            const trg = makeMirror(value);
-            if (!usedNames[name]) {
-              // It's a valid variable that belongs in the locals list
-              // and wasn't discovered at a lower-scope
-              usedNames[name] = true;
-              // TODO: Determine how to not have an explicit down cast to
-              // ValueMirror
-              locals.push(self.resolveVariable_(
-                  name, trg as v8.ValueMirror, false));
-            }  // otherwise another same-named variable occured at a
-               // lower scope
-            return locals;
-          },
-          []);
-    });
+    const fromScopes: stackdriver.Variable[][] =
+        scopes.map(function(scope: v8.ScopeMirror) {
+          return transform(
+              // TODO: Update this so that `locals` is not of type `any[]`.
+              scope.details().object(),
+              function(locals: stackdriver.Variable[], value, name: string) {
+                const trg = makeMirror(value);
+                if (!usedNames[name]) {
+                  // It's a valid variable that belongs in the locals list
+                  // and wasn't discovered at a lower-scope
+                  usedNames[name] = true;
+                  // TODO: Determine how to not have an explicit down cast to
+                  // ValueMirror
+                  locals.push(self.resolveVariable_(
+                      name, trg as v8.ValueMirror, false));
+                }  // otherwise another same-named variable occured at a
+                   // lower scope
+                return locals;
+              },
+              []);
+        });
 
     function resolveFromReceiver(): stackdriver.Variable[] {
       // The frame receiver is the 'this' context that is present during
