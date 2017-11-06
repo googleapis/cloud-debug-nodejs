@@ -57,7 +57,7 @@ describe('Controller API', function() {
       const controller = new Controller(fakeDebug);
       // TODO: Determine if this type signature is correct.
       controller.register(
-          debuggee, function(err: Error|null, result?: {debuggee: Debuggee}) {
+          debuggee, function(err, result) {
             assert(!err, 'not expecting an error');
             assert.ok(result);
             assert.equal(result!.debuggee.id, 'fake-debuggee');
@@ -80,7 +80,7 @@ describe('Controller API', function() {
          });
          const controller = new Controller(fakeDebug);
          controller.register(
-             debuggee, function(err: Error|null, result?: {debuggee: Debuggee}) {
+             debuggee, function(err, result) {
                // TODO: Fix this incorrect method signature.
                (assert as any).ifError(err, 'not expecting an error');
                assert.ok(result);
@@ -233,9 +233,7 @@ describe('Controller API', function() {
         // TODO: Determine if the response parameter should be used.
         controller.listBreakpoints(
             debuggee,
-            function(
-                err: Error|null, response?: http.ServerResponse,
-                result?: stackdriver.ListBreakpointsResponse) {
+            function(err, response, result) {
               assert(!err, 'not expecting an error');
               assert.ok(result);
               assert(result!.breakpoints, 'should have a breakpoints property');

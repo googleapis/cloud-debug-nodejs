@@ -75,7 +75,7 @@ describe('maxDataSize', function() {
       location: breakpointInFoo.location
     } as stackdriver.Breakpoint;
     // TODO: Determine how to remove this cast to any.
-    api.set(bp, function(err1: Error|null) {
+    api.set(bp, function(err1) {
       assert.ifError(err1);
       // TODO: Determine how to remove this cast to any.
       api.wait(bp, function(err2?: Error) {
@@ -109,7 +109,7 @@ describe('maxDataSize', function() {
       id: breakpointInFoo.id,
       location: breakpointInFoo.location
     } as stackdriver.Breakpoint;
-    api.set(bp, function(err1: Error|null) {
+    api.set(bp, function(err1) {
       assert.ifError(err1);
       api.wait(bp, function(err2?: Error) {
         assert.ifError(err2);
