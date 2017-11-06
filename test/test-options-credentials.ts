@@ -101,7 +101,7 @@ describe('test-options-credentials', function() {
 
   it('should ignore keyFilename if credentials is provided', function(done) {
     const fileCredentials = require('./fixtures/gcloud-credentials.json');
-    const credentials = {
+    const credentials: {[key: string]: string|undefined} = {
       client_id: 'a',
       client_secret: 'b',
       refresh_token: 'c',

@@ -47,7 +47,14 @@ export interface AuthenticationConfig {
   /**
    * Instead of a keyFilename, credentials can also be provided inline.
    */
-  credentials?: {client_email?: string; private_key?: string;};
+  credentials?: {
+    client_email?: string;
+    private_key?: string;
+    client_id?: string;
+    client_secret?: string;
+    refresh_token?: string;
+    type?: string;
+  };
 }
 
 export interface ServiceConfig {
