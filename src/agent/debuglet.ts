@@ -67,7 +67,7 @@ const BREAKPOINT_ACTION_MESSAGE =
 // to force the debug agent to return a new promise for isReady. The value is
 // the average of Stackdriver debugger hanging get duration (40s) and TCP
 // time-out on GCF (540s).
-const PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS = 290 * 1000;
+const PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS = (40 + 540) / 2 * 1000;
 
 /**
  * Formats a breakpoint object prefixed with a provided message as a string
@@ -129,12 +129,12 @@ export class Debuglet extends EventEmitter {
   // was successful. It is returned by isReady.
   private breakpointFetched: Promise<void>|null;
   // breakpointFetchedResolve is the resolve function for breakpointFetched.
-  private breakpointFetchedResolve: (() => void);
+  private breakpointFetchedResolve: () => void;
   // debuggeeRegistered is a promise only to be resolved after debuggee
   // registration was successful.
   private debuggeeRegistered: Promise<void>;
   // debuggeeRegisteredResolve is the resolve function for debuggeeRegistered.
-  private debuggeeRegisteredResolve: (() => void);
+  private debuggeeRegisteredResolve: () => void;
 
   // Exposed for testing
   config: DebugAgentConfig;
@@ -345,7 +345,6 @@ export class Debuglet extends EventEmitter {
         that.scheduleRegistration_(0 /* immediately */);
         that.emit('started');
       });
-
     });
   }
 
@@ -356,7 +355,7 @@ export class Debuglet extends EventEmitter {
    * serverless environment and we wanted to make sure debug agent always
    * captures the snapshots.
    */
-  async isReady(): Promise<void> {
+  isReady(): Promise<void> {
     if (Date.now() < this.breakpointFetchedTimestamp +
             PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS) {
       return Promise.resolve();
@@ -364,14 +363,15 @@ export class Debuglet extends EventEmitter {
       if (this.breakpointFetched) {
         return this.breakpointFetched;
       }
-      this.debuggeeRegistered.then(() => {
-        this.breakpointFetched = new Promise<void>((resolve) => {
-          this.breakpointFetchedResolve = resolve;
-        });
-        this.scheduleBreakpointFetch_(
-            0 /*immediately*/, true /*only fetch once*/);
-        return this.breakpointFetched;
+
+      this.breakpointFetched = new Promise<void>((resolve) => {
+        this.breakpointFetchedResolve = resolve;
       });
+      this.debuggeeRegistered.then(() => {
+        this.scheduleBreakpointFetch_(
+          0 /*immediately*/, true /*only fetch once*/);
+      });
+      return this.breakpointFetched;
     }
   }
 
@@ -572,12 +572,12 @@ export class Debuglet extends EventEmitter {
 
   /**
    * @param {number} seconds
+   * @param {boolean} once
    * @private
    */
-  scheduleBreakpointFetch_(seconds: number, onlyOnce: boolean): void {
+  scheduleBreakpointFetch_(seconds: number, once: boolean): void {
     const that = this;
-
-    if (!onlyOnce) {
+    if (!once) {
       that.fetcherActive = true;
     }
     setTimeout(function() {
@@ -585,7 +585,7 @@ export class Debuglet extends EventEmitter {
         return;
       }
 
-      if (!onlyOnce) {
+      if (!once) {
         assert(that.fetcherActive);
       }
 
@@ -622,12 +622,12 @@ export class Debuglet extends EventEmitter {
                 if (!body) {
                   that.logger.error('\tinvalid list response: empty body');
                   that.scheduleBreakpointFetch_(
-                      that.config.breakpointUpdateIntervalSec, onlyOnce);
+                      that.config.breakpointUpdateIntervalSec, once);
                   return;
                 }
                 if (body.waitExpired) {
                   that.logger.info('\tLong poll completed.');
-                  that.scheduleBreakpointFetch_(0 /*immediately*/, onlyOnce);
+                  that.scheduleBreakpointFetch_(0 /*immediately*/, once);
                   return;
                 }
                 const bps = (body.breakpoints ||
@@ -649,13 +649,13 @@ export class Debuglet extends EventEmitter {
                   that.logger.info(formatBreakpoints(
                       'Active Breakpoints: ', that.activeBreakpointMap));
                 }
-                if (onlyOnce) {
-                  that.breakpointFetchedTimestamp = Date.now();
+                that.breakpointFetchedTimestamp = Date.now();
+                if (once) {
                   that.breakpointFetchedResolve();
                   that.breakpointFetched = null;
                 } else {
                   that.scheduleBreakpointFetch_(
-                      that.config.breakpointUpdateIntervalSec, onlyOnce);
+                      that.config.breakpointUpdateIntervalSec, once);
                 }
                 return;
             }
@@ -676,7 +676,6 @@ export class Debuglet extends EventEmitter {
       that.logger.info(
           formatBreakpoints('Server breakpoints: ', updatedBreakpointMap));
     }
-
     breakpoints.forEach(function(breakpoint: stackdriver.Breakpoint) {
 
       // TODO: Address the case when `breakpoint.id` is `undefined`.

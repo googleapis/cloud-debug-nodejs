@@ -952,33 +952,41 @@ describe('Debuglet', function() {
       debuglet.start();
     });
 
-    it('should resolve promises before exiting user functions', function(done) {
-      this.timeout(2000);
-      const debug = new Debug(
-          {projectId: 'fake-project', credentials: fakeCredentials},
-          packageInfo);
-      const debuglet = new Debuglet(debug, defaultConfig);
+    it('should have breakpoints fetched when promise is resolved',
+      function(done) {
+        this.timeout(2000);
+        const breakpoint: stackdriver.Breakpoint = {
+           id: 'test1',
+           action: 'CAPTURE',
+           location: {path: 'build/test/fixtures/foo.js', line: 2}
+        } as stackdriver.Breakpoint;
 
-      const scope = nock(API)
-                        .post(REGISTER_PATH)
-                        .reply(200, {debuggee: {id: DEBUGGEE_ID}})
-                        .get(BPS_PATH + '?successOnTimeout=true')
-                        .reply(200, {breakpoints: []});
-      debuglet.start();
-      const debugPromise = debuglet.isReady();
-      debugPromise
-          .then(() => {
+        const debug = new Debug(
+            {projectId: 'fake-project', credentials: fakeCredentials},
+            packageInfo);
+        const debuglet = new Debuglet(debug, defaultConfig);
+
+        const scope = nock(API)
+                          .post(REGISTER_PATH)
+                          .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+                          .get(BPS_PATH + '?successOnTimeout=true')
+                          .reply(200, {breakpoints: [breakpoint]})
+                          .get(BPS_PATH + '?successOnTimeout=true')
+                          .reply(200, {breakpoints: [breakpoint]});
+        const debugPromise = debuglet.isReady();
+        debuglet.once('registered', function reg(id: string) {
+          debugPromise.then(() => {
             setTimeout(function() {
+              assert.deepEqual(debuglet.activeBreakpointMap.test1, breakpoint);
+              debuglet.activeBreakpointMap = {};
               debuglet.stop();
               scope.done();
               done();
             }, 1000);
-          })
-          .catch((err) => {
-            assert.ifError(err);
           });
-
-    });
+        });
+        debuglet.start();
+      });
 
     it('should reject breakpoints with conditions when allowExpressions=false',
        function(done) {
