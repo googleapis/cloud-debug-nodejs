@@ -28,10 +28,6 @@ const code = require('./test-expression-side-effect-code.js');
 
 const common: Common = require('@google-cloud/common');
 
-
-const nodeVersion = /v(\d+\.\d+\.\d+)/.exec(process.version);
-
-
 describe('expression side effect', () => {
   let api: debugapi.DebugApi;
   const config = extend({}, defaultConfig, {
@@ -57,7 +53,6 @@ describe('expression side effect', () => {
           });
         });
     } else {
-      console.log('else');
       done();
     }
   });
@@ -72,7 +67,8 @@ describe('expression side effect', () => {
       expressions: [ 'item.getPrice()']
     } as stackdriver.Breakpoint;
 
-    if (!nodeVersion || nodeVersion.length < 2 || semver.satisfies(nodeVersion[1], '<8')) {
+    if (semver.satisfies(process.version, '<8')
+        || !process.env.GCLOUD_USE_INSPECTOR) {
       done();
     } else {
       api.set(bp, function(err) {
@@ -101,7 +97,8 @@ describe('expression side effect', () => {
       expressions: [ 'item.increasePriceByOne()']
     } as stackdriver.Breakpoint;
 
-    if (!nodeVersion || nodeVersion.length < 2 || semver.satisfies(nodeVersion[1], '<8')) {
+    if (semver.satisfies(process.version, '<8')
+        && !process.env.GCLOUD_USE_INSPECTOR) {
       done();
     } else {
       api.set(bp, function(err) {
