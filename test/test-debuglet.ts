@@ -26,7 +26,7 @@ import * as stackdriver from '../src/types/stackdriver';
 
 (DEFAULT_CONFIG as any).allowExpressions = true;
 (DEFAULT_CONFIG as any).workingDirectory = path.join(__dirname, '..', '..');
-import {Debuglet} from '../src/agent/debuglet';
+import {Debuglet, CachedPromise} from '../src/agent/debuglet';
 import * as dns from 'dns';
 import * as extend from 'extend';
 const metadata: {project: any, instance: any} = require('gcp-metadata');
@@ -76,6 +76,41 @@ function verifyBreakpointRejection(re: RegExp, body: {breakpoint: any}) {
   const hasCorrectDescription = status.description.format.match(re);
   return status.isError && hasCorrectDescription;
 }
+
+describe('CachedPromise', function() {
+  it('CachedPromise.get() is initially null', (done) => {
+    let cachedPromise = new CachedPromise();
+    assert(cachedPromise.get() === null);
+    done();
+  });
+
+  it('CachedPromise.get() is not null after refresh', (done) => {
+    let cachedPromise = new CachedPromise();
+    cachedPromise.refresh();
+    assert(cachedPromise.get() !== null)
+    done();
+  });
+
+  it('CachedPromise.get() will return a promise resolved after CachedPromise.resolve() is called', (done) => {
+    this.timeout(2000);
+    let cachedPromise = new CachedPromise();
+    cachedPromise.refresh();
+    (cachedPromise.get() as Promise<void>).then(() => {
+      done();
+    });
+    cachedPromise.resolve();
+  });
+  it('CachedPromise.get() will be null if it has been cleared', (done) => {
+    this.timeout(2000);
+    let cachedPromise = new CachedPromise();
+    assert(cachedPromise.get() === null);
+    cachedPromise.refresh();
+    assert(cachedPromise.get() !== null);
+    cachedPromise.clear();
+    assert(cachedPromise.get() === null);
+    done();
+  });
+});
 
 describe('Debuglet', function() {
   describe('runningOnGCP', () => {
@@ -970,12 +1005,13 @@ describe('Debuglet', function() {
                           .post(REGISTER_PATH)
                           .reply(200, {debuggee: {id: DEBUGGEE_ID}})
                           .get(BPS_PATH + '?successOnTimeout=true')
-                          .reply(200, {breakpoints: [breakpoint]})
-                          .get(BPS_PATH + '?successOnTimeout=true')
+                          .twice()
                           .reply(200, {breakpoints: [breakpoint]});
         const debugPromise = debuglet.isReady();
         debuglet.once('registered', function reg(id: string) {
           debugPromise.then(() => {
+            // Once debugPromise is resolved, debuggee must be registered.
+            assert(debuglet.debuggee);
             setTimeout(function() {
               assert.deepEqual(debuglet.activeBreakpointMap.test1, breakpoint);
               debuglet.activeBreakpointMap = {};

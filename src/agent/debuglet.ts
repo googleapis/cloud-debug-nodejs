@@ -113,6 +113,34 @@ const formatBreakpoints = function(
           .join('\n');
 };
 
+/**
+ * CachedPromise stores a promise. This promise is initially null and can be
+ * assigned to a new promise when refresh is called. This promise will be
+ * resolved by calling member function resolve.
+ */
+export class CachedPromise {
+  private promise: Promise<void>|null;
+  private promiseResolve: () => void;
+
+  constructor() {
+    this.clear();
+  }
+  refresh(): void {
+    this.promise = new Promise<void>((resolve) => {
+      this.promiseResolve = resolve;
+    });
+  }
+  get(): Promise<void>|null {
+    return this.promise;
+  }
+  resolve(): void {
+    this.promiseResolve();
+  }
+  clear(): void{
+    this.promise = null;
+  }
+}
+
 export class Debuglet extends EventEmitter {
   private debug: Debug;
   private v8debug: DebugApi|null;
@@ -125,16 +153,12 @@ export class Debuglet extends EventEmitter {
   // breakpointFetched was resolved, which means breakpoint update was
   // successful.
   private breakpointFetchedTimestamp: number;
-  // breakpointFetched is a promise only to be resolved after breakpoint fetch
-  // was successful. It is returned by isReady.
-  private breakpointFetched: Promise<void>|null;
-  // breakpointFetchedResolve is the resolve function for breakpointFetched.
-  private breakpointFetchedResolve: () => void;
-  // debuggeeRegistered is a promise only to be resolved after debuggee
+  // breakpointFetched is a CachedPromise only to be resolved after breakpoint
+  // fetch was successful. Its stored promise will be returned by isReady().
+  private breakpointFetched: CachedPromise;
+  // debuggeeRegistered is a CachedPromise only to be resolved after debuggee
   // registration was successful.
-  private debuggeeRegistered: Promise<void>;
-  // debuggeeRegisteredResolve is the resolve function for debuggeeRegistered.
-  private debuggeeRegisteredResolve: () => void;
+  private debuggeeRegistered: CachedPromise;
 
   // Exposed for testing
   config: DebugAgentConfig;
@@ -199,9 +223,9 @@ export class Debuglet extends EventEmitter {
 
     this.breakpointFetchedTimestamp = -Infinity;
 
-    this.debuggeeRegistered = new Promise<void>((resolve) => {
-      this.debuggeeRegisteredResolve = resolve;
-    });
+    this.debuggeeRegistered = new CachedPromise();
+    this.breakpointFetched = new CachedPromise();
+    this.debuggeeRegistered.refresh();
   }
 
   static normalizeConfig_(config: DebugAgentConfig): DebugAgentConfig {
@@ -360,18 +384,15 @@ export class Debuglet extends EventEmitter {
             PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS) {
       return Promise.resolve();
     } else {
-      if (this.breakpointFetched) {
-        return this.breakpointFetched;
+      if (this.breakpointFetched.get() !== null) {
+        return this.breakpointFetched.get() as Promise<void>;
       }
-
-      this.breakpointFetched = new Promise<void>((resolve) => {
-        this.breakpointFetchedResolve = resolve;
-      });
-      this.debuggeeRegistered.then(() => {
+      this.breakpointFetched.refresh();
+      (this.debuggeeRegistered.get() as Promise<void>).then(() => {
         this.scheduleBreakpointFetch_(
           0 /*immediately*/, true /*only fetch once*/);
       });
-      return this.breakpointFetched;
+      return this.breakpointFetched.get() as Promise<void>;
     }
   }
 
@@ -562,7 +583,7 @@ export class Debuglet extends EventEmitter {
             // TODO: Handle the case when `result` is undefined.
             that.emit(
                 'registered', (result as {debuggee: Debuggee}).debuggee.id);
-            that.debuggeeRegisteredResolve();
+            that.debuggeeRegistered.resolve();
             if (!that.fetcherActive) {
               that.scheduleBreakpointFetch_(0, false);
             }
@@ -651,8 +672,8 @@ export class Debuglet extends EventEmitter {
                 }
                 that.breakpointFetchedTimestamp = Date.now();
                 if (once) {
-                  that.breakpointFetchedResolve();
-                  that.breakpointFetched = null;
+                  that.breakpointFetched.resolve();
+                  that.breakpointFetched.clear();
                 } else {
                   that.scheduleBreakpointFetch_(
                       that.config.breakpointUpdateIntervalSec, once);
