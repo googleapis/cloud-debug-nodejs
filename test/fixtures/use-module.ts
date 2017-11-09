@@ -1,0 +1,1 @@
+import * as debug from '@google-cloud/debug-agent';

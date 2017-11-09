@@ -1,0 +1,39 @@
+
+import * as path from 'path';
+import { globP, ncpP, spawnP, tmpDirP } from './utils';
+
+/**
+ * This function checks that the following two (sequential) operations succeed:
+ * 1. In a temporary directory, installs from the `npm pack` of this directory
+ * 2. Compiles a top-level file in that directory that imports this module
+ */
+async function verifyInstall() {
+  // This script assumes that you don't already have a TGZ file
+  // in your current working directory.
+  const installDir = await tmpDirP();
+  console.log(installDir);
+  await spawnP('npm', ['install']);
+  await spawnP('npm', ['run', 'compile']);
+  await spawnP('npm', ['pack']);
+  const tgz = await globP(`${process.cwd()}/*.tgz`);
+  if (tgz.length !== 1) {
+    throw new Error(`Expected 1 tgz file in current directory, but found ${tgz.length}`);
+  }
+  await spawnP('npm', ['init', '-y'], {
+    cwd: installDir
+  });
+  await spawnP('npm', ['install', 'typescript', '@types/node', tgz[0]], {
+    cwd: installDir
+  });
+  // use-module.ts is a fixture that imports the agent
+  await ncpP('./test/fixtures/use-module.ts', `${installDir}/index.ts`);
+  await spawnP(`node_modules${path.sep}.bin${path.sep}tsc`, ['index.ts'], {
+    cwd: installDir
+  });
+  console.log('`npm install` + `tsc` test was successful.');
+}
+
+verifyInstall().catch(err => {
+  console.error('ERROR:', err);
+  process.exit(1);
+});
