@@ -397,6 +397,34 @@ describe('Debuglet', function() {
       debuglet.start();
     });
 
+    it('should give a useful error message when projectId is not available', function(done) {
+      const savedGetProjectId = Debuglet.getProjectId;
+      Debuglet.getProjectId = () => {
+        return Promise.reject(new Error('no project id'));
+      };
+
+      const debug = new Debug({}, packageInfo);
+      const debuglet = new Debuglet(debug, defaultConfig);
+
+      let message = '';
+      const savedLoggerError = debuglet.logger.error;
+      debuglet.logger.error = (text: string) => {
+        message += text;
+      };
+
+      debuglet.once('initError', function(err) {
+        Debuglet.getProjectId = savedGetProjectId;
+        debuglet.logger.error = savedLoggerError;
+        assert.ok(err);
+        assert(message.startsWith('The project ID could not be determined:'));
+        done();
+      });
+      debuglet.once('started', function() {
+        assert.fail('The debuglet should fail to start without a projectId');
+      });
+      debuglet.start();
+    });
+
     it('should not crash without project num', function(done) {
       const savedGetProjectId = Debuglet.getProjectId;
       Debuglet.getProjectId = () => {

@@ -268,7 +268,7 @@ export class Debuglet extends EventEmitter {
       try {
         project = await Debuglet.getProjectId(that.debug.options);
       } catch (err) {
-        that.logger.error(err.message);
+        that.logger.error('The project ID could not be determined: ' + err.message);
         that.emit('initError', err);
         return;
       }
