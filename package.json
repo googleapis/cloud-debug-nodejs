@@ -36,6 +36,7 @@
     "@types/once": "^1.4.0",
     "@types/pify": "^3.0.0",
     "@types/request": "^2.0.0",
+    "@types/rimraf": "^2.0.2",
     "@types/semver": "^5.3.32",
     "@types/source-map": "^0.5.0",
     "@types/tmp": "0.0.33",
