@@ -78,7 +78,7 @@
     "coverage": "npm run compile && ./bin/run-test.sh -c",
     "prepare": "npm run compile",
     "system-test": "npm run compile && ./bin/run-system-test.sh",
-    "test": "./bin/run-test.sh && npm run verify-install",
+    "test": "./bin/run-test.sh",
     "check": "gts check",
     "clean": "gts clean",
     "precompile": "npm run compile-scripts && node build/scripts/setup-test.js",
@@ -89,7 +89,7 @@
     "posttest": "npm run check",
     "prepack": "npm run compile",
     "pretest-install": "npm run compile",
-    "test-install": "mocha build/scripts/verify-install.js"
+    "test-install": "mocha build/test/test-install.js"
   },
   "files": [
     "CHANGELOG.md",

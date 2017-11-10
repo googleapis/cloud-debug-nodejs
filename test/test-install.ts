@@ -35,7 +35,7 @@ function log(txt: string): void {
 
 const stdio = DEBUG ? 'inherit' : 'ignore';
 
-describe('installs correctly', () => {
+describe('Installation', () => {
   let installDir: string|undefined;
   beforeEach(async function() {
     this.timeout(TIMEOUT_MS);
