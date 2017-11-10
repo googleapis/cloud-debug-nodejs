@@ -1,5 +1,5 @@
 
-import { Stats, stat, readFile } from 'fs';
+import { Stats, stat, readFile, writeFile } from 'fs';
 import * as glob from 'glob';
 import { ncp } from 'ncp';
 import * as path from 'path';
@@ -13,6 +13,7 @@ export const BUILD_DIRECTORY = 'build';
 export const globP: (pattern: string) => Promise<string[]> = pify(glob);
 export const ncpP: (src: string, dest: string) => Promise<void> = pify(ncp);
 export const readFileP: (path: string, encoding?: string) => Promise<Buffer|string> = pify(readFile);
+export const writeFileP: (path: string, data: string, encoding?: string) => Promise<void> = pify(writeFile);
 export const statP: (path: string) => Promise<Stats> = pify(stat);
 export const tmpDirP: () => Promise<string> = pify(tmp.dir);
 
