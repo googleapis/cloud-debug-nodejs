@@ -7,6 +7,7 @@ import * as pify from 'pify';
 import { ChildProcess, ForkOptions, fork, SpawnOptions, spawn } from 'child_process';
 import * as once from 'once';
 import * as tmp from 'tmp';
+import * as rimraf from 'rimraf';
 
 export const BUILD_DIRECTORY = 'build';
 
@@ -16,6 +17,7 @@ export const readFileP: (path: string, encoding?: string) => Promise<Buffer|stri
 export const writeFileP: (path: string, data: string, encoding?: string) => Promise<void> = pify(writeFile);
 export const statP: (path: string) => Promise<Stats> = pify(stat);
 export const tmpDirP: () => Promise<string> = pify(tmp.dir);
+export const rimrafP: (f: string) => Promise<void> = pify(rimraf);
 
 export function nodule(nodule: string) {
   return path.relative(BUILD_DIRECTORY, `node_modules/${nodule}`);
@@ -42,18 +44,22 @@ function promisifyChildProcess(childProcess: ChildProcess): Promise<void> {
   });
 }
 
-export function spawnP(command: string, args?: string[], options?: SpawnOptions): Promise<void> {
+export function spawnP(command: string, args?: string[], options?: SpawnOptions, log?: (text: string) => void): Promise<void> {
   const stringifiedCommand = `\`${command}${args ? (' ' + args.join(' ')) : ''}\``;
-  console.log(`> Running: ${stringifiedCommand}`);
+  if (log) {
+    log(`> Running: ${stringifiedCommand}`);
+  }
   return promisifyChildProcess(spawn(command, args, Object.assign({
     stdio: 'inherit',
     shell: true
   }, options)));
 }
 
-export function forkP(moduleName: string, args?: string[], options?: ForkOptions): Promise<void> {
+export function forkP(moduleName: string, args?: string[], options?: ForkOptions, log?: (text: string) => void): Promise<void> {
   const stringifiedCommand = `\`${moduleName}${args ? (' ' + args.join(' ')) : ''}\``;
-  console.log(`> Running: ${stringifiedCommand}`);
+  if (log) {
+    log(`> Running: ${stringifiedCommand}`);
+  }
   return promisifyChildProcess(fork(moduleName, args, Object.assign({
     stdio: 'inherit'
   }, options)));
