@@ -103,11 +103,11 @@ describe('CachedPromise', function() {
   it('CachedPromise.get() will be null if it has been cleared', (done) => {
     this.timeout(2000);
     let cachedPromise = new CachedPromise();
-    assert(cachedPromise.get() === null);
+    assert.strictEqual(cachedPromise.get(), null);
     cachedPromise.refresh();
     assert(cachedPromise.get() !== null);
     cachedPromise.clear();
-    assert(cachedPromise.get() === null);
+    assert.strictEqual(cachedPromise.get(), null);
     done();
   });
 });
@@ -1022,6 +1022,31 @@ describe('Debuglet', function() {
           });
         });
         debuglet.start();
+      });
+
+      it('should resolve breakpointFetched promise when registration expires',
+        function(done) {
+          this.timeout(2000);
+          const debug = new Debug(
+              {projectId: 'fake-project', credentials: fakeCredentials},
+              packageInfo);
+          const debuglet = new Debuglet(debug, defaultConfig);
+
+          const scope = nock(API)
+                            .post(REGISTER_PATH)
+                            .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+                            .get(BPS_PATH + '?successOnTimeout=true')
+                            .reply(404);
+          const debugPromise = debuglet.isReady();
+          debuglet.once('registered', function() {
+            debugPromise.then(() => {
+              debuglet.stop();
+              scope.done();
+              done();
+            });
+          });
+
+          debuglet.start();
       });
 
     it('should reject breakpoints with conditions when allowExpressions=false',

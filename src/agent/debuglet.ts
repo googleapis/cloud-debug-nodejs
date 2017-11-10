@@ -119,26 +119,29 @@ const formatBreakpoints = function(
  * resolved by calling member function resolve.
  */
 export class CachedPromise {
-  private promise: Promise<void>|null;
-  private promiseResolve: () => void;
+  private promise: Promise<void>|null = null;
+  private promiseResolve: (() => void)|null = null;
 
-  constructor() {
-    this.clear();
-  }
-  refresh(): void {
+  refresh(): Promise<void> {
     this.promise = new Promise<void>((resolve) => {
       this.promiseResolve = resolve;
     });
+    return this.promise;
   }
   get(): Promise<void>|null {
     return this.promise;
   }
   resolve(): void {
-    this.promiseResolve();
+    // Each promise can be resolved only once.
+    if (this.promiseResolve) {
+      this.promiseResolve();
+      this.promiseResolve = null;
+    }
   }
-  clear(): void{
+  clear(): void {
     this.promise = null;
   }
+
 }
 
 export class Debuglet extends EventEmitter {
@@ -384,8 +387,9 @@ export class Debuglet extends EventEmitter {
             PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS) {
       return Promise.resolve();
     } else {
-      if (this.breakpointFetched.get() !== null) {
-        return this.breakpointFetched.get() as Promise<void>;
+      const result = this.breakpointFetched.get();
+      if (result) {
+        return result;
       }
       this.breakpointFetched.refresh();
       (this.debuggeeRegistered.get() as Promise<void>).then(() => {
@@ -621,6 +625,9 @@ export class Debuglet extends EventEmitter {
               // We back-off from fetching breakpoints, and try to register
               // again after a while. Successful registration will restart the
               // breakpoint fetcher.
+              that.debuggeeRegistered.refresh();
+              that.breakpointFetched.resolve();
+              that.breakpointFetched.clear();
               that.scheduleRegistration_(
                   that.config.internal.registerDelayOnFetcherErrorSec);
               return;
@@ -632,6 +639,9 @@ export class Debuglet extends EventEmitter {
                 // re-registration, which will re-active breakpoint fetching.
                 that.logger.info('\t404 Registration expired.');
                 that.fetcherActive = false;
+                that.debuggeeRegistered.refresh();
+                that.breakpointFetched.resolve();
+                that.breakpointFetched.clear();
                 that.scheduleRegistration_(0 /*immediately*/);
                 return;
 
