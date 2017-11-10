@@ -15,7 +15,7 @@
  */
 
 import {DebugAgentConfig, StackdriverConfig} from './agent/config';
-import {Debuglet} from './agent/debuglet';
+import {Debuglet, IsReadyManager} from './agent/debuglet';
 import {Debug} from './client/stackdriver/debug';
 
 const pjson = require('../../package.json');
@@ -36,7 +36,7 @@ let debuglet: Debuglet;
  * debug.startAgent();
  */
 export function start(options: DebugAgentConfig|StackdriverConfig): Debuglet|
-    undefined {
+    IsReadyManager {
   options = options || {};
   const agentConfig: DebugAgentConfig =
       (options as StackdriverConfig).debug || (options as DebugAgentConfig);
@@ -50,5 +50,5 @@ export function start(options: DebugAgentConfig|StackdriverConfig): Debuglet|
   debuglet = new Debuglet(debug, agentConfig);
   debuglet.start();
 
-  return debuglet;
+  return agentConfig.testMode_ ? debuglet : debuglet.isReadyManager;
 }

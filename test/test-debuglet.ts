@@ -1007,7 +1007,7 @@ describe('Debuglet', function() {
                           .get(BPS_PATH + '?successOnTimeout=true')
                           .twice()
                           .reply(200, {breakpoints: [breakpoint]});
-        const debugPromise = debuglet.isReady();
+        const debugPromise = debuglet.isReadyManager.isReady();
         debuglet.once('registered', function reg(id: string) {
           debugPromise.then(() => {
             // Once debugPromise is resolved, debuggee must be registered.
@@ -1037,7 +1037,7 @@ describe('Debuglet', function() {
                             .reply(200, {debuggee: {id: DEBUGGEE_ID}})
                             .get(BPS_PATH + '?successOnTimeout=true')
                             .reply(404);
-          const debugPromise = debuglet.isReady();
+          const debugPromise = debuglet.isReadyManager.isReady();
           debuglet.once('registered', function() {
             debugPromise.then(() => {
               debuglet.stop();

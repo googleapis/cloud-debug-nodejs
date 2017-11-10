@@ -141,7 +141,19 @@ export class CachedPromise {
   clear(): void {
     this.promise = null;
   }
+}
 
+/**
+ * IsReadyManager is a wrapper class to call debuglet.isReady().
+ */
+export class IsReadyManager {
+  private debuglet: Debuglet;
+  constructor(debuglet: Debuglet) {
+    this.debuglet = debuglet;
+  }
+  isReady(): Promise<void> {
+    return this.debuglet.isReady();
+  }
 }
 
 export class Debuglet extends EventEmitter {
@@ -162,6 +174,8 @@ export class Debuglet extends EventEmitter {
   // debuggeeRegistered is a CachedPromise only to be resolved after debuggee
   // registration was successful.
   private debuggeeRegistered: CachedPromise;
+
+  isReadyManager: IsReadyManager = new IsReadyManager(this);
 
   // Exposed for testing
   config: DebugAgentConfig;
