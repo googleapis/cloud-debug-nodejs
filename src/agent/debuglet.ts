@@ -142,11 +142,14 @@ export class CachedPromise {
     this.promise = null;
   }
 }
+export interface IsReady {
+  isReady(): Promise<void>;
+}
 
 /**
  * IsReadyManager is a wrapper class to call debuglet.isReady().
  */
-export class IsReadyManager {
+class IsReadyImpl implements IsReady {
   private debuglet: Debuglet;
   constructor(debuglet: Debuglet) {
     this.debuglet = debuglet;
@@ -175,7 +178,7 @@ export class Debuglet extends EventEmitter {
   // registration was successful.
   private debuggeeRegistered: CachedPromise;
 
-  isReadyManager: IsReadyManager = new IsReadyManager(this);
+  isReadyManager: IsReady = new IsReadyImpl(this);
 
   // Exposed for testing
   config: DebugAgentConfig;
