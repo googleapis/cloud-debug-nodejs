@@ -116,4 +116,45 @@ describe('expression side effect', () => {
       })
     }
   });
+
+  it('process.title should not be evaluated', (done) => {
+    // this test makes sure that the necessary environment variables to enable
+    // asserts are present during testing. Use run-tests.sh, or export
+    // CLOUD_DEBUG_ASSERTIONS=1 to make sure this test passes.
+    const bp: stackdriver.Breakpoint = {
+      id: 'fake-id-123',
+      location: { path: 'build/test/test-expression-side-effect-code.js', line: 16 },
+      expressions: [ 'process']
+    } as stackdriver.Breakpoint;
+
+    if (semver.satisfies(process.version, '<9.1.0')
+        || !process.env.GCLOUD_USE_INSPECTOR) {
+      // This test will be skipped for now as runtime.getproperties is not
+      // side-effect free in current node version. It will be tested for the
+      // future node version when the change is merged.
+      done();
+    } else {
+      api.set(bp, function(err) {
+        assert.ifError(err);
+        api.wait(bp, function(err) {
+          assert.ifError(err);
+          const varIndex = (bp.evaluatedExpressions[0] as any).varTableIndex;
+          assert(varIndex);
+          const members = (bp.variableTable[varIndex] as any).members;
+          assert(members);
+          for (let entry of members) {
+            if ((entry as any).name === 'title') {
+              assert((entry as any).value === undefined);
+            }
+          }
+
+          api.clear(bp, function(err) {
+            assert.ifError(err);
+            done();
+          });
+        })
+        process.nextTick(function() {code.foo();});
+      })
+    }
+  });
 });
