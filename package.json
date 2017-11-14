@@ -87,9 +87,7 @@
     "fix": "gts fix",
     "pretest": "npm run compile",
     "posttest": "npm run check",
-    "prepack": "npm run compile",
-    "pretest-install": "npm run compile",
-    "test-install": "mocha build/test/test-install.js"
+    "prepack": "npm run compile"
   },
   "files": [
     "CHANGELOG.md",
