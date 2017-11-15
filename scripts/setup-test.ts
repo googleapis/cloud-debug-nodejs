@@ -26,7 +26,6 @@ const ncp = pify(rawNcp);
 
 const TEST = 'test';
 const SYSTEM_TEST = 'system-test';
-const PACKAGE_JSON = 'package.json';
 
 // For the transpiled code:
 // __dirname = <project root>/build/scripts/
@@ -35,16 +34,12 @@ const BUILD_DIR = path.join(PROJECT_ROOT, 'build');
 
 const INPUT_TEST_DIR = path.join(PROJECT_ROOT, TEST);
 const INPUT_SYSTEM_TEST_DIR = path.join(PROJECT_ROOT, SYSTEM_TEST);
-const INPUT_PACKAGE_JSON = path.join(PROJECT_ROOT, PACKAGE_JSON);
 
 const OUTPUT_TEST_DIR = path.join(BUILD_DIR, TEST);
 const OUTPUT_SYSTEM_TEST_DIR = path.join(BUILD_DIR, SYSTEM_TEST);
-const OUTPUT_PACKAGE_JSON = path.join(BUILD_DIR, PACKAGE_JSON);
 
 async function setupUnitTests(): Promise<void> {
   await mkdirp(OUTPUT_TEST_DIR);
-  await fs.writeFile(OUTPUT_PACKAGE_JSON,
-    await fs.readFile(INPUT_PACKAGE_JSON));
   await ncp(INPUT_TEST_DIR, OUTPUT_TEST_DIR);
 }
 
