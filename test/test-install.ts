@@ -16,7 +16,8 @@
 
 import * as assert from 'assert';
 import * as path from 'path';
-import { globP, ncpP, spawnP, tmpDirP, writeFileP, rimrafP } from './utils';
+
+import {globP, ncpP, rimrafP, spawnP, tmpDirP, writeFileP} from './utils';
 
 const INDEX_TS = 'index.ts';
 const INDEX_JS = 'index.js';
@@ -55,7 +56,7 @@ const JS_CODE_ARRAY: CodeSample[] = [
   }
 ];
 
-const TIMEOUT_MS = 60*1000;
+const TIMEOUT_MS = 60 * 1000;
 
 const DEBUG = false;
 function log(txt: string): void {
@@ -79,21 +80,18 @@ describe('Installation', () => {
     // in your current working directory.
     installDir = await tmpDirP();
     log(`Using installation directory: ${installDir}`);
-    await spawnP('npm', ['install'], { stdio }, log);
-    await spawnP('npm', ['run', 'compile'], { stdio }, log);
-    await spawnP('npm', ['pack'], { stdio }, log);
+    await spawnP('npm', ['install'], {stdio}, log);
+    await spawnP('npm', ['run', 'compile'], {stdio}, log);
+    await spawnP('npm', ['pack'], {stdio}, log);
     const tgz = await globP(`${process.cwd()}/*.tgz`);
     if (tgz.length !== 1) {
-      throw new Error(`Expected 1 tgz file in current directory, but found ${tgz.length}`);
+      throw new Error(
+          `Expected 1 tgz file in current directory, but found ${tgz.length}`);
     }
-    await spawnP('npm', ['init', '-y'], {
-      cwd: installDir,
-      stdio
-    }, log);
-    await spawnP('npm', ['install', 'typescript', '@types/node', tgz[0]], {
-      cwd: installDir,
-      stdio
-    }, log);
+    await spawnP('npm', ['init', '-y'], {cwd: installDir, stdio}, log);
+    await spawnP(
+        'npm', ['install', 'typescript', '@types/node', tgz[0]],
+        {cwd: installDir, stdio}, log);
   });
 
   afterEach(async function() {
@@ -105,33 +103,30 @@ describe('Installation', () => {
 
   describe('When used with Typescript code', () => {
     TS_CODE_ARRAY.forEach((sample) => {
-      it(`should install and work with code that ${sample.description}`, async function() {
-        this.timeout(TIMEOUT_MS);
-        assert(installDir);
-        await writeFileP(path.join(installDir!, INDEX_TS), sample.code, 'utf-8');
-        await spawnP(`node_modules${path.sep}.bin${path.sep}tsc`, [INDEX_TS], {
-          cwd: installDir,
-          stdio
-        }, log);
-        await spawnP('node', [INDEX_JS], {
-          cwd: installDir,
-          stdio
-        }, log);
-      });
+      it(`should install and work with code that ${sample.description}`,
+         async function() {
+           this.timeout(TIMEOUT_MS);
+           assert(installDir);
+           await writeFileP(
+               path.join(installDir!, INDEX_TS), sample.code, 'utf-8');
+           await spawnP(
+               `node_modules${path.sep}.bin${path.sep}tsc`, [INDEX_TS],
+               {cwd: installDir, stdio}, log);
+           await spawnP('node', [INDEX_JS], {cwd: installDir, stdio}, log);
+         });
     });
   });
 
   describe('When used with Javascript code', () => {
     JS_CODE_ARRAY.forEach((sample) => {
-      it(`should install and work with code that ${sample.description}`, async function() {
-        this.timeout(TIMEOUT_MS);
-        assert(installDir);
-        await writeFileP(path.join(installDir!, INDEX_JS), sample.code, 'utf-8');
-        await spawnP('node', [INDEX_JS], {
-          cwd: installDir,
-          stdio
-        }, log);
-      });
+      it(`should install and work with code that ${sample.description}`,
+         async function() {
+           this.timeout(TIMEOUT_MS);
+           assert(installDir);
+           await writeFileP(
+               path.join(installDir!, INDEX_JS), sample.code, 'utf-8');
+           await spawnP('node', [INDEX_JS], {cwd: installDir, stdio}, log);
+         });
     });
   });
 });
