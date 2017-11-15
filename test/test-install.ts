@@ -21,23 +21,39 @@ import { globP, ncpP, spawnP, tmpDirP, writeFileP, rimrafP } from './utils';
 const INDEX_TS = 'index.ts';
 const INDEX_JS = 'index.js';
 
-const TS_CODE_1 = `import * as debug from '@google-cloud/debug-agent';`;
-const TS_CODE_2 = `import * as debug from '@google-cloud/debug-agent';
-debug.start();
-`;
-const TS_CODE_3 = `import * as debug from '@google-cloud/debug-agent';
-debug.start({ allowExpressions: true });
-`;
+const TS_CODE_ARRAY: CodeSample[] = [
+  {
+    code: `import * as debug from '@google-cloud/debug-agent';`,
+    description: 'imports the module'
+  },
+  {
+    code: `import * as debug from '@google-cloud/debug-agent';
+debug.start();`,
+    description: 'imports the module and starts without arguments'
+  },
+  {
+    code: `import * as debug from '@google-cloud/debug-agent';
+debug.start({ allowExpressions: true });`,
+    description: 'imports the module and starts with {allowExpressions: true}'
+  }
+];
 
-const TS_CODE_ARRAY = [TS_CODE_1, TS_CODE_2, TS_CODE_3];
-
-const JS_CODE_1 = `require('@google-cloud/debug-agent').start()`;
-const JS_CODE_2 = `require('@google-cloud/debug-agent').start({})`;
-const JS_CODE_3 = `require('@google-cloud/debug-agent').start({
+const JS_CODE_ARRAY: CodeSample[] = [
+  {
+    code: `require('@google-cloud/debug-agent').start()`,
+    description: 'requires the module and starts without arguments'
+  },
+  {
+    code: `require('@google-cloud/debug-agent').start({})`,
+    description: 'requires the module and starts with {}'
+  },
+  {
+    code: `require('@google-cloud/debug-agent').start({
   allowExpressions: true
-})`;
-
-const JS_CODE_ARRAY = [JS_CODE_1, JS_CODE_2, JS_CODE_3];
+})`,
+    description: 'requires the module and stargs with {allowExpressions: true}'
+  }
+];
 
 const TIMEOUT_MS = 60*1000;
 
@@ -49,6 +65,11 @@ function log(txt: string): void {
 }
 
 const stdio = DEBUG ? 'inherit' : 'ignore';
+
+interface CodeSample {
+  code: string;
+  description: string;
+}
 
 describe('Installation', () => {
   let installDir: string|undefined;
@@ -82,31 +103,35 @@ describe('Installation', () => {
     }
   });
 
-  TS_CODE_ARRAY.forEach((code) => {
-    it(`should install and work with the Typescript code:\n${code}`, async function() {
-      this.timeout(TIMEOUT_MS);
-      assert(installDir);
-      await writeFileP(path.join(installDir!, INDEX_TS), code, 'utf-8');
-      await spawnP(`node_modules${path.sep}.bin${path.sep}tsc`, [INDEX_TS], {
-        cwd: installDir,
-        stdio
-      }, log);
-      await spawnP('node', [INDEX_JS], {
-        cwd: installDir,
-        stdio
-      }, log);
+  describe('When used with Typescript code', () => {
+    TS_CODE_ARRAY.forEach((sample) => {
+      it(`should install and work with code that ${sample.description}`, async function() {
+        this.timeout(TIMEOUT_MS);
+        assert(installDir);
+        await writeFileP(path.join(installDir!, INDEX_TS), sample.code, 'utf-8');
+        await spawnP(`node_modules${path.sep}.bin${path.sep}tsc`, [INDEX_TS], {
+          cwd: installDir,
+          stdio
+        }, log);
+        await spawnP('node', [INDEX_JS], {
+          cwd: installDir,
+          stdio
+        }, log);
+      });
     });
   });
 
-  JS_CODE_ARRAY.forEach((code) => {
-    it(`should install and work with the Javascript code:\n${code}`, async function() {
-      this.timeout(TIMEOUT_MS);
-      assert(installDir);
-      await writeFileP(path.join(installDir!, INDEX_JS), code, 'utf-8');
-      await spawnP('node', [INDEX_JS], {
-        cwd: installDir,
-        stdio
-      }, log);
+  describe('When used with Javascript code', () => {
+    JS_CODE_ARRAY.forEach((sample) => {
+      it(`should install and work with code that ${sample.description}`, async function() {
+        this.timeout(TIMEOUT_MS);
+        assert(installDir);
+        await writeFileP(path.join(installDir!, INDEX_JS), sample.code, 'utf-8');
+        await spawnP('node', [INDEX_JS], {
+          cwd: installDir,
+          stdio
+        }, log);
+      });
     });
   });
 });
