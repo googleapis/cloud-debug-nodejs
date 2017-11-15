@@ -78,37 +78,13 @@ function verifyBreakpointRejection(re: RegExp, body: {breakpoint: any}) {
 }
 
 describe('CachedPromise', function() {
-  it('CachedPromise.get() is initially null', (done) => {
-    let cachedPromise = new CachedPromise();
-    assert(cachedPromise.get() === null);
-    done();
-  });
-
-  it('CachedPromise.get() is not null after refresh', (done) => {
-    let cachedPromise = new CachedPromise();
-    cachedPromise.refresh();
-    assert(cachedPromise.get() !== null)
-    done();
-  });
-
-  it('CachedPromise.get() will return a promise resolved after CachedPromise.resolve() is called', (done) => {
+  it('CachedPromise.get() will resolve after CachedPromise.resolve()', (done) => {
     this.timeout(2000);
     let cachedPromise = new CachedPromise();
-    cachedPromise.refresh();
-    (cachedPromise.get() as Promise<void>).then(() => {
+    cachedPromise.get().then(() => {
       done();
     });
     cachedPromise.resolve();
-  });
-  it('CachedPromise.get() will be null if it has been cleared', (done) => {
-    this.timeout(2000);
-    let cachedPromise = new CachedPromise();
-    assert.strictEqual(cachedPromise.get(), null);
-    cachedPromise.refresh();
-    assert(cachedPromise.get() !== null);
-    cachedPromise.clear();
-    assert.strictEqual(cachedPromise.get(), null);
-    done();
   });
 });
 
