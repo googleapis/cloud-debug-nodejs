@@ -14,22 +14,24 @@
  * limitations under the License.
  */
 
-import { Stats, stat, readFile, writeFile } from 'fs';
+import {ChildProcess, fork, ForkOptions, spawn, SpawnOptions} from 'child_process';
+import {readFile, stat, Stats, writeFile} from 'fs';
 import * as glob from 'glob';
-import { ncp } from 'ncp';
+import {ncp} from 'ncp';
+import * as once from 'once';
 import * as path from 'path';
 import * as pify from 'pify';
-import { ChildProcess, ForkOptions, fork, SpawnOptions, spawn } from 'child_process';
-import * as once from 'once';
-import * as tmp from 'tmp';
 import * as rimraf from 'rimraf';
+import * as tmp from 'tmp';
 
 export const BUILD_DIRECTORY = 'build';
 
 export const globP: (pattern: string) => Promise<string[]> = pify(glob);
 export const ncpP: (src: string, dest: string) => Promise<void> = pify(ncp);
-export const readFileP: (path: string, encoding?: string) => Promise<Buffer|string> = pify(readFile);
-export const writeFileP: (path: string, data: string, encoding?: string) => Promise<void> = pify(writeFile);
+export const readFileP: (path: string, encoding?: string) =>
+    Promise<Buffer|string> = pify(readFile);
+export const writeFileP: (path: string, data: string, encoding?: string) =>
+    Promise<void> = pify(writeFile);
 export const statP: (path: string) => Promise<Stats> = pify(stat);
 export const tmpDirP: () => Promise<string> = pify(tmp.dir);
 export const rimrafP: (f: string) => Promise<void> = pify(rimraf);
@@ -40,9 +42,7 @@ export function nodule(nodule: string) {
 
 export function existsP(path: string): Promise<boolean> {
   return statP(path).then(
-    () => Promise.resolve(true),
-    () => Promise.resolve(false)
-  );
+      () => Promise.resolve(true), () => Promise.resolve(false));
 }
 
 function promisifyChildProcess(childProcess: ChildProcess): Promise<void> {
@@ -53,29 +53,33 @@ function promisifyChildProcess(childProcess: ChildProcess): Promise<void> {
       if (code === 0) {
         exit();
       } else {
-        exit(new Error(`Process ${childProcess.pid} exited with code ${code}.`));
+        exit(
+            new Error(`Process ${childProcess.pid} exited with code ${code}.`));
       }
     });
   });
 }
 
-export function spawnP(command: string, args?: string[], options?: SpawnOptions, log?: (text: string) => void): Promise<void> {
-  const stringifiedCommand = `\`${command}${args ? (' ' + args.join(' ')) : ''}\``;
+export function spawnP(
+    command: string, args?: string[], options?: SpawnOptions,
+    log?: (text: string) => void): Promise<void> {
+  const stringifiedCommand =
+      `\`${command}${args ? (' ' + args.join(' ')) : ''}\``;
   if (log) {
     log(`> Running: ${stringifiedCommand}`);
   }
-  return promisifyChildProcess(spawn(command, args, Object.assign({
-    stdio: 'inherit',
-    shell: true
-  }, options)));
+  return promisifyChildProcess(spawn(
+      command, args, Object.assign({stdio: 'inherit', shell: true}, options)));
 }
 
-export function forkP(moduleName: string, args?: string[], options?: ForkOptions, log?: (text: string) => void): Promise<void> {
-  const stringifiedCommand = `\`${moduleName}${args ? (' ' + args.join(' ')) : ''}\``;
+export function forkP(
+    moduleName: string, args?: string[], options?: ForkOptions,
+    log?: (text: string) => void): Promise<void> {
+  const stringifiedCommand =
+      `\`${moduleName}${args ? (' ' + args.join(' ')) : ''}\``;
   if (log) {
     log(`> Running: ${stringifiedCommand}`);
   }
-  return promisifyChildProcess(fork(moduleName, args, Object.assign({
-    stdio: 'inherit'
-  }, options)));
+  return promisifyChildProcess(
+      fork(moduleName, args, Object.assign({stdio: 'inherit'}, options)));
 }
