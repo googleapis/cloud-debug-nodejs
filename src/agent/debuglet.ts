@@ -135,6 +135,14 @@ export class CachedPromise {
     }
   }
 }
+
+/**
+ * IsReady will return a promise to user after user starting the debug agent.
+ * This promise will be resolved when
+ * 1. Time since last listBreakpoint was within a heuristic time.
+ * 2. listBreakpoint completed successfully.
+ * 3. Debuggee expired or failed, listBreakpoint cannot be completed.
+ */
 export interface IsReady {
   isReady(): Promise<void>;
 }
