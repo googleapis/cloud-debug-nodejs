@@ -118,7 +118,7 @@ const formatBreakpoints = function(
  * function resolve() and can only be resolved once.
  */
 export class CachedPromise {
-  private promiseResolve: (() => void) | null;
+  private promiseResolve: (() => void) | null = null;
   private promise: Promise<void> = new Promise<void>((resolve) => {
     this.promiseResolve = resolve;
   });
@@ -126,6 +126,7 @@ export class CachedPromise {
   get(): Promise<void> {
     return this.promise;
   }
+
   resolve(): void {
     // Each promise can be resolved only once.
     if (this.promiseResolve) {
@@ -229,6 +230,8 @@ export class Debuglet extends EventEmitter {
 
     /** @private {Object.<string, Boolean>} */
     this.completedBreakpointMap = {};
+
+    this.breakpointFetched = null;
 
     this.breakpointFetchedTimestamp = -Infinity;
 
@@ -626,13 +629,7 @@ export class Debuglet extends EventEmitter {
               // We back-off from fetching breakpoints, and try to register
               // again after a while. Successful registration will restart the
               // breakpoint fetcher.
-              that.debuggeeRegistered = new CachedPromise();
-              if (that.breakpointFetched) {
-                // breakpointFetched is resolved when failure occurs, therefore
-                // GCF will not hang forever to wait non-fetchable breakpoints.
-                that.breakpointFetched.resolve();
-                that.breakpointFetched = null;
-              }
+              that.updatePromise_();
               that.scheduleRegistration_(
                   that.config.internal.registerDelayOnFetcherErrorSec);
               return;
@@ -644,14 +641,7 @@ export class Debuglet extends EventEmitter {
                 // re-registration, which will re-active breakpoint fetching.
                 that.logger.info('\t404 Registration expired.');
                 that.fetcherActive = false;
-                that.debuggeeRegistered = new CachedPromise();
-                if (that.breakpointFetched) {
-                  // breakpointFetched is resolved when failure occurs,
-                  // therefore GCF will not hang forever to wait non-fetchable
-                  // breakpoints.
-                  that.breakpointFetched.resolve();
-                  that.breakpointFetched = null;
-                }
+                that.updatePromise_();
                 that.scheduleRegistration_(0 /*immediately*/);
                 return;
 
@@ -704,6 +694,20 @@ export class Debuglet extends EventEmitter {
             }
           });
     }, seconds * 1000).unref();
+  }
+
+  /**
+   * updatePromise_ is called when debuggee is expired. debuggeeRegistered
+   * CachedPromise will be refreshed. Also, breakpointFetched CachedPromise will
+   * be resolved so that uses (such as GCF users) will not hang forever to wait
+   * non-fetchable breakpoints.
+   */
+  updatePromise_() {
+    this.debuggeeRegistered = new CachedPromise();
+    if (this.breakpointFetched) {
+      this.breakpointFetched.resolve();
+      this.breakpointFetched = null;
+    }
   }
 
   /**
