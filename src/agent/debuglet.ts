@@ -63,6 +63,12 @@ const BREAKPOINT_ACTION_MESSAGE =
     'The only currently supported breakpoint actions' +
     ' are CAPTURE and LOG.';
 
+// PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS is a heuristic duration that we set
+// to force the debug agent to return a new promise for isReady. The value is
+// the average of Stackdriver debugger hanging get duration (40s) and TCP
+// time-out on GCF (540s).
+const PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS = (40 + 540) / 2 * 1000;
+
 /**
  * Formats a breakpoint object prefixed with a provided message as a string
  * intended for logging.
@@ -107,6 +113,51 @@ const formatBreakpoints = function(
           .join('\n');
 };
 
+/**
+ * CachedPromise stores a promise. This promise can be resolved by calling
+ * function resolve() and can only be resolved once.
+ */
+export class CachedPromise {
+  private promiseResolve: (() => void) | null = null;
+  private promise: Promise<void> = new Promise<void>((resolve) => {
+    this.promiseResolve = resolve;
+  });
+
+  get(): Promise<void> {
+    return this.promise;
+  }
+
+  resolve(): void {
+    // Each promise can be resolved only once.
+    if (this.promiseResolve) {
+      this.promiseResolve();
+      this.promiseResolve = null;
+    }
+  }
+}
+
+/**
+ * IsReady will return a promise to user after user starting the debug agent.
+ * This promise will be resolved when one of the following is true:
+ * 1. Time since last listBreakpoint was within a heuristic time.
+ * 2. listBreakpoint completed successfully.
+ * 3. Debuggee registration expired or failed, listBreakpoint cannot be
+ *    completed.
+ */
+export interface IsReady {
+  isReady(): Promise<void>;
+}
+
+/**
+ * IsReadyManager is a wrapper class to use debuglet.isReady().
+ */
+class IsReadyImpl implements IsReady {
+  constructor(private debuglet: Debuglet) {}
+  isReady(): Promise<void> {
+    return this.debuglet.isReady();
+  }
+}
+
 export class Debuglet extends EventEmitter {
   private debug: Debug;
   private v8debug: DebugApi|null;
@@ -114,6 +165,19 @@ export class Debuglet extends EventEmitter {
   private project: string|null;
   private controller: Controller;
   private completedBreakpointMap: {[key: string]: boolean};
+
+  // breakpointFetchedTimestamp represents the last timestamp when
+  // breakpointFetched was resolved, which means breakpoint update was
+  // successful.
+  private breakpointFetchedTimestamp: number;
+  // breakpointFetched is a CachedPromise only to be resolved after breakpoint
+  // fetch was successful. Its stored promise will be returned by isReady().
+  private breakpointFetched: CachedPromise|null;
+  // debuggeeRegistered is a CachedPromise only to be resolved after debuggee
+  // registration was successful.
+  private debuggeeRegistered: CachedPromise;
+
+  isReadyManager: IsReady = new IsReadyImpl(this);
 
   // Exposed for testing
   config: DebugAgentConfig;
@@ -175,6 +239,10 @@ export class Debuglet extends EventEmitter {
 
     /** @private {Object.<string, Boolean>} */
     this.completedBreakpointMap = {};
+
+    this.breakpointFetched = null;
+    this.breakpointFetchedTimestamp = -Infinity;
+    this.debuggeeRegistered = new CachedPromise();
   }
 
   static normalizeConfig_(config: DebugAgentConfig): DebugAgentConfig {
@@ -318,8 +386,29 @@ export class Debuglet extends EventEmitter {
         that.scheduleRegistration_(0 /* immediately */);
         that.emit('started');
       });
-
     });
+  }
+
+  /**
+   * isReady returns a promise that only resolved if the last breakpoint update
+   * happend within a duration (PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS). This
+   * feature is mainly used in Google Cloud Function (GCF), as it is a
+   * serverless environment and we wanted to make sure debug agent always
+   * captures the snapshots.
+   */
+  isReady(): Promise<void> {
+    if (Date.now() < this.breakpointFetchedTimestamp +
+            PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS) {
+      return Promise.resolve();
+    } else {
+      if (this.breakpointFetched) return this.breakpointFetched.get();
+      this.breakpointFetched = new CachedPromise();
+      this.debuggeeRegistered.get().then(() => {
+        this.scheduleBreakpointFetch_(
+          0 /*immediately*/, true /*only fetch once*/);
+      });
+      return this.breakpointFetched.get();
+    }
   }
 
   /**
@@ -509,8 +598,9 @@ export class Debuglet extends EventEmitter {
             // TODO: Handle the case when `result` is undefined.
             that.emit(
                 'registered', (result as {debuggee: Debuggee}).debuggee.id);
+            that.debuggeeRegistered.resolve();
             if (!that.fetcherActive) {
-              that.scheduleBreakpointFetch_(0);
+              that.scheduleBreakpointFetch_(0, false);
             }
           });
     }, seconds * 1000).unref();
@@ -518,17 +608,22 @@ export class Debuglet extends EventEmitter {
 
   /**
    * @param {number} seconds
+   * @param {boolean} once
    * @private
    */
-  scheduleBreakpointFetch_(seconds: number): void {
+  scheduleBreakpointFetch_(seconds: number, once: boolean): void {
     const that = this;
-
-    that.fetcherActive = true;
+    if (!once) {
+      that.fetcherActive = true;
+    }
     setTimeout(function() {
       if (!that.running) {
         return;
       }
-      assert(that.fetcherActive);
+
+      if (!once) {
+        assert(that.fetcherActive);
+      }
 
       that.logger.info('Fetching breakpoints');
       // TODO: Address the case when `that.debuggee` is `null`.
@@ -541,11 +636,11 @@ export class Debuglet extends EventEmitter {
               // We back-off from fetching breakpoints, and try to register
               // again after a while. Successful registration will restart the
               // breakpoint fetcher.
+              that.updatePromise();
               that.scheduleRegistration_(
                   that.config.internal.registerDelayOnFetcherErrorSec);
               return;
             }
-
             // TODO: Address the case where `response` is `undefined`.
             switch ((response as http.ServerResponse).statusCode) {
               case 404:
@@ -553,6 +648,7 @@ export class Debuglet extends EventEmitter {
                 // re-registration, which will re-active breakpoint fetching.
                 that.logger.info('\t404 Registration expired.');
                 that.fetcherActive = false;
+                that.updatePromise();
                 that.scheduleRegistration_(0 /*immediately*/);
                 return;
 
@@ -564,12 +660,12 @@ export class Debuglet extends EventEmitter {
                 if (!body) {
                   that.logger.error('\tinvalid list response: empty body');
                   that.scheduleBreakpointFetch_(
-                      that.config.breakpointUpdateIntervalSec);
+                      that.config.breakpointUpdateIntervalSec, once);
                   return;
                 }
                 if (body.waitExpired) {
                   that.logger.info('\tLong poll completed.');
-                  that.scheduleBreakpointFetch_(0 /*immediately*/);
+                  that.scheduleBreakpointFetch_(0 /*immediately*/, once);
                   return;
                 }
                 const bps = (body.breakpoints ||
@@ -591,12 +687,34 @@ export class Debuglet extends EventEmitter {
                   that.logger.info(formatBreakpoints(
                       'Active Breakpoints: ', that.activeBreakpointMap));
                 }
-                that.scheduleBreakpointFetch_(
-                    that.config.breakpointUpdateIntervalSec);
+                that.breakpointFetchedTimestamp = Date.now();
+                if (once) {
+                  if (that.breakpointFetched) {
+                    that.breakpointFetched.resolve();
+                    that.breakpointFetched = null;
+                  }
+                } else {
+                  that.scheduleBreakpointFetch_(
+                      that.config.breakpointUpdateIntervalSec, once);
+                }
                 return;
             }
           });
     }, seconds * 1000).unref();
+  }
+
+  /**
+   * updatePromise_ is called when debuggee is expired. debuggeeRegistered
+   * CachedPromise will be refreshed. Also, breakpointFetched CachedPromise will
+   * be resolved so that uses (such as GCF users) will not hang forever to wait
+   * non-fetchable breakpoints.
+   */
+  private updatePromise() {
+    this.debuggeeRegistered = new CachedPromise();
+    if (this.breakpointFetched) {
+      this.breakpointFetched.resolve();
+      this.breakpointFetched = null;
+    }
   }
 
   /**
@@ -612,7 +730,6 @@ export class Debuglet extends EventEmitter {
       that.logger.info(
           formatBreakpoints('Server breakpoints: ', updatedBreakpointMap));
     }
-
     breakpoints.forEach(function(breakpoint: stackdriver.Breakpoint) {
 
       // TODO: Address the case when `breakpoint.id` is `undefined`.

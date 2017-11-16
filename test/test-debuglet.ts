@@ -26,7 +26,7 @@ import * as stackdriver from '../src/types/stackdriver';
 
 (DEFAULT_CONFIG as any).allowExpressions = true;
 (DEFAULT_CONFIG as any).workingDirectory = path.join(__dirname, '..', '..');
-import {Debuglet} from '../src/agent/debuglet';
+import {Debuglet, CachedPromise} from '../src/agent/debuglet';
 import * as dns from 'dns';
 import * as extend from 'extend';
 const metadata: {project: any, instance: any} = require('gcp-metadata');
@@ -76,6 +76,17 @@ function verifyBreakpointRejection(re: RegExp, body: {breakpoint: any}) {
   const hasCorrectDescription = status.description.format.match(re);
   return status.isError && hasCorrectDescription;
 }
+
+describe('CachedPromise', function() {
+  it('CachedPromise.get() will resolve after CachedPromise.resolve()', (done) => {
+    this.timeout(2000);
+    let cachedPromise = new CachedPromise();
+    cachedPromise.get().then(() => {
+      done();
+    });
+    cachedPromise.resolve();
+  });
+});
 
 describe('Debuglet', function() {
   describe('runningOnGCP', () => {
@@ -951,6 +962,66 @@ describe('Debuglet', function() {
 
       debuglet.start();
     });
+
+    it('should have breakpoints fetched when promise is resolved',
+      function(done) {
+        this.timeout(2000);
+        const breakpoint: stackdriver.Breakpoint = {
+           id: 'test1',
+           action: 'CAPTURE',
+           location: {path: 'build/test/fixtures/foo.js', line: 2}
+        } as stackdriver.Breakpoint;
+
+        const debug = new Debug(
+            {projectId: 'fake-project', credentials: fakeCredentials},
+            packageInfo);
+        const debuglet = new Debuglet(debug, defaultConfig);
+
+        const scope = nock(API)
+                          .post(REGISTER_PATH)
+                          .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+                          .get(BPS_PATH + '?successOnTimeout=true')
+                          .twice()
+                          .reply(200, {breakpoints: [breakpoint]});
+        const debugPromise = debuglet.isReadyManager.isReady();
+        debuglet.once('registered', function reg(id: string) {
+          debugPromise.then(() => {
+            // Once debugPromise is resolved, debuggee must be registered.
+            assert(debuglet.debuggee);
+            setTimeout(function() {
+              assert.deepEqual(debuglet.activeBreakpointMap.test1, breakpoint);
+              debuglet.activeBreakpointMap = {};
+              debuglet.stop();
+              scope.done();
+              done();
+            }, 1000);
+          });
+        });
+        debuglet.start();
+      });
+
+      it('should resolve breakpointFetched promise when registration expires',
+        function(done) {
+          this.timeout(2000);
+          const debug = new Debug(
+              {projectId: 'fake-project', credentials: fakeCredentials},
+              packageInfo);
+          const debuglet = new Debuglet(debug, defaultConfig);
+
+          const scope = nock(API)
+                            .post(REGISTER_PATH)
+                            .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+                            .get(BPS_PATH + '?successOnTimeout=true')
+                            .reply(404); // signal re-registration.
+          const debugPromise = debuglet.isReadyManager.isReady();
+          debugPromise.then(() => {
+            debuglet.stop();
+            scope.done();
+            done();
+          });
+
+          debuglet.start();
+      });
 
     it('should reject breakpoints with conditions when allowExpressions=false',
        function(done) {
