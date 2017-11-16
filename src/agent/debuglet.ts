@@ -138,10 +138,11 @@ export class CachedPromise {
 
 /**
  * IsReady will return a promise to user after user starting the debug agent.
- * This promise will be resolved when
+ * This promise will be resolved when one of the following is true:
  * 1. Time since last listBreakpoint was within a heuristic time.
  * 2. listBreakpoint completed successfully.
- * 3. Debuggee expired or failed, listBreakpoint cannot be completed.
+ * 3. Debuggee registration expired or failed, listBreakpoint cannot be
+ *    completed.
  */
 export interface IsReady {
   isReady(): Promise<void>;
@@ -240,9 +241,7 @@ export class Debuglet extends EventEmitter {
     this.completedBreakpointMap = {};
 
     this.breakpointFetched = null;
-
     this.breakpointFetchedTimestamp = -Infinity;
-
     this.debuggeeRegistered = new CachedPromise();
   }
 
@@ -637,7 +636,7 @@ export class Debuglet extends EventEmitter {
               // We back-off from fetching breakpoints, and try to register
               // again after a while. Successful registration will restart the
               // breakpoint fetcher.
-              that.updatePromise_();
+              that.updatePromise();
               that.scheduleRegistration_(
                   that.config.internal.registerDelayOnFetcherErrorSec);
               return;
@@ -649,7 +648,7 @@ export class Debuglet extends EventEmitter {
                 // re-registration, which will re-active breakpoint fetching.
                 that.logger.info('\t404 Registration expired.');
                 that.fetcherActive = false;
-                that.updatePromise_();
+                that.updatePromise();
                 that.scheduleRegistration_(0 /*immediately*/);
                 return;
 
@@ -710,7 +709,7 @@ export class Debuglet extends EventEmitter {
    * be resolved so that uses (such as GCF users) will not hang forever to wait
    * non-fetchable breakpoints.
    */
-  updatePromise_() {
+  private updatePromise() {
     this.debuggeeRegistered = new CachedPromise();
     if (this.breakpointFetched) {
       this.breakpointFetched.resolve();

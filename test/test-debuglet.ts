@@ -1012,14 +1012,12 @@ describe('Debuglet', function() {
                             .post(REGISTER_PATH)
                             .reply(200, {debuggee: {id: DEBUGGEE_ID}})
                             .get(BPS_PATH + '?successOnTimeout=true')
-                            .reply(404);
+                            .reply(404); // signal re-registration.
           const debugPromise = debuglet.isReadyManager.isReady();
-          debuglet.once('registered', function() {
-            debugPromise.then(() => {
-              debuglet.stop();
-              scope.done();
-              done();
-            });
+          debugPromise.then(() => {
+            debuglet.stop();
+            scope.done();
+            done();
           });
 
           debuglet.start();
