@@ -1,5 +1,25 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## 2017-11-20, Version 2.3.0 (Beta), @dominickramer
+
+This release introduces a new `isReady` method that returns a `Promise` that is resolved either when the debug agent has received snapshot information from the Stackdriver service, or has determined that it is not possible to receive this information.
+
+This is needed in environments such as Google Cloud Functions where, without this functionality, application code is completed before the debug agent has received its snapshot information.
+
+This release also fixes an issue so that now a more friendly error message is provided in the case when the debug agent cannot determine the project ID.
+
+* [[`a828ea62a4`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/a828ea62a4)] - **feat**: Enable isReady for debugger for GCF (#358) (Michael Gao) 
+* [[`bbf4b98848`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/bbf4b98848)] - **chore**: Move install tests to `system-test` (#361) (Dominic Kramer) 
+* [[`acdefca12e`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/acdefca12e)] - **test**: add installation verification (#359) (Dominic Kramer) 
+* [[`6e0088e5bf`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/6e0088e5bf)] - **fix**: Give useful message with unresolved projectID (#360) (Dominic Kramer) 
+* [[`a530d1cdb2`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/a530d1cdb2)] - Update dependencies to enable Greenkeeper 🌴 (#348) (greenkeeper[bot]) 
+* [[`cdee56fda5`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/cdee56fda5)] - **chore**: Upgrade to Typescript `~2.6.1` (#355) (Dominic Kramer) 
+* [[`1553565742`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/1553565742)] - **fix**: broken link in README (#353) (Ali Ijaz Sheikh) 
+* [[`b95bae2d9c`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/b95bae2d9c)] - **chore**: Use `gts` instead of `gulp` (#344) (Dominic Kramer) 
+* [[`e1089673f2`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/e1089673f2)] - **fix**: Skip 32bit platform warning starting on 8.9 (#351) (Michael Gao) 
+* [[`185f1c2e5d`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/185f1c2e5d)] - **fix**: make debugee variables public (#352) (Michael Gao) 
+
+
 ## 2017-10-25, Version 2.2.2 (Beta), @dominickramer
 
 This release fixes an issue that prevented this module from being published, and it contains all of the changes that would have been in the 2.2.0 and 2.2.1 releases (if those releases would have actually been successfully published).
