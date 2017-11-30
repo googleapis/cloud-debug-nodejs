@@ -189,12 +189,14 @@ process.env['GCLOUD_USE_INSPECTOR'] = true;
 require('@google-cloud/debug-agent').start({ ... });
 ```
 
-The stackdriver Debugger also introduces a new `isReady` method that returns a `Promise` that is resolved in either of the three scenarios.
+## Using Stackdriver Debugger on Google Cloud Functions
+
+The Stackdriver Debugger also introduces a new `isReady` method that returns a `Promise` that is resolved in either of the three scenarios.
 1. The debug agent has received snapshot information from the Stackdriver service.
 2. The last snapshot received from Stackdriver service is relatively recent.
 3. The debug agent has determined that it is not possible to receive snapshot information.
 
-This is needed in environments such as Google Cloud Functions where, without this functionality, application code is completed before the debug agent has received its snapshot information.
+This is needed in environments such as Google Cloud Functions where, without this functionality, application code is completed before the debug agent has received its snapshot information, so that next time when user invocate the Cloud Functions, updated breakpoints/logpoints can not be captured. With `isReady` method, Cloud Functions can delay exiting therefore snapshot is guaranteed to update unless it is determined not possible to receive.
 
 ```js
 const debug = require('@google-cloud/debug-agent').start();
