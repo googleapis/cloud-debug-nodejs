@@ -189,6 +189,25 @@ process.env['GCLOUD_USE_INSPECTOR'] = true;
 require('@google-cloud/debug-agent').start({ ... });
 ```
 
+## Using Stackdriver Debugger on Google Cloud Functions
+
+The Stackdriver Debugger also introduces a new `isReady` method that returns a `Promise` that is resolved in either of the three scenarios.
+1. The debug agent has received snapshot information from the Stackdriver service.
+2. The last snapshot received from Stackdriver service is relatively recent.
+3. The debug agent has determined that it is not possible to receive snapshot information.
+
+In order for Stackdriver Debugger to work on GCF, users should call the `isReady` function and wait for the returned `Promise` to resolve before exiting the cloud function. The purpose of this is to allow the Debug Agent enough time to sync reasonably up-to-date snapshot information; in most cases this is instantaneous and the worst (rare) case is to delay up to 40 seconds.
+
+```js
+const debug = require('@google-cloud/debug-agent').start();
+exports.myFunc = (event) => {
+  const debugReady = debug.isReady();
+  debugReady.then(() => {
+    // ...
+  });
+}
+```
+
 ## Limitations and Requirements
 * The root directory of your application needs to contain a `package.json` file.
 * You can set snapshot conditions and watch expressions to be evaluated in the context of your application. This leads to some issues you should be aware of
