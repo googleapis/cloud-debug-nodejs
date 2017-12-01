@@ -196,7 +196,7 @@ The Stackdriver Debugger also introduces a new `isReady` method that returns a `
 2. The last snapshot received from Stackdriver service is relatively recent.
 3. The debug agent has determined that it is not possible to receive snapshot information.
 
-This is needed in environments such as Google Cloud Functions where, without this functionality, application code is completed before the debug agent has received its snapshot information, so that next time when user invocate the Cloud Functions, updated breakpoints/logpoints can not be captured. With `isReady` method, Cloud Functions can delay exiting therefore snapshot is guaranteed to update unless it is determined not possible to receive.
+In order for Stackdriver Debugger to work on GCF, users should call the `isReady` function and wait for the returned `Promise` to resolve before exiting the cloud function. The purpose of this is to allow the Debug Agent enough time to sync reasonably up-to-date snapshot information; in most cases this is instantaneous and the worst (rare) case is to delay up to 40 seconds.
 
 ```js
 const debug = require('@google-cloud/debug-agent').start();
