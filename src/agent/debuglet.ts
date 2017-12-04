@@ -83,7 +83,7 @@ const formatBreakpoint = (
           'breakpoint id: %s,\n\tlocation: %s', breakpoint.id,
           util.inspect(breakpoint.location));
   if (breakpoint.createdTime) {
-    const unixTime = parseInt(breakpoint.createdTime.seconds, 10);
+    const unixTime = Number(breakpoint.createdTime.seconds);
     const date = new Date(unixTime * 1000);  // to milliseconds.
     text += '\n\tcreatedTime: ' + date.toString();
   }
@@ -917,7 +917,7 @@ export class Debuglet extends EventEmitter {
 
     const now = Date.now() / 1000;
     const createdTime = breakpoint.createdTime ?
-        parseInt(breakpoint.createdTime.seconds, 10) :
+        Number(breakpoint.createdTime.seconds) :
         now;
     const expiryTime = createdTime + that.config.breakpointExpirationSec;
 
