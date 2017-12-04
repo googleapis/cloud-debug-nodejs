@@ -86,7 +86,7 @@ class StateResolver {
   private totalSize: number;
   private messageTable: stackdriver.Variable[];
   private resolvedVariableTable: stackdriver.Variable[];
-  private rawVariableTable: {}[];
+  private rawVariableTable: Array<{}>;
 
   /**
    * @param {Array<!Object>} callFrames
@@ -309,7 +309,7 @@ class StateResolver {
   resolveFrame_(frame: inspector.Debugger.CallFrame, underFrameCap: boolean):
       stackdriver.StackFrame {
     const args: stackdriver.Variable[] = [];
-    let locals: {}[] = [];
+    let locals: Array<{}> = [];
 
     if (!underFrameCap) {
       args.push({
@@ -369,7 +369,7 @@ class StateResolver {
    */
   resolveLocalsList_(frame: inspector.Debugger.CallFrame):
       stackdriver.Variable[] {
-    const locals: {}[] = [];
+    const locals: Array<{}> = [];
 
     const usedNames: {[name: string]: boolean} = {};
     const allScopes = frame.scopeChain;
@@ -495,7 +495,7 @@ class StateResolver {
     const maxProps = this.config.capture.maxProperties;
     const result =
         this.v8Inspector.getProperties({objectId: object.objectId as string});
-    const members: {}[] = [];
+    const members: Array<{}> = [];
     if (result.error || !result.response) {
       members.push({
         name: result.error ? String(result.error) :

@@ -311,7 +311,7 @@ class StateResolver {
     const args: stackdriver.Variable[] = [];
     // TODO: `locals` should be of type v8.ScopeMirror[]
     //       Resolve conflicts so that it can be specified of that type.
-    let locals: {}[] = [];
+    let locals: Array<{}> = [];
     // Locals and arguments are safe to collect even when
     // `config.allowExpressions=false` since we properly avoid inspecting
     // interceptors and getters by default.

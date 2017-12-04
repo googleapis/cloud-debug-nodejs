@@ -140,7 +140,7 @@ describe('Controller API', () => {
     });
 
     describe('invalid responses', () => {
-      const tests: string|{}[] = ['', 'JSON, this is not', []];
+      const tests: string|Array<{}> = ['', 'JSON, this is not', []];
       tests.forEach((invalidResponse, index) => {
         it('should pass test ' + index, (done) => {
           const scope =
