@@ -46,7 +46,7 @@ describe('Controller', function() {
       project: process.env.GCLOUD_PROJECT,
       uniquifier: 'test-uid-' + Date.now(),
       description: 'this is a system test',
-      agentVersion: agentVersion
+      agentVersion
     });
 
     controller.register(debuggee, function(err, maybeBody) {
@@ -65,7 +65,7 @@ describe('Controller', function() {
       project: process.env.GCLOUD_PROJECT,
       uniquifier: 'test-uid-' + Date.now(),
       description: 'this is a system test',
-      agentVersion: agentVersion
+      agentVersion
     });
     // TODO: Determine if the body parameter should be used.
     controller.register(debuggee, function(err1, body1) {
@@ -89,7 +89,7 @@ describe('Controller', function() {
       project: process.env.GCLOUD_PROJECT,
       uniquifier: 'test-uid-' + Date.now(),
       description: 'this is a system test',
-      agentVersion: agentVersion
+      agentVersion
     });
     // TODO: Determine if the body parameter should be used.
     controller.register(debuggee, function(err, body) {

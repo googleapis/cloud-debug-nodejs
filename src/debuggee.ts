@@ -29,7 +29,7 @@ export interface DebuggeeProperties {
   labels?: {
     [key: string]: string,
   };
-  sourceContexts?: Array<{[key: string]: any}>;
+  sourceContexts?: Array<{[key: string]: {}}>;
   statusMessage?: StatusMessage;
 }
 
@@ -37,7 +37,7 @@ export class Debuggee {
   uniquifier: string;
   description: string;
   agentVersion?: string;
-  sourceContexts?: Array<{[key: string]: any}>;
+  sourceContexts?: Array<{[key: string]: {}}>;
 
   // Public to allow for testing
   project: string;

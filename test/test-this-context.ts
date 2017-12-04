@@ -40,7 +40,7 @@ describe(__filename, function() {
   // TODO: It appears `logLevel` is a typo and should be `level`.  However,
   //       with this change, the tests fail.  Resolve this.
   const logger =
-      new common.logger({levelLevel: config.logLevel} as any as LoggerOptions);
+      new common.logger({levelLevel: config.logLevel} as {} as LoggerOptions);
   let api: debugapi.DebugApi;
 
   beforeEach(function(done) {
@@ -82,13 +82,13 @@ describe(__filename, function() {
       api.wait(brk, function(err2) {
         assert.ifError(err2);
         // TODO: Determine how to remove this cast to any.
-        const frame = (brk as any).stackFrames[0];
+        const frame = (brk as {}).stackFrames[0];
         const args = frame.arguments;
         const locals = frame.locals;
         // TODO: Determine how to remove these casts to any.
         ctxMembers =
-            (brk as any)
-                .variableTable.slice((brk as any).variableTable.length - 1)[0]
+            (brk as {})
+                .variableTable.slice((brk as {}).variableTable.length - 1)[0]
                 .members;
         assert.deepEqual(
             ctxMembers.length, 1,
@@ -118,7 +118,7 @@ describe(__filename, function() {
          api.wait(brk, function(err2) {
            assert.ifError(err2);
            // TODO: Determine how to remove this cast to any.
-           const frame = (brk as any).stackFrames[0];
+           const frame = (brk as {}).stackFrames[0];
            const args = frame.arguments;
            const locals = frame.locals;
            assert.equal(args.length, 0, 'There should be zero arguments');

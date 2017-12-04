@@ -50,7 +50,7 @@ export class V8DebugApi implements debugapi.DebugApi {
   config: DebugAgentConfig;
   fileStats: ScanStats;
   listeners: {[id: string]: utils.Listener} = {};
-  v8Version: any;
+  v8Version: {};
   usePermanentListener: boolean;
   logger: Logger;
   handleDebugEvents:
@@ -182,7 +182,7 @@ export class V8DebugApi implements debugapi.DebugApi {
           });
         });
 
-    that.listeners[num] = {enabled: true, listener: listener};
+    that.listeners[num] = {enabled: true, listener};
   }
 
   log(breakpoint: stackdriver.Breakpoint,
@@ -206,7 +206,7 @@ export class V8DebugApi implements debugapi.DebugApi {
               breakpoint.logMessageFormat as string,
               // TODO: Determine how to remove the `as` cast below
               breakpoint.evaluatedExpressions.map(
-                  (obj: any) => JSON.stringify(obj)));
+                  (obj: {}) => JSON.stringify(obj)));
           logsThisSecond++;
           if (shouldStop()) {
             that.listeners[num].enabled = false;
@@ -224,7 +224,7 @@ export class V8DebugApi implements debugapi.DebugApi {
             }
           }
         });
-    that.listeners[num] = {enabled: true, listener: listener};
+    that.listeners[num] = {enabled: true, listener};
   }
 
   disconnect(): void {

@@ -26,8 +26,8 @@ import * as stackdriver from '../src/types/stackdriver';
 export const common: commonTypes.Common = require('@google-cloud/common');
 // TODO: Verify these types are correct.
 const qs: {
-  parse: (qs: any, sep?: string, eq?: string, options?: {maxKeys?: number}) =>
-      any,
+  parse: (qs: {}, sep?: string, eq?: string, options?: {maxKeys?: number}) =>
+      {},
   stringify:
       (obj: object|string|boolean|number, sep?: string, eq?: string,
        name?: string) => string
@@ -74,12 +74,12 @@ export class Debugger extends common.ServiceObject {
 
     const query = {
       clientVersion: this.clientVersion,
-      includeInactive: includeInactive,
+      includeInactive,
       project: projectId
     };
 
     const uri = API + '/debuggees?' + qs.stringify(query);
-    this.request({uri: uri, json: true}, function(err, body, response) {
+    this.request({uri, json: true}, function(err, body, response) {
       if (err) {
         callback(err);
       } else if (!response) {
@@ -129,19 +129,19 @@ export class Debugger extends common.ServiceObject {
     if (typeof (options) === 'function') {
       callback = options;
       // TODO: Determine how to remove this cast.
-      options = {} as any;
+      options = {} as {};
     }
 
     // TODO: Remove this cast as `any`
-    const query: any = {
+    const query: {} = {
       clientVersion: this.clientVersion,
       includeAllUsers: !!options.includeAllUsers,
       includeInactive: !!options.includeInactive,
       stripResults: !!options.stripResults
     };
     // TODO: Determine how to remove this cast.
-    if ((options as any).action) {
-      query.action = {value: (options as any).action};
+    if ((options as {}).action) {
+      query.action = {value: (options as {}).action};
     }
     if (this.nextWaitToken) {
       query.waitToken = this.nextWaitToken;
@@ -149,7 +149,7 @@ export class Debugger extends common.ServiceObject {
 
     const uri = API + '/debuggees/' + encodeURIComponent(debuggeeId) +
         '/breakpoints?' + qs.stringify(query);
-    this.request({uri: uri, json: true}, function(err, body, response) {
+    this.request({uri, json: true}, function(err, body, response) {
       if (err) {
         callback(err);
       } else if (!response) {
@@ -187,7 +187,7 @@ export class Debugger extends common.ServiceObject {
     const uri = API + '/debuggees/' + encodeURIComponent(debuggeeId) +
         '/breakpoints/' + encodeURIComponent(breakpointId) + '?' +
         qs.stringify(query);
-    this.request({uri: uri, json: true}, function(err, body, response) {
+    this.request({uri, json: true}, function(err, body, response) {
       if (err) {
         callback(err);
       } else if (!response) {

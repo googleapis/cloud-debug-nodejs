@@ -25,7 +25,7 @@ describe('Debug module', function() {
   before(function(done) {
     nocks.projectId('project-via-metadata');
     // TODO: Determine how to remove this cast to any.
-    const debuglet = (module as any).start({
+    const debuglet = (module as {}).start({
       projectId: '0',
       debug: {forceNewAgent_: true, testMode_: true}
     });
@@ -38,7 +38,7 @@ describe('Debug module', function() {
   it('should throw on attempt to start a new agent', function() {
     // TODO: Determine how to remove this cast to any.
     assert.throws(function() {
-      (module as any).start();
+      (module as {}).start();
     });
   });
 

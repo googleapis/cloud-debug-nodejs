@@ -31,8 +31,8 @@ delete process.env.GCLOUD_PROJECT;
 import {Controller} from '../src/agent/controller';
 // TODO: Fix fakeDebug to actually implement Debug.
 const fakeDebug: Debug = {
-  request: request
-} as any as Debug;
+  request
+} as {} as Debug;
 
 const agentVersion = `SomeName/client/SomeVersion`;
 const url = 'https://clouddebugger.googleapis.com';
@@ -52,7 +52,7 @@ describe('Controller API', function() {
         project: 'fake-project',
         uniquifier: 'fake-id',
         description: 'unit test',
-        agentVersion: agentVersion
+        agentVersion
       });
       const controller = new Controller(fakeDebug);
       // TODO: Determine if this type signature is correct.
@@ -75,12 +75,12 @@ describe('Controller API', function() {
            project: 'fake-project',
            uniquifier: 'fake-id',
            description: 'unit test',
-           agentVersion: agentVersion
+           agentVersion
          });
          const controller = new Controller(fakeDebug);
          controller.register(debuggee, function(err, result) {
            // TODO: Fix this incorrect method signature.
-           (assert as any).ifError(err, 'not expecting an error');
+           (assert as {}).ifError(err, 'not expecting an error');
            assert.ok(result);
            assert.equal(result!.debuggee.id, 'fake-debuggee');
            assert.ok(result!.debuggee.isDisabled);
@@ -103,7 +103,7 @@ describe('Controller API', function() {
         project: 'fake-project',
         uniquifier: 'fake-id',
         description: 'unit test',
-        agentVersion: agentVersion
+        agentVersion
       });
       const controller = new Controller(fakeDebug);
       controller.register(debuggee, function(err /*, result*/) {
@@ -132,7 +132,7 @@ describe('Controller API', function() {
             assert(!err, 'not expecting an error');
             // TODO: Handle the case where result is undefined
             assert(
-                !(result as any).breakpoints,
+                !(result as {}).breakpoints,
                 'should not have a breakpoints property');
             scope.done();
             done();
@@ -140,7 +140,7 @@ describe('Controller API', function() {
     });
 
     describe('invalid responses', function() {
-      const tests: string|Array<any> = ['', 'JSON, this is not', []];
+      const tests: string|{}[] = ['', 'JSON, this is not', []];
       tests.forEach(function(invalidResponse, index) {
         it('should pass test ' + index, function(done) {
           const scope =
@@ -161,7 +161,7 @@ describe('Controller API', function() {
                 assert(!err, 'not expecting an error');
                 // TODO: Handle the case where result is undefined
                 assert(
-                    !(result as any).breakpoints,
+                    !(result as {}).breakpoints,
                     'should not have breakpoints property');
                 scope.done();
                 done();
@@ -202,10 +202,10 @@ describe('Controller API', function() {
       // TODO: Determine if the result parameter should be used.
       controller.listBreakpoints(debuggee, function(err, response, result) {
         // TODO: Fix this incorrect method signature.
-        (assert as any).ifError(err, 'not expecting an error');
+        (assert as {}).ifError(err, 'not expecting an error');
         // TODO: Fix this error that states `body` is not a property
         //       of `ServerResponse`.
-        assert((response as any).body.waitExpired, 'should have expired set');
+        assert((response as {}).body.waitExpired, 'should have expired set');
         scope.done();
         done();
       });
@@ -224,7 +224,7 @@ describe('Controller API', function() {
                 .get(
                     api +
                     '/debuggees/fake-debuggee/breakpoints?successOnTimeout=true')
-                .reply(200, {breakpoints: breakpoints});
+                .reply(200, {breakpoints});
         // TODO: Fix debuggee to actually implement Debuggee
         const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
         const controller = new Controller(fakeDebug);
@@ -253,7 +253,7 @@ describe('Controller API', function() {
           nock(url)
               .put(
                   api + '/debuggees/fake-debuggee/breakpoints/breakpoint-0',
-                  {debuggeeId: 'fake-debuggee', breakpoint: breakpoint})
+                  {debuggeeId: 'fake-debuggee', breakpoint})
               .reply(
                   200,
                   {kind: 'debugletcontroller#updateActiveBreakpointResponse'});

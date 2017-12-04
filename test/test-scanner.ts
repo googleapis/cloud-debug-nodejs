@@ -30,7 +30,7 @@ describe('scanner', function() {
   describe('scan', function() {
     it('should complain when called without a path', function(done) {
       // TODO: The second argument must be a string.  Fix that.
-      scanner.scan(true, null as any as string, /.js$/).catch(() => {
+      scanner.scan(true, null as {} as string, /.js$/).catch(() => {
         done();
       });
     });
@@ -79,8 +79,8 @@ describe('scanner', function() {
 
         const first = stats[keys[0]];
         // TODO: Handle the case when first is undefined
-        assert.ok((first as any).hash);
-        assert.ok((first as any).lines);
+        assert.ok((first as {}).hash);
+        assert.ok((first as {}).lines);
         done();
       });
     });

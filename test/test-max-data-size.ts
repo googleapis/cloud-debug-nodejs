@@ -43,7 +43,7 @@ describe('maxDataSize', function() {
       // TODO: It appears `logLevel` is a typo and should be `level`.  However,
       //       with this change, the tests fail.  Resolve this.
       const logger = new common.logger(
-          {levelLevel: config.logLevel} as any as LoggerOptions);
+          {levelLevel: config.logLevel} as {} as LoggerOptions);
       scanner.scan(true, config.workingDirectory, /.js$/)
           .then(function(fileStats) {
             const jsStats = fileStats.selectStats(/.js$/);
@@ -84,7 +84,7 @@ describe('maxDataSize', function() {
         assert(bp.variableTable.some(function(v) {
           // TODO: Handle the case when v is undefined
           // TODO: Handle the case when v.status is undefined
-          return ((v as any).status as any).description.format ===
+          return ((v as {}).status as {}).description.format ===
               'Max data size reached';
         }));
         // TODO: Determine how to remove this cast to any.
@@ -124,8 +124,8 @@ describe('maxDataSize', function() {
                        elem.status.description.format !==
                            'Max data size reached');
                   // TODO: Fix this incorrect method signature.
-                } as any),
-            true as any as string);
+                } as {}),
+            true as {} as string);
         api.clear(bp, function(err3) {
           config.capture.maxDataSize = oldMaxData;
           assert.ifError(err3);

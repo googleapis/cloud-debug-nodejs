@@ -16,8 +16,8 @@
 
 import * as realAssert from 'assert';
 
-const nop = (_: any) => _;
-const fakeAssert: any = nop;
+const nop = (_: {}) => _;
+const fakeAssert: {} = nop;
 fakeAssert.deepEqual = fakeAssert.deepStrictEqual = fakeAssert.doesNotThrow =
     fakeAssert.equal = fakeAssert.fail = fakeAssert.ifError =
         fakeAssert.notDeepEqual = fakeAssert.notDeepStrictEqual =

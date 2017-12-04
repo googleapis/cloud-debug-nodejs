@@ -51,7 +51,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
   // undefined.
   listeners: {[id: string]: utils.Listener} = {};
   // scriptmapper maps scriptId to actual script path.
-  scriptMapper: {[id: string]: any} = {};
+  scriptMapper: {[id: string]: {}} = {};
   // locationmapper maps location string to a list of stackdriver breakpoint id.
   locationMapper: {[id: string]: stackdriver.BreakpointId[]} = {};
   // breakpointmapper maps v8/inspector breakpoint id to a list of
@@ -136,7 +136,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
           cb, breakpoint, StatusMessage.BREAKPOINT_CONDITION,
           utils.messages.V8_BREAKPOINT_CLEAR_ERROR);
     }
-    let locationStr = breakpointData.locationStr;
+    const locationStr = breakpointData.locationStr;
     const v8BreakpointId = breakpointData.id;
 
     // delete current breakpoint from locationmapper and breakpointmapper.
@@ -181,7 +181,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
             callback(err);
           });
         });
-    this.listeners[breakpoint.id] = {enabled: true, listener: listener};
+    this.listeners[breakpoint.id] = {enabled: true, listener};
   }
 
   log(breakpoint: stackdriver.Breakpoint,
@@ -204,7 +204,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
               breakpoint.logMessageFormat as string,
               // TODO: Determine how to remove the `as` cast below
               breakpoint.evaluatedExpressions.map(
-                  (obj: any) => JSON.stringify(obj)));
+                  (obj: {}) => JSON.stringify(obj)));
           logsThisSecond++;
           if (shouldStop()) {
             this.listeners[breakpoint.id].enabled = false;
@@ -222,7 +222,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
             }
           }
         });
-    this.listeners[breakpoint.id] = {enabled: true, listener: listener};
+    this.listeners[breakpoint.id] = {enabled: true, listener};
   }
 
   disconnect(): void {
@@ -257,7 +257,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       cb: (err: Error|null) => void): void {
     // Parse and validate conditions and watch expressions for correctness and
     // immutability
-    let ast: any = null;
+    let ast: {} = null;
     if (breakpoint.condition) {
       try {
         // We parse as ES6; even though the underlying V8 version may only
@@ -340,7 +340,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       column += debugapi.MODULE_WRAP_PREFIX_LENGTH - 1;
     }
 
-    let result =
+    const result =
         this.setAndStoreBreakpoint(breakpoint, line, column, matchingScript);
     if (!result) {
       return utils.setErrorStatusAndCallback(
@@ -371,7 +371,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     if (!this.locationMapper[locationStr]) {
       // The first time when a breakpoint was set to this location.
 
-      let res = this.v8Inspector.setBreakpointByUrl({
+      const res = this.v8Inspector.setBreakpointByUrl({
         lineNumber: line - 1,
         url: matchingScript,
         columnNumber: column - 1,

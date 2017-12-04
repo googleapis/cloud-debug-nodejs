@@ -116,7 +116,7 @@ describe('debugapi selection', function() {
   const config: DebugAgentConfig = extend(
       {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
   const logger =
-      new common.logger({levelLevel: config.logLevel} as any as LoggerOptions);
+      new common.logger({levelLevel: config.logLevel} as {} as LoggerOptions);
   let logText = '';
   logger.warn = function(s: string) {
     logText += s;
@@ -161,7 +161,7 @@ describe('v8debugapi', function() {
   // TODO: It appears `logLevel` is a typo and should be `level`.  However,
   //       with this change, the tests fail.  Resolve this.
   const logger =
-      new common.logger({levelLevel: config.logLevel} as any as LoggerOptions);
+      new common.logger({levelLevel: config.logLevel} as {} as LoggerOptions);
   let api: DebugApi;
 
   beforeEach(function(done) {
@@ -224,7 +224,7 @@ describe('v8debugapi', function() {
        const bp: stackdriver.Breakpoint = {
          id: 0,
          location: breakpointInFoo.location
-       } as any as stackdriver.Breakpoint;
+       } as {} as stackdriver.Breakpoint;
        api.set(bp, function(err1) {
          assert.ifError(err1);
          api.clear(bp, function(err2) {
@@ -240,15 +240,15 @@ describe('v8debugapi', function() {
     const bp = {
       id: 0,
       location: {line: 1, path: path.join('fixtures', 'key-bad.json')}
-    } as any as stackdriver.Breakpoint;
+    } as {} as stackdriver.Breakpoint;
     api.set(bp, function(err) {
       assert.ok(err, 'should return an error');
       assert.ok(bp.status);
       assert.ok(bp.status instanceof StatusMessage);
       // TODO: Handle the case where bp.status is undefined
-      assert.equal((bp.status as any).refersTo, 'BREAKPOINT_SOURCE_LOCATION');
+      assert.equal((bp.status as {}).refersTo, 'BREAKPOINT_SOURCE_LOCATION');
       // TODO: Handle the case where bp.status is undefined
-      assert.ok((bp.status as any).isError);
+      assert.ok((bp.status as {}).isError);
       done();
     });
   });
@@ -260,7 +260,7 @@ describe('v8debugapi', function() {
        const bp: stackdriver.Breakpoint = {
          id: 0,
          location: {line: 1, path: path.join(path.sep, 'test', 'foo.js')}
-       } as any as stackdriver.Breakpoint;
+       } as {} as stackdriver.Breakpoint;
        api.set(bp, function(err1) {
          assert.ifError(err1);
          api.clear(bp, function(err2) {
@@ -279,7 +279,7 @@ describe('v8debugapi', function() {
          id: 0,
          location:
              {line: 1, path: path.join(path.sep, 'Server', 'a', 'hello.js')}
-       } as any as stackdriver.Breakpoint;
+       } as {} as stackdriver.Breakpoint;
        api.set(bp, function(err1) {
          assert.ifError(err1);
          api.clear(bp, function(err2) {
@@ -292,17 +292,17 @@ describe('v8debugapi', function() {
   describe('invalid breakpoints', function() {
     // TODO: Have this actually be a list of Breakpoints
     const badBreakpoints: stackdriver.Breakpoint[] = [
-      {} as any as stackdriver.Breakpoint,
-      {id: 'with no location'} as any as stackdriver.Breakpoint,
-      {id: 'with bad location', location: {}} as any as stackdriver.Breakpoint,
-      {id: 'with no path', location: {line: 4}} as any as
+      {} as {} as stackdriver.Breakpoint,
+      {id: 'with no location'} as {} as stackdriver.Breakpoint,
+      {id: 'with bad location', location: {}} as {} as stackdriver.Breakpoint,
+      {id: 'with no path', location: {line: 4}} as {} as
           stackdriver.Breakpoint,
-      {id: 'with no line', location: {path: 'foo.js'}} as any as
+      {id: 'with no line', location: {path: 'foo.js'}} as {} as
           stackdriver.Breakpoint,
       {
         id: 'with incomplete path',
         location: {path: 'st-v8debugapi.js', line: 4}
-      } as any as stackdriver.Breakpoint
+      } as {} as stackdriver.Breakpoint
     ];
 
     badBreakpoints.forEach(function(bp: stackdriver.Breakpoint) {
@@ -312,7 +312,7 @@ describe('v8debugapi', function() {
           assert.ok(bp.status);
           assert.ok(bp.status instanceof StatusMessage);
           // TODO: Handle the case where bp.status is undefined
-          assert.ok((bp.status as any).isError);
+          assert.ok((bp.status as {}).isError);
           done();
         });
 
@@ -326,15 +326,15 @@ describe('v8debugapi', function() {
       const bp: stackdriver.Breakpoint = {
         id: 'ambiguous',
         location: {line: 1, path: 'hello.js'}
-      } as any as stackdriver.Breakpoint;
+      } as {} as stackdriver.Breakpoint;
       api.set(bp, function(err) {
         assert.ok(err);
         assert.ok(bp.status);
         assert.ok(bp.status instanceof StatusMessage);
         // TODO: Handle the case where bp.status is undefined
-        assert.ok((bp.status as any).isError);
+        assert.ok((bp.status as {}).isError);
         assert(
-            (bp.status as any).description.format ===
+            (bp.status as {}).description.format ===
             utils.messages.SOURCE_FILE_AMBIGUOUS);
         done();
       });
@@ -346,14 +346,14 @@ describe('v8debugapi', function() {
       const bp: stackdriver.Breakpoint = {
         id: 'non-existent line',
         location: {path: path.join('fixtures', 'foo.js'), line: 500}
-      } as any as stackdriver.Breakpoint;
+      } as {} as stackdriver.Breakpoint;
       api.set(bp, function(err) {
         assert.ok(err);
         assert.ok(bp.status);
         assert.ok(bp.status instanceof StatusMessage);
         // TODO: Handle the case where bp.status is undefined
-        assert.ok((bp.status as any).isError);
-        assert((bp.status as any)
+        assert.ok((bp.status as {}).isError);
+        assert((bp.status as {})
                    .description.format.match(
                        `${utils.messages.INVALID_LINE_NUMBER}.*foo.js:500`));
         done();
@@ -375,7 +375,7 @@ describe('v8debugapi', function() {
                id: breakpointInFoo.id,
                location: breakpointInFoo.location,
                condition: expr
-             } as any as stackdriver.Breakpoint;
+             } as {} as stackdriver.Breakpoint;
              api.set(bp, function(err1) {
                test(err1);
                api.clear(bp, function(err2) {
@@ -473,12 +473,12 @@ describe('v8debugapi', function() {
           line: 5,
           path: path.join(path.sep, 'test', 'test-v8debugapi-code.js')
         }
-      } as any as stackdriver.Breakpoint,
+      } as {} as stackdriver.Breakpoint,
       {
         id: 'path1',
         location:
             {line: 5, path: path.join('test', 'test-v8debugapi-code.js')}
-      } as any as stackdriver.Breakpoint,
+      } as {} as stackdriver.Breakpoint,
       {
         id: 'path2',
         location: {
@@ -490,37 +490,37 @@ describe('v8debugapi', function() {
                   .concat('test-v8debugapi-code.js')
                   .join(path.sep)
         }
-      } as any as stackdriver.Breakpoint,
+      } as {} as stackdriver.Breakpoint,
       {
         id: 'with . in path',
         location: {
           path: path.join('test', '.', 'test-v8debugapi-code.js'),
           line: 5
         }
-      } as any as stackdriver.Breakpoint,
+      } as {} as stackdriver.Breakpoint,
       {
         id: 'with . in path',
         location: {path: path.join('.', 'test-v8debugapi-code.js'), line: 5}
-      } as any as stackdriver.Breakpoint,
+      } as {} as stackdriver.Breakpoint,
       {
         id: 'with .. in path',
         location: {
           path: path.join('test', '..', 'test-v8debugapi-code.js'),
           line: 5
         }
-      } as any as stackdriver.Breakpoint,
+      } as {} as stackdriver.Breakpoint,
       {
         id: 'with .. in path',
         location: {
           path: path.join('..', 'test', 'test-v8debugapi-code.js'),
           line: 5
         }
-      } as any as stackdriver.Breakpoint
+      } as {} as stackdriver.Breakpoint
     ];
 
     breakpoints.forEach(function(bp: stackdriver.Breakpoint) {
       // TODO: Handle the case where bp.location is undefined
-      it('should handle breakpoint as ' + (bp.location as any).path,
+      it('should handle breakpoint as ' + (bp.location as {}).path,
          function(done) {
            api.set(bp, function(err1) {
              assert.ifError(err1);
@@ -564,7 +564,7 @@ describe('v8debugapi', function() {
         location: breakpointInFoo.location,
         action: 'LOG',
         logMessageFormat: 'cat'
-      } as any as stackdriver.Breakpoint;
+      } as {} as stackdriver.Breakpoint;
       api.set(bp, function(err1) {
         let transcript = '';
         let runCount = 0;
@@ -603,7 +603,7 @@ describe('v8debugapi', function() {
       const bp: stackdriver.Breakpoint = {
         id: breakpointInFoo.id,
         location: breakpointInFoo.location
-      } as any as stackdriver.Breakpoint;
+      } as {} as stackdriver.Breakpoint;
       api.set(bp, function(err1) {
         assert.ifError(err1);
         api.wait(bp, function(err2) {
@@ -625,7 +625,7 @@ describe('v8debugapi', function() {
          const bp: stackdriver.Breakpoint = {
            id: 'fake-id-124',
            location: {path: 'build/test/test-v8debugapi-code.js', line: 4}
-         } as any as stackdriver.Breakpoint;
+         } as {} as stackdriver.Breakpoint;
          api.set(bp, function(err1) {
            assert.ifError(err1);
            api.wait(bp, function(err2) {
@@ -654,7 +654,7 @@ describe('v8debugapi', function() {
       const bp: stackdriver.Breakpoint = {
         id: breakpointInFoo.id,
         location: breakpointInFoo.location
-      } as any as stackdriver.Breakpoint;
+      } as {} as stackdriver.Breakpoint;
       api.set(bp, function(err1) {
         assert.ifError(err1);
         api.wait(bp, function(err2) {
@@ -685,7 +685,7 @@ describe('v8debugapi', function() {
            action: 'LOG',
            logMessageFormat: 'Hello World',
            location: breakpointInFoo.location
-         } as any as stackdriver.Breakpoint;
+         } as {} as stackdriver.Breakpoint;
          api.set(bp, function(err1) {
            assert.ifError(err1);
            api.wait(bp, function(err2) {
@@ -708,7 +708,7 @@ describe('v8debugapi', function() {
       const bp: stackdriver.Breakpoint = {
         id: breakpointInFoo.id,
         location: breakpointInFoo.location
-      } as any as stackdriver.Breakpoint;
+      } as {} as stackdriver.Breakpoint;
       api.set(bp, function(err1) {
         assert.ifError(err1);
         api.wait(bp, function(err2) {
@@ -740,7 +740,7 @@ describe('v8debugapi', function() {
       const bp: stackdriver.Breakpoint = {
         id: breakpointInFoo.id,
         location: breakpointInFoo.location
-      } as any as stackdriver.Breakpoint;
+      } as {} as stackdriver.Breakpoint;
       const oldCount = config.capture.maxExpandFrames;
       config.capture.maxExpandFrames = 0;
       api.set(bp, function(err1) {
@@ -759,9 +759,9 @@ describe('v8debugapi', function() {
               bp.variableTable[topFrame.arguments[0].varTableIndex as number];
           // TODO: Handle the case when argsVal is null
           // TODO: Handle the case when argsVal.status is undefined
-          assert(((argsVal as any).status as any).isError);
+          assert(((argsVal as {}).status as {}).isError);
           assert(
-              ((argsVal as any).status as any)
+              ((argsVal as {}).status as {})
                   .description.format.match(
                       'Locals and arguments are only displayed.*config.capture.maxExpandFrames=0'));
           assert.equal(topFrame.locals.length, 1);
@@ -771,9 +771,9 @@ describe('v8debugapi', function() {
               bp.variableTable[topFrame.locals[0].varTableIndex as number];
           // TODO: Handle the case when localsVal is undefined
           // TODO: Handle the case when localsVal.status is undefined
-          assert(((localsVal as any).status as any).isError);
+          assert(((localsVal as {}).status as {}).isError);
           assert(
-              ((localsVal as any).status as any)
+              ((localsVal as {}).status as {})
                   .description.format.match(
                       'Locals and arguments are only displayed.*config.capture.maxExpandFrames=0'));
           api.clear(bp, function(err3) {
@@ -794,7 +794,7 @@ describe('v8debugapi', function() {
       const bp: stackdriver.Breakpoint = {
         id: breakpointInFoo.id,
         location: breakpointInFoo.location
-      } as any as stackdriver.Breakpoint;
+      } as {} as stackdriver.Breakpoint;
       const oldMax = config.capture.maxFrames;
       config.capture.maxFrames = 1;
       api.set(bp, function(err1) {
@@ -827,7 +827,7 @@ describe('v8debugapi', function() {
         id: breakpointInFoo.id,
         location: breakpointInFoo.location,
         expressions: ['process']
-      } as any as stackdriver.Breakpoint;
+      } as {} as stackdriver.Breakpoint;
       const oldMaxProps = config.capture.maxProperties;
       const oldMaxData = config.capture.maxDataSize;
       config.capture.maxProperties = 0;
@@ -847,30 +847,30 @@ describe('v8debugapi', function() {
 
           const watch = bp.evaluatedExpressions[0];
           // TODO: Handle the case when watch is null
-          assert.equal((watch as any).name, 'process');
-          assert.ok((watch as any).varTableIndex);
+          assert.equal((watch as {}).name, 'process');
+          assert.ok((watch as {}).varTableIndex);
 
           // Make sure the process object looks sensible.
           // TODO: Handle the case when watch.varTableIndex is undefined
           const processVal =
-              bp.variableTable[(watch as any).varTableIndex as number];
+              bp.variableTable[(watch as {}).varTableIndex as number];
           assert.ok(processVal);
           // TODO: The function supplied to the `some` function is of the
           //       wrong type.  Fix this.
           // TODO: Handle the case when processVal is undefined
           // TODO: Handle the case when processVal.members is undefined
           // TODO: Handle the case when m.value is undefined
-          assert.ok(((processVal as any).members as any)
+          assert.ok(((processVal as {}).members as {})
                         .some(function(m: stackdriver.Variable) {
                           return m.name === 'nextTick' &&
-                              (m.value as any).match('function.*');
-                        } as any));
+                              (m.value as {}).match('function.*');
+                        } as {}));
           // TODO: The function supplied to the `some` function is of the
           //       wrong type.  Fix this.
-          assert.ok(((processVal as any).members as any)
+          assert.ok(((processVal as {}).members as {})
                         .some(function(m: stackdriver.Variable) {
                           return m.name === 'versions' && m.varTableIndex;
-                        } as any));
+                        } as {}));
 
           api.clear(bp, function(err3) {
             config.capture.maxDataSize = oldMaxData;
@@ -893,7 +893,7 @@ describe('v8debugapi', function() {
         //       converted to Typescript.
         location: {path: 'build/test/test-v8debugapi-code.js', line: 10},
         expressions: ['process.env', 'hasGetter']
-      } as any as stackdriver.Breakpoint;
+      } as {} as stackdriver.Breakpoint;
       const oldMaxData = config.capture.maxDataSize;
       config.capture.maxDataSize = 20000;
       api.set(bp, function(err1) {
@@ -903,15 +903,15 @@ describe('v8debugapi', function() {
 
           const procEnv = bp.evaluatedExpressions[0];
           // TODO: Handle the case when procEnv is undefined
-          assert.equal((procEnv as any).name, 'process.env');
-          const envVal = bp.variableTable[(procEnv as any).varTableIndex];
+          assert.equal((procEnv as {}).name, 'process.env');
+          const envVal = bp.variableTable[(procEnv as {}).varTableIndex];
           // TODO: Determine the correct type for `member`
-          (envVal as any).members.forEach(function(member: any) {
+          (envVal as {}).members.forEach(function(member: {}) {
             if (member.hasOwnProperty('varTableIndex')) {
               // TODO: Fix the casts to `any` below by addressing the times
               //       when the expression can be undefined.
-              assert(((bp.variableTable[member.varTableIndex] as any).status as
-                      any)
+              assert(((bp.variableTable[member.varTableIndex] as {}).status as
+                      {})
                          .isError);
             }
           });
@@ -919,17 +919,17 @@ describe('v8debugapi', function() {
           // TODO: Handle the case when hasGetter is undefined
           // TODO: Handle the case when hasGetter.varTableIndex is undefined
           const getterVal =
-              bp.variableTable[(hasGetter as any).varTableIndex as number];
+              bp.variableTable[(hasGetter as {}).varTableIndex as number];
           // TODO: Handle the case when getterVal is undefined
           // TODO: Handle the case when getterVal.members is undefined
           // TODO: Determine the type of `m`
-          assert(((getterVal as any).members as any).some(function(m: any) {
+          assert(((getterVal as {}).members as {}).some(function(m: {}) {
             return m.value === '5';
           }));
-          assert(((getterVal as any).members as any).some(function(m: any) {
+          assert(((getterVal as {}).members as {}).some(function(m: {}) {
             const resolved = bp.variableTable[m.varTableIndex];
             // TODO: Handle the case when resolved.status is undefined
-            return resolved && (resolved.status as any).isError;
+            return resolved && (resolved.status as {}).isError;
           }));
 
           api.clear(bp, function(err3) {
@@ -952,7 +952,7 @@ describe('v8debugapi', function() {
         //       converted to Typescript.
         location: {path: 'build/test/test-v8debugapi-code.js', line: 6},
         expressions: ['A']
-      } as any as stackdriver.Breakpoint;
+      } as {} as stackdriver.Breakpoint;
       api.set(bp, function(err1) {
         assert.ifError(err1);
         api.wait(bp, function(err2) {
@@ -960,15 +960,15 @@ describe('v8debugapi', function() {
 
           const arrEnv = bp.evaluatedExpressions[0];
           // TODO: Handle the case when arrEnv is undefined
-          assert.equal((arrEnv as any).name, 'A');
+          assert.equal((arrEnv as {}).name, 'A');
           // TODO: Handle the case when arrEnv.varTableIndex is undefined
           const envVal =
-              bp.variableTable[(arrEnv as any).varTableIndex as number];
+              bp.variableTable[(arrEnv as {}).varTableIndex as number];
           let found = false;
           // TODO: Handle the case when envVal is undefined
           // TODO: Handle the case when envVal.members is undefined
           // TODO: Determine the type of `member`
-          ((envVal as any).members as any).forEach(function(member: any) {
+          ((envVal as {}).members as {}).forEach(function(member: {}) {
             if (member.name === 'length') {
               assert(!member.varTableIndex);
               assert.equal(member.value, 3);
@@ -995,7 +995,7 @@ describe('v8debugapi', function() {
         // TODO: This path can be lest strict when this file has been
         //       converted to Typescript.
         location: {path: 'build/test/test-v8debugapi-code.js', line: 10}
-      } as any as stackdriver.Breakpoint;
+      } as {} as stackdriver.Breakpoint;
       const oldMaxLength = config.capture.maxStringLength;
       const oldMaxData = config.capture.maxDataSize;
       config.capture.maxStringLength = 3;
@@ -1014,7 +1014,7 @@ describe('v8debugapi', function() {
           // TODO: Handle the case when getterVal.members is undefined
           // TODO: Determine the correct type for m
           const stringItems =
-              ((getterVal as any).members as any).filter(function(m: any) {
+              ((getterVal as {}).members as {}).filter(function(m: {}) {
                 return m.value === 'hel...';
               });
           assert(stringItems.length === 1);
@@ -1042,7 +1042,7 @@ describe('v8debugapi', function() {
         // TODO: This path can be lest strict when this file has been
         //       converted to Typescript.
         location: {path: 'build/test/test-v8debugapi-code.js', line: 6}
-      } as any as stackdriver.Breakpoint;
+      } as {} as stackdriver.Breakpoint;
       const oldMax = config.capture.maxProperties;
       config.capture.maxProperties = 1;
       api.set(bp, function(err1) {
@@ -1057,8 +1057,8 @@ describe('v8debugapi', function() {
           // should have 1 element + truncation message.
           // TODO: Handle the case when aVal is undefined
           // TODO: Handle the case when aVal.members is undefined
-          assert.equal(((aVal as any).members as any).length, 2);
-          assert((aVal as any)
+          assert.equal(((aVal as {}).members as {}).length, 2);
+          assert((aVal as {})
                      .members[1]
                      .name.match('Only first.*config.capture.maxProperties=1'));
 
@@ -1081,7 +1081,7 @@ describe('v8debugapi', function() {
         // TODO: This path can be lest strict when this file has been
         //       converted to Typescript.
         location: {path: 'build/test/test-v8debugapi-code.js', line: 6}
-      } as any as stackdriver.Breakpoint;
+      } as {} as stackdriver.Breakpoint;
       const oldMax = config.capture.maxProperties;
       config.capture.maxProperties = 1;
       api.set(bp, function(err1) {
@@ -1095,8 +1095,8 @@ describe('v8debugapi', function() {
           const bVal = bp.variableTable[bResults[0].varTableIndex as number];
           // should have 1 element + truncation message
           // TODO: Handle the case when bVal is undefined
-          assert.equal((bVal as any).members.length, 2);
-          assert((bVal as any)
+          assert.equal((bVal as {}).members.length, 2);
+          assert((bVal as {})
                      .members[1]
                      .name.match('Only first.*config.capture.maxProperties=1'));
 
@@ -1121,7 +1121,7 @@ describe('v8debugapi', function() {
            //       converted to Typescript.
            location: {path: 'build/test/test-v8debugapi-code.js', line: 10},
            expressions: ['hasGetter']
-         } as any as stackdriver.Breakpoint;
+         } as {} as stackdriver.Breakpoint;
          const oldMaxLength = config.capture.maxStringLength;
          const oldMaxData = config.capture.maxDataSize;
          config.capture.maxStringLength = 3;
@@ -1134,11 +1134,11 @@ describe('v8debugapi', function() {
              // TODO: Handle the case when hasGetter.varTableIndex is undefined
              // TODO: Handle the case when hasGetter is undefined
              const getterVal =
-                 bp.variableTable[(hasGetter as any).varTableIndex as number];
+                 bp.variableTable[(hasGetter as {}).varTableIndex as number];
              // TODO: Handle the case when getterVal is undefined
              // TODO: Determine the correct type for m
              const stringItems =
-                 (getterVal as any).members.filter(function(m: any) {
+                 (getterVal as {}).members.filter(function(m: {}) {
                    return m.value === 'hello world';
                  });
              // The property would have value 'hel...' if truncation occured
@@ -1167,7 +1167,7 @@ describe('v8debugapi', function() {
            //       converted to Typescript.
            location: {path: 'build/test/test-v8debugapi-code.js', line: 6},
            expressions: ['A']
-         } as any as stackdriver.Breakpoint;
+         } as {} as stackdriver.Breakpoint;
          const oldMaxProps = config.capture.maxProperties;
          const oldMaxData = config.capture.maxDataSize;
          config.capture.maxProperties = 1;
@@ -1180,12 +1180,12 @@ describe('v8debugapi', function() {
              // TODO: Handle the case when foo is undefined
              // TODO: Handle the case when foo.varTableIndex is undefined
              const fooVal =
-                 bp.variableTable[(foo as any).varTableIndex as number];
+                 bp.variableTable[(foo as {}).varTableIndex as number];
              // '1', '2', '3', and 'length'
              // TODO: Handle the case when fooVal is undefined
              // TODO: Handle the case when fooVal.members is undefined
-             assert.equal(((fooVal as any).members as any).length, 4);
-             assert.strictEqual((foo as any).status, undefined);
+             assert.equal(((fooVal as {}).members as {}).length, 4);
+             assert.strictEqual((foo as {}).status, undefined);
 
              api.clear(bp, function(err3) {
                config.capture.maxDataSize = oldMaxData;
@@ -1209,7 +1209,7 @@ describe('v8debugapi', function() {
            //       converted to Typescript.
            location: {path: 'build/test/test-v8debugapi-code.js', line: 6},
            expressions: ['B']
-         } as any as stackdriver.Breakpoint;
+         } as {} as stackdriver.Breakpoint;
          const oldMaxProps = config.capture.maxProperties;
          const oldMaxData = config.capture.maxDataSize;
          config.capture.maxProperties = 1;
@@ -1222,11 +1222,11 @@ describe('v8debugapi', function() {
              // TODO: Handle the case when foo is undefined
              // TODO: Handle the case when foo.varTableIndex is undefined
              const fooVal =
-                 bp.variableTable[(foo as any).varTableIndex as number];
+                 bp.variableTable[(foo as {}).varTableIndex as number];
              // TODO: Handle the case when fooVal is undefined
              // TODO: Handle the case when fooVal.members is undefined
-             assert.equal(((fooVal as any).members as any).length, 3);
-             assert.strictEqual((foo as any).status, undefined);
+             assert.equal(((fooVal as {}).members as {}).length, 3);
+             assert.strictEqual((foo as {}).status, undefined);
 
              api.clear(bp, function(err3) {
                config.capture.maxDataSize = oldMaxData;
@@ -1250,7 +1250,7 @@ describe('v8debugapi', function() {
            //       converted to Typescript.
            location: {path: 'build/test/test-v8debugapi-code.js', line: 6},
            expressions: ['A']
-         } as any as stackdriver.Breakpoint;
+         } as {} as stackdriver.Breakpoint;
          const oldMaxProps = config.capture.maxProperties;
          const oldMaxData = config.capture.maxDataSize;
          config.capture.maxProperties = 5;
@@ -1262,12 +1262,12 @@ describe('v8debugapi', function() {
              const foo = bp.evaluatedExpressions[0];
              // TODO: Handle the case when foo is undefined
              // TODO: Handle the case when foo.varTableIndex is undefined
-             const fooVal = bp.variableTable[(foo as any).varTableIndex as any];
+             const fooVal = bp.variableTable[(foo as {}).varTableIndex as {}];
              // TODO: Handle the case when fooVal is undefined
              // TODO: Handle the case when fooVal.status is undefined
-             assert(((fooVal as any).status as any)
+             assert(((fooVal as {}).status as {})
                         .description.format.match('Max data size reached'));
-             assert(((fooVal as any).status as any).isError);
+             assert(((fooVal as {}).status as {}).isError);
 
              api.clear(bp, function(err3) {
                config.capture.maxDataSize = oldMaxData;
@@ -1291,7 +1291,7 @@ describe('v8debugapi', function() {
            //       converted to Typescript.
            location: {path: 'build/test/test-v8debugapi-code.js', line: 6},
            expressions: ['B']
-         } as any as stackdriver.Breakpoint;
+         } as {} as stackdriver.Breakpoint;
          const oldMaxProps = config.capture.maxProperties;
          const oldMaxData = config.capture.maxDataSize;
          config.capture.maxProperties = 5;
@@ -1304,12 +1304,12 @@ describe('v8debugapi', function() {
              // TODO: Handle the case when foo is undefined
              // TODO: Handle the case when foo.varTableIndex is undefined
              const fooVal =
-                 bp.variableTable[(foo as any).varTableIndex as number];
+                 bp.variableTable[(foo as {}).varTableIndex as number];
              // TODO: Handle the case when fooVal is undefined
              // TODO: Handle the case when fooVal.status is undefined
-             assert(((fooVal as any).status as any)
+             assert(((fooVal as {}).status as {})
                         .description.format.match('Max data size reached'));
-             assert(((fooVal as any).status as any).isError);
+             assert(((fooVal as {}).status as {}).isError);
 
              api.clear(bp, function(err3) {
                config.capture.maxDataSize = oldMaxData;
@@ -1333,7 +1333,7 @@ describe('v8debugapi', function() {
            //       converted to Typescript.
            location: {path: 'build/test/test-v8debugapi-code.js', line: 6},
            expressions: ['A']
-         } as any as stackdriver.Breakpoint;
+         } as {} as stackdriver.Breakpoint;
          const oldMaxProps = config.capture.maxProperties;
          const oldMaxData = config.capture.maxDataSize;
          config.capture.maxProperties = 1;
@@ -1352,9 +1352,9 @@ describe('v8debugapi', function() {
              const bArray = bResults[0];
              assert(bArray);
              // TODO: Handle the case when bArray.status is undefined
-             assert((bArray.status as any)
+             assert((bArray.status as {})
                         .description.format.match('Max data size reached'));
-             assert((bArray.status as any).isError);
+             assert((bArray.status as {}).isError);
 
              api.clear(bp, function(err3) {
                config.capture.maxDataSize = oldMaxData;
@@ -1378,7 +1378,7 @@ describe('v8debugapi', function() {
            location: breakpointInFoo.location,
            expressions:
                [':)', 'process()', 'process=this', 'i', 'process._not._def']
-         } as any as stackdriver.Breakpoint;
+         } as {} as stackdriver.Breakpoint;
          api.set(bp, function(err1) {
            assert.ifError(err1);
            api.wait(bp, function(err2) {
@@ -1391,7 +1391,7 @@ describe('v8debugapi', function() {
                if (i) {
                  const expr = bp.evaluatedExpressions[i];
                  // TODO: Handle the case when expr is undefined
-                 assert((expr as any).status && (expr as any).status.isError);
+                 assert((expr as {}).status && (expr as {}).status.isError);
                }
              }
 
@@ -1414,7 +1414,7 @@ describe('v8debugapi', function() {
         id: breakpointInFoo.id,
         location: breakpointInFoo.location,
         condition: 'n===5'
-      } as any as stackdriver.Breakpoint;
+      } as {} as stackdriver.Breakpoint;
       api.set(bp, function(err1) {
         assert.ifError(err1);
         api.wait(bp, function(err2) {
@@ -1450,7 +1450,7 @@ describe('v8debugapi', function() {
              line: 3
            },
            condition: 'if n == 3 then true else false'
-         } as any as stackdriver.Breakpoint;
+         } as {} as stackdriver.Breakpoint;
          const tt = require('./fixtures/coffee/transpile');
          api.set(bp, function(err1) {
            assert.ifError(err1);
@@ -1485,11 +1485,11 @@ describe('v8debugapi', function() {
              line: 3
            },
            condition: 'process=false'
-         } as any as stackdriver.Breakpoint;
+         } as {} as stackdriver.Breakpoint;
          api.set(bp, function(err) {
            assert(err);
            // TODO: Handle the case when err is undefined
-           assert.equal((err as any).message, 'Error compiling condition.');
+           assert.equal((err as {}).message, 'Error compiling condition.');
            done();
          });
        });
@@ -1506,7 +1506,7 @@ describe('v8debugapi', function() {
              line: 3
            },
            condition: 'i + j === 3'
-         } as any as stackdriver.Breakpoint;
+         } as {} as stackdriver.Breakpoint;
          const tt = require('./fixtures/es6/transpile');
          api.set(bp, function(err1) {
            assert.ifError(err1);
@@ -1543,7 +1543,7 @@ describe('v8debugapi', function() {
              line: 3
            },
            expressions: ['if n == 3 then Math.PI * n else n']
-         } as any as stackdriver.Breakpoint;
+         } as {} as stackdriver.Breakpoint;
          const tt = require('./fixtures/coffee/transpile');
          api.set(bp, function(err1) {
            assert.ifError(err1);
@@ -1557,7 +1557,7 @@ describe('v8debugapi', function() {
                if (i) {
                  const expr = bp.evaluatedExpressions[i];
                  // TODO: Handle the case when expr is undefined
-                 assert((expr as any).value === String(Math.PI * 3));
+                 assert((expr as {}).value === String(Math.PI * 3));
                }
              }
 
@@ -1586,7 +1586,7 @@ describe('v8debugapi', function() {
            },
            expressions:
                [':)', 'n n, n', 'process=this', '((x) -> x x) n', 'return']
-         } as any as stackdriver.Breakpoint;
+         } as {} as stackdriver.Breakpoint;
          const tt = require('./fixtures/coffee/transpile');
          api.set(bp, function(err1) {
            assert.ifError(err1);
@@ -1600,15 +1600,15 @@ describe('v8debugapi', function() {
                if (i) {
                  const expr = bp.evaluatedExpressions[i];
                  // TODO: Handle the case when expr is undefined
-                 assert((expr as any).status && (expr as any).status.isError);
-                 if ((expr as any).name === ':)' ||
-                     (expr as any).name === 'process=this' ||
-                     (expr as any).name === 'return') {
+                 assert((expr as {}).status && (expr as {}).status.isError);
+                 if ((expr as {}).name === ':)' ||
+                     (expr as {}).name === 'process=this' ||
+                     (expr as {}).name === 'return') {
                    assert.equal(
-                       (expr as any).status.description.format,
+                       (expr as {}).status.description.format,
                        'Error Compiling Expression');
                  } else {
-                   assert((expr as any)
+                   assert((expr as {})
                               .status.description.format.match(
                                   'Unexpected token'));
                  }
@@ -1633,7 +1633,7 @@ describe('v8debugapi', function() {
            id: breakpointInFoo.id,
            location: breakpointInFoo.location,
            condition: 'n===447'
-         } as any as stackdriver.Breakpoint;
+         } as {} as stackdriver.Breakpoint;
          api.set(bp, function(err1) {
            assert.ifError(err1);
            api.wait(bp, function() {
@@ -1658,12 +1658,12 @@ describe('v8debugapi', function() {
          const bp1: stackdriver.Breakpoint = {
            id: 'bp1',
            location: {path: __filename, line: 5}
-         } as any as stackdriver.Breakpoint;
+         } as {} as stackdriver.Breakpoint;
          // TODO: Have this actually implement Breakpoint
          const bp2: stackdriver.Breakpoint = {
            id: 'bp2',
            location: {path: __filename, line: 6}
-         } as any as stackdriver.Breakpoint;
+         } as {} as stackdriver.Breakpoint;
          api.set(bp1, function(err1) {
            assert.ifError(err1);
            api.set(bp2, function(err2) {
@@ -1689,7 +1689,7 @@ describe('v8debugapi', function() {
       const bp: stackdriver.Breakpoint = {
         id: 'bp-line-1',
         location: {path: 'foo.js', line: 1, column: 45}
-      } as any as stackdriver.Breakpoint;
+      } as {} as stackdriver.Breakpoint;
       api.set(bp, function(err1) {
         assert.ifError(err1);
         api.wait(bp, function(err2) {
@@ -1727,7 +1727,7 @@ describe('v8debugapi', function() {
       const bp: stackdriver.Breakpoint = {
         id: breakpointInFoo.id,
         location: breakpointInFoo.location
-      } as any as stackdriver.Breakpoint;
+      } as {} as stackdriver.Breakpoint;
       api.set(bp, function(err1) {
         assert.ifError(err1);
         // TODO: Determine if the err parameter should be used.
@@ -1751,7 +1751,7 @@ describe('v8debugapi', function() {
           path: path.join('.', 'test', 'fixtures', 'ts', 'async.js'),
           line: 71
         }
-      } as any as stackdriver.Breakpoint;
+      } as {} as stackdriver.Breakpoint;
 
       const run = require('./fixtures/ts/async.js');
       api.set(bp, (err1) => {
@@ -1784,7 +1784,7 @@ describe('v8debugapi.findScripts', function() {
     //       Make sure that is the case.
     // TODO: The third argument should be of type Object (not undefined).
     //       Fix this.
-    const config = extend(true, {}, undefined as any, {
+    const config = extend(true, {}, undefined as {}, {
       workingDirectory: '/some/strange/directory',
       appPathRelativeToRepository: '/my/project/root'
     });

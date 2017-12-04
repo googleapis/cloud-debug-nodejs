@@ -40,7 +40,7 @@ const BASE_PATH = path.join(__dirname, 'fixtures', 'sourcemapper');
  */
 function testTool(
     tool: string, relativeMapFilePath: string, relativeInputFilePath: string,
-    relativeOutputFilePath: string, inToOutLineNums: Array<Array<number>>) {
+    relativeOutputFilePath: string, inToOutLineNums: number[][]) {
   const mapFilePath = path.join(BASE_PATH, relativeMapFilePath);
   const inputFilePath = path.join(BASE_PATH, relativeInputFilePath);
   const outputFilePath = path.join(BASE_PATH, relativeOutputFilePath);
@@ -95,9 +95,9 @@ function testTool(
           info, null,
           'The mapping info for file ' + inputFilePath + ' must be non-null');
       // TODO: Handle the case when info is undefined
-      assert.equal((info as any).file, outputFilePath);
+      assert.equal((info as {}).file, outputFilePath);
       assert.equal(
-          (info as any).line, expectedOutputLine,
+          (info as {}).line, expectedOutputLine,
           ' invalid mapping for input line ' + inputLine);
     };
 

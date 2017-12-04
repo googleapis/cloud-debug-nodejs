@@ -58,11 +58,11 @@ export class Controller extends common.ServiceObject {
       uri: API + '/debuggees/register',
       method: 'POST',
       json: true,
-      body: {debuggee: debuggee}
+      body: {debuggee}
     };
     this.request(
         options,
-        function(err: Error, body: any, response: http.ServerResponse) {
+        function(err: Error, body: {}, response: http.ServerResponse) {
           if (err) {
             callback(err);
           } else if (response.statusCode !== 200) {
@@ -98,8 +98,8 @@ export class Controller extends common.ServiceObject {
     const uri = API + '/debuggees/' + encodeURIComponent(debuggee.id) +
         '/breakpoints?' + qs.stringify(query);
     that.request(
-        {uri: uri, json: true},
-        function(err: Error, body: any, response: http.ServerResponse) {
+        {uri, json: true},
+        function(err: Error, body: {}, response: http.ServerResponse) {
           if (!response) {
             callback(
                 err || new Error('unknown error - request response missing'));
@@ -130,7 +130,7 @@ export class Controller extends common.ServiceObject {
    */
   updateBreakpoint(
       debuggee: Debuggee, breakpoint: stackdriver.Breakpoint,
-      callback: (err?: Error, body?: any) => void): void {
+      callback: (err?: Error, body?: {}) => void): void {
     assert(debuggee.id, 'should have a registered debuggee');
 
     breakpoint.action = 'CAPTURE';
@@ -141,7 +141,7 @@ export class Controller extends common.ServiceObject {
           '/breakpoints/' + encodeURIComponent(breakpoint.id as string),
       json: true,
       method: 'PUT',
-      body: {debuggeeId: debuggee.id, breakpoint: breakpoint}
+      body: {debuggeeId: debuggee.id, breakpoint}
     };
 
     // We need to have a try/catch here because a JSON.stringify will be done
@@ -149,7 +149,7 @@ export class Controller extends common.ServiceObject {
     // stringify them. The try-catch keeps it resilient and avoids crashing the
     // user's app.
     try {
-      this.request(options, function(err: Error, body: any /*, response */) {
+      this.request(options, function(err: Error, body: {} /*, response */) {
         callback(err, body);
       });
     } catch (error) {

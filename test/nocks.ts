@@ -22,7 +22,7 @@ function accept(): true {
 }
 
 // TODO: Determine if the type of `validator` is correct.
-export function oauth2(validator?: (body: any) => boolean): nock.Scope {
+export function oauth2(validator?: (body: {}) => boolean): nock.Scope {
   validator = validator || accept;
   return nock('https://accounts.google.com')
       .post('/o/oauth2/token', validator)
@@ -35,7 +35,7 @@ export function oauth2(validator?: (body: any) => boolean): nock.Scope {
 }
 
 // TODO: Determine if the type of `validator` is correct.
-export function register(validator?: (body: any) => boolean): nock.Scope {
+export function register(validator?: (body: {}) => boolean): nock.Scope {
   validator = validator || accept;
   return nock('https://clouddebugger.googleapis.com')
       .post('/v2/controller/debuggees/register', validator)

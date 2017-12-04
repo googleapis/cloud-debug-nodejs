@@ -63,9 +63,9 @@ export function evaluate(expression: string, frame: v8.FrameMirror):
   // Now actually ask V8 to evaluate the expression
   try {
     const mirror = frame.evaluate(expression);
-    return {error: null, mirror: mirror};
+    return {error: null, mirror};
   } catch (error) {
-    return {error: error};
+    return {error};
   }
 }
 
@@ -122,7 +122,7 @@ class StateResolver {
     };
 
     // TODO: Determine why _extend is used here
-    this.resolvedVariableTable = (util as any)._extend([], this.messageTable);
+    this.resolvedVariableTable = (util as {})._extend([], this.messageTable);
     this.rawVariableTable = this.messageTable.map(function() {
       return null;
     });
@@ -308,10 +308,10 @@ class StateResolver {
 
   resolveFrame_(frame: v8.FrameMirror, underFrameCap: boolean):
       stackdriver.StackFrame {
-    let args: Array<stackdriver.Variable> = [];
+    const args: stackdriver.Variable[] = [];
     // TODO: `locals` should be of type v8.ScopeMirror[]
     //       Resolve conflicts so that it can be specified of that type.
-    let locals: Array<any> = [];
+    let locals: {}[] = [];
     // Locals and arguments are safe to collect even when
     // `config.allowExpressions=false` since we properly avoid inspecting
     // interceptors and getters by default.
@@ -337,7 +337,7 @@ class StateResolver {
       function: this.resolveFunctionName_(frame.func()),
       location: this.resolveLocation_(frame),
       arguments: args,
-      locals: locals
+      locals
     };
   }
 
@@ -451,7 +451,7 @@ class StateResolver {
       stackdriver.Variable {
     let size = name.length;
 
-    const data: stackdriver.Variable = {name: name};
+    const data: stackdriver.Variable = {name};
 
     if (value.isPrimitive() || value.isRegExp()) {
       // primitives: undefined, null, boolean, number, string, symbol
@@ -501,7 +501,7 @@ class StateResolver {
   }
 
   storeObjectToVariableTable_(obj: v8.ValueMirror): number {
-    let idx = this.rawVariableTable.length;
+    const idx = this.rawVariableTable.length;
     this.rawVariableTable[idx] = obj;
     return idx;
   }
@@ -532,7 +532,7 @@ class StateResolver {
             ' to see all properties.'
       });
     }
-    return {value: mirror.toText(), members: members};
+    return {value: mirror.toText(), members};
   }
 
   resolveMirrorProperty_(isEvaluated: boolean, property: v8.PropertyMirror):
@@ -542,10 +542,10 @@ class StateResolver {
     // we know to be safe to evaluate which is not generally true.
     const isArrayLen = property.mirror_.isArray() && name === 'length';
     if (property.isNative() && !isArrayLen) {
-      return {name: name, varTableIndex: NATIVE_PROPERTY_MESSAGE_INDEX};
+      return {name, varTableIndex: NATIVE_PROPERTY_MESSAGE_INDEX};
     }
     if (property.hasGetter()) {
-      return {name: name, varTableIndex: GETTER_MESSAGE_INDEX};
+      return {name, varTableIndex: GETTER_MESSAGE_INDEX};
     }
     return this.resolveVariable_(name, property.value(), isEvaluated);
   }

@@ -276,7 +276,7 @@ export class Debuglet extends EventEmitter {
   async start(): Promise<void> {
     const that = this;
     process.on('warning', (warning) => {
-      if ((warning as any).code ===
+      if ((warning as {}).code ===
           'INSPECTOR_ASYNC_STACK_TRACES_NOT_AVAILABLE') {
         that.logger.info(utils.messages.ASYNC_TRACES_WARNING);
       }
@@ -476,13 +476,13 @@ export class Debuglet extends EventEmitter {
 
     const properties = {
       project: projectId,
-      uniquifier: uniquifier,
+      uniquifier,
       description: desc,
       agentVersion: version,
-      labels: labels,
-      statusMessage: statusMessage,
+      labels,
+      statusMessage,
       sourceContexts: [sourceContext],
-      packageInfo: packageInfo
+      packageInfo
     };
     return new Debuggee(properties);
   }
@@ -754,7 +754,7 @@ export class Debuglet extends EventEmitter {
           //              field.  It is possible that breakpoint.id is always
           //              undefined!
           // TODO: Make sure the use of `that` here is correct.
-          delete that.completedBreakpointMap[(breakpoint as any).id];
+          delete that.completedBreakpointMap[(breakpoint as {}).id];
         });
 
     // Remove active breakpoints that the server no longer care about.
@@ -959,7 +959,7 @@ export class Debuglet extends EventEmitter {
   //       Breakpoint values.
   static mapSubtract<T, U>(A: {[key: string]: T}, B: {[key: string]: U}): T[] {
     const removed = [];
-    for (let key in A) {
+    for (const key in A) {
       if (!B[key]) {
         removed.push(A[key]);
       }
@@ -1027,7 +1027,7 @@ export class Debuglet extends EventEmitter {
 
   static _createUniquifier(
       desc: string, version: string, uid: string,
-      sourceContext: {[key: string]: any},
+      sourceContext: {[key: string]: {}},
       labels: {[key: string]: string}): string {
     const uniquifier = desc + version + uid + JSON.stringify(sourceContext) +
         JSON.stringify(labels);

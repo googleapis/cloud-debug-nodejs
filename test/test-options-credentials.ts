@@ -45,7 +45,7 @@ describe('test-options-credentials', function() {
   afterEach(function() {
     assert.ok(debuglet);
     // TODO: Handle the case when debuglet is null
-    (debuglet as any).stop();
+    (debuglet as {}).stop();
     debuglet = null;
     process.env.GCLOUD_PROJECT = envProject;
   });
@@ -71,7 +71,7 @@ describe('test-options-credentials', function() {
     });
     nocks.projectId('project-via-metadata');
     // TODO: Determine how to remove this cast.
-    debuglet = new Debuglet(debug, config as any as DebugAgentConfig);
+    debuglet = new Debuglet(debug, config as {} as DebugAgentConfig);
     debuglet.start();
   });
 
@@ -95,7 +95,7 @@ describe('test-options-credentials', function() {
     });
     nocks.projectId('project-via-metadata');
     // TODO: Determine how to remove this cast.
-    debuglet = new Debuglet(debug, config as any as DebugAgentConfig);
+    debuglet = new Debuglet(debug, config as {} as DebugAgentConfig);
     debuglet.start();
   });
 
@@ -110,7 +110,7 @@ describe('test-options-credentials', function() {
     const options = extend({}, {
       projectId: 'fake-project',
       keyFilename: path.join('test', 'fixtures', 'gcloud-credentials.json'),
-      credentials: credentials
+      credentials
     });
     const debug = new Debug(options, packageInfo);
     const scope = nocks.oauth2(function(body) {
@@ -132,7 +132,7 @@ describe('test-options-credentials', function() {
       assert.notEqual(options.credentials[field], fileCredentials[field]);
     });
     // TODO: Determine how to remove this cast.
-    debuglet = new Debuglet(debug, config as any as DebugAgentConfig);
+    debuglet = new Debuglet(debug, config as {} as DebugAgentConfig);
     debuglet.start();
   });
 });

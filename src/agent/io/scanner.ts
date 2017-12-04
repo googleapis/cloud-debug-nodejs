@@ -25,7 +25,7 @@ import * as _ from 'lodash';
 import * as path from 'path';
 
 // TODO: Make this more precise.
-const split: () => any = require('split');
+const split: () => {} = require('split');
 
 export interface FileStats {
   // TODO: Verify that this member should actually be optional.
@@ -57,7 +57,7 @@ class ScanResultsImpl implements ScanResults {
    * @param hash A hashcode computed from the contents of all the files.
    */
   constructor(
-      private readonly stats: ScanStats, public readonly hash?: string) {}
+      private readonly stats: ScanStats, readonly hash?: string) {}
 
   /**
    * Used to get all of the file scan results.
@@ -246,7 +246,7 @@ function statsForFile(
     shasum = crypto.createHash('sha1');
   }
   // TODO: Determine why property 'ReadStream' does not exist on type 'fs'
-  const s = (fs as any).ReadStream(filename);
+  const s = (fs as {}).ReadStream(filename);
   let lines = 0;
   const byLine = s.pipe(split());
   byLine.on('error', function(e: Error) {
@@ -264,6 +264,6 @@ function statsForFile(
     if (shouldHash) {
       d = shasum.digest('hex');
     }
-    cb(null, {hash: d, lines: lines});
+    cb(null, {hash: d, lines});
   });
 }

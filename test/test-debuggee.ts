@@ -26,7 +26,7 @@ describe('Debuggee', function() {
       project: 'project',
       uniquifier: 'uid',
       description: 'unit test',
-      agentVersion: agentVersion
+      agentVersion
     });
     assert.ok(debuggee instanceof Debuggee);
   });
@@ -36,30 +36,30 @@ describe('Debuggee', function() {
       project: 'project',
       uniquifier: 'uid',
       description: 'unit test',
-      agentVersion: agentVersion
+      agentVersion
     });
     assert.ok(debuggee instanceof Debuggee);
   });
 
   it('should throw on invalid input', function() {
     assert.throws(function() {
-      return new Debuggee({agentVersion: agentVersion});
+      return new Debuggee({agentVersion});
     });
     assert.throws(function() {
-      return new Debuggee({project: '5', agentVersion: agentVersion});
+      return new Debuggee({project: '5', agentVersion});
     });
     assert.throws(function() {
-      return new Debuggee({project: undefined, agentVersion: agentVersion});
+      return new Debuggee({project: undefined, agentVersion});
     });
     assert.throws(function() {
-      return new Debuggee({project: 'test', agentVersion: agentVersion});
+      return new Debuggee({project: 'test', agentVersion});
     });
     assert.throws(function() {
       const _ = new Debuggee(
-          {project: 'test', uniquifier: undefined, agentVersion: agentVersion});
+          {project: 'test', uniquifier: undefined, agentVersion});
       assert.throws(function() {
         return new Debuggee(
-            {project: 'test', uniquifier: 'uid', agentVersion: agentVersion});
+            {project: 'test', uniquifier: 'uid', agentVersion});
       });
     });
   });

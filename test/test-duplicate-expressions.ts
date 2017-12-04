@@ -46,7 +46,7 @@ describe(__filename, function() {
   // TODO: It appears `logLevel` is a typo and should be `level`.  However,
   //       with this change, the tests fail.  Resolve this.
   const logger =
-      new common.logger({logLevel: config.logLevel} as any as LoggerOptions);
+      new common.logger({logLevel: config.logLevel} as {} as LoggerOptions);
   let api: debugapi.DebugApi;
 
   beforeEach(function(done) {

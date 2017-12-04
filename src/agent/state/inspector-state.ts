@@ -76,17 +76,17 @@ export function evaluate(
 }
 
 class StateResolver {
-  private callFrames: Array<inspector.Debugger.CallFrame>;
+  private callFrames: inspector.Debugger.CallFrame[];
   private v8Inspector: V8Inspector;
   private expressions: string[]|undefined;
   private config: DebugAgentConfig;
-  private scriptmapper: {[id: string]: any};
+  private scriptmapper: {[id: string]: {}};
   private breakpoint: stackdriver.Breakpoint;
   private evaluatedExpressions: stackdriver.Variable[];
   private totalSize: number;
   private messageTable: stackdriver.Variable[];
   private resolvedVariableTable: stackdriver.Variable[];
-  private rawVariableTable: Array<any>;
+  private rawVariableTable: {}[];
 
   /**
    * @param {Array<!Object>} callFrames
@@ -95,9 +95,9 @@ class StateResolver {
    * @constructor
    */
   constructor(
-      callFrames: Array<inspector.Debugger.CallFrame>,
+      callFrames: inspector.Debugger.CallFrame[],
       breakpoint: stackdriver.Breakpoint, config: DebugAgentConfig,
-      scriptmapper: {[id: string]: any}, v8Inspector: V8Inspector) {
+      scriptmapper: {[id: string]: {}}, v8Inspector: V8Inspector) {
     this.callFrames = callFrames;
     this.breakpoint = breakpoint;
     // TODO: Investigate whether this cast can be avoided.
@@ -134,7 +134,7 @@ class StateResolver {
     };
 
     // TODO: Determine why _extend is used here
-    this.resolvedVariableTable = (util as any)._extend([], this.messageTable);
+    this.resolvedVariableTable = (util as {})._extend([], this.messageTable);
     this.rawVariableTable = this.messageTable.map(function() {
       return null;
     });
@@ -179,7 +179,7 @@ class StateResolver {
     // The frames are resolved after the evaluated expressions so that
     // evaluated expressions can be evaluated as much as possible within
     // the max data size limits
-    let frames = this.resolveFrames_();
+    const frames = this.resolveFrames_();
     // Now resolve the variables
     let index = this.messageTable.length;  // skip the sentinel values
     const noLimit = this.config.capture.maxDataSize === 0;
@@ -308,8 +308,8 @@ class StateResolver {
 
   resolveFrame_(frame: inspector.Debugger.CallFrame, underFrameCap: boolean):
       stackdriver.StackFrame {
-    let args: Array<stackdriver.Variable> = [];
-    let locals: Array<any> = [];
+    const args: stackdriver.Variable[] = [];
+    let locals: {}[] = [];
 
     if (!underFrameCap) {
       args.push({
@@ -331,7 +331,7 @@ class StateResolver {
       function: this.resolveFunctionName_(frame),
       location: this.resolveLocation_(frame),
       arguments: args,
-      locals: locals
+      locals
     };
   }
 
@@ -369,7 +369,7 @@ class StateResolver {
    */
   resolveLocalsList_(frame: inspector.Debugger.CallFrame):
       stackdriver.Variable[] {
-    let locals: Array<any> = [];
+    const locals: {}[] = [];
 
     const usedNames: {[name: string]: boolean} = {};
     const allScopes = frame.scopeChain;
@@ -377,12 +377,14 @@ class StateResolver {
     // We find the top-level (module global) variable pollute the local
     // variables we omit them by default, unless the breakpoint itself is
     // top-level. The last scope is always omitted.
-    if (frame.scopeChain[count - 2].type === 'closure')
+    if (frame.scopeChain[count - 2].type === 'closure') {
       count -= 2;
-    else
+    }
+    else {
       count -= 1;
+    }
     for (let i = 0; i < count; ++i) {
-      let result = this.v8Inspector.getProperties(
+      const result = this.v8Inspector.getProperties(
           {objectId: frame.scopeChain[i].object.objectId as string});
       // TODO: Handle when result.error exists.
       if (result.response && !isEmpty(result.response.result)) {
@@ -422,7 +424,7 @@ class StateResolver {
       name: string, object: inspector.Runtime.RemoteObject,
       isEvaluated: boolean): stackdriver.Variable {
     let size = name.length;
-    const data: stackdriver.Variable = {name: name};
+    const data: stackdriver.Variable = {name};
     if (this.isPrimitive_(object.type)) {
       // primitives: undefined, null, boolean, number, string, symbol
       data.value = String(object.value);
@@ -469,7 +471,7 @@ class StateResolver {
     return type === 'function';
   }
 
-  getVariableIndex_(value: any): number {
+  getVariableIndex_(value: {}): number {
     let idx = this.rawVariableTable.indexOf(value);
     if (idx === -1) {
       idx = this.storeObjectToVariableTable_(value);
@@ -477,8 +479,8 @@ class StateResolver {
     return idx;
   }
 
-  storeObjectToVariableTable_(obj: any): number {
-    let idx = this.rawVariableTable.length;
+  storeObjectToVariableTable_(obj: {}): number {
+    const idx = this.rawVariableTable.length;
     this.rawVariableTable[idx] = obj;
     return idx;
   }
@@ -491,9 +493,9 @@ class StateResolver {
       object: inspector.Runtime.RemoteObject,
       isEvaluated: boolean): stackdriver.Variable {
     const maxProps = this.config.capture.maxProperties;
-    let result =
+    const result =
         this.v8Inspector.getProperties({objectId: object.objectId as string});
-    let members: Array<any> = [];
+    const members: {}[] = [];
     if (result.error || !result.response) {
       members.push({
         name: result.error ? String(result.error) :
@@ -521,14 +523,14 @@ class StateResolver {
         });
       }
     }
-    return {value: object.description, members: members};
+    return {value: object.description, members};
   }
 
-  resolveObjectProperty_(isEvaluated: boolean, property: any):
+  resolveObjectProperty_(isEvaluated: boolean, property: {}):
       stackdriver.Variable {
     const name = String(property.name);
     if (property.get !== undefined) {
-      return {name: name, varTableIndex: GETTER_MESSAGE_INDEX};
+      return {name, varTableIndex: GETTER_MESSAGE_INDEX};
     }
     return this.resolveVariable_(name, property.value, isEvaluated);
   }
@@ -546,9 +548,9 @@ export function testAssert(): void {
  *         evaluatedExpressions fields
  */
 export function capture(
-    callFrames: Array<inspector.Debugger.CallFrame>,
+    callFrames: inspector.Debugger.CallFrame[],
     breakpoint: stackdriver.Breakpoint, config: DebugAgentConfig,
-    scriptmapper: {[id: string]: any},
+    scriptmapper: {[id: string]: {}},
     v8Inspector: V8Inspector): stackdriver.Breakpoint {
   return (new StateResolver(
               callFrames, breakpoint, config, scriptmapper, v8Inspector))

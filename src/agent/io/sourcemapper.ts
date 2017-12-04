@@ -69,7 +69,7 @@ function processSourcemap(
       // TODO: Resolve the cast of `data as any` (This is needed because the
       //       type is expected to be of `RawSourceMap` but the existing
       //       working code uses a string.)
-      consumer = new sourceMap.SourceMapConsumer(data as any) as any as
+      consumer = new sourceMap.SourceMapConsumer(data as {}) as {} as
           sourceMap.RawSourceMap;
     } catch (e) {
       return callback(new Error(
@@ -209,7 +209,7 @@ export class SourceMapper {
 
     // TODO: Determine how to remove the explicit cast here.
     const consumer: sourceMap.SourceMapConsumer =
-        entry.mapConsumer as any as sourceMap.SourceMapConsumer;
+        entry.mapConsumer as {} as sourceMap.SourceMapConsumer;
     const allPos = consumer.allGeneratedPositionsFor(sourcePos);
     /*
      * Based on testing, it appears that the following code is needed to
@@ -237,7 +237,7 @@ export class SourceMapper {
       //       attribute and not a `col` attribute.  Determine if the type
       //       definition or this code is correct.
       column:
-          (mappedPos as any).col  // SourceMapConsumer uses zero-based column
+          (mappedPos as {}).col  // SourceMapConsumer uses zero-based column
                                   // numbers which is the same as the
                                   // expected output
     };

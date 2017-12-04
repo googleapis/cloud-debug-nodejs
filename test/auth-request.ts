@@ -19,12 +19,12 @@ import * as request from 'request';
 
 // TODO: Make the type of `options` more precise
 export default function(
-    options: any,
-    callback: (err: Error, body: any, response: request.RequestResponse) =>
+    options: {},
+    callback: (err: Error, body: {}, response: request.RequestResponse) =>
         void) {
   request(
       options,
-      function(err: Error, response: request.RequestResponse, body: any) {
+      function(err: Error, response: request.RequestResponse, body: {}) {
         callback(err, body, response);
       });
 }

@@ -35,7 +35,7 @@ export const messages = {
 
 export interface Listener {
   enabled: boolean;
-  listener: (...args: any[]) => any;
+  listener: (...args: {}[]) => {};
 }
 // Exposed for unit testing.
 export function findScripts(
