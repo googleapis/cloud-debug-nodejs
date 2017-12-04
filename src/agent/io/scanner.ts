@@ -75,7 +75,7 @@ class ScanResultsImpl implements ScanResults {
    *  should be included in the returned results.
    */
   selectStats(regex: RegExp): ScanStats|{} {
-    return _.pickBy(this.stats, function(ignore, key) {
+    return _.pickBy(this.stats, (ignore, key) => {
       return regex.test(key);
     });
   }
@@ -97,10 +97,10 @@ class ScanResultsImpl implements ScanResults {
     // ensure the base directory has only a single trailing path separator
     baseDir = path.normalize(baseDir + path.sep);
     return Object.keys(this.stats)
-        .filter(function(file) {
+        .filter((file) => {
           return file && regex.test(file);
         })
-        .map(function(file) {
+        .map((file) => {
           return path.normalize(file).replace(baseDir, '');
         });
   }
@@ -109,7 +109,7 @@ class ScanResultsImpl implements ScanResults {
 export function scan(
     shouldHash: boolean, baseDir: string, regex: RegExp): Promise<ScanResults> {
   return new Promise<ScanResults>((resolve, reject) => {
-    findFiles(baseDir, regex, function(err1: Error|null, fileList?: string[]) {
+    findFiles(baseDir, regex, (err1: Error|null, fileList?: string[]) => {
       if (err1) {
         return reject(err1);
       }
@@ -148,9 +148,9 @@ function computeStats(
   // TODO: Address the case where the array contains `undefined`.
   const hashes: Array<string|undefined> = [];
   const statistics: ScanStats = {};
-  fileList.forEach(function(filename) {
+  fileList.forEach((filename) => {
     statsForFile(
-        filename, shouldHash, function(err: Error|null, fileStats?: FileStats) {
+        filename, shouldHash, (err: Error|null, fileStats?: FileStats) => {
           if (err) {
             callback(err);
             return;
@@ -201,27 +201,27 @@ function findFiles(
   const find = findit(baseDir);
   const fileList: string[] = [];
 
-  find.on('error', function(err: Error) {
+  find.on('error', (err: Error) => {
     errored = true;
     callback(err);
     return;
   });
 
   find.on(
-      'directory', function(dir: string, ignore: fs.Stats, stop: () => void) {
+      'directory', (dir: string, ignore: fs.Stats, stop: () => void) => {
         const base = path.basename(dir);
         if (base === '.git' || base === 'node_modules') {
           stop();  // do not descend
         }
       });
 
-  find.on('file', function(file: string) {
+  find.on('file', (file: string) => {
     if (regex.test(file)) {
       fileList.push(file);
     }
   });
 
-  find.on('end', function() {
+  find.on('end', () => {
     if (errored) {
       // the end event fires even after an error
       // simply return because the on('error') has already called back
@@ -249,16 +249,16 @@ function statsForFile(
   const s = (fs as {}).ReadStream(filename);
   let lines = 0;
   const byLine = s.pipe(split());
-  byLine.on('error', function(e: Error) {
+  byLine.on('error', (e: Error) => {
     cb(e);
   });
-  byLine.on('data', function(d: string) {
+  byLine.on('data', (d: string) => {
     if (shouldHash) {
       shasum.update(d);
     }
     lines++;
   });
-  byLine.on('end', function() {
+  byLine.on('end', () => {
     // TODO: Address the case where `d` is `undefined`.
     let d: string|undefined;
     if (shouldHash) {

@@ -135,7 +135,7 @@ class StateResolver {
 
     // TODO: Determine why _extend is used here
     this.resolvedVariableTable = (util as {})._extend([], this.messageTable);
-    this.rawVariableTable = this.messageTable.map(function() {
+    this.rawVariableTable = this.messageTable.map(() => {
       return null;
     });
   }
@@ -222,8 +222,8 @@ class StateResolver {
         fromIndex);  // remove the remaining entries
 
     const that = this;
-    const processBufferFull = function(variables: stackdriver.Variable[]) {
-      variables.forEach(function(variable) {
+    const processBufferFull = (variables: stackdriver.Variable[]) => {
+      variables.forEach((variable) => {
         if (variable.varTableIndex && variable.varTableIndex >= fromIndex) {
           // make it point to the sentinel 'buffer full' value
           variable.varTableIndex = BUFFER_FULL_MESSAGE_INDEX;
@@ -235,7 +235,7 @@ class StateResolver {
       });
     };
 
-    frames.forEach(function(frame) {
+    frames.forEach((frame) => {
       processBufferFull(frame.arguments);
       processBufferFull(frame.locals);
     });

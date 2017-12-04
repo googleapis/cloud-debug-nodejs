@@ -62,7 +62,7 @@ export class Controller extends common.ServiceObject {
     };
     this.request(
         options,
-        function(err: Error, body: {}, response: http.ServerResponse) {
+        (err: Error, body: {}, response: http.ServerResponse) => {
           if (err) {
             callback(err);
           } else if (response.statusCode !== 200) {
@@ -99,7 +99,7 @@ export class Controller extends common.ServiceObject {
         '/breakpoints?' + qs.stringify(query);
     that.request(
         {uri, json: true},
-        function(err: Error, body: {}, response: http.ServerResponse) {
+        (err: Error, body: {}, response: http.ServerResponse) => {
           if (!response) {
             callback(
                 err || new Error('unknown error - request response missing'));
@@ -149,7 +149,7 @@ export class Controller extends common.ServiceObject {
     // stringify them. The try-catch keeps it resilient and avoids crashing the
     // user's app.
     try {
-      this.request(options, function(err: Error, body: {} /*, response */) {
+      this.request(options, (err: Error, body: {} /*, response */) => {
         callback(err, body);
       });
     } catch (error) {

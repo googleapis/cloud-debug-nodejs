@@ -160,7 +160,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     delete this.breakpoints[breakpoint.id];
     delete this.listeners[breakpoint.id];
     this.numBreakpoints--;
-    setImmediate(function() {
+    setImmediate(() => {
       if (result.error) {
         cb(result.error);
       }
@@ -177,7 +177,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
           // This method is called from the debug event listener, which
           // swallows all exception. We defer the callback to make sure
           // the user errors aren't silenced.
-          setImmediate(function() {
+          setImmediate(() => {
             callback(err);
           });
         });
@@ -353,7 +353,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
         result.locationStr, compile);
 
     this.numBreakpoints++;
-    setImmediate(function() {
+    setImmediate(() => {
       cb(null);
     });  // success.
   }
@@ -450,7 +450,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
         breakpoint.evaluatedExpressions = [];
       } else {
         const frame = callFrames[0];
-        const evaluatedExpressions = breakpoint.expressions.map(function(exp) {
+        const evaluatedExpressions = breakpoint.expressions.map((exp) => {
           // returnByValue is set to true here so that the JSON string of the
           // value will be returned to log.
           const result = state.evaluate(exp, frame, that.v8Inspector, true);

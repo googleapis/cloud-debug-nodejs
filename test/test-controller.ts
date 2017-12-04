@@ -40,10 +40,10 @@ const api = '/v2/controller';
 
 nock.disableNetConnect();
 
-describe('Controller API', function() {
+describe('Controller API', () => {
 
-  describe('register', function() {
-    it('should get a debuggeeId', function(done) {
+  describe('register', () => {
+    it('should get a debuggeeId', (done) => {
       const scope = nock(url).post(api + '/debuggees/register').reply(200, {
         debuggee: {id: 'fake-debuggee'},
         activePeriodSec: 600
@@ -56,7 +56,7 @@ describe('Controller API', function() {
       });
       const controller = new Controller(fakeDebug);
       // TODO: Determine if this type signature is correct.
-      controller.register(debuggee, function(err, result) {
+      controller.register(debuggee, (err, result) => {
         assert(!err, 'not expecting an error');
         assert.ok(result);
         assert.equal(result!.debuggee.id, 'fake-debuggee');
@@ -66,7 +66,7 @@ describe('Controller API', function() {
     });
 
     it('should not return an error when the debuggee isDisabled',
-       function(done) {
+       (done) => {
          const scope = nock(url).post(api + '/debuggees/register').reply(200, {
            debuggee: {id: 'fake-debuggee', isDisabled: true},
            activePeriodSec: 600,
@@ -78,7 +78,7 @@ describe('Controller API', function() {
            agentVersion
          });
          const controller = new Controller(fakeDebug);
-         controller.register(debuggee, function(err, result) {
+         controller.register(debuggee, (err, result) => {
            // TODO: Fix this incorrect method signature.
            (assert as {}).ifError(err, 'not expecting an error');
            assert.ok(result);
@@ -91,10 +91,10 @@ describe('Controller API', function() {
 
   });
 
-  describe('listBreakpoints', function() {
+  describe('listBreakpoints', () => {
 
     // register before each test
-    before(function(done) {
+    before((done) => {
       nock(url).post(api + '/debuggees/register').reply(200, {
         debuggee: {id: 'fake-debuggee'},
         activePeriodSec: 600
@@ -106,13 +106,13 @@ describe('Controller API', function() {
         agentVersion
       });
       const controller = new Controller(fakeDebug);
-      controller.register(debuggee, function(err /*, result*/) {
+      controller.register(debuggee, (err /*, result*/) => {
         assert.ifError(err);
         done();
       });
     });
 
-    it('should deal with a missing breakpoints response', function(done) {
+    it('should deal with a missing breakpoints response', (done) => {
       const scope =
           nock(url)
               .get(
@@ -126,9 +126,9 @@ describe('Controller API', function() {
       // TODO: Determine if the response parameter should be used.
       controller.listBreakpoints(
           debuggee as Debuggee,
-          function(
+          (
               err: Error|null, response?: http.ServerResponse,
-              result?: stackdriver.ListBreakpointsResponse) {
+              result?: stackdriver.ListBreakpointsResponse) => {
             assert(!err, 'not expecting an error');
             // TODO: Handle the case where result is undefined
             assert(
@@ -139,10 +139,10 @@ describe('Controller API', function() {
           });
     });
 
-    describe('invalid responses', function() {
+    describe('invalid responses', () => {
       const tests: string|{}[] = ['', 'JSON, this is not', []];
-      tests.forEach(function(invalidResponse, index) {
-        it('should pass test ' + index, function(done) {
+      tests.forEach((invalidResponse, index) => {
+        it('should pass test ' + index, (done) => {
           const scope =
               nock(url)
                   .get(
@@ -155,9 +155,9 @@ describe('Controller API', function() {
           // TODO: Determine if the response parameter should be used.
           controller.listBreakpoints(
               debuggee as Debuggee,
-              function(
+              (
                   err: Error|null, response?: http.ServerResponse,
-                  result?: stackdriver.ListBreakpointsResponse) {
+                  result?: stackdriver.ListBreakpointsResponse) => {
                 assert(!err, 'not expecting an error');
                 // TODO: Handle the case where result is undefined
                 assert(
@@ -170,7 +170,7 @@ describe('Controller API', function() {
       });
     });
 
-    it('should throw error on http errors', function(done) {
+    it('should throw error on http errors', (done) => {
       const scope =
           nock(url)
               .get(
@@ -181,7 +181,7 @@ describe('Controller API', function() {
       const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
       const controller = new Controller(fakeDebug);
       // TODO: Determine if the response parameter should be used.
-      controller.listBreakpoints(debuggee, function(err, response, result) {
+      controller.listBreakpoints(debuggee, (err, response, result) => {
         assert(err instanceof Error, 'expecting an error');
         assert(!result, 'should not have a result');
         scope.done();
@@ -189,7 +189,7 @@ describe('Controller API', function() {
       });
     });
 
-    it('should work with waitTokens', function(done) {
+    it('should work with waitTokens', (done) => {
       const scope =
           nock(url)
               .get(
@@ -200,7 +200,7 @@ describe('Controller API', function() {
       const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
       const controller = new Controller(fakeDebug);
       // TODO: Determine if the result parameter should be used.
-      controller.listBreakpoints(debuggee, function(err, response, result) {
+      controller.listBreakpoints(debuggee, (err, response, result) => {
         // TODO: Fix this incorrect method signature.
         (assert as {}).ifError(err, 'not expecting an error');
         // TODO: Fix this error that states `body` is not a property
@@ -216,9 +216,9 @@ describe('Controller API', function() {
     const testsBreakpoints: stackdriver.Breakpoint[][] =
         [[], [{id: 'breakpoint-0', location: {path: 'foo.js', line: 18}}]] as
         stackdriver.Breakpoint[][];
-    testsBreakpoints.forEach(function(
-        breakpoints: stackdriver.Breakpoint[], index: number) {
-      it('should pass test ' + index, function(done) {
+    testsBreakpoints.forEach((
+        breakpoints: stackdriver.Breakpoint[], index: number) => {
+      it('should pass test ' + index, (done) => {
         const scope =
             nock(url)
                 .get(
@@ -229,7 +229,7 @@ describe('Controller API', function() {
         const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
         const controller = new Controller(fakeDebug);
         // TODO: Determine if the response parameter should be used.
-        controller.listBreakpoints(debuggee, function(err, response, result) {
+        controller.listBreakpoints(debuggee, (err, response, result) => {
           assert(!err, 'not expecting an error');
           assert.ok(result);
           assert(result!.breakpoints, 'should have a breakpoints property');
@@ -242,8 +242,8 @@ describe('Controller API', function() {
     });
   });
 
-  describe('updateBreakpoint', function() {
-    it('should PUT to server when a breakpoint is updated', function(done) {
+  describe('updateBreakpoint', () => {
+    it('should PUT to server when a breakpoint is updated', (done) => {
       // TODO: Fix breakpoint to actually Breakpoint
       const breakpoint: stackdriver.Breakpoint = {
         id: 'breakpoint-0',
@@ -261,7 +261,7 @@ describe('Controller API', function() {
       const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
       const controller = new Controller(fakeDebug);
       controller.updateBreakpoint(
-          debuggee as Debuggee, breakpoint, function(err, result) {
+          debuggee as Debuggee, breakpoint, (err, result) => {
             assert(!err, 'not expecting an error');
             assert.equal(
                 result.kind,

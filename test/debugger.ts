@@ -79,7 +79,7 @@ export class Debugger extends common.ServiceObject {
     };
 
     const uri = API + '/debuggees?' + qs.stringify(query);
-    this.request({uri, json: true}, function(err, body, response) {
+    this.request({uri, json: true}, (err, body, response) => {
       if (err) {
         callback(err);
       } else if (!response) {
@@ -149,7 +149,7 @@ export class Debugger extends common.ServiceObject {
 
     const uri = API + '/debuggees/' + encodeURIComponent(debuggeeId) +
         '/breakpoints?' + qs.stringify(query);
-    this.request({uri, json: true}, function(err, body, response) {
+    this.request({uri, json: true}, (err, body, response) => {
       if (err) {
         callback(err);
       } else if (!response) {
@@ -187,7 +187,7 @@ export class Debugger extends common.ServiceObject {
     const uri = API + '/debuggees/' + encodeURIComponent(debuggeeId) +
         '/breakpoints/' + encodeURIComponent(breakpointId) + '?' +
         qs.stringify(query);
-    this.request({uri, json: true}, function(err, body, response) {
+    this.request({uri, json: true}, (err, body, response) => {
       if (err) {
         callback(err);
       } else if (!response) {
@@ -228,7 +228,7 @@ export class Debugger extends common.ServiceObject {
       body: breakpoint
     };
 
-    this.request(options, function(err, body, response) {
+    this.request(options, (err, body, response) => {
       if (err) {
         callback(err);
       } else if (!response) {
@@ -266,7 +266,7 @@ export class Debugger extends common.ServiceObject {
       json: true
     };
 
-    this.request(options, function(err, body, response) {
+    this.request(options, (err, body, response) => {
       if (err) {
         callback(err);
       } else if (!response) {

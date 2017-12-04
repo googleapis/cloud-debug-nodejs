@@ -40,7 +40,7 @@ function stateIsClean1(api: debugapi.DebugApi): boolean {
   return true;
 }
 
-describe(__filename, function() {
+describe(__filename, () => {
   const config = extend(
       {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
   // TODO: It appears `logLevel` is a typo and should be `level`.  However,
@@ -49,13 +49,13 @@ describe(__filename, function() {
       new common.logger({logLevel: config.logLevel} as {} as LoggerOptions);
   let api: debugapi.DebugApi;
 
-  beforeEach(function(done) {
+  beforeEach((done) => {
     if (!api) {
       scanner.scan(true, config.workingDirectory, /.js$/)
-          .then(function(fileStats) {
+          .then((fileStats) => {
             const jsStats = fileStats.selectStats(/.js$/);
             const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
-            SourceMapper.create(mapFiles, function(err, mapper) {
+            SourceMapper.create(mapFiles, (err, mapper) => {
               assert(!err);
 
               // TODO: Handle the case when mapper is undefined
@@ -73,26 +73,26 @@ describe(__filename, function() {
       done();
     }
   });
-  afterEach(function() {
+  afterEach(() => {
     assert(stateIsClean1(api));
   });
 
-  it('should not duplicate expressions', function(done) {
-    api.set(breakpointInFoo, function(err1) {
+  it('should not duplicate expressions', (done) => {
+    api.set(breakpointInFoo, (err1) => {
       assert.ifError(err1);
-      api.wait(breakpointInFoo, function(err2) {
+      api.wait(breakpointInFoo, (err2) => {
         assert.ifError(err2);
         // TODO: Determine how to remove this cast to any.
         const frames = breakpointInFoo.stackFrames[0];
         const exprs = frames.arguments.concat(frames.locals);
         const varTableIndicesSeen: number[] = [];
-        exprs.forEach(function(expr) {
+        exprs.forEach((expr) => {
           // TODO: Handle the case when expr.varTableIndex is undefined
           assert.equal(
               varTableIndicesSeen.indexOf(expr.varTableIndex as number), -1);
           varTableIndicesSeen.push(expr.varTableIndex as number);
         });
-        api.clear(breakpointInFoo, function(err) {
+        api.clear(breakpointInFoo, (err) => {
           assert.ifError(err);
           done();
         });

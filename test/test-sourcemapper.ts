@@ -45,16 +45,16 @@ function testTool(
   const inputFilePath = path.join(BASE_PATH, relativeInputFilePath);
   const outputFilePath = path.join(BASE_PATH, relativeOutputFilePath);
 
-  describe('sourcemapper for tool ' + tool, function() {
+  describe('sourcemapper for tool ' + tool, () => {
     let sourcemapper: sm.SourceMapper;
 
-    it('for tool ' + tool, function(done) {
-      setTimeout(function() {
+    it('for tool ' + tool, (done) => {
+      setTimeout(() => {
         assert.ok(sourcemapper, 'should create the SourceMapper quickly');
         done();
       }, 300);
 
-      sm.create([mapFilePath], function(err, mapper) {
+      sm.create([mapFilePath], (err, mapper) => {
         assert.ifError(err);
         // TODO: Handle the case when sourceMapper is undefined
         sourcemapper = mapper as sm.SourceMapper;
@@ -63,7 +63,7 @@ function testTool(
 
     it('for tool ' + tool +
            ' it states that it has mapping info for files it knows about',
-       function(done) {
+       (done) => {
          assert.equal(sourcemapper.hasMappingInfo(inputFilePath), true);
          done();
        });
@@ -71,7 +71,7 @@ function testTool(
     it('for tool ' + tool +
            ' it states that it has mapping info for files with a path' +
            ' similar to a path it knows about',
-       function(done) {
+       (done) => {
          assert.equal(sourcemapper.hasMappingInfo(relativeInputFilePath), true);
          const movedPath =
              path.join('/some/other/base/dir/', relativeInputFilePath);
@@ -82,14 +82,14 @@ function testTool(
     it('for tool ' + tool +
            ' it states that it does not have mapping info for a file it ' +
            'doesn\'t recognize',
-       function(done) {
+       (done) => {
          assert.equal(
              sourcemapper.hasMappingInfo(inputFilePath + '_INVALID'), false);
          done();
        });
 
-    const testLineMapping = function(
-        inputLine: number, expectedOutputLine: number) {
+    const testLineMapping = (
+        inputLine: number, expectedOutputLine: number) => {
       const info = sourcemapper.mappingInfo(inputFilePath, inputLine, 0);
       assert.notEqual(
           info, null,
@@ -101,8 +101,8 @@ function testTool(
           ' invalid mapping for input line ' + inputLine);
     };
 
-    it('for tool ' + tool + ' it properly maps line numbers', function(done) {
-      inToOutLineNums.forEach(function(inToOutPair) {
+    it('for tool ' + tool + ' it properly maps line numbers', (done) => {
+      inToOutLineNums.forEach((inToOutPair) => {
         testLineMapping(inToOutPair[0], inToOutPair[1]);
       });
 

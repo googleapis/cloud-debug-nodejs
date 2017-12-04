@@ -19,9 +19,9 @@ import {Debuggee} from '../src/debuggee';
 
 const agentVersion = `SomeName/client/SomeVersion`;
 
-describe('Debuggee', function() {
+describe('Debuggee', () => {
 
-  it('should create a Debuggee instance on valid input', function() {
+  it('should create a Debuggee instance on valid input', () => {
     const debuggee = new Debuggee({
       project: 'project',
       uniquifier: 'uid',
@@ -31,7 +31,7 @@ describe('Debuggee', function() {
     assert.ok(debuggee instanceof Debuggee);
   });
 
-  it('should create a Debuggee on a call without new', function() {
+  it('should create a Debuggee on a call without new', () => {
     const debuggee = new Debuggee({
       project: 'project',
       uniquifier: 'uid',
@@ -41,23 +41,23 @@ describe('Debuggee', function() {
     assert.ok(debuggee instanceof Debuggee);
   });
 
-  it('should throw on invalid input', function() {
-    assert.throws(function() {
+  it('should throw on invalid input', () => {
+    assert.throws(() => {
       return new Debuggee({agentVersion});
     });
-    assert.throws(function() {
+    assert.throws(() => {
       return new Debuggee({project: '5', agentVersion});
     });
-    assert.throws(function() {
+    assert.throws(() => {
       return new Debuggee({project: undefined, agentVersion});
     });
-    assert.throws(function() {
+    assert.throws(() => {
       return new Debuggee({project: 'test', agentVersion});
     });
-    assert.throws(function() {
+    assert.throws(() => {
       const _ = new Debuggee(
           {project: 'test', uniquifier: undefined, agentVersion});
-      assert.throws(function() {
+      assert.throws(() => {
         return new Debuggee(
             {project: 'test', uniquifier: 'uid', agentVersion});
       });

@@ -76,8 +76,8 @@ const PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS = (40 + 540) / 2 * 1000;
  * @param {Breakpoint} breakpoint The breakpoint to format.
  * @return {string} A formatted string.
  */
-const formatBreakpoint = function(
-    msg: string, breakpoint: stackdriver.Breakpoint): string {
+const formatBreakpoint = (
+    msg: string, breakpoint: stackdriver.Breakpoint): string => {
   let text = msg +
       util.format(
           'breakpoint id: %s,\n\tlocation: %s', breakpoint.id,
@@ -103,11 +103,11 @@ const formatBreakpoint = function(
  * @param {Object.<string, Breakpoint>} breakpoints A map of breakpoints.
  * @return {string} A formatted string.
  */
-const formatBreakpoints = function(
-    msg: string, breakpoints: {[key: string]: stackdriver.Breakpoint}): string {
+const formatBreakpoints = (
+    msg: string, breakpoints: {[key: string]: stackdriver.Breakpoint}): string => {
   return msg +
       Object.keys(breakpoints)
-          .map(function(b) {
+          .map((b) => {
             return formatBreakpoint('', breakpoints[b]);
           })
           .join('\n');
@@ -315,7 +315,7 @@ export class Debuglet extends EventEmitter {
 
     const jsStats = fileStats.selectStats(/.js$/);
     const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
-    SourceMapper.create(mapFiles, async function(err3, sourcemapper) {
+    SourceMapper.create(mapFiles, async (err3, sourcemapper) => {
       if (err3) {
         that.logger.error('Error processing the sourcemaps.', err3);
         that.emit('initError', err3);
@@ -359,7 +359,7 @@ export class Debuglet extends EventEmitter {
         }
       }
 
-      that.getSourceContext_(function(err5, sourceContext) {
+      that.getSourceContext_((err5, sourceContext) => {
         if (err5) {
           that.logger.warn('Unable to discover source context', err5);
           // This is ignorable.
@@ -531,7 +531,7 @@ export class Debuglet extends EventEmitter {
           (err: Error|string, sourceContext: {[key: string]: string}) => void):
       void {
     fs.readFile(
-        'source-context.json', 'utf8', function(err: string|Error, data) {
+        'source-context.json', 'utf8', (err: string|Error, data) => {
           let sourceContext;
           if (!err) {
             try {
@@ -560,7 +560,7 @@ export class Debuglet extends EventEmitter {
           (seconds + 1) * 2, that.config.internal.maxRegistrationRetryDelay));
     }
 
-    setTimeout(function() {
+    setTimeout(() => {
       if (!that.running) {
         onError(new Error('Debuglet not running'));
         return;
@@ -569,7 +569,7 @@ export class Debuglet extends EventEmitter {
       // TODO: Handle the case when `that.debuggee` is null.
       that.controller.register(
           that.debuggee as Debuggee,
-          function(err: Error|null, result?: {debuggee: Debuggee;}) {
+          (err: Error|null, result?: {debuggee: Debuggee;}) => {
             if (err) {
               onError(err);
               return;
@@ -616,7 +616,7 @@ export class Debuglet extends EventEmitter {
     if (!once) {
       that.fetcherActive = true;
     }
-    setTimeout(function() {
+    setTimeout(() => {
       if (!that.running) {
         return;
       }
@@ -628,7 +628,7 @@ export class Debuglet extends EventEmitter {
       that.logger.info('Fetching breakpoints');
       // TODO: Address the case when `that.debuggee` is `null`.
       that.controller.listBreakpoints(
-          (that.debuggee as Debuggee), function(err, response, body) {
+          (that.debuggee as Debuggee), (err, response, body) => {
             if (err) {
               that.logger.error(
                   'Unable to fetch breakpoints – stopping fetcher', err);
@@ -669,7 +669,7 @@ export class Debuglet extends EventEmitter {
                   return;
                 }
                 const bps = (body.breakpoints ||
-                             []).filter(function(bp: stackdriver.Breakpoint) {
+                             []).filter((bp: stackdriver.Breakpoint) => {
                   const action = bp.action || 'CAPTURE';
                   if (action !== 'CAPTURE' && action !== 'LOG') {
                     that.logger.warn(
@@ -730,13 +730,13 @@ export class Debuglet extends EventEmitter {
       that.logger.info(
           formatBreakpoints('Server breakpoints: ', updatedBreakpointMap));
     }
-    breakpoints.forEach(function(breakpoint: stackdriver.Breakpoint) {
+    breakpoints.forEach((breakpoint: stackdriver.Breakpoint) => {
 
       // TODO: Address the case when `breakpoint.id` is `undefined`.
       if (!that.completedBreakpointMap[breakpoint.id as string] &&
           !that.activeBreakpointMap[breakpoint.id as string]) {
         // New breakpoint
-        that.addBreakpoint_(breakpoint, function(err) {
+        that.addBreakpoint_(breakpoint, (err) => {
           if (err) {
             that.completeBreakpoint_(breakpoint);
           }
@@ -749,7 +749,7 @@ export class Debuglet extends EventEmitter {
 
     // Remove completed breakpoints that the server no longer cares about.
     Debuglet.mapSubtract(this.completedBreakpointMap, updatedBreakpointMap)
-        .forEach(function(breakpoint) {
+        .forEach((breakpoint) => {
           // TODO: FIXME: breakpoint is a boolean here that doesn't have an id
           //              field.  It is possible that breakpoint.id is always
           //              undefined!
@@ -771,7 +771,7 @@ export class Debuglet extends EventEmitter {
   convertBreakpointListToMap_(breakpointList: stackdriver.Breakpoint[]):
       {[key: string]: stackdriver.Breakpoint} {
     const map: {[id: string]: stackdriver.Breakpoint} = {};
-    breakpointList.forEach(function(breakpoint) {
+    breakpointList.forEach((breakpoint) => {
       // TODO: Address the case when `breakpoint.id` is `undefined`.
       map[breakpoint.id as string] = breakpoint;
     });
@@ -808,7 +808,7 @@ export class Debuglet extends EventEmitter {
       that.logger.error(ALLOW_EXPRESSIONS_MESSAGE);
       breakpoint.status = new StatusMessage(
           StatusMessage.UNSPECIFIED, ALLOW_EXPRESSIONS_MESSAGE, true);
-      setImmediate(function() {
+      setImmediate(() => {
         cb(ALLOW_EXPRESSIONS_MESSAGE);
       });
       return;
@@ -819,14 +819,14 @@ export class Debuglet extends EventEmitter {
       that.logger.error(message);
       breakpoint.status =
           new StatusMessage(StatusMessage.UNSPECIFIED, message, true);
-      setImmediate(function() {
+      setImmediate(() => {
         cb(message);
       });
       return;
     }
 
     // TODO: Address the case when `that.v8debug` is `null`.
-    (that.v8debug as DebugApi).set(breakpoint, function(err1) {
+    (that.v8debug as DebugApi).set(breakpoint, (err1) => {
       if (err1) {
         cb(err1);
         return;
@@ -841,16 +841,16 @@ export class Debuglet extends EventEmitter {
         (that.v8debug as DebugApi)
             .log(
                 breakpoint,
-                function(fmt: string, exprs: string[]) {
+                (fmt: string, exprs: string[]) => {
                   console.log('LOGPOINT:', Debuglet.format(fmt, exprs));
                 },
-                function() {
+                () => {
                   // TODO: Address the case when `breakpoint.id` is `undefined`.
                   return that.completedBreakpointMap[breakpoint.id as string];
                 });
       } else {
         // TODO: Address the case when `that.v8debug` is `null`.
-        (that.v8debug as DebugApi).wait(breakpoint, function(err2) {
+        (that.v8debug as DebugApi).wait(breakpoint, (err2) => {
           if (err2) {
             that.logger.error(err2);
             cb(err2);
@@ -876,7 +876,7 @@ export class Debuglet extends EventEmitter {
     that.logger.info('\tupdating breakpoint data on server', breakpoint.id);
     that.controller.updateBreakpoint(
         // TODO: Address the case when `that.debuggee` is `null`.
-        (that.debuggee as Debuggee), breakpoint, function(err /*, body*/) {
+        (that.debuggee as Debuggee), breakpoint, (err /*, body*/) => {
           if (err) {
             that.logger.error('Unable to complete breakpoint on server', err);
           } else {
@@ -897,7 +897,7 @@ export class Debuglet extends EventEmitter {
 
     // TODO: Address the case when `that.debuggee` is `null`.
     that.controller.updateBreakpoint(
-        (that.debuggee as Debuggee), breakpoint, function(err /*, body*/) {
+        (that.debuggee as Debuggee), breakpoint, (err /*, body*/) => {
           if (err) {
             that.logger.error('Unable to complete breakpoint on server', err);
           }
@@ -921,7 +921,7 @@ export class Debuglet extends EventEmitter {
         now;
     const expiryTime = createdTime + that.config.breakpointExpirationSec;
 
-    setTimeout(function() {
+    setTimeout(() => {
       that.logger.info('Expiring breakpoint ' + breakpoint.id);
       breakpoint.status = {
         description: {format: 'The snapshot has expired'},

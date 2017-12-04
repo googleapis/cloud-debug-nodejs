@@ -34,7 +34,7 @@ function stateIsClean(api: debugapi.DebugApi): boolean {
   return true;
 }
 
-describe(__filename, function() {
+describe(__filename, () => {
   const config = extend(
       {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
   // TODO: It appears `logLevel` is a typo and should be `level`.  However,
@@ -43,13 +43,13 @@ describe(__filename, function() {
       new common.logger({levelLevel: config.logLevel} as {} as LoggerOptions);
   let api: debugapi.DebugApi;
 
-  beforeEach(function(done) {
+  beforeEach((done) => {
     if (!api) {
       scanner.scan(true, config.workingDirectory, /.js$/)
-          .then(function(fileStats) {
+          .then((fileStats) => {
             const jsStats = fileStats.selectStats(/.js$/);
             const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
-            SourceMapper.create(mapFiles, function(err, mapper) {
+            SourceMapper.create(mapFiles, (err, mapper) => {
               assert(!err);
 
               // TODO: Handle the case when mapper is undefined
@@ -67,19 +67,19 @@ describe(__filename, function() {
       done();
     }
   });
-  afterEach(function() {
+  afterEach(() => {
     assert(stateIsClean(api));
   });
-  it('Should be able to read the argument and the context', function(done) {
+  it('Should be able to read the argument and the context', (done) => {
     // TODO: Have this actually implement Breakpoint
     const brk: stackdriver.Breakpoint = {
       id: 'fake-id-123',
       location: {path: 'test-this-context-code.js', line: 5}
     } as stackdriver.Breakpoint;
     let ctxMembers;
-    api.set(brk, function(err1) {
+    api.set(brk, (err1) => {
       assert.ifError(err1);
-      api.wait(brk, function(err2) {
+      api.wait(brk, (err2) => {
         assert.ifError(err2);
         // TODO: Determine how to remove this cast to any.
         const frame = (brk as {}).stackFrames[0];
@@ -98,7 +98,7 @@ describe(__filename, function() {
         assert.equal(locals.length, 2, 'There should be two locals');
         assert.deepEqual(locals[0], {name: 'b', value: '1'});
         assert.deepEqual(locals[1].name, 'context');
-        api.clear(brk, function(err3) {
+        api.clear(brk, (err3) => {
           assert.ifError(err3);
           done();
         });
@@ -107,15 +107,15 @@ describe(__filename, function() {
     });
   });
   it('Should be able to read the argument and deny the context',
-     function(done) {
+     (done) => {
        // TODO: Have this actually implement Breakpoint
        const brk = {
          id: 'fake-id-123',
          location: {path: 'test-this-context-code.js', line: 9}
        } as stackdriver.Breakpoint;
-       api.set(brk, function(err1) {
+       api.set(brk, (err1) => {
          assert.ifError(err1);
-         api.wait(brk, function(err2) {
+         api.wait(brk, (err2) => {
            assert.ifError(err2);
            // TODO: Determine how to remove this cast to any.
            const frame = (brk as {}).stackFrames[0];
@@ -124,7 +124,7 @@ describe(__filename, function() {
            assert.equal(args.length, 0, 'There should be zero arguments');
            assert.equal(locals.length, 1, 'There should be one local');
            assert.deepEqual(locals[0], {name: 'j', value: '1'});
-           api.clear(brk, function(err3) {
+           api.clear(brk, (err3) => {
              assert.ifError(err3);
              done();
            });

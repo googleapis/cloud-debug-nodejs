@@ -35,20 +35,20 @@ const breakpointInFoo: stackdriver.Breakpoint = {
   location: {path: 'build/test/test-max-data-size-code.js', line: 4}
 } as stackdriver.Breakpoint;
 
-describe('maxDataSize', function() {
+describe('maxDataSize', () => {
   const config = extend({}, defaultConfig, {forceNewAgent_: true});
 
-  before(function(done) {
+  before((done) => {
     if (!api) {
       // TODO: It appears `logLevel` is a typo and should be `level`.  However,
       //       with this change, the tests fail.  Resolve this.
       const logger = new common.logger(
           {levelLevel: config.logLevel} as {} as LoggerOptions);
       scanner.scan(true, config.workingDirectory, /.js$/)
-          .then(function(fileStats) {
+          .then((fileStats) => {
             const jsStats = fileStats.selectStats(/.js$/);
             const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
-            SourceMapper.create(mapFiles, function(err, mapper) {
+            SourceMapper.create(mapFiles, (err, mapper) => {
               assert(!err);
 
               // TODO: Handle the case when mapper is undefined
@@ -65,7 +65,7 @@ describe('maxDataSize', function() {
     }
   });
 
-  it('should limit data reported', function(done) {
+  it('should limit data reported', (done) => {
     const oldMaxData = config.capture.maxDataSize;
     config.capture.maxDataSize = 5;
     // clone a clean breakpointInFoo
@@ -75,32 +75,32 @@ describe('maxDataSize', function() {
       location: breakpointInFoo.location
     } as stackdriver.Breakpoint;
     // TODO: Determine how to remove this cast to any.
-    api.set(bp, function(err1) {
+    api.set(bp, (err1) => {
       assert.ifError(err1);
       // TODO: Determine how to remove this cast to any.
-      api.wait(bp, function(err2?: Error) {
+      api.wait(bp, (err2?: Error) => {
         assert.ifError(err2);
         // TODO: Determine how to remove this cast to any.
-        assert(bp.variableTable.some(function(v) {
+        assert(bp.variableTable.some((v) => {
           // TODO: Handle the case when v is undefined
           // TODO: Handle the case when v.status is undefined
           return ((v as {}).status as {}).description.format ===
               'Max data size reached';
         }));
         // TODO: Determine how to remove this cast to any.
-        api.clear(bp, function(err3) {
+        api.clear(bp, (err3) => {
           config.capture.maxDataSize = oldMaxData;
           assert.ifError(err3);
           done();
         });
       });
-      process.nextTick(function() {
+      process.nextTick(() => {
         foo(2);
       });
     });
   });
 
-  it('should be unlimited if 0', function(done) {
+  it('should be unlimited if 0', (done) => {
     const oldMaxData = config.capture.maxDataSize;
     config.capture.maxDataSize = 0;
     // clone a clean breakpointInFoo
@@ -109,16 +109,16 @@ describe('maxDataSize', function() {
       id: breakpointInFoo.id,
       location: breakpointInFoo.location
     } as stackdriver.Breakpoint;
-    api.set(bp, function(err1) {
+    api.set(bp, (err1) => {
       assert.ifError(err1);
-      api.wait(bp, function(err2?: Error) {
+      api.wait(bp, (err2?: Error) => {
         assert.ifError(err2);
         // TODO: Determine how to remove this cast to any.
         // TODO: The function supplied to reduce is of the wrong type.
         //       Fix this.
         assert(
             bp.variableTable.reduce(
-                function(acc: Function, elem: stackdriver.Variable) {
+                (acc: Function, elem: stackdriver.Variable) => {
                   return acc &&
                       (!elem.status ||
                        elem.status.description.format !==
@@ -126,13 +126,13 @@ describe('maxDataSize', function() {
                   // TODO: Fix this incorrect method signature.
                 } as {}),
             true as {} as string);
-        api.clear(bp, function(err3) {
+        api.clear(bp, (err3) => {
           config.capture.maxDataSize = oldMaxData;
           assert.ifError(err3);
           done();
         });
       });
-      process.nextTick(function() {
+      process.nextTick(() => {
         foo(2);
       });
     });

@@ -21,23 +21,23 @@ import * as nocks from './nocks';
 
 nock.disableNetConnect();
 
-describe('Debug module', function() {
-  before(function(done) {
+describe('Debug module', () => {
+  before((done) => {
     nocks.projectId('project-via-metadata');
     // TODO: Determine how to remove this cast to any.
     const debuglet = (module as {}).start({
       projectId: '0',
       debug: {forceNewAgent_: true, testMode_: true}
     });
-    debuglet.on('started', function() {
+    debuglet.on('started', () => {
       debuglet.stop();
       done();
     });
   });
 
-  it('should throw on attempt to start a new agent', function() {
+  it('should throw on attempt to start a new agent', () => {
     // TODO: Determine how to remove this cast to any.
-    assert.throws(function() {
+    assert.throws(() => {
       (module as {}).start();
     });
   });

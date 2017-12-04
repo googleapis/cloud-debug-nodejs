@@ -123,7 +123,7 @@ class StateResolver {
 
     // TODO: Determine why _extend is used here
     this.resolvedVariableTable = (util as {})._extend([], this.messageTable);
-    this.rawVariableTable = this.messageTable.map(function() {
+    this.rawVariableTable = this.messageTable.map(() => {
       return null;
     });
   }
@@ -141,7 +141,7 @@ class StateResolver {
     // Evaluate the watch expressions
     const evalIndexSet = new Set();
     if (that.expressions) {
-      that.expressions.forEach(function(expression, index2) {
+      that.expressions.forEach((expression, index2) => {
         const result = evaluate(expression, that.state.frame(0));
         let evaluated;
 
@@ -216,8 +216,8 @@ class StateResolver {
         fromIndex);  // remove the remaining entries
 
     const that = this;
-    const processBufferFull = function(variables: stackdriver.Variable[]) {
-      variables.forEach(function(variable) {
+    const processBufferFull = (variables: stackdriver.Variable[]) => {
+      variables.forEach((variable) => {
         if (variable.varTableIndex && variable.varTableIndex >= fromIndex) {
           // make it point to the sentinel 'buffer full' value
           variable.varTableIndex = BUFFER_FULL_MESSAGE_INDEX;
@@ -229,7 +229,7 @@ class StateResolver {
       });
     };
 
-    frames.forEach(function(frame) {
+    frames.forEach((frame) => {
       processBufferFull(frame.arguments);
       processBufferFull(frame.locals);
     });
@@ -398,11 +398,11 @@ class StateResolver {
     }
 
     const fromScopes: stackdriver.Variable[][] =
-        scopes.map(function(scope: v8.ScopeMirror) {
+        scopes.map((scope: v8.ScopeMirror) => {
           return transform(
               // TODO: Update this so that `locals` is not of type `any[]`.
               scope.details().object(),
-              function(locals: stackdriver.Variable[], value, name: string) {
+              (locals: stackdriver.Variable[], value, name: string) => {
                 const trg = makeMirror(value);
                 if (!usedNames[name]) {
                   // It's a valid variable that belongs in the locals list

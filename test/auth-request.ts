@@ -24,7 +24,7 @@ export default function(
         void) {
   request(
       options,
-      function(err: Error, response: request.RequestResponse, body: {}) {
+      (err: Error, response: request.RequestResponse, body: {}) => {
         callback(err, body, response);
       });
 }
