@@ -50,7 +50,7 @@ export class V8DebugApi implements debugapi.DebugApi {
   config: DebugAgentConfig;
   fileStats: ScanStats;
   listeners: {[id: string]: utils.Listener} = {};
-  v8Version: {};
+  v8Version: RegExpExecArray|null;
   usePermanentListener: boolean;
   logger: Logger;
   handleDebugEvents:
@@ -68,7 +68,7 @@ export class V8DebugApi implements debugapi.DebugApi {
     this.fileStats = jsFiles;
     this.v8Version = /(\d+\.\d+\.\d+)\.\d+/.exec(process.versions.v8);
     this.logger = logger;
-    this.usePermanentListener = semver.satisfies(this.v8Version[1], '>=4.5');
+    this.usePermanentListener = semver.satisfies(this.v8Version![1], '>=4.5');
     this.handleDebugEvents =
         (evt: v8.DebugEvent, execState: v8.ExecutionState,
          eventData: v8.BreakEvent): void => {
@@ -201,12 +201,8 @@ export class V8DebugApi implements debugapi.DebugApi {
             timesliceEnd = currTime + 1000;
           }
           print(
-              // TODO: Address the case where `breakpoint.logMessageFormat` is
-              // `null`.
-              breakpoint.logMessageFormat as string,
-              // TODO: Determine how to remove the `as` cast below
-              breakpoint.evaluatedExpressions.map(
-                  (obj: {}) => JSON.stringify(obj)));
+              breakpoint.logMessageFormat!,
+              breakpoint.evaluatedExpressions.map(obj => JSON.stringify(obj)));
           logsThisSecond++;
           if (shouldStop()) {
             that.listeners[num].enabled = false;

@@ -122,7 +122,7 @@ class StateResolver {
     };
 
     // TODO: Determine why _extend is used here
-    this.resolvedVariableTable = (util as {})._extend([], this.messageTable);
+    this.resolvedVariableTable = (util as {} as {_extend: Function})._extend([], this.messageTable);
     this.rawVariableTable = this.messageTable.map(() => {
       return null;
     });
@@ -175,8 +175,8 @@ class StateResolver {
     while (index <
                that.rawVariableTable.length &&  // NOTE: length changes in loop
            (that.totalSize < that.config.capture.maxDataSize || noLimit)) {
-      assert(!that.resolvedVariableTable[index]);  // shouldn't have it
-                                                   // resolved yet
+      assert.ok(!that.resolvedVariableTable[index]);  // shouldn't have it
+                                                      // resolved yet
       const isEvaluated = evalIndexSet.has(index);
       // TODO: This code suggests that an ObjectMirror and Stutus are the
       //       same.  Resolve this.
@@ -382,7 +382,7 @@ class StateResolver {
     // There will always be at least 3 scopes.
     // For top-level breakpoints: [local, script, global]
     // Other: [..., closure (module IIFE), script, global]
-    assert(count >= 3);
+    assert.ok(count >= 3);
     assert.strictEqual(allScopes[count - 1].scopeType(), ScopeType.Global);
     assert.strictEqual(allScopes[count - 2].scopeType(), ScopeType.Script);
 
@@ -393,7 +393,7 @@ class StateResolver {
     if (allScopes[count - 3].scopeType() === ScopeType.Closure) {
       scopes = allScopes.slice(0, -3);
     } else {
-      assert(allScopes[count - 3].scopeType() === ScopeType.Local);
+      assert.ok(allScopes[count - 3].scopeType() === ScopeType.Local);
       scopes = allScopes.slice(0, -2);
     }
 

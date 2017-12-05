@@ -51,7 +51,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
   // undefined.
   listeners: {[id: string]: utils.Listener} = {};
   // scriptmapper maps scriptId to actual script path.
-  scriptMapper: {[id: string]: {}} = {};
+  scriptMapper: {[id: string]: {url: string}} = {};
   // locationmapper maps location string to a list of stackdriver breakpoint id.
   locationMapper: {[id: string]: stackdriver.BreakpointId[]} = {};
   // breakpointmapper maps v8/inspector breakpoint id to a list of
@@ -202,9 +202,8 @@ export class InspectorDebugApi implements debugapi.DebugApi {
               // TODO: Address the case where `breakpoint.logMessageFormat` is
               // `null`.
               breakpoint.logMessageFormat as string,
-              // TODO: Determine how to remove the `as` cast below
               breakpoint.evaluatedExpressions.map(
-                  (obj: {}) => JSON.stringify(obj)));
+                  (obj: stackdriver.Variable|null) => JSON.stringify(obj)));
           logsThisSecond++;
           if (shouldStop()) {
             this.listeners[breakpoint.id].enabled = false;
@@ -257,7 +256,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       cb: (err: Error|null) => void): void {
     // Parse and validate conditions and watch expressions for correctness and
     // immutability
-    let ast: {} = null;
+    let ast: estree.Program|null = null;
     if (breakpoint.condition) {
       try {
         // We parse as ES6; even though the underlying V8 version may only

@@ -246,7 +246,7 @@ function statsForFile(
     shasum = crypto.createHash('sha1');
   }
   // TODO: Determine why property 'ReadStream' does not exist on type 'fs'
-  const s = (fs as {}).ReadStream(filename);
+  const s = (fs as {} as {ReadStream: Function}).ReadStream(filename);
   let lines = 0;
   const byLine = s.pipe(split());
   byLine.on('error', (e: Error) => {

@@ -94,10 +94,9 @@ function testTool(
       assert.notEqual(
           info, null,
           'The mapping info for file ' + inputFilePath + ' must be non-null');
-      // TODO: Handle the case when info is undefined
-      assert.equal((info as {}).file, outputFilePath);
+      assert.equal(info!.file, outputFilePath);
       assert.equal(
-          (info as {}).line, expectedOutputLine,
+          info!.line, expectedOutputLine,
           ' invalid mapping for input line ' + inputLine);
     };
 

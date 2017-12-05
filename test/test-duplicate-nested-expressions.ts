@@ -81,8 +81,7 @@ describe(__filename, () => {
       assert.ifError(err1);
       api.wait(brk, (err2) => {
         assert.ifError(err2);
-        // TODO: Determine how to remove this cast to any.
-        const frame = (brk as {}).stackFrames[0];
+        const frame = brk.stackFrames[0];
         const args = frame.arguments;
         const locals = frame.locals;
         assert.equal(args.length, 0, 'There should be zero arguments');
@@ -107,8 +106,7 @@ describe(__filename, () => {
       assert.ifError(err1);
       api.wait(brk, (err2) => {
         assert.ifError(err2);
-        // TODO: Determine how to remove this cast to any.
-        const frame = (brk as {}).stackFrames[0];
+        const frame = brk.stackFrames[0];
         const args = frame.arguments;
         const locals = frame.locals;
         assert.equal(args.length, 0, 'There should be zero arguments');
@@ -135,8 +133,7 @@ describe(__filename, () => {
          assert.ifError(err1);
          api.wait(brk, (err2) => {
            assert.ifError(err2);
-           // TODO: Determine how to remove this cast to any.
-           const frame = (brk as {}).stackFrames[0];
+           const frame = brk.stackFrames[0];
            const args = frame.arguments;
            const locals = frame.locals;
            assert.equal(args.length, 0, 'There should be zero arguments');
@@ -163,8 +160,7 @@ describe(__filename, () => {
          assert.ifError(err1);
          api.wait(brk, (err2) => {
            assert.ifError(err2);
-           // TODO: Determine how to remove this cast to any.
-           const frame = (brk as {}).stackFrames[0];
+           const frame = brk.stackFrames[0];
            const args = frame.arguments;
            const locals = frame.locals;
            assert.equal(args.length, 0, 'There should be zero arguments');

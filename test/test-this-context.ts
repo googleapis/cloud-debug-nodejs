@@ -81,19 +81,17 @@ describe(__filename, () => {
       assert.ifError(err1);
       api.wait(brk, (err2) => {
         assert.ifError(err2);
-        // TODO: Determine how to remove this cast to any.
-        const frame = (brk as {}).stackFrames[0];
+        const frame = brk.stackFrames[0];
         const args = frame.arguments;
         const locals = frame.locals;
         // TODO: Determine how to remove these casts to any.
         ctxMembers =
-            (brk as {})
-                .variableTable.slice((brk as {}).variableTable.length - 1)[0]
-                .members;
+            brk.variableTable.slice(brk.variableTable.length - 1)[0]!
+               .members;
         assert.deepEqual(
-            ctxMembers.length, 1,
+            ctxMembers!.length, 1,
             'There should be one member in the context variable value');
-        assert.deepEqual(ctxMembers[0], {name: 'a', value: '10'});
+        assert.deepEqual(ctxMembers![0], {name: 'a', value: '10'});
         assert.equal(args.length, 0, 'There should be zero arguments');
         assert.equal(locals.length, 2, 'There should be two locals');
         assert.deepEqual(locals[0], {name: 'b', value: '1'});
@@ -117,8 +115,7 @@ describe(__filename, () => {
          assert.ifError(err1);
          api.wait(brk, (err2) => {
            assert.ifError(err2);
-           // TODO: Determine how to remove this cast to any.
-           const frame = (brk as {}).stackFrames[0];
+           const frame = brk.stackFrames[0];
            const args = frame.arguments;
            const locals = frame.locals;
            assert.equal(args.length, 0, 'There should be zero arguments');

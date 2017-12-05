@@ -80,7 +80,7 @@ describe('Controller API', () => {
          const controller = new Controller(fakeDebug);
          controller.register(debuggee, (err, result) => {
            // TODO: Fix this incorrect method signature.
-           (assert as {}).ifError(err, 'not expecting an error');
+           (assert as {ifError: Function}).ifError(err, 'not expecting an error');
            assert.ok(result);
            assert.equal(result!.debuggee.id, 'fake-debuggee');
            assert.ok(result!.debuggee.isDisabled);
@@ -132,7 +132,7 @@ describe('Controller API', () => {
             assert(!err, 'not expecting an error');
             // TODO: Handle the case where result is undefined
             assert(
-                !(result as {}).breakpoints,
+                !(result as {breakpoints: {}}).breakpoints,
                 'should not have a breakpoints property');
             scope.done();
             done();
@@ -161,7 +161,7 @@ describe('Controller API', () => {
                 assert(!err, 'not expecting an error');
                 // TODO: Handle the case where result is undefined
                 assert(
-                    !(result as {}).breakpoints,
+                    !(result as {breakpoints: {}}).breakpoints,
                     'should not have breakpoints property');
                 scope.done();
                 done();
@@ -202,10 +202,10 @@ describe('Controller API', () => {
       // TODO: Determine if the result parameter should be used.
       controller.listBreakpoints(debuggee, (err, response, result) => {
         // TODO: Fix this incorrect method signature.
-        (assert as {}).ifError(err, 'not expecting an error');
+        (assert as {ifError: Function}).ifError(err, 'not expecting an error');
         // TODO: Fix this error that states `body` is not a property
         //       of `ServerResponse`.
-        assert((response as {}).body.waitExpired, 'should have expired set');
+        assert((response as {} as {body: {waitExpired: {}}}).body.waitExpired, 'should have expired set');
         scope.done();
         done();
       });
@@ -264,7 +264,7 @@ describe('Controller API', () => {
           debuggee as Debuggee, breakpoint, (err, result) => {
             assert(!err, 'not expecting an error');
             assert.equal(
-                result.kind,
+                (result as {kind: {}}).kind,
                 'debugletcontroller#updateActiveBreakpointResponse');
             scope.done();
             done();

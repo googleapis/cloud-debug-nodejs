@@ -19,7 +19,7 @@ import * as request from 'request';
 
 // TODO: Make the type of `options` more precise
 export default function(
-    options: {},
+    options: (request.UriOptions & request.CoreOptions) | (request.UrlOptions & request.CoreOptions),
     callback: (err: Error, body: {}, response: request.RequestResponse) =>
         void) {
   request(

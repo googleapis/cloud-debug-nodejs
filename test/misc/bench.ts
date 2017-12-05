@@ -27,7 +27,7 @@ const Logger = require('../src/logger.js');
 const logger = new Logger(config.logLevel);
 assert.ok(v8debugapi.init(logger, config));
 
-function bench(message: {}, f: {}) {
+function bench(message: {}, f: Function) {
   let t = process.hrtime();
   f();
   t = process.hrtime(t);

@@ -24,12 +24,14 @@ import DEFAULT_CONFIG from '../src/agent/config';
 import {Debuggee} from '../src/debuggee';
 import * as stackdriver from '../src/types/stackdriver';
 
-(DEFAULT_CONFIG as {}).allowExpressions = true;
-(DEFAULT_CONFIG as {}).workingDirectory = path.join(__dirname, '..', '..');
+DEFAULT_CONFIG.allowExpressions = true;
+DEFAULT_CONFIG.workingDirectory = path.join(__dirname, '..', '..');
 import {Debuglet, CachedPromise} from '../src/agent/debuglet';
 import * as dns from 'dns';
 import * as extend from 'extend';
-const metadata: {project: {}, instance: {}} = require('gcp-metadata');
+import * as rawMetadata from 'gcp-metadata';
+const metadata: { project: Function; instance: Function; } = rawMetadata;
+
 import {Debug} from '../src/client/stackdriver/debug';
 import * as utils from '../src/agent/util/utils';
 
@@ -71,14 +73,14 @@ const errorBp: stackdriver.Breakpoint = {
   location: {path: 'build/test/fixtures/foo.js', line: 2}
 } as {} as stackdriver.Breakpoint;
 
-function verifyBreakpointRejection(re: RegExp, body: {breakpoint: {}}) {
+function verifyBreakpointRejection(re: RegExp, body: {breakpoint: stackdriver.Breakpoint}) {
   const status = body.breakpoint.status;
-  const hasCorrectDescription = status.description.format.match(re);
-  return status.isError && hasCorrectDescription;
+  const hasCorrectDescription = status!.description.format.match(re);
+  return status!.isError && hasCorrectDescription;
 }
 
 describe('CachedPromise', () => {
-  it('CachedPromise.get() will resolve after CachedPromise.resolve()', (done) => {
+  it('CachedPromise.get() will resolve after CachedPromise.resolve()', function(done) {
     this.timeout(2000);
     const cachedPromise = new CachedPromise();
     cachedPromise.get().then(() => {
@@ -99,14 +101,14 @@ describe('Debuglet', () => {
     after(() => {
       // TODO: Fix this cast to any that is caused by the fact that `lookup`
       //       is a readonly property.
-      (dns as {}).lookup = savedLookup;
+      (dns as {lookup: {}}).lookup = savedLookup;
     });
 
     it('should resolve true if metadata service is resolveable', (done) => {
       // TODO: Fix this cast to any that is caused by the fact that `lookup`
       //       is a readonly property.
       // TODO: Determine if the hostname parameter should be used.
-      (dns as {}).lookup =
+      (dns as {lookup: {}}).lookup =
           (hostname: string|null,
            cb: (err: Error|null, param: {address: string, family: string}) =>
                void) => {
@@ -126,7 +128,7 @@ describe('Debuglet', () => {
       //       is a readonly property.
       // TODO: Determine if the hostname parameter should be used.
       // TODO: Determine if these types are correct
-      (dns as {}).lookup = (hostname: string, cb: (err: Error) => void) => {
+      (dns as {lookup: {}}).lookup = (hostname: string, cb: (err: Error) => void) => {
         setImmediate(() => {
           cb(new Error('resolution error'));
         });
@@ -140,7 +142,7 @@ describe('Debuglet', () => {
   });
 
   describe('getProjectIdFromMetadata', () => {
-    let savedProject: string;
+    let savedProject: Function;
     before(() => {
       savedProject = metadata.project;
     });
@@ -192,8 +194,7 @@ describe('Debuglet', () => {
   });
 
   describe('getClusterNameFromMetadata', () => {
-    // TODO: Make this type more precise.
-    let savedInstance: {};
+    let savedInstance: Function;
     before(() => {
       savedInstance = metadata.instance;
     });
@@ -254,10 +255,9 @@ describe('Debuglet', () => {
 
     it('should not query metadata if local config.projectId is set', (done) => {
       Debuglet.getProjectIdFromMetadata = () => {
-        // TODO: Fix this invalid method signature.
-        (assert as {}).fail();
-        // TODO: Determine if this should be used here.
-        return Promise.reject('');
+        const failureMessage = 'getProjectIdFromMetadata should not be called';
+        assert.fail(failureMessage);
+        return Promise.reject(failureMessage);
       };
       Debuglet.getProjectId({projectId: 'from-config'}).then((projectId) => {
         assert.strictEqual(projectId, 'from-config');
@@ -271,10 +271,9 @@ describe('Debuglet', () => {
       process.env.GCLOUD_PROJECT = 'from-env-var';
 
       Debuglet.getProjectIdFromMetadata = () => {
-        // TODO: Fix this invalid method signature.
-        (assert as {}).fail();
-        // TODO: Determine if this should be used here.
-        return Promise.reject('');
+        const failureMessage = 'getProjectIdFromMetadata should not be called';
+        assert.fail(failureMessage);
+        return Promise.reject(failureMessage);
       };
       Debuglet.getProjectId({}).then((projectId) => {
         assert.strictEqual(projectId, 'from-env-var');
@@ -343,7 +342,7 @@ describe('Debuglet', () => {
       // TODO: Debuglet.normalizeConfig_() expects 1 parameter but the original
       //       test code had zero arguments here.  Determine which is correct.
       const compareConfig =
-          Debuglet.normalizeConfig_(null as {} as DebugAgentConfig);
+          Debuglet.normalizeConfig_(null!);
       // The actual config should be exactly defaultConfig with only
       // maxExpandFrames adjusted.
       compareConfig.capture.maxExpandFrames = testValue;
@@ -402,8 +401,7 @@ describe('Debuglet', () => {
         done();
       });
       debuglet.once('started', () => {
-        // TODO: Fix this invalid method signature.
-        (assert as {}).fail();
+        assert.fail('The debuglet should not have started');
       });
       debuglet.start();
     });
@@ -446,8 +444,7 @@ describe('Debuglet', () => {
       const debuglet = new Debuglet(debug, defaultConfig);
 
       debuglet.once('started', () => {
-        // TODO: Fix this invalid method signature.
-        (assert as {}).fail();
+        assert.fail('The debuglet should not have started');
       });
       debuglet.once('initError', () => {
         Debuglet.getProjectId = savedGetProjectId;
@@ -501,9 +498,8 @@ describe('Debuglet', () => {
 
            debuglet.once('registered', (id: string) => {
              assert.equal(id, DEBUGGEE_ID);
-             // TODO: Handle the case where debuglet.debuggee_ is undefined
              assert.equal(
-                 (debuglet.debuggee as {}).project,
+                 debuglet.debuggee!.project,
                  process.env.GCLOUD_PROJECT);
              debuglet.stop();
              scope.done();
@@ -528,9 +524,8 @@ describe('Debuglet', () => {
 
            debuglet.once('registered', (id: string) => {
              assert.equal(id, DEBUGGEE_ID);
-             // TODO: Handle the case where debuglet.debuggee_ is undefined
              assert.equal(
-                 (debuglet.debuggee as {}).project, 'project-via-options');
+                 debuglet.debuggee!.project, 'project-via-options');
              debuglet.stop();
              scope.done();
              done();
@@ -664,7 +659,7 @@ describe('Debuglet', () => {
                //       correctly named minorVersion_, then the test fails.
                //       Resolve this.
                _.isUndefined(
-                   (debuglet.config.serviceContext as {}).minorVersion));
+                   (debuglet.config.serviceContext as {minorVersion: {}}).minorVersion));
          });
 
       it('should not provide minorversion upon registration on non flex',
@@ -677,9 +672,9 @@ describe('Debuglet', () => {
            const scope = nock(API)
                              .post(
                                  REGISTER_PATH,
-                                 (body: {}) => {
+                                 (body: {debuggee: Debuggee}) => {
                                    assert.ok(_.isUndefined(
-                                       body.debuggee.labels.minorversion));
+                                       body.debuggee.labels!.minorversion));
                                    return true;
                                  })
                              .once()
@@ -706,9 +701,9 @@ describe('Debuglet', () => {
            const scope = nock(API)
                              .post(
                                  REGISTER_PATH,
-                                 (body: {}) => {
+                                 (body: {debuggee: Debuggee}) => {
                                    assert.ok(_.isString(
-                                       body.debuggee.labels.minorversion));
+                                       body.debuggee.labels!.minorversion));
                                    return true;
                                  })
                              .once()
@@ -832,7 +827,7 @@ describe('Debuglet', () => {
           //       numbers.
           // TODO: The `cb` expects the first argument to not be null.
           //       Determine if the first argument can be null.
-          cb(null as {} as string, {a: 5 as {} as string});
+          cb(null!, {a: 5 as {} as string});
         });
       };
       const debuglet = new Debuglet(debug, defaultConfig);
@@ -840,9 +835,9 @@ describe('Debuglet', () => {
       const scope = nock(API)
                         .post(
                             REGISTER_PATH,
-                            (body: {}) => {
-                              return body.debuggee.sourceContexts[0] &&
-                                  body.debuggee.sourceContexts[0].a === 5;
+                            (body: {debuggee: Debuggee}) => {
+                              return body.debuggee.sourceContexts![0] &&
+                                  body.debuggee.sourceContexts![0].a === 5;
                             })
                         .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
@@ -879,7 +874,7 @@ describe('Debuglet', () => {
          debuglet.start();
        });
 
-    it('should retry after a isDisabled request', (done) => {
+    it('should retry after a isDisabled request', function(done) {
       this.timeout(4000);
       const debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials},
@@ -937,7 +932,7 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should fetch and add breakpoints', (done) => {
+    it('should fetch and add breakpoints', function(done) {
       this.timeout(2000);
       const debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials},
@@ -1126,10 +1121,10 @@ describe('Debuglet', () => {
                         .reply(200, {breakpoints: [bp, errorBp]})
                         .put(
                             BPS_PATH + '/' + errorBp.id,
-                            (body: {}) => {
+                            (body: {breakpoint: stackdriver.Breakpoint}) => {
                               const status = body.breakpoint.status;
-                              return status.isError &&
-                                  status.description.format.indexOf(
+                              return status!.isError &&
+                                  status!.description.format.indexOf(
                                       'actions are CAPTURE') !== -1;
                             })
                         .reply(200);
@@ -1164,11 +1159,11 @@ describe('Debuglet', () => {
                         .reply(200, {breakpoints: [bp]})
                         .put(
                             BPS_PATH + '/test',
-                            (body: {}) => {
+                            (body: {breakpoint: stackdriver.Breakpoint}) => {
                               const status = body.breakpoint.status;
-                              return status.description.format ===
+                              return status!.description.format ===
                                   'The snapshot has expired' &&
-                                  status.refersTo === 'BREAKPOINT_AGE';
+                                  status!.refersTo === 'BREAKPOINT_AGE';
                             })
                         .reply(200);
 
@@ -1215,8 +1210,8 @@ describe('Debuglet', () => {
               .reply(200, {breakpoints: [bp]})
               .put(
                   BPS_PATH + '/test',
-                  (body: {}) => {
-                    return body.breakpoint.status.description.format ===
+                  (body: {breakpoint: stackdriver.Breakpoint}) => {
+                    return body.breakpoint.status!.description.format ===
                         'The snapshot has expired';
                   })
               .reply(200)
@@ -1295,9 +1290,8 @@ describe('Debuglet', () => {
           packageInfo);
       assert.ok(debuggee);
       assert.ok(debuggee.labels);
-      // TODO: Handle the case where debuggee.labels is undefined
-      assert.strictEqual((debuggee.labels as {}).module, 'some-service');
-      assert.strictEqual((debuggee.labels as {}).version, 'production');
+      assert.strictEqual(debuggee.labels!.module, 'some-service');
+      assert.strictEqual(debuggee.labels!.version, 'production');
     });
 
     it('should not add a module label when service is default', () => {
@@ -1306,9 +1300,8 @@ describe('Debuglet', () => {
           {service: 'default', version: 'yellow.5'}, {}, false, packageInfo);
       assert.ok(debuggee);
       assert.ok(debuggee.labels);
-      // TODO: Handle the case where debuggee.labels is undefined
-      assert.strictEqual((debuggee.labels as {}).module, undefined);
-      assert.strictEqual((debuggee.labels as {}).version, 'yellow.5');
+      assert.strictEqual(debuggee.labels!.module, undefined);
+      assert.strictEqual(debuggee.labels!.version, 'yellow.5');
     });
 
     it('should have an error statusMessage with the appropriate arg',

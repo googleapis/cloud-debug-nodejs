@@ -16,15 +16,42 @@
 
 import * as realAssert from 'assert';
 
-const nop = (_: {}) => _;
-const fakeAssert: {} = nop;
-fakeAssert.deepEqual = fakeAssert.deepStrictEqual = fakeAssert.doesNotThrow =
-    fakeAssert.equal = fakeAssert.fail = fakeAssert.ifError =
-        fakeAssert.notDeepEqual = fakeAssert.notDeepStrictEqual =
-            fakeAssert.notEqual = fakeAssert.notStrictEqual = fakeAssert.ok =
-                fakeAssert.strictEqual =
-                    fakeAssert.throws = fakeAssert.AssertionError = nop;
+export interface FakeAssert {
+  deepEqual: Function;
+  deepStrictEqual: Function;
+  doesNotThrow: Function;
+  equal: Function;
+  fail: Function;
+  ifError: Function;
+  notDeepEqual: Function;
+  notDeepStrictEqual: Function;
+  notEqual: Function;
+  notStrictEqual: Function;
+  ok: Function;
+  strictEqual: Function;
+  throws: Function;
+  AssertionError: Function
+}
 
-export function debugAssert(enableAssertions: boolean) {
+const nop = (_: {}) => _;
+
+const fakeAssert: FakeAssert = {
+  deepEqual: nop,
+  deepStrictEqual: nop,
+  doesNotThrow: nop,
+  equal: nop,
+  fail: nop,
+  ifError: nop,
+  notDeepEqual: nop,
+  notDeepStrictEqual: nop,
+  notEqual: nop,
+  notStrictEqual: nop,
+  ok: nop,
+  strictEqual: nop,
+  throws: nop,
+  AssertionError: nop
+};
+
+export function debugAssert(enableAssertions: boolean): FakeAssert {
   return enableAssertions ? realAssert : fakeAssert;
 }

@@ -80,13 +80,13 @@ class StateResolver {
   private v8Inspector: V8Inspector;
   private expressions: string[]|undefined;
   private config: DebugAgentConfig;
-  private scriptmapper: {[id: string]: {}};
+  private scriptmapper: {[id: string]: {url: string}};
   private breakpoint: stackdriver.Breakpoint;
   private evaluatedExpressions: stackdriver.Variable[];
   private totalSize: number;
   private messageTable: stackdriver.Variable[];
   private resolvedVariableTable: stackdriver.Variable[];
-  private rawVariableTable: Array<{}>;
+  private rawVariableTable: Array<inspector.Runtime.RemoteObject|null>;
 
   /**
    * @param {Array<!Object>} callFrames
@@ -97,7 +97,7 @@ class StateResolver {
   constructor(
       callFrames: inspector.Debugger.CallFrame[],
       breakpoint: stackdriver.Breakpoint, config: DebugAgentConfig,
-      scriptmapper: {[id: string]: {}}, v8Inspector: V8Inspector) {
+      scriptmapper: {[id: string]: {url: string}}, v8Inspector: V8Inspector) {
     this.callFrames = callFrames;
     this.breakpoint = breakpoint;
     // TODO: Investigate whether this cast can be avoided.
@@ -134,7 +134,7 @@ class StateResolver {
     };
 
     // TODO: Determine why _extend is used here
-    this.resolvedVariableTable = (util as {})._extend([], this.messageTable);
+    this.resolvedVariableTable = (util as {} as {_extend: Function})._extend([], this.messageTable);
     this.rawVariableTable = this.messageTable.map(() => {
       return null;
     });
@@ -186,12 +186,13 @@ class StateResolver {
     while (index <
                this.rawVariableTable.length &&  // NOTE: length changes in loop
            (this.totalSize < this.config.capture.maxDataSize || noLimit)) {
-      assert(!this.resolvedVariableTable[index]);  // shouldn't have it
-                                                   // resolved yet
+      assert.ok(!this.resolvedVariableTable[index]);  // shouldn't have it
+                                                      // resolved yet
       const isEvaluated = evalIndexSet.has(index);
-      if (this.rawVariableTable[index].objectId) {
+      // TODO: Handle the cases where `null` or `undefined` occurs
+      if (this.rawVariableTable![index]!.objectId) {
         this.resolvedVariableTable[index] = this.resolveRemoteObject_(
-            this.rawVariableTable[index], isEvaluated);
+            this.rawVariableTable[index]!, isEvaluated);
       }
       index++;
     }
@@ -471,7 +472,7 @@ class StateResolver {
     return type === 'function';
   }
 
-  getVariableIndex_(value: {}): number {
+  getVariableIndex_(value: inspector.Runtime.RemoteObject): number {
     let idx = this.rawVariableTable.indexOf(value);
     if (idx === -1) {
       idx = this.storeObjectToVariableTable_(value);
@@ -479,7 +480,7 @@ class StateResolver {
     return idx;
   }
 
-  storeObjectToVariableTable_(obj: {}): number {
+  storeObjectToVariableTable_(obj: inspector.Runtime.RemoteObject): number {
     const idx = this.rawVariableTable.length;
     this.rawVariableTable[idx] = obj;
     return idx;
@@ -526,13 +527,14 @@ class StateResolver {
     return {value: object.description, members};
   }
 
-  resolveObjectProperty_(isEvaluated: boolean, property: {}):
+  resolveObjectProperty_(isEvaluated: boolean, property: inspector.Runtime.PropertyDescriptor):
       stackdriver.Variable {
     const name = String(property.name);
     if (property.get !== undefined) {
       return {name, varTableIndex: GETTER_MESSAGE_INDEX};
     }
-    return this.resolveVariable_(name, property.value, isEvaluated);
+    // TODO: Handle the case when property.value is undefined
+    return this.resolveVariable_(name, property.value!, isEvaluated);
   }
 }
 
@@ -550,7 +552,7 @@ export function testAssert(): void {
 export function capture(
     callFrames: inspector.Debugger.CallFrame[],
     breakpoint: stackdriver.Breakpoint, config: DebugAgentConfig,
-    scriptmapper: {[id: string]: {}},
+    scriptmapper: {[id: string]: {url: string}},
     v8Inspector: V8Inspector): stackdriver.Breakpoint {
   return (new StateResolver(
               callFrames, breakpoint, config, scriptmapper, v8Inspector))

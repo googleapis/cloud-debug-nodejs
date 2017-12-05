@@ -120,28 +120,34 @@ export class Debugger extends common.ServiceObject {
    */
   listBreakpoints(
       debuggeeId: string, options: {
-        includeAllUsers: boolean; includeInactive: boolean;
-        stripResults: boolean;
-        actions: string
+        includeAllUsers?: boolean; includeInactive?: boolean;
+        stripResults?: boolean;
+        action?: string
       },
       callback:
           (err: Error|null, breakpoints?: stackdriver.Breakpoint[]) => void) {
     if (typeof (options) === 'function') {
       callback = options;
-      // TODO: Determine how to remove this cast.
-      options = {} as {};
+      options = {};
     }
 
     // TODO: Remove this cast as `any`
-    const query: {} = {
+    const query: {
+      clientVersion: string;
+      includeAllUsers: boolean;
+      includeInactive: boolean;
+      stripResults: boolean;
+      action?: {value: string};
+      waitToken?: string;
+    } = {
       clientVersion: this.clientVersion,
       includeAllUsers: !!options.includeAllUsers,
       includeInactive: !!options.includeInactive,
       stripResults: !!options.stripResults
     };
     // TODO: Determine how to remove this cast.
-    if ((options as {}).action) {
-      query.action = {value: (options as {}).action};
+    if (options.action) {
+      query.action = {value: options.action};
     }
     if (this.nextWaitToken) {
       query.waitToken = this.nextWaitToken;

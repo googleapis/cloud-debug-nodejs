@@ -30,7 +30,7 @@ describe('scanner', () => {
   describe('scan', () => {
     it('should complain when called without a path', (done) => {
       // TODO: The second argument must be a string.  Fix that.
-      scanner.scan(true, null as {} as string, /.js$/).catch(() => {
+      scanner.scan(true, null!, /.js$/).catch(() => {
         done();
       });
     });
@@ -51,7 +51,7 @@ describe('scanner', () => {
       });
     });
 
-    it('should be able to filter to return all file stats', => (done) {
+    it('should be able to filter to return all file stats', (done) => {
       scanner.scan(true, fixture('coffee'), /.*$/).then((fileStats) => {
         const files = fileStats.selectFiles(/.*$/, '');
         assert.strictEqual(files.length, 3);
@@ -78,9 +78,8 @@ describe('scanner', () => {
         assert.strictEqual(keys.length, 1);
 
         const first = stats[keys[0]];
-        // TODO: Handle the case when first is undefined
-        assert.ok((first as {}).hash);
-        assert.ok((first as {}).lines);
+        assert.ok(first!.hash);
+        assert.ok(first!.lines);
         done();
       });
     });

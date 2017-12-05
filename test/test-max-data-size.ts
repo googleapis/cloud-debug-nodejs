@@ -77,17 +77,12 @@ describe('maxDataSize', () => {
     // TODO: Determine how to remove this cast to any.
     api.set(bp, (err1) => {
       assert.ifError(err1);
-      // TODO: Determine how to remove this cast to any.
       api.wait(bp, (err2?: Error) => {
         assert.ifError(err2);
-        // TODO: Determine how to remove this cast to any.
         assert(bp.variableTable.some((v) => {
-          // TODO: Handle the case when v is undefined
-          // TODO: Handle the case when v.status is undefined
-          return ((v as {}).status as {}).description.format ===
+          return v!.status!.description.format ===
               'Max data size reached';
         }));
-        // TODO: Determine how to remove this cast to any.
         api.clear(bp, (err3) => {
           config.capture.maxDataSize = oldMaxData;
           assert.ifError(err3);
@@ -113,19 +108,16 @@ describe('maxDataSize', () => {
       assert.ifError(err1);
       api.wait(bp, (err2?: Error) => {
         assert.ifError(err2);
-        // TODO: Determine how to remove this cast to any.
         // TODO: The function supplied to reduce is of the wrong type.
         //       Fix this.
         assert(
             bp.variableTable.reduce(
-                (acc: Function, elem: stackdriver.Variable) => {
+                (acc: Function|stackdriver.Variable|null, elem: stackdriver.Variable|null) => {
                   return acc &&
-                      (!elem.status ||
-                       elem.status.description.format !==
-                           'Max data size reached');
-                  // TODO: Fix this incorrect method signature.
-                } as {}),
-            true as {} as string);
+                      (!elem!.status ||
+                       elem!.status!.description.format !==
+                           'Max data size reached') as {} as stackdriver.Variable;
+                }));
         api.clear(bp, (err3) => {
           config.capture.maxDataSize = oldMaxData;
           assert.ifError(err3);

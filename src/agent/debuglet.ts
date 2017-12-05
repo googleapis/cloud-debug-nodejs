@@ -276,7 +276,7 @@ export class Debuglet extends EventEmitter {
   async start(): Promise<void> {
     const that = this;
     process.on('warning', (warning) => {
-      if ((warning as {}).code ===
+      if ((warning as {} as {code: string}).code ===
           'INSPECTOR_ASYNC_STACK_TRACES_NOT_AVAILABLE') {
         that.logger.info(utils.messages.ASYNC_TRACES_WARNING);
       }
@@ -754,7 +754,7 @@ export class Debuglet extends EventEmitter {
           //              field.  It is possible that breakpoint.id is always
           //              undefined!
           // TODO: Make sure the use of `that` here is correct.
-          delete that.completedBreakpointMap[(breakpoint as {}).id];
+          delete that.completedBreakpointMap[(breakpoint as {} as {id: number}).id];
         });
 
     // Remove active breakpoints that the server no longer care about.

@@ -80,15 +80,15 @@ describe(__filename, () => {
       assert.ifError(err1);
       api.wait(brk, (err2) => {
         assert.ifError(err2);
-        // TODO: Determine how to remove this cast to any.
-        const frame = (brk as {}).stackFrames[0];
+        const frame = brk.stackFrames[0];
         const args = frame.arguments;
         const locals = frame.locals;
         assert.equal(locals.length, 1, 'There should be one local');
         assert.equal(args.length, 0, 'There should be zero arguments');
         const e = locals[0];
         assert(e.name === 'e');
-        assert(Number.isInteger(e.varTableIndex));
+        // Number.isInteger will return false if varTableIndex is `undefined`
+        assert(Number.isInteger(e.varTableIndex!));
         assert.equal(args.length, 0, 'There should be zero arguments');
         api.clear(brk, (err3) => {
           assert.ifError(err3);
@@ -108,8 +108,7 @@ describe(__filename, () => {
       assert.ifError(err1);
       api.wait(brk, (err2) => {
         assert.ifError(err2);
-        // TODO: Determine how to remove this cast to any.
-        const frame = (brk as {}).stackFrames[0];
+        const frame = brk.stackFrames[0];
         const args = frame.arguments;
         const locals = frame.locals;
         assert.equal(args.length, 0, 'There should be zero arguments');
