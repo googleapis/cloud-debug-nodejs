@@ -17,7 +17,7 @@
 import * as assert from 'assert';
 import * as path from 'path';
 
-import {globP, ncpP, rimrafP, spawnP, tmpDirP, writeFileP} from './utils';
+import {globP, ncpP, rimrafP, spawnP, tmpDirP, writeFileP, mkdirP} from './utils';
 
 const INDEX_TS = 'index.ts';
 const INDEX_JS = 'index.js';
@@ -58,7 +58,7 @@ const JS_CODE_ARRAY: CodeSample[] = [
 
 const TIMEOUT_MS = 2 * 60 * 1000;
 
-const DEBUG = false;
+const DEBUG = true;
 function log(txt: string): void {
   if (DEBUG) {
     console.log(txt);
@@ -74,6 +74,16 @@ interface CodeSample {
 
 describe('Installation', () => {
   let installDir: string|undefined;
+  before(async function() {
+    const tgz = await globP(`${process.cwd()}/*.tgz`);
+    assert.deepStrictEqual(tgz.length, 0,
+      `Expected zero tgz files in the current working directory before ` +
+      `running the test but found files: ${tgz.map(file => {
+        const parts = file.split(path.sep);
+        return parts[parts.length-1];
+      })}`);
+  });
+
   beforeEach(async function() {
     this.timeout(TIMEOUT_MS);
     // This script assumes that you don't already have a TGZ file
@@ -103,15 +113,17 @@ describe('Installation', () => {
 
   describe('When used with Typescript code', () => {
     TS_CODE_ARRAY.forEach((sample) => {
-      it(`should install and work with code that ${sample.description}`,
+      it.only(`should install and work with code that ${sample.description}`,
          async function() {
            this.timeout(TIMEOUT_MS);
            assert(installDir);
+           const srcDir = path.join(installDir!, 'src');
+           await mkdirP(srcDir);
            await writeFileP(
-               path.join(installDir!, INDEX_TS), sample.code, 'utf-8');
-           await spawnP(
-               `node_modules${path.sep}.bin${path.sep}tsc`, [INDEX_TS],
-               {cwd: installDir, stdio}, log);
+               path.join(srcDir, INDEX_TS), sample.code, 'utf-8');
+           await spawnP('npm', ['install', '--save-dev', 'gts', 'typescript@2.x'], {cwd: installDir, stdio}, log);
+           await spawnP('gts', ['init', '--yes'], {cwd: installDir, stdio}, log);
+           await spawnP('npm', ['run', 'compile'], {cwd: installDir, stdio}, log);
            await spawnP('node', [INDEX_JS], {cwd: installDir, stdio}, log);
          });
     });
