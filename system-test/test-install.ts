@@ -58,7 +58,7 @@ const JS_CODE_ARRAY: CodeSample[] = [
 
 const TIMEOUT_MS = 2 * 60 * 1000;
 
-const DEBUG = true;
+const DEBUG = false;
 function log(txt: string): void {
   if (DEBUG) {
     console.log(txt);
