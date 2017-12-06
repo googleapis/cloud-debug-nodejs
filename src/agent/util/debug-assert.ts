@@ -30,7 +30,7 @@ export interface FakeAssert {
   ok: Function;
   strictEqual: Function;
   throws: Function;
-  AssertionError: Function
+  AssertionError: Function;
 }
 
 const nop = (_: {}) => _;
