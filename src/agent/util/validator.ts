@@ -78,7 +78,7 @@ export function isValid(node: estree.Node): boolean {
 
     case 'ObjectExpression':
       // every property is a valid expression
-      return node.properties.every(function(prop) {
+      return node.properties.every((prop) => {
         return isValid(prop.value);
       });
 

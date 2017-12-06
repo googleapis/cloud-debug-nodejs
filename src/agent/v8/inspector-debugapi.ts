@@ -51,7 +51,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
   // undefined.
   listeners: {[id: string]: utils.Listener} = {};
   // scriptmapper maps scriptId to actual script path.
-  scriptMapper: {[id: string]: any} = {};
+  scriptMapper: {[id: string]: {url: string}} = {};
   // locationmapper maps location string to a list of stackdriver breakpoint id.
   locationMapper: {[id: string]: stackdriver.BreakpointId[]} = {};
   // breakpointmapper maps v8/inspector breakpoint id to a list of
@@ -136,7 +136,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
           cb, breakpoint, StatusMessage.BREAKPOINT_CONDITION,
           utils.messages.V8_BREAKPOINT_CLEAR_ERROR);
     }
-    let locationStr = breakpointData.locationStr;
+    const locationStr = breakpointData.locationStr;
     const v8BreakpointId = breakpointData.id;
 
     // delete current breakpoint from locationmapper and breakpointmapper.
@@ -160,7 +160,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     delete this.breakpoints[breakpoint.id];
     delete this.listeners[breakpoint.id];
     this.numBreakpoints--;
-    setImmediate(function() {
+    setImmediate(() => {
       if (result.error) {
         cb(result.error);
       }
@@ -177,11 +177,11 @@ export class InspectorDebugApi implements debugapi.DebugApi {
           // This method is called from the debug event listener, which
           // swallows all exception. We defer the callback to make sure
           // the user errors aren't silenced.
-          setImmediate(function() {
+          setImmediate(() => {
             callback(err);
           });
         });
-    this.listeners[breakpoint.id] = {enabled: true, listener: listener};
+    this.listeners[breakpoint.id] = {enabled: true, listener};
   }
 
   log(breakpoint: stackdriver.Breakpoint,
@@ -202,9 +202,8 @@ export class InspectorDebugApi implements debugapi.DebugApi {
               // TODO: Address the case where `breakpoint.logMessageFormat` is
               // `null`.
               breakpoint.logMessageFormat as string,
-              // TODO: Determine how to remove the `as` cast below
               breakpoint.evaluatedExpressions.map(
-                  (obj: any) => JSON.stringify(obj)));
+                  (obj: stackdriver.Variable|null) => JSON.stringify(obj)));
           logsThisSecond++;
           if (shouldStop()) {
             this.listeners[breakpoint.id].enabled = false;
@@ -222,7 +221,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
             }
           }
         });
-    this.listeners[breakpoint.id] = {enabled: true, listener: listener};
+    this.listeners[breakpoint.id] = {enabled: true, listener};
   }
 
   disconnect(): void {
@@ -257,7 +256,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       cb: (err: Error|null) => void): void {
     // Parse and validate conditions and watch expressions for correctness and
     // immutability
-    let ast: any = null;
+    let ast: estree.Program|null = null;
     if (breakpoint.condition) {
       try {
         // We parse as ES6; even though the underlying V8 version may only
@@ -340,7 +339,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       column += debugapi.MODULE_WRAP_PREFIX_LENGTH - 1;
     }
 
-    let result =
+    const result =
         this.setAndStoreBreakpoint(breakpoint, line, column, matchingScript);
     if (!result) {
       return utils.setErrorStatusAndCallback(
@@ -353,7 +352,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
         result.locationStr, compile);
 
     this.numBreakpoints++;
-    setImmediate(function() {
+    setImmediate(() => {
       cb(null);
     });  // success.
   }
@@ -371,7 +370,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     if (!this.locationMapper[locationStr]) {
       // The first time when a breakpoint was set to this location.
 
-      let res = this.v8Inspector.setBreakpointByUrl({
+      const res = this.v8Inspector.setBreakpointByUrl({
         lineNumber: line - 1,
         url: matchingScript,
         columnNumber: column - 1,
@@ -450,7 +449,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
         breakpoint.evaluatedExpressions = [];
       } else {
         const frame = callFrames[0];
-        const evaluatedExpressions = breakpoint.expressions.map(function(exp) {
+        const evaluatedExpressions = breakpoint.expressions.map((exp) => {
           // returnByValue is set to true here so that the JSON string of the
           // value will be returned to log.
           const result = state.evaluate(exp, frame, that.v8Inspector, true);

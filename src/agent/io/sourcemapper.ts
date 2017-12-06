@@ -48,14 +48,14 @@ function processSourcemap(
   // this handles the case when the path is undefined, null, or
   // the empty string
   if (!mapPath || !_.endsWith(mapPath, MAP_EXT)) {
-    return setImmediate(function() {
+    return setImmediate(() => {
       callback(new Error(
           'The path ' + mapPath + ' does not specify a sourcemap file'));
     });
   }
   mapPath = path.normalize(mapPath);
 
-  fs.readFile(mapPath, 'utf8', function(err: Error, data: string) {
+  fs.readFile(mapPath, 'utf8', (err: Error, data: string) => {
     if (err) {
       return callback(
           new Error('Could not read sourcemap file ' + mapPath + ': ' + err));
@@ -69,7 +69,8 @@ function processSourcemap(
       // TODO: Resolve the cast of `data as any` (This is needed because the
       //       type is expected to be of `RawSourceMap` but the existing
       //       working code uses a string.)
-      consumer = new sourceMap.SourceMapConsumer(data as any) as any as
+      consumer = new sourceMap.SourceMapConsumer(
+                     data as {} as sourceMap.RawSourceMap) as {} as
           sourceMap.RawSourceMap;
     } catch (e) {
       return callback(new Error(
@@ -89,12 +90,12 @@ function processSourcemap(
     const outputPath = path.normalize(path.join(parentDir, outputBase));
 
     const sources = Array.prototype.slice.call(consumer.sources)
-                        .filter(function(value: string) {
+                        .filter((value: string) => {
                           // filter out any empty string, null, or undefined
                           // sources
                           return !!value;
                         })
-                        .map(function(relPath: string) {
+                        .map((relPath: string) => {
                           // resolve the paths relative to the map file so that
                           // they are relative to the process's current working
                           // directory
@@ -106,7 +107,7 @@ function processSourcemap(
           new Error('No sources listed in the sourcemap file ' + mapPath));
     }
 
-    sources.forEach(function(src: string) {
+    sources.forEach((src: string) => {
       infoMap.set(
           path.normalize(src),
           {outputFile: outputPath, mapFile: mapPath, mapConsumer: consumer});
@@ -209,7 +210,7 @@ export class SourceMapper {
 
     // TODO: Determine how to remove the explicit cast here.
     const consumer: sourceMap.SourceMapConsumer =
-        entry.mapConsumer as any as sourceMap.SourceMapConsumer;
+        entry.mapConsumer as {} as sourceMap.SourceMapConsumer;
     const allPos = consumer.allGeneratedPositionsFor(sourcePos);
     /*
      * Based on testing, it appears that the following code is needed to
@@ -221,9 +222,8 @@ export class SourceMapper {
     const mappedPos: sourceMap.Position = allPos && allPos.length > 0 ?
         Array.prototype.reduce.call(
             allPos,
-            function(
-                accumulator: sourceMap.Position,
-                value: sourceMap.Position /*, index, arr*/) {
+            (accumulator: sourceMap.Position,
+             value: sourceMap.Position /*, index, arr*/) => {
               return value.line < accumulator.line ? value : accumulator;
             }) :
         consumer.generatedPositionFor(sourcePos);
@@ -236,10 +236,11 @@ export class SourceMapper {
       // TODO: The `sourceMap.Position` type definition has a `column`
       //       attribute and not a `col` attribute.  Determine if the type
       //       definition or this code is correct.
-      column:
-          (mappedPos as any).col  // SourceMapConsumer uses zero-based column
-                                  // numbers which is the same as the
-                                  // expected output
+      column: (mappedPos as {} as {
+                col: number
+              }).col  // SourceMapConsumer uses zero-based column
+                      // numbers which is the same as the
+                      // expected output
     };
   }
 }
@@ -249,13 +250,13 @@ export function create(
     callback: (err: Error|null, mapper?: SourceMapper) => void): void {
   const mapper = new SourceMapper();
   const callList =
-      Array.prototype.slice.call(sourcemapPaths).map(function(p: string) {
-        return function(cb: (err: Error|null) => void) {
+      Array.prototype.slice.call(sourcemapPaths).map((p: string) => {
+        return (cb: (err: Error|null) => void) => {
           processSourcemap(mapper.infoMap, p, cb);
         };
       });
 
-  async.parallelLimit(callList, 10, function(err) {
+  async.parallelLimit(callList, 10, (err) => {
     if (err) {
       return callback(new Error(
           'An error occurred while processing the sourcemap files' + err));

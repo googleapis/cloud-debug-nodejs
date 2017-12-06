@@ -15,30 +15,26 @@
  */
 
 import * as assert from 'assert';
-const module: NodeModule = require('../..');
+const module: NodeModule&{start: Function} = require('../..');
 import * as nock from 'nock';
 import * as nocks from './nocks';
 
 nock.disableNetConnect();
 
-describe('Debug module', function() {
-  before(function(done) {
+describe('Debug module', () => {
+  before((done) => {
     nocks.projectId('project-via-metadata');
-    // TODO: Determine how to remove this cast to any.
-    const debuglet = (module as any).start({
-      projectId: '0',
-      debug: {forceNewAgent_: true, testMode_: true}
-    });
-    debuglet.on('started', function() {
+    const debuglet = module.start(
+        {projectId: '0', debug: {forceNewAgent_: true, testMode_: true}});
+    debuglet.on('started', () => {
       debuglet.stop();
       done();
     });
   });
 
-  it('should throw on attempt to start a new agent', function() {
-    // TODO: Determine how to remove this cast to any.
-    assert.throws(function() {
-      (module as any).start();
+  it('should throw on attempt to start a new agent', () => {
+    assert.throws(() => {
+      module.start();
     });
   });
 

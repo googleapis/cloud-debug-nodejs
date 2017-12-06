@@ -63,9 +63,9 @@ export function evaluate(expression: string, frame: v8.FrameMirror):
   // Now actually ask V8 to evaluate the expression
   try {
     const mirror = frame.evaluate(expression);
-    return {error: null, mirror: mirror};
+    return {error: null, mirror};
   } catch (error) {
-    return {error: error};
+    return {error};
   }
 }
 
@@ -122,8 +122,9 @@ class StateResolver {
     };
 
     // TODO: Determine why _extend is used here
-    this.resolvedVariableTable = (util as any)._extend([], this.messageTable);
-    this.rawVariableTable = this.messageTable.map(function() {
+    this.resolvedVariableTable =
+        (util as {} as {_extend: Function})._extend([], this.messageTable);
+    this.rawVariableTable = this.messageTable.map(() => {
       return null;
     });
   }
@@ -141,7 +142,7 @@ class StateResolver {
     // Evaluate the watch expressions
     const evalIndexSet = new Set();
     if (that.expressions) {
-      that.expressions.forEach(function(expression, index2) {
+      that.expressions.forEach((expression, index2) => {
         const result = evaluate(expression, that.state.frame(0));
         let evaluated;
 
@@ -175,8 +176,8 @@ class StateResolver {
     while (index <
                that.rawVariableTable.length &&  // NOTE: length changes in loop
            (that.totalSize < that.config.capture.maxDataSize || noLimit)) {
-      assert(!that.resolvedVariableTable[index]);  // shouldn't have it
-                                                   // resolved yet
+      assert.ok(!that.resolvedVariableTable[index]);  // shouldn't have it
+                                                      // resolved yet
       const isEvaluated = evalIndexSet.has(index);
       // TODO: This code suggests that an ObjectMirror and Stutus are the
       //       same.  Resolve this.
@@ -216,8 +217,8 @@ class StateResolver {
         fromIndex);  // remove the remaining entries
 
     const that = this;
-    const processBufferFull = function(variables: stackdriver.Variable[]) {
-      variables.forEach(function(variable) {
+    const processBufferFull = (variables: stackdriver.Variable[]) => {
+      variables.forEach((variable) => {
         if (variable.varTableIndex && variable.varTableIndex >= fromIndex) {
           // make it point to the sentinel 'buffer full' value
           variable.varTableIndex = BUFFER_FULL_MESSAGE_INDEX;
@@ -229,7 +230,7 @@ class StateResolver {
       });
     };
 
-    frames.forEach(function(frame) {
+    frames.forEach((frame) => {
       processBufferFull(frame.arguments);
       processBufferFull(frame.locals);
     });
@@ -308,10 +309,10 @@ class StateResolver {
 
   resolveFrame_(frame: v8.FrameMirror, underFrameCap: boolean):
       stackdriver.StackFrame {
-    let args: Array<stackdriver.Variable> = [];
+    const args: stackdriver.Variable[] = [];
     // TODO: `locals` should be of type v8.ScopeMirror[]
     //       Resolve conflicts so that it can be specified of that type.
-    let locals: Array<any> = [];
+    let locals: Array<{}> = [];
     // Locals and arguments are safe to collect even when
     // `config.allowExpressions=false` since we properly avoid inspecting
     // interceptors and getters by default.
@@ -337,7 +338,7 @@ class StateResolver {
       function: this.resolveFunctionName_(frame.func()),
       location: this.resolveLocation_(frame),
       arguments: args,
-      locals: locals
+      locals
     };
   }
 
@@ -382,7 +383,7 @@ class StateResolver {
     // There will always be at least 3 scopes.
     // For top-level breakpoints: [local, script, global]
     // Other: [..., closure (module IIFE), script, global]
-    assert(count >= 3);
+    assert.ok(count >= 3);
     assert.strictEqual(allScopes[count - 1].scopeType(), ScopeType.Global);
     assert.strictEqual(allScopes[count - 2].scopeType(), ScopeType.Script);
 
@@ -393,16 +394,16 @@ class StateResolver {
     if (allScopes[count - 3].scopeType() === ScopeType.Closure) {
       scopes = allScopes.slice(0, -3);
     } else {
-      assert(allScopes[count - 3].scopeType() === ScopeType.Local);
+      assert.ok(allScopes[count - 3].scopeType() === ScopeType.Local);
       scopes = allScopes.slice(0, -2);
     }
 
     const fromScopes: stackdriver.Variable[][] =
-        scopes.map(function(scope: v8.ScopeMirror) {
+        scopes.map((scope: v8.ScopeMirror) => {
           return transform(
               // TODO: Update this so that `locals` is not of type `any[]`.
               scope.details().object(),
-              function(locals: stackdriver.Variable[], value, name: string) {
+              (locals: stackdriver.Variable[], value, name: string) => {
                 const trg = makeMirror(value);
                 if (!usedNames[name]) {
                   // It's a valid variable that belongs in the locals list
@@ -451,7 +452,7 @@ class StateResolver {
       stackdriver.Variable {
     let size = name.length;
 
-    const data: stackdriver.Variable = {name: name};
+    const data: stackdriver.Variable = {name};
 
     if (value.isPrimitive() || value.isRegExp()) {
       // primitives: undefined, null, boolean, number, string, symbol
@@ -501,7 +502,7 @@ class StateResolver {
   }
 
   storeObjectToVariableTable_(obj: v8.ValueMirror): number {
-    let idx = this.rawVariableTable.length;
+    const idx = this.rawVariableTable.length;
     this.rawVariableTable[idx] = obj;
     return idx;
   }
@@ -532,7 +533,7 @@ class StateResolver {
             ' to see all properties.'
       });
     }
-    return {value: mirror.toText(), members: members};
+    return {value: mirror.toText(), members};
   }
 
   resolveMirrorProperty_(isEvaluated: boolean, property: v8.PropertyMirror):
@@ -542,10 +543,10 @@ class StateResolver {
     // we know to be safe to evaluate which is not generally true.
     const isArrayLen = property.mirror_.isArray() && name === 'length';
     if (property.isNative() && !isArrayLen) {
-      return {name: name, varTableIndex: NATIVE_PROPERTY_MESSAGE_INDEX};
+      return {name, varTableIndex: NATIVE_PROPERTY_MESSAGE_INDEX};
     }
     if (property.hasGetter()) {
-      return {name: name, varTableIndex: GETTER_MESSAGE_INDEX};
+      return {name, varTableIndex: GETTER_MESSAGE_INDEX};
     }
     return this.resolveVariable_(name, property.value(), isEvaluated);
   }

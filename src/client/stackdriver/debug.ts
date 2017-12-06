@@ -49,7 +49,9 @@ export class Debug extends common.Service {
    *
    * @param options - [Authentication options](#/docs)
    */
-  constructor(options: AuthenticationConfig, packageJson: any) {
+  constructor(options: AuthenticationConfig, packageJson: {
+    name: string; version: string;
+  }) {
     if (new.target !== Debug) {
       options = common.util.normalizeArguments(null, options);
       return new Debug(options, packageJson);
@@ -59,7 +61,7 @@ export class Debug extends common.Service {
       projectIdRequired: false,
       baseUrl: 'https://clouddebugger.googleapis.com/v2',
       scopes: ['https://www.googleapis.com/auth/cloud_debugger'],
-      packageJson: packageJson
+      packageJson
     };
 
     // TODO: Update Service to provide types

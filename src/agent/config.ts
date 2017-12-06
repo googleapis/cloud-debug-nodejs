@@ -166,7 +166,7 @@ export interface StackdriverConfig extends common.AuthenticationConfig {
   debug?: DebugAgentConfig;
 }
 
-const defaultConfig: DebugAgentConfig = {
+export const defaultConfig: DebugAgentConfig = {
   // FIXME(ofrobots): presently this is dependent what cwd() is at the time this
   // file is first required. We should make the default config static.
   workingDirectory: process.cwd(),
@@ -202,5 +202,3 @@ const defaultConfig: DebugAgentConfig = {
   forceNewAgent_: false,
   testMode_: false
 };
-
-export default defaultConfig;

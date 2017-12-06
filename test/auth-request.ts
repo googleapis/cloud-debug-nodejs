@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
 import * as request from 'request';
 
 // TODO: Make the type of `options` more precise
-export default function(
-    options: any,
-    callback: (err: Error, body: any, response: request.RequestResponse) =>
-        void) {
-  request(
-      options,
-      function(err: Error, response: request.RequestResponse, body: any) {
-        callback(err, body, response);
-      });
-}
+export const authRequest =
+    (options: (request.UriOptions&request.CoreOptions)|
+     (request.UrlOptions & request.CoreOptions),
+     callback: (err: Error, body: {}, response: request.RequestResponse) =>
+         void) => {
+      request(
+          options,
+          (err: Error, response: request.RequestResponse, body: {}) => {
+            callback(err, body, response);
+          });
+    };

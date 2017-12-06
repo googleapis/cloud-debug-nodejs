@@ -40,8 +40,7 @@ export class V8Inspector {
   removeBreakpoint(breakpointId: string) {
     const result: {error?: Error} = {};
     this.session.post(
-        'Debugger.removeBreakpoint', {breakpointId: breakpointId},
-        (error: Error|null) => {
+        'Debugger.removeBreakpoint', {breakpointId}, (error: Error|null) => {
           if (error) result.error = error;
         });
     return result;

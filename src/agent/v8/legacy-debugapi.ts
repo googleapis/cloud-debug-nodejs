@@ -50,7 +50,7 @@ export class V8DebugApi implements debugapi.DebugApi {
   config: DebugAgentConfig;
   fileStats: ScanStats;
   listeners: {[id: string]: utils.Listener} = {};
-  v8Version: any;
+  v8Version: RegExpExecArray|null;
   usePermanentListener: boolean;
   logger: Logger;
   handleDebugEvents:
@@ -68,7 +68,7 @@ export class V8DebugApi implements debugapi.DebugApi {
     this.fileStats = jsFiles;
     this.v8Version = /(\d+\.\d+\.\d+)\.\d+/.exec(process.versions.v8);
     this.logger = logger;
-    this.usePermanentListener = semver.satisfies(this.v8Version[1], '>=4.5');
+    this.usePermanentListener = semver.satisfies(this.v8Version![1], '>=4.5');
     this.handleDebugEvents =
         (evt: v8.DebugEvent, execState: v8.ExecutionState,
          eventData: v8.BreakEvent): void => {
@@ -162,7 +162,7 @@ export class V8DebugApi implements debugapi.DebugApi {
       this.logger.info('deactivating v8 breakpoint listener');
       this.v8.setListener(null);
     }
-    return setImmediate(function() {
+    return setImmediate(() => {
       cb(null);
     });
   }
@@ -172,17 +172,17 @@ export class V8DebugApi implements debugapi.DebugApi {
     const that = this;
     const num = that.breakpoints[breakpoint.id].v8Breakpoint.number();
     const listener =
-        this.onBreakpointHit.bind(this, breakpoint, function(err: Error) {
+        this.onBreakpointHit.bind(this, breakpoint, (err: Error) => {
           that.listeners[num].enabled = false;
           // This method is called from the debug event listener, which
           // swallows all exception. We defer the callback to make sure the
           // user errors aren't silenced.
-          setImmediate(function() {
+          setImmediate(() => {
             callback(err);
           });
         });
 
-    that.listeners[num] = {enabled: true, listener: listener};
+    that.listeners[num] = {enabled: true, listener};
   }
 
   log(breakpoint: stackdriver.Breakpoint,
@@ -194,7 +194,7 @@ export class V8DebugApi implements debugapi.DebugApi {
     let timesliceEnd = Date.now() + 1000;
     // TODO: Determine why the Error argument is not used.
     const listener =
-        this.onBreakpointHit.bind(this, breakpoint, function(err: Error) {
+        this.onBreakpointHit.bind(this, breakpoint, (err: Error) => {
           const currTime = Date.now();
           if (currTime > timesliceEnd) {
             logsThisSecond = 0;
@@ -202,18 +202,16 @@ export class V8DebugApi implements debugapi.DebugApi {
           }
           print(
               // TODO: Address the case where `breakpoint.logMessageFormat` is
-              // `null`.
-              breakpoint.logMessageFormat as string,
-              // TODO: Determine how to remove the `as` cast below
-              breakpoint.evaluatedExpressions.map(
-                  (obj: any) => JSON.stringify(obj)));
+              // null
+              breakpoint.logMessageFormat!,
+              breakpoint.evaluatedExpressions.map(obj => JSON.stringify(obj)));
           logsThisSecond++;
           if (shouldStop()) {
             that.listeners[num].enabled = false;
           } else {
             if (logsThisSecond >= that.config.log.maxLogsPerSecond) {
               that.listeners[num].enabled = false;
-              setTimeout(function() {
+              setTimeout(() => {
                 // listeners[num] may have been deleted by `clear` during the
                 // async hop. Make sure it is valid before setting a property
                 // on it.
@@ -224,7 +222,7 @@ export class V8DebugApi implements debugapi.DebugApi {
             }
           }
         });
-    that.listeners[num] = {enabled: true, listener: listener};
+    that.listeners[num] = {enabled: true, listener};
   }
 
   disconnect(): void {
@@ -341,7 +339,7 @@ export class V8DebugApi implements debugapi.DebugApi {
         // TODO: Address the case where `ast` is `null`.
         new V8BreakpointData(breakpoint, v8bp, ast as estree.Program, compile);
     this.numBreakpoints++;
-    setImmediate(function() {
+    setImmediate(() => {
       cb(null);
     });  // success.
   }
@@ -447,7 +445,7 @@ export class V8DebugApi implements debugapi.DebugApi {
         breakpoint.evaluatedExpressions = [];
       } else {
         const frame = execState.frame(0);
-        const evaluatedExpressions = breakpoint.expressions.map(function(exp) {
+        const evaluatedExpressions = breakpoint.expressions.map((exp) => {
           const result = state.evaluate(exp, frame);
           // TODO: Address the case where `result.mirror` is `undefined`.
           return result.error ? result.error :

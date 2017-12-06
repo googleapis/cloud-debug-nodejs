@@ -35,7 +35,7 @@ export const messages = {
 
 export interface Listener {
   enabled: boolean;
-  listener: (...args: any[]) => any;
+  listener: (...args: Array<{}>) => {};
 }
 // Exposed for unit testing.
 export function findScripts(
@@ -128,8 +128,7 @@ export function pathToRegExp(scriptPath: string): RegExp {
  * @param {number[]} interval The interval to format.
  * @return {string} A formatted string.
  */
-export const formatInterval = function(
-    msg: string, interval: number[]): string {
+export const formatInterval = (msg: string, interval: number[]): string => {
   return msg + (interval[0] * 1000 + interval[1] / 1000000) + 'ms';
 };
 
@@ -138,7 +137,7 @@ export function setErrorStatusAndCallback(
     fn: (err: Error|null) => void, breakpoint: stackdriver.Breakpoint,
     refersTo: stackdriver.Reference, message: string): void {
   const error = new Error(message);
-  return setImmediate(function() {
+  return setImmediate(() => {
     if (breakpoint && !breakpoint.status) {
       breakpoint.status = new StatusMessage(refersTo, message, true);
     }
@@ -160,7 +159,7 @@ export function getBreakpointCompiler(breakpoint: stackdriver.Breakpoint):
           .split('.')
           .pop()) {
     case 'coffee':
-      return function(uncompiled) {
+      return (uncompiled) => {
         const comp = require('coffee-script');
         const compiled = comp.compile('0 || (' + uncompiled + ')');
         // Strip out coffeescript scoping wrapper to get translated condition
@@ -175,7 +174,7 @@ export function getBreakpointCompiler(breakpoint: stackdriver.Breakpoint):
     case 'es6':
     case 'es':
     case 'jsx':
-      return function(uncompiled) {
+      return (uncompiled) => {
         // If we want to support es6 watch expressions we can compile them
         // here. Babel is a large dependency to have if we don't need it in
         // all cases.
