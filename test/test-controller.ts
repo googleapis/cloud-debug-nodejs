@@ -22,7 +22,7 @@ import {Debug} from '../src/client/stackdriver/debug';
 import {Debuggee} from '../src/debuggee';
 import * as stackdriver from '../src/types/stackdriver';
 
-import request from './auth-request';
+import {authRequest as request} from './auth-request';
 
 // the tests in this file rely on the GCLOUD_PROJECT environment variable
 // not being set
