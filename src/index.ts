@@ -35,7 +35,7 @@ let debuglet: Debuglet;
  * @example
  * debug.startAgent();
  */
-export function start(options: DebugAgentConfig|StackdriverConfig): Debuglet|
+export function start(options?: DebugAgentConfig|StackdriverConfig): Debuglet|
     IsReady {
   options = options || {};
   const agentConfig: DebugAgentConfig =
