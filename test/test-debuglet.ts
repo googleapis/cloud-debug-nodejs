@@ -20,7 +20,7 @@ import * as path from 'path';
 import * as semver from 'semver';
 
 import {DebugAgentConfig} from '../src/agent/config';
-import DEFAULT_CONFIG from '../src/agent/config';
+import {defaultConfig as DEFAULT_CONFIG} from '../src/agent/config';
 import {Debuggee} from '../src/debuggee';
 import * as stackdriver from '../src/types/stackdriver';
 

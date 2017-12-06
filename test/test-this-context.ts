@@ -22,7 +22,7 @@ import {Common, LoggerOptions} from '../src/types/common';
 import * as stackdriver from '../src/types/stackdriver';
 
 const common: Common = require('@google-cloud/common');
-import defaultConfig from '../src/agent/config';
+import {defaultConfig} from '../src/agent/config';
 import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as scanner from '../src/agent/io/scanner';
 const code = require('./test-this-context-code.js');

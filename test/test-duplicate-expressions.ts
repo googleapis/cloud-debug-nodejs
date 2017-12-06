@@ -27,7 +27,7 @@ import * as assert from 'assert';
 import * as extend from 'extend';
 import * as debugapi from '../src/agent/v8/debugapi';
 const common: Common = require('@google-cloud/common');
-import defaultConfig from '../src/agent/config';
+import {defaultConfig} from '../src/agent/config';
 import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as scanner from '../src/agent/io/scanner';
 const foo = require('./test-duplicate-expressions-code.js');

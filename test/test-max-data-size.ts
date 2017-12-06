@@ -25,7 +25,7 @@ const common: Common = require('@google-cloud/common');
 import * as debugapi from '../src/agent/v8/debugapi';
 import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as scanner from '../src/agent/io/scanner';
-import defaultConfig from '../src/agent/config';
+import {defaultConfig} from '../src/agent/config';
 const foo = require('./test-max-data-size-code.js');
 let api: debugapi.DebugApi;
 

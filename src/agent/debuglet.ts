@@ -38,7 +38,7 @@ import {Debuggee} from '../debuggee';
 import {StatusMessage} from '../client/stackdriver/status-message';
 
 // The following import syntax is used because './config' has a default export
-import defaultConfig from './config';
+import {defaultConfig} from './config';
 import * as scanner from './io/scanner';
 import * as SourceMapper from './io/sourcemapper';
 import * as debugapi from './v8/debugapi';
