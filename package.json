@@ -81,7 +81,7 @@
     "test": "./bin/run-test.sh",
     "check": "gts check",
     "clean": "gts clean",
-    "precompile": "npm run compile-scripts && node build/scripts/setup-test.js",
+    "precompile": "npm run compile-scripts && node build/scripts/setup-build-dir.js",
     "compile": "tsc -p .",
     "compile-scripts": "tsc -p scripts-tsconfig.json",
     "fix": "gts fix",
