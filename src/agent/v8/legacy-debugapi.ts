@@ -201,6 +201,8 @@ export class V8DebugApi implements debugapi.DebugApi {
             timesliceEnd = currTime + 1000;
           }
           print(
+              // TODO: Address the case where `breakpoint.logMessageFormat` is
+              // null
               breakpoint.logMessageFormat!,
               breakpoint.evaluatedExpressions.map(obj => JSON.stringify(obj)));
           logsThisSecond++;
