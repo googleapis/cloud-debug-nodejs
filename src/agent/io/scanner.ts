@@ -56,8 +56,7 @@ class ScanResultsImpl implements ScanResults {
    *  attributes respectively
    * @param hash A hashcode computed from the contents of all the files.
    */
-  constructor(
-      private readonly stats: ScanStats, readonly hash?: string) {}
+  constructor(private readonly stats: ScanStats, readonly hash?: string) {}
 
   /**
    * Used to get all of the file scan results.
@@ -207,13 +206,12 @@ function findFiles(
     return;
   });
 
-  find.on(
-      'directory', (dir: string, ignore: fs.Stats, stop: () => void) => {
-        const base = path.basename(dir);
-        if (base === '.git' || base === 'node_modules') {
-          stop();  // do not descend
-        }
-      });
+  find.on('directory', (dir: string, ignore: fs.Stats, stop: () => void) => {
+    const base = path.basename(dir);
+    if (base === '.git' || base === 'node_modules') {
+      stop();  // do not descend
+    }
+  });
 
   find.on('file', (file: string) => {
     if (regex.test(file)) {

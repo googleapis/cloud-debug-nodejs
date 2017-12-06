@@ -44,22 +44,20 @@ describe('maxDataSize', () => {
       //       with this change, the tests fail.  Resolve this.
       const logger = new common.logger(
           {levelLevel: config.logLevel} as {} as LoggerOptions);
-      scanner.scan(true, config.workingDirectory, /.js$/)
-          .then((fileStats) => {
-            const jsStats = fileStats.selectStats(/.js$/);
-            const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
-            SourceMapper.create(mapFiles, (err, mapper) => {
-              assert(!err);
+      scanner.scan(true, config.workingDirectory, /.js$/).then((fileStats) => {
+        const jsStats = fileStats.selectStats(/.js$/);
+        const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
+        SourceMapper.create(mapFiles, (err, mapper) => {
+          assert(!err);
 
-              // TODO: Handle the case when mapper is undefined
-              // TODO: Handle the case when v8debugapi.create returns null
-              api =
-                  debugapi.create(
-                      logger, config, jsStats,
-                      mapper as SourceMapper.SourceMapper) as debugapi.DebugApi;
-              done();
-            });
-          });
+          // TODO: Handle the case when mapper is undefined
+          // TODO: Handle the case when v8debugapi.create returns null
+          api = debugapi.create(
+                    logger, config, jsStats,
+                    mapper as SourceMapper.SourceMapper) as debugapi.DebugApi;
+          done();
+        });
+      });
     } else {
       done();
     }
@@ -80,8 +78,7 @@ describe('maxDataSize', () => {
       api.wait(bp, (err2?: Error) => {
         assert.ifError(err2);
         assert(bp.variableTable.some((v) => {
-          return v!.status!.description.format ===
-              'Max data size reached';
+          return v!.status!.description.format === 'Max data size reached';
         }));
         api.clear(bp, (err3) => {
           config.capture.maxDataSize = oldMaxData;
@@ -110,14 +107,14 @@ describe('maxDataSize', () => {
         assert.ifError(err2);
         // TODO: The function supplied to reduce is of the wrong type.
         //       Fix this.
-        assert(
-            bp.variableTable.reduce(
-                (acc: Function|stackdriver.Variable|null, elem: stackdriver.Variable|null) => {
-                  return acc &&
-                      (!elem!.status ||
-                       elem!.status!.description.format !==
-                           'Max data size reached') as {} as stackdriver.Variable;
-                }));
+        assert(bp.variableTable.reduce(
+            (acc: Function|stackdriver.Variable|null,
+             elem: stackdriver.Variable|null) => {
+              return acc &&
+                  (!elem!.status ||
+                   elem!.status!.description.format !==
+                       'Max data size reached') as {} as stackdriver.Variable;
+            }));
         api.clear(bp, (err3) => {
           config.capture.maxDataSize = oldMaxData;
           assert.ifError(err3);

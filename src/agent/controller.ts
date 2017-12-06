@@ -62,7 +62,8 @@ export class Controller extends common.ServiceObject {
     };
     this.request(
         options,
-        (err: Error, body: { debuggee: Debuggee}, response: http.ServerResponse) => {
+        (err: Error, body: {debuggee: Debuggee},
+         response: http.ServerResponse) => {
           if (err) {
             callback(err);
           } else if (response.statusCode !== 200) {
@@ -99,7 +100,8 @@ export class Controller extends common.ServiceObject {
         '/breakpoints?' + qs.stringify(query);
     that.request(
         {uri, json: true},
-        (err: Error, body: stackdriver.ListBreakpointsResponse, response: http.ServerResponse) => {
+        (err: Error, body: stackdriver.ListBreakpointsResponse,
+         response: http.ServerResponse) => {
           if (!response) {
             callback(
                 err || new Error('unknown error - request response missing'));

@@ -69,7 +69,8 @@ function processSourcemap(
       // TODO: Resolve the cast of `data as any` (This is needed because the
       //       type is expected to be of `RawSourceMap` but the existing
       //       working code uses a string.)
-      consumer = new sourceMap.SourceMapConsumer(data as {} as sourceMap.RawSourceMap) as {} as
+      consumer = new sourceMap.SourceMapConsumer(
+                     data as {} as sourceMap.RawSourceMap) as {} as
           sourceMap.RawSourceMap;
     } catch (e) {
       return callback(new Error(
@@ -221,9 +222,8 @@ export class SourceMapper {
     const mappedPos: sourceMap.Position = allPos && allPos.length > 0 ?
         Array.prototype.reduce.call(
             allPos,
-            (
-                accumulator: sourceMap.Position,
-                value: sourceMap.Position /*, index, arr*/) => {
+            (accumulator: sourceMap.Position,
+             value: sourceMap.Position /*, index, arr*/) => {
               return value.line < accumulator.line ? value : accumulator;
             }) :
         consumer.generatedPositionFor(sourcePos);
@@ -236,10 +236,11 @@ export class SourceMapper {
       // TODO: The `sourceMap.Position` type definition has a `column`
       //       attribute and not a `col` attribute.  Determine if the type
       //       definition or this code is correct.
-      column:
-          (mappedPos as {} as {col: number}).col  // SourceMapConsumer uses zero-based column
-                                                  // numbers which is the same as the
-                                                  // expected output
+      column: (mappedPos as {} as {
+                col: number
+              }).col  // SourceMapConsumer uses zero-based column
+                      // numbers which is the same as the
+                      // expected output
     };
   }
 }

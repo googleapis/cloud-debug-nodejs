@@ -30,7 +30,7 @@ import {Debuglet, CachedPromise} from '../src/agent/debuglet';
 import * as dns from 'dns';
 import * as extend from 'extend';
 import * as rawMetadata from 'gcp-metadata';
-const metadata: { project: Function; instance: Function; } = rawMetadata;
+const metadata: {project: Function; instance: Function;} = rawMetadata;
 
 import {Debug} from '../src/client/stackdriver/debug';
 import * as utils from '../src/agent/util/utils';
@@ -73,21 +73,23 @@ const errorBp: stackdriver.Breakpoint = {
   location: {path: 'build/test/fixtures/foo.js', line: 2}
 } as {} as stackdriver.Breakpoint;
 
-function verifyBreakpointRejection(re: RegExp, body: {breakpoint: stackdriver.Breakpoint}) {
+function verifyBreakpointRejection(
+    re: RegExp, body: {breakpoint: stackdriver.Breakpoint}) {
   const status = body.breakpoint.status;
   const hasCorrectDescription = status!.description.format.match(re);
   return status!.isError && hasCorrectDescription;
 }
 
 describe('CachedPromise', () => {
-  it('CachedPromise.get() will resolve after CachedPromise.resolve()', function(done) {
-    this.timeout(2000);
-    const cachedPromise = new CachedPromise();
-    cachedPromise.get().then(() => {
-      done();
-    });
-    cachedPromise.resolve();
-  });
+  it('CachedPromise.get() will resolve after CachedPromise.resolve()',
+     function(done) {
+       this.timeout(2000);
+       const cachedPromise = new CachedPromise();
+       cachedPromise.get().then(() => {
+         done();
+       });
+       cachedPromise.resolve();
+     });
 });
 
 describe('Debuglet', () => {
@@ -128,11 +130,12 @@ describe('Debuglet', () => {
       //       is a readonly property.
       // TODO: Determine if the hostname parameter should be used.
       // TODO: Determine if these types are correct
-      (dns as {lookup: {}}).lookup = (hostname: string, cb: (err: Error) => void) => {
-        setImmediate(() => {
-          cb(new Error('resolution error'));
-        });
-      };
+      (dns as {lookup: {}}).lookup =
+          (hostname: string, cb: (err: Error) => void) => {
+            setImmediate(() => {
+              cb(new Error('resolution error'));
+            });
+          };
 
       Debuglet.runningOnGCP().then((onGCP) => {
         assert.strictEqual(onGCP, false);
@@ -341,8 +344,7 @@ describe('Debuglet', () => {
           Debuglet.normalizeConfig_(config as DebugAgentConfig);
       // TODO: Debuglet.normalizeConfig_() expects 1 parameter but the original
       //       test code had zero arguments here.  Determine which is correct.
-      const compareConfig =
-          Debuglet.normalizeConfig_(null!);
+      const compareConfig = Debuglet.normalizeConfig_(null!);
       // The actual config should be exactly defaultConfig with only
       // maxExpandFrames adjusted.
       compareConfig.capture.maxExpandFrames = testValue;
@@ -352,8 +354,8 @@ describe('Debuglet', () => {
     it('should elaborate on inspector warning on 32 bit but not on 64 bit',
        (done) => {
          const projectId = '11020304f2934-a';
-         const debug = new Debug(
-             {projectId, credentials: fakeCredentials}, packageInfo);
+         const debug =
+             new Debug({projectId, credentials: fakeCredentials}, packageInfo);
          const debuglet = new Debuglet(debug, defaultConfig);
          let logText = '';
          debuglet.logger.info = (s: string) => {
@@ -406,33 +408,35 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should give a useful error message when projectId is not available', (done) => {
-      const savedGetProjectId = Debuglet.getProjectId;
-      Debuglet.getProjectId = () => {
-        return Promise.reject(new Error('no project id'));
-      };
+    it('should give a useful error message when projectId is not available',
+       (done) => {
+         const savedGetProjectId = Debuglet.getProjectId;
+         Debuglet.getProjectId = () => {
+           return Promise.reject(new Error('no project id'));
+         };
 
-      const debug = new Debug({}, packageInfo);
-      const debuglet = new Debuglet(debug, defaultConfig);
+         const debug = new Debug({}, packageInfo);
+         const debuglet = new Debuglet(debug, defaultConfig);
 
-      let message = '';
-      const savedLoggerError = debuglet.logger.error;
-      debuglet.logger.error = (text: string) => {
-        message += text;
-      };
+         let message = '';
+         const savedLoggerError = debuglet.logger.error;
+         debuglet.logger.error = (text: string) => {
+           message += text;
+         };
 
-      debuglet.once('initError', (err) => {
-        Debuglet.getProjectId = savedGetProjectId;
-        debuglet.logger.error = savedLoggerError;
-        assert.ok(err);
-        assert(message.startsWith('The project ID could not be determined:'));
-        done();
-      });
-      debuglet.once('started', () => {
-        assert.fail('The debuglet should fail to start without a projectId');
-      });
-      debuglet.start();
-    });
+         debuglet.once('initError', (err) => {
+           Debuglet.getProjectId = savedGetProjectId;
+           debuglet.logger.error = savedLoggerError;
+           assert.ok(err);
+           assert(
+               message.startsWith('The project ID could not be determined:'));
+           done();
+         });
+         debuglet.once('started', () => {
+           assert.fail('The debuglet should fail to start without a projectId');
+         });
+         debuglet.start();
+       });
 
     it('should not crash without project num', (done) => {
       const savedGetProjectId = Debuglet.getProjectId;
@@ -455,8 +459,8 @@ describe('Debuglet', () => {
 
     it('should use config.projectId', (done) => {
       const projectId = '11020304f2934-a';
-      const debug = new Debug(
-          {projectId, credentials: fakeCredentials}, packageInfo);
+      const debug =
+          new Debug({projectId, credentials: fakeCredentials}, packageInfo);
       const debuglet = new Debuglet(debug, defaultConfig);
 
       nocks.projectId('project-via-metadata');
@@ -485,29 +489,26 @@ describe('Debuglet', () => {
         process.env = extend({}, env);
       });
 
-      it('should use GCLOUD_PROJECT in lieu of config.projectId',
-         (done) => {
-           process.env.GCLOUD_PROJECT = '11020304f2934-b';
-           const debug = new Debug({credentials: fakeCredentials}, packageInfo);
-           const debuglet = new Debuglet(debug, defaultConfig);
+      it('should use GCLOUD_PROJECT in lieu of config.projectId', (done) => {
+        process.env.GCLOUD_PROJECT = '11020304f2934-b';
+        const debug = new Debug({credentials: fakeCredentials}, packageInfo);
+        const debuglet = new Debuglet(debug, defaultConfig);
 
-           nocks.projectId('project-via-metadata');
-           const scope = nock(API).post(REGISTER_PATH).reply(200, {
-             debuggee: {id: DEBUGGEE_ID}
-           });
+        nocks.projectId('project-via-metadata');
+        const scope = nock(API).post(REGISTER_PATH).reply(200, {
+          debuggee: {id: DEBUGGEE_ID}
+        });
 
-           debuglet.once('registered', (id: string) => {
-             assert.equal(id, DEBUGGEE_ID);
-             assert.equal(
-                 debuglet.debuggee!.project,
-                 process.env.GCLOUD_PROJECT);
-             debuglet.stop();
-             scope.done();
-             done();
-           });
+        debuglet.once('registered', (id: string) => {
+          assert.equal(id, DEBUGGEE_ID);
+          assert.equal(debuglet.debuggee!.project, process.env.GCLOUD_PROJECT);
+          debuglet.stop();
+          scope.done();
+          done();
+        });
 
-           debuglet.start();
-         });
+        debuglet.start();
+      });
 
       it('should use options.projectId in preference to the environment variable',
          (done) => {
@@ -524,8 +525,7 @@ describe('Debuglet', () => {
 
            debuglet.once('registered', (id: string) => {
              assert.equal(id, DEBUGGEE_ID);
-             assert.equal(
-                 debuglet.debuggee!.project, 'project-via-options');
+             assert.equal(debuglet.debuggee!.project, 'project-via-options');
              debuglet.stop();
              scope.done();
              done();
@@ -625,42 +625,39 @@ describe('Debuglet', () => {
             debuglet.config.serviceContext.version, 'fake-gae-version');
       });
 
-      it('should respect GAE_MINOR_VERSION env. var. when available',
-         () => {
-           process.env.GAE_MINOR_VERSION = 'some minor version';
-           const debug = new Debug({}, packageInfo);
-           const debuglet = new Debuglet(debug, defaultConfig);
-           assert.ok(debuglet.config);
-           assert.ok(debuglet.config.serviceContext);
-           assert.strictEqual(
-               debuglet.config.serviceContext.minorVersion_,
-               'some minor version');
-         });
+      it('should respect GAE_MINOR_VERSION env. var. when available', () => {
+        process.env.GAE_MINOR_VERSION = 'some minor version';
+        const debug = new Debug({}, packageInfo);
+        const debuglet = new Debuglet(debug, defaultConfig);
+        assert.ok(debuglet.config);
+        assert.ok(debuglet.config.serviceContext);
+        assert.strictEqual(
+            debuglet.config.serviceContext.minorVersion_, 'some minor version');
+      });
 
-      it('should conjure a fake minor version when running on flex',
-         () => {
-           process.env.GAE_SERVICE = 'fake-gae-service';
-           const debug = new Debug({}, packageInfo);
-           const debuglet = new Debuglet(debug, defaultConfig);
-           assert.ok(debuglet.config);
-           assert.ok(debuglet.config.serviceContext);
-           assert.ok(_.isString(debuglet.config.serviceContext.minorVersion_));
-         });
+      it('should conjure a fake minor version when running on flex', () => {
+        process.env.GAE_SERVICE = 'fake-gae-service';
+        const debug = new Debug({}, packageInfo);
+        const debuglet = new Debuglet(debug, defaultConfig);
+        assert.ok(debuglet.config);
+        assert.ok(debuglet.config.serviceContext);
+        assert.ok(_.isString(debuglet.config.serviceContext.minorVersion_));
+      });
 
-      it('should not have minorVersion unless enviroment provides it',
-         () => {
-           const debug = new Debug({}, packageInfo);
-           const debuglet = new Debuglet(debug, defaultConfig);
-           assert.ok(debuglet.config);
-           assert.ok(debuglet.config.serviceContext);
-           assert.ok(
-               // TODO: IMPORTANT: It appears that this test is incorrect as it
-               //       is.  That is, if minorVersion is replaced with the
-               //       correctly named minorVersion_, then the test fails.
-               //       Resolve this.
-               _.isUndefined(
-                   (debuglet.config.serviceContext as {minorVersion: {}}).minorVersion));
-         });
+      it('should not have minorVersion unless enviroment provides it', () => {
+        const debug = new Debug({}, packageInfo);
+        const debuglet = new Debuglet(debug, defaultConfig);
+        assert.ok(debuglet.config);
+        assert.ok(debuglet.config.serviceContext);
+        assert.ok(
+            // TODO: IMPORTANT: It appears that this test is incorrect as it
+            //       is.  That is, if minorVersion is replaced with the
+            //       correctly named minorVersion_, then the test fails.
+            //       Resolve this.
+            _.isUndefined((debuglet.config.serviceContext as {
+                            minorVersion: {}
+                          }).minorVersion));
+      });
 
       it('should not provide minorversion upon registration on non flex',
          (done) => {
@@ -689,34 +686,33 @@ describe('Debuglet', () => {
            debuglet.start();
          });
 
-      it('should provide minorversion upon registration if on flex',
-         (done) => {
-           process.env.GAE_SERVICE = 'fake-service';
-           const debug = new Debug(
-               {projectId: 'fake-project', credentials: fakeCredentials},
-               packageInfo);
-           const debuglet = new Debuglet(debug, defaultConfig);
+      it('should provide minorversion upon registration if on flex', (done) => {
+        process.env.GAE_SERVICE = 'fake-service';
+        const debug = new Debug(
+            {projectId: 'fake-project', credentials: fakeCredentials},
+            packageInfo);
+        const debuglet = new Debuglet(debug, defaultConfig);
 
-           nocks.oauth2();
-           const scope = nock(API)
-                             .post(
-                                 REGISTER_PATH,
-                                 (body: {debuggee: Debuggee}) => {
-                                   assert.ok(_.isString(
-                                       body.debuggee.labels!.minorversion));
-                                   return true;
-                                 })
-                             .once()
-                             .reply(200, {debuggee: {id: DEBUGGEE_ID}});
+        nocks.oauth2();
+        const scope =
+            nock(API)
+                .post(
+                    REGISTER_PATH,
+                    (body: {debuggee: Debuggee}) => {
+                      assert.ok(_.isString(body.debuggee.labels!.minorversion));
+                      return true;
+                    })
+                .once()
+                .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
-           // TODO: Determine if the response parameter should be used.
-           debuglet.once('registered', (id: string) => {
-             debuglet.stop();
-             scope.done();
-             done();
-           });
-           debuglet.start();
-         });
+        // TODO: Determine if the response parameter should be used.
+        debuglet.once('registered', (id: string) => {
+          debuglet.stop();
+          scope.done();
+          done();
+        });
+        debuglet.start();
+      });
     });
 
     it('should retry on failed registration', function(done) {
@@ -959,64 +955,64 @@ describe('Debuglet', () => {
     });
 
     it('should have breakpoints fetched when promise is resolved',
-      function(done) {
-        this.timeout(2000);
-        const breakpoint: stackdriver.Breakpoint = {
+       function(done) {
+         this.timeout(2000);
+         const breakpoint: stackdriver.Breakpoint = {
            id: 'test1',
            action: 'CAPTURE',
            location: {path: 'build/test/fixtures/foo.js', line: 2}
-        } as stackdriver.Breakpoint;
+         } as stackdriver.Breakpoint;
 
-        const debug = new Debug(
-            {projectId: 'fake-project', credentials: fakeCredentials},
-            packageInfo);
-        const debuglet = new Debuglet(debug, defaultConfig);
+         const debug = new Debug(
+             {projectId: 'fake-project', credentials: fakeCredentials},
+             packageInfo);
+         const debuglet = new Debuglet(debug, defaultConfig);
 
-        const scope = nock(API)
-                          .post(REGISTER_PATH)
-                          .reply(200, {debuggee: {id: DEBUGGEE_ID}})
-                          .get(BPS_PATH + '?successOnTimeout=true')
-                          .twice()
-                          .reply(200, {breakpoints: [breakpoint]});
-        const debugPromise = debuglet.isReadyManager.isReady();
-        debuglet.once('registered', function reg(id: string) {
-          debugPromise.then(() => {
-            // Once debugPromise is resolved, debuggee must be registered.
-            assert(debuglet.debuggee);
-            setTimeout(() => {
-              assert.deepEqual(debuglet.activeBreakpointMap.test1, breakpoint);
-              debuglet.activeBreakpointMap = {};
-              debuglet.stop();
-              scope.done();
-              done();
-            }, 1000);
-          });
-        });
-        debuglet.start();
-      });
+         const scope = nock(API)
+                           .post(REGISTER_PATH)
+                           .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+                           .get(BPS_PATH + '?successOnTimeout=true')
+                           .twice()
+                           .reply(200, {breakpoints: [breakpoint]});
+         const debugPromise = debuglet.isReadyManager.isReady();
+         debuglet.once('registered', function reg(id: string) {
+           debugPromise.then(() => {
+             // Once debugPromise is resolved, debuggee must be registered.
+             assert(debuglet.debuggee);
+             setTimeout(() => {
+               assert.deepEqual(debuglet.activeBreakpointMap.test1, breakpoint);
+               debuglet.activeBreakpointMap = {};
+               debuglet.stop();
+               scope.done();
+               done();
+             }, 1000);
+           });
+         });
+         debuglet.start();
+       });
 
-      it('should resolve breakpointFetched promise when registration expires',
-        function(done) {
-          this.timeout(2000);
-          const debug = new Debug(
-              {projectId: 'fake-project', credentials: fakeCredentials},
-              packageInfo);
-          const debuglet = new Debuglet(debug, defaultConfig);
+    it('should resolve breakpointFetched promise when registration expires',
+       function(done) {
+         this.timeout(2000);
+         const debug = new Debug(
+             {projectId: 'fake-project', credentials: fakeCredentials},
+             packageInfo);
+         const debuglet = new Debuglet(debug, defaultConfig);
 
-          const scope = nock(API)
-                            .post(REGISTER_PATH)
-                            .reply(200, {debuggee: {id: DEBUGGEE_ID}})
-                            .get(BPS_PATH + '?successOnTimeout=true')
-                            .reply(404); // signal re-registration.
-          const debugPromise = debuglet.isReadyManager.isReady();
-          debugPromise.then(() => {
-            debuglet.stop();
-            scope.done();
-            done();
-          });
+         const scope = nock(API)
+                           .post(REGISTER_PATH)
+                           .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+                           .get(BPS_PATH + '?successOnTimeout=true')
+                           .reply(404);  // signal re-registration.
+         const debugPromise = debuglet.isReadyManager.isReady();
+         debugPromise.then(() => {
+           debuglet.stop();
+           scope.done();
+           done();
+         });
 
-          debuglet.start();
-      });
+         debuglet.start();
+       });
 
     it('should reject breakpoints with conditions when allowExpressions=false',
        function(done) {
@@ -1256,8 +1252,7 @@ describe('Debuglet', () => {
       // TODO: Determine if Debuglet.format() should allow a number[]
       //       or if only string[] should be allowed.
       assert.deepEqual(Debuglet.format('hi', [5] as {} as string[]), 'hi');
-      assert.deepEqual(
-          Debuglet.format('hi $0', [5] as {} as string[]), 'hi 5');
+      assert.deepEqual(Debuglet.format('hi $0', [5] as {} as string[]), 'hi 5');
       assert.deepEqual(
           Debuglet.format('hi $0 $1', [5, 'there'] as {} as string[]),
           'hi 5 there');
@@ -1265,8 +1260,7 @@ describe('Debuglet', () => {
           Debuglet.format('hi $0 $1', [5] as {} as string[]), 'hi 5 $1');
       assert.deepEqual(
           Debuglet.format('hi $0 $1 $0', [5] as {} as string[]), 'hi 5 $1 5');
-      assert.deepEqual(
-          Debuglet.format('hi $$', [5] as {} as string[]), 'hi $');
+      assert.deepEqual(Debuglet.format('hi $$', [5] as {} as string[]), 'hi $');
       assert.deepEqual(
           Debuglet.format('hi $$0', [5] as {} as string[]), 'hi $0');
       assert.deepEqual(
@@ -1304,14 +1298,13 @@ describe('Debuglet', () => {
       assert.strictEqual(debuggee.labels!.version, 'yellow.5');
     });
 
-    it('should have an error statusMessage with the appropriate arg',
-       () => {
-         const debuggee = Debuglet.createDebuggee(
-             'a', 'b', {}, {}, false, packageInfo, undefined,
-             'Some Error Message');
-         assert.ok(debuggee);
-         assert.ok(debuggee.statusMessage);
-       });
+    it('should have an error statusMessage with the appropriate arg', () => {
+      const debuggee = Debuglet.createDebuggee(
+          'a', 'b', {}, {}, false, packageInfo, undefined,
+          'Some Error Message');
+      assert.ok(debuggee);
+      assert.ok(debuggee.statusMessage);
+    });
   });
 
   describe('_createUniquifier', () => {

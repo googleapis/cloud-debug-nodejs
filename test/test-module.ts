@@ -15,7 +15,7 @@
  */
 
 import * as assert from 'assert';
-const module: NodeModule & {start: Function} = require('../..');
+const module: NodeModule&{start: Function} = require('../..');
 import * as nock from 'nock';
 import * as nocks from './nocks';
 
@@ -24,10 +24,8 @@ nock.disableNetConnect();
 describe('Debug module', () => {
   before((done) => {
     nocks.projectId('project-via-metadata');
-    const debuglet = module.start({
-      projectId: '0',
-      debug: {forceNewAgent_: true, testMode_: true}
-    });
+    const debuglet = module.start(
+        {projectId: '0', debug: {forceNewAgent_: true, testMode_: true}});
     debuglet.on('started', () => {
       debuglet.stop();
       done();

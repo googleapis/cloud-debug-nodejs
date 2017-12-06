@@ -51,23 +51,21 @@ describe(__filename, () => {
 
   beforeEach((done) => {
     if (!api) {
-      scanner.scan(true, config.workingDirectory, /.js$/)
-          .then((fileStats) => {
-            const jsStats = fileStats.selectStats(/.js$/);
-            const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
-            SourceMapper.create(mapFiles, (err, mapper) => {
-              assert(!err);
+      scanner.scan(true, config.workingDirectory, /.js$/).then((fileStats) => {
+        const jsStats = fileStats.selectStats(/.js$/);
+        const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
+        SourceMapper.create(mapFiles, (err, mapper) => {
+          assert(!err);
 
-              // TODO: Handle the case when mapper is undefined
-              // TODO: Handle the case when v8debugapi.create returns null
-              api =
-                  debugapi.create(
-                      logger, config, jsStats,
-                      mapper as SourceMapper.SourceMapper) as debugapi.DebugApi;
-              assert.ok(api, 'should be able to create the api');
-              done();
-            });
-          });
+          // TODO: Handle the case when mapper is undefined
+          // TODO: Handle the case when v8debugapi.create returns null
+          api = debugapi.create(
+                    logger, config, jsStats,
+                    mapper as SourceMapper.SourceMapper) as debugapi.DebugApi;
+          assert.ok(api, 'should be able to create the api');
+          done();
+        });
+      });
     } else {
       assert(stateIsClean1(api));
       done();

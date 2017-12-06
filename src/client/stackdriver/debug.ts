@@ -49,7 +49,9 @@ export class Debug extends common.Service {
    *
    * @param options - [Authentication options](#/docs)
    */
-  constructor(options: AuthenticationConfig, packageJson: { name: string; version: string; }) {
+  constructor(options: AuthenticationConfig, packageJson: {
+    name: string; version: string;
+  }) {
     if (new.target !== Debug) {
       options = common.util.normalizeArguments(null, options);
       return new Debug(options, packageJson);

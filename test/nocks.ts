@@ -22,9 +22,7 @@ function accept(): true {
 }
 
 export type Validator = (body: {
-  client_id: string;
-  client_secret: string;
-  refresh_token: string;
+  client_id: string; client_secret: string; refresh_token: string;
 }) => boolean;
 
 // TODO: Determine if the type of `validator` is correct.

@@ -134,7 +134,8 @@ class StateResolver {
     };
 
     // TODO: Determine why _extend is used here
-    this.resolvedVariableTable = (util as {} as {_extend: Function})._extend([], this.messageTable);
+    this.resolvedVariableTable =
+        (util as {} as {_extend: Function})._extend([], this.messageTable);
     this.rawVariableTable = this.messageTable.map(() => {
       return null;
     });
@@ -380,8 +381,7 @@ class StateResolver {
     // top-level. The last scope is always omitted.
     if (frame.scopeChain[count - 2].type === 'closure') {
       count -= 2;
-    }
-    else {
+    } else {
       count -= 1;
     }
     for (let i = 0; i < count; ++i) {
@@ -527,8 +527,9 @@ class StateResolver {
     return {value: object.description, members};
   }
 
-  resolveObjectProperty_(isEvaluated: boolean, property: inspector.Runtime.PropertyDescriptor):
-      stackdriver.Variable {
+  resolveObjectProperty_(
+      isEvaluated: boolean,
+      property: inspector.Runtime.PropertyDescriptor): stackdriver.Variable {
     const name = String(property.name);
     if (property.get !== undefined) {
       return {name, varTableIndex: GETTER_MESSAGE_INDEX};

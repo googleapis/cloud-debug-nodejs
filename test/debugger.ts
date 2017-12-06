@@ -26,8 +26,8 @@ import * as stackdriver from '../src/types/stackdriver';
 export const common: commonTypes.Common = require('@google-cloud/common');
 // TODO: Verify these types are correct.
 const qs: {
-  parse: (qs: {}, sep?: string, eq?: string, options?: {maxKeys?: number}) =>
-      {},
+  parse: (
+      qs: {}, sep?: string, eq?: string, options?: {maxKeys?: number}) => {},
   stringify:
       (obj: object|string|boolean|number, sep?: string, eq?: string,
        name?: string) => string
@@ -120,7 +120,8 @@ export class Debugger extends common.ServiceObject {
    */
   listBreakpoints(
       debuggeeId: string, options: {
-        includeAllUsers?: boolean; includeInactive?: boolean;
+        includeAllUsers?: boolean;
+        includeInactive?: boolean;
         stripResults?: boolean;
         action?: string
       },
@@ -133,9 +134,7 @@ export class Debugger extends common.ServiceObject {
 
     // TODO: Remove this cast as `any`
     const query: {
-      clientVersion: string;
-      includeAllUsers: boolean;
-      includeInactive: boolean;
+      clientVersion: string; includeAllUsers: boolean; includeInactive: boolean;
       stripResults: boolean;
       action?: {value: string};
       waitToken?: string;

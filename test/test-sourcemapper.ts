@@ -88,8 +88,7 @@ function testTool(
          done();
        });
 
-    const testLineMapping = (
-        inputLine: number, expectedOutputLine: number) => {
+    const testLineMapping = (inputLine: number, expectedOutputLine: number) => {
       const info = sourcemapper.mappingInfo(inputFilePath, inputLine, 0);
       assert.notEqual(
           info, null,

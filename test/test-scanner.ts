@@ -84,18 +84,17 @@ describe('scanner', () => {
       });
     });
 
-    it('should return the same hash if the files don\'t change',
-       (done) => {
-         scanner.scan(true, process.cwd(), /.js$/).then((fileStats1) => {
-           const files1 = Object.keys(fileStats1.all());
-           scanner.scan(true, process.cwd(), /.js$/).then((fileStats2) => {
-             const files2 = Object.keys(fileStats2.all());
-             assert.deepEqual(files1.sort(), files2.sort());
-             assert.strictEqual(fileStats1.hash, fileStats2.hash);
-             done();
-           });
-         });
-       });
+    it('should return the same hash if the files don\'t change', (done) => {
+      scanner.scan(true, process.cwd(), /.js$/).then((fileStats1) => {
+        const files1 = Object.keys(fileStats1.all());
+        scanner.scan(true, process.cwd(), /.js$/).then((fileStats2) => {
+          const files2 = Object.keys(fileStats2.all());
+          assert.deepEqual(files1.sort(), files2.sort());
+          assert.strictEqual(fileStats1.hash, fileStats2.hash);
+          done();
+        });
+      });
+    });
 
     it('should return undefined hash if shouldHash is false', (done) => {
       scanner.scan(false, process.cwd(), /.js$/).then((fileStats) => {
@@ -141,27 +140,26 @@ describe('scanner', () => {
          });
        });
 
-    it('should return an updated file list when file list changes',
-       (done) => {
-         scanner.scan(true, fixtureDir, /.js$/).then((fileStats1) => {
-           const files1 = Object.keys(fileStats1.all());
-           assert.ok(fileStats1.hash);
-           fs.writeFileSync(fixture('tmp.js'), '');  // empty.
-           scanner.scan(true, fixtureDir, /.js$/).then((fileStats2) => {
-             const files2 = Object.keys(fileStats2.all());
-             assert.ok(fileStats2.hash);
-             assert.notStrictEqual(fileStats1.hash, fileStats2.hash);
-             assert.ok(files1.length === files2.length - 1);
-             fs.unlinkSync(fixture('tmp.js'));
-             scanner.scan(true, fixtureDir, /.js$/).then((fileStats3) => {
-               const files3 = Object.keys(fileStats3.all());
-               assert.ok(fileStats2.hash);
-               assert.strictEqual(fileStats1.hash, fileStats3.hash);
-               assert.deepEqual(files1.sort(), files3.sort());
-               done();
-             });
-           });
-         });
-       });
+    it('should return an updated file list when file list changes', (done) => {
+      scanner.scan(true, fixtureDir, /.js$/).then((fileStats1) => {
+        const files1 = Object.keys(fileStats1.all());
+        assert.ok(fileStats1.hash);
+        fs.writeFileSync(fixture('tmp.js'), '');  // empty.
+        scanner.scan(true, fixtureDir, /.js$/).then((fileStats2) => {
+          const files2 = Object.keys(fileStats2.all());
+          assert.ok(fileStats2.hash);
+          assert.notStrictEqual(fileStats1.hash, fileStats2.hash);
+          assert.ok(files1.length === files2.length - 1);
+          fs.unlinkSync(fixture('tmp.js'));
+          scanner.scan(true, fixtureDir, /.js$/).then((fileStats3) => {
+            const files3 = Object.keys(fileStats3.all());
+            assert.ok(fileStats2.hash);
+            assert.strictEqual(fileStats1.hash, fileStats3.hash);
+            assert.deepEqual(files1.sort(), files3.sort());
+            done();
+          });
+        });
+      });
+    });
   });
 });

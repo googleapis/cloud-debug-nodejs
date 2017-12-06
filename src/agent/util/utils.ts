@@ -128,8 +128,7 @@ export function pathToRegExp(scriptPath: string): RegExp {
  * @param {number[]} interval The interval to format.
  * @return {string} A formatted string.
  */
-export const formatInterval = (
-    msg: string, interval: number[]): string => {
+export const formatInterval = (msg: string, interval: number[]): string => {
   return msg + (interval[0] * 1000 + interval[1] / 1000000) + 'ms';
 };
 

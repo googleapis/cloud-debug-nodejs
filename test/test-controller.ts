@@ -30,9 +30,7 @@ delete process.env.GCLOUD_PROJECT;
 
 import {Controller} from '../src/agent/controller';
 // TODO: Fix fakeDebug to actually implement Debug.
-const fakeDebug: Debug = {
-  request
-} as {} as Debug;
+const fakeDebug: Debug = {request} as {} as Debug;
 
 const agentVersion = `SomeName/client/SomeVersion`;
 const url = 'https://clouddebugger.googleapis.com';
@@ -65,29 +63,28 @@ describe('Controller API', () => {
       });
     });
 
-    it('should not return an error when the debuggee isDisabled',
-       (done) => {
-         const scope = nock(url).post(api + '/debuggees/register').reply(200, {
-           debuggee: {id: 'fake-debuggee', isDisabled: true},
-           activePeriodSec: 600,
-         });
-         const debuggee = new Debuggee({
-           project: 'fake-project',
-           uniquifier: 'fake-id',
-           description: 'unit test',
-           agentVersion
-         });
-         const controller = new Controller(fakeDebug);
-         controller.register(debuggee, (err, result) => {
-           // TODO: Fix this incorrect method signature.
-           (assert as {ifError: Function}).ifError(err, 'not expecting an error');
-           assert.ok(result);
-           assert.equal(result!.debuggee.id, 'fake-debuggee');
-           assert.ok(result!.debuggee.isDisabled);
-           scope.done();
-           done();
-         });
-       });
+    it('should not return an error when the debuggee isDisabled', (done) => {
+      const scope = nock(url).post(api + '/debuggees/register').reply(200, {
+        debuggee: {id: 'fake-debuggee', isDisabled: true},
+        activePeriodSec: 600,
+      });
+      const debuggee = new Debuggee({
+        project: 'fake-project',
+        uniquifier: 'fake-id',
+        description: 'unit test',
+        agentVersion
+      });
+      const controller = new Controller(fakeDebug);
+      controller.register(debuggee, (err, result) => {
+        // TODO: Fix this incorrect method signature.
+        (assert as {ifError: Function}).ifError(err, 'not expecting an error');
+        assert.ok(result);
+        assert.equal(result!.debuggee.id, 'fake-debuggee');
+        assert.ok(result!.debuggee.isDisabled);
+        scope.done();
+        done();
+      });
+    });
 
   });
 
@@ -126,9 +123,8 @@ describe('Controller API', () => {
       // TODO: Determine if the response parameter should be used.
       controller.listBreakpoints(
           debuggee as Debuggee,
-          (
-              err: Error|null, response?: http.ServerResponse,
-              result?: stackdriver.ListBreakpointsResponse) => {
+          (err: Error|null, response?: http.ServerResponse,
+           result?: stackdriver.ListBreakpointsResponse) => {
             assert(!err, 'not expecting an error');
             // TODO: Handle the case where result is undefined
             assert(
@@ -155,9 +151,8 @@ describe('Controller API', () => {
           // TODO: Determine if the response parameter should be used.
           controller.listBreakpoints(
               debuggee as Debuggee,
-              (
-                  err: Error|null, response?: http.ServerResponse,
-                  result?: stackdriver.ListBreakpointsResponse) => {
+              (err: Error|null, response?: http.ServerResponse,
+               result?: stackdriver.ListBreakpointsResponse) => {
                 assert(!err, 'not expecting an error');
                 // TODO: Handle the case where result is undefined
                 assert(
@@ -205,7 +200,9 @@ describe('Controller API', () => {
         (assert as {ifError: Function}).ifError(err, 'not expecting an error');
         // TODO: Fix this error that states `body` is not a property
         //       of `ServerResponse`.
-        assert((response as {} as {body: {waitExpired: {}}}).body.waitExpired, 'should have expired set');
+        assert(
+            (response as {} as {body: {waitExpired: {}}}).body.waitExpired,
+            'should have expired set');
         scope.done();
         done();
       });
@@ -216,30 +213,30 @@ describe('Controller API', () => {
     const testsBreakpoints: stackdriver.Breakpoint[][] =
         [[], [{id: 'breakpoint-0', location: {path: 'foo.js', line: 18}}]] as
         stackdriver.Breakpoint[][];
-    testsBreakpoints.forEach((
-        breakpoints: stackdriver.Breakpoint[], index: number) => {
-      it('should pass test ' + index, (done) => {
-        const scope =
-            nock(url)
-                .get(
-                    api +
-                    '/debuggees/fake-debuggee/breakpoints?successOnTimeout=true')
-                .reply(200, {breakpoints});
-        // TODO: Fix debuggee to actually implement Debuggee
-        const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
-        const controller = new Controller(fakeDebug);
-        // TODO: Determine if the response parameter should be used.
-        controller.listBreakpoints(debuggee, (err, response, result) => {
-          assert(!err, 'not expecting an error');
-          assert.ok(result);
-          assert(result!.breakpoints, 'should have a breakpoints property');
-          const bps = result!.breakpoints;
-          assert.deepEqual(bps, breakpoints, 'breakpoints mismatch');
-          scope.done();
-          done();
+    testsBreakpoints.forEach(
+        (breakpoints: stackdriver.Breakpoint[], index: number) => {
+          it('should pass test ' + index, (done) => {
+            const scope =
+                nock(url)
+                    .get(
+                        api +
+                        '/debuggees/fake-debuggee/breakpoints?successOnTimeout=true')
+                    .reply(200, {breakpoints});
+            // TODO: Fix debuggee to actually implement Debuggee
+            const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
+            const controller = new Controller(fakeDebug);
+            // TODO: Determine if the response parameter should be used.
+            controller.listBreakpoints(debuggee, (err, response, result) => {
+              assert(!err, 'not expecting an error');
+              assert.ok(result);
+              assert(result!.breakpoints, 'should have a breakpoints property');
+              const bps = result!.breakpoints;
+              assert.deepEqual(bps, breakpoints, 'breakpoints mismatch');
+              scope.done();
+              done();
+            });
+          });
         });
-      });
-    });
   });
 
   describe('updateBreakpoint', () => {

@@ -76,25 +76,25 @@ const PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS = (40 + 540) / 2 * 1000;
  * @param {Breakpoint} breakpoint The breakpoint to format.
  * @return {string} A formatted string.
  */
-const formatBreakpoint = (
-    msg: string, breakpoint: stackdriver.Breakpoint): string => {
-  let text = msg +
-      util.format(
-          'breakpoint id: %s,\n\tlocation: %s', breakpoint.id,
-          util.inspect(breakpoint.location));
-  if (breakpoint.createdTime) {
-    const unixTime = Number(breakpoint.createdTime.seconds);
-    const date = new Date(unixTime * 1000);  // to milliseconds.
-    text += '\n\tcreatedTime: ' + date.toString();
-  }
-  if (breakpoint.condition) {
-    text += '\n\tcondition: ' + util.inspect(breakpoint.condition);
-  }
-  if (breakpoint.expressions) {
-    text += '\n\texpressions: ' + util.inspect(breakpoint.expressions);
-  }
-  return text;
-};
+const formatBreakpoint =
+    (msg: string, breakpoint: stackdriver.Breakpoint): string => {
+      let text = msg +
+          util.format(
+              'breakpoint id: %s,\n\tlocation: %s', breakpoint.id,
+              util.inspect(breakpoint.location));
+      if (breakpoint.createdTime) {
+        const unixTime = Number(breakpoint.createdTime.seconds);
+        const date = new Date(unixTime * 1000);  // to milliseconds.
+        text += '\n\tcreatedTime: ' + date.toString();
+      }
+      if (breakpoint.condition) {
+        text += '\n\tcondition: ' + util.inspect(breakpoint.condition);
+      }
+      if (breakpoint.expressions) {
+        text += '\n\texpressions: ' + util.inspect(breakpoint.expressions);
+      }
+      return text;
+    };
 
 /**
  * Formats a map of breakpoint objects prefixed with a provided message as a
@@ -103,22 +103,23 @@ const formatBreakpoint = (
  * @param {Object.<string, Breakpoint>} breakpoints A map of breakpoints.
  * @return {string} A formatted string.
  */
-const formatBreakpoints = (
-    msg: string, breakpoints: {[key: string]: stackdriver.Breakpoint}): string => {
-  return msg +
-      Object.keys(breakpoints)
-          .map((b) => {
-            return formatBreakpoint('', breakpoints[b]);
-          })
-          .join('\n');
-};
+const formatBreakpoints =
+    (msg: string, breakpoints: {[key: string]: stackdriver.Breakpoint}):
+        string => {
+          return msg +
+              Object.keys(breakpoints)
+                  .map((b) => {
+                    return formatBreakpoint('', breakpoints[b]);
+                  })
+                  .join('\n');
+        };
 
 /**
  * CachedPromise stores a promise. This promise can be resolved by calling
  * function resolve() and can only be resolved once.
  */
 export class CachedPromise {
-  private promiseResolve: (() => void) | null = null;
+  private promiseResolve: (() => void)|null = null;
   private promise: Promise<void> = new Promise<void>((resolve) => {
     this.promiseResolve = resolve;
   });
@@ -144,9 +145,7 @@ export class CachedPromise {
  * 3. Debuggee registration expired or failed, listBreakpoint cannot be
  *    completed.
  */
-export interface IsReady {
-  isReady(): Promise<void>;
-}
+export interface IsReady { isReady(): Promise<void>; }
 
 /**
  * IsReadyManager is a wrapper class to use debuglet.isReady().
@@ -336,7 +335,8 @@ export class Debuglet extends EventEmitter {
       try {
         project = await Debuglet.getProjectId(that.debug.options);
       } catch (err) {
-        that.logger.error('The project ID could not be determined: ' + err.message);
+        that.logger.error(
+            'The project ID could not be determined: ' + err.message);
         that.emit('initError', err);
         return;
       }
@@ -405,7 +405,7 @@ export class Debuglet extends EventEmitter {
       this.breakpointFetched = new CachedPromise();
       this.debuggeeRegistered.get().then(() => {
         this.scheduleBreakpointFetch_(
-          0 /*immediately*/, true /*only fetch once*/);
+            0 /*immediately*/, true /*only fetch once*/);
       });
       return this.breakpointFetched.get();
     }
@@ -530,20 +530,19 @@ export class Debuglet extends EventEmitter {
       callback:
           (err: Error|string, sourceContext: {[key: string]: string}) => void):
       void {
-    fs.readFile(
-        'source-context.json', 'utf8', (err: string|Error, data) => {
-          let sourceContext;
-          if (!err) {
-            try {
-              sourceContext = JSON.parse(data);
-            } catch (e) {
-              // TODO: Fix casting `err` from an ErrnoException to a string
-              err = 'Malformed source-context.json file: ' + e;
-            }
-          }
-          // We keep on going even if there are errors.
-          return callback(err, sourceContext);
-        });
+    fs.readFile('source-context.json', 'utf8', (err: string|Error, data) => {
+      let sourceContext;
+      if (!err) {
+        try {
+          sourceContext = JSON.parse(data);
+        } catch (e) {
+          // TODO: Fix casting `err` from an ErrnoException to a string
+          err = 'Malformed source-context.json file: ' + e;
+        }
+      }
+      // We keep on going even if there are errors.
+      return callback(err, sourceContext);
+    });
   }
 
   /**
@@ -754,7 +753,8 @@ export class Debuglet extends EventEmitter {
           //              field.  It is possible that breakpoint.id is always
           //              undefined!
           // TODO: Make sure the use of `that` here is correct.
-          delete that.completedBreakpointMap[(breakpoint as {} as {id: number}).id];
+          delete that
+              .completedBreakpointMap[(breakpoint as {} as {id: number}).id];
         });
 
     // Remove active breakpoints that the server no longer care about.
@@ -916,9 +916,8 @@ export class Debuglet extends EventEmitter {
     const that = this;
 
     const now = Date.now() / 1000;
-    const createdTime = breakpoint.createdTime ?
-        Number(breakpoint.createdTime.seconds) :
-        now;
+    const createdTime =
+        breakpoint.createdTime ? Number(breakpoint.createdTime.seconds) : now;
     const expiryTime = createdTime + that.config.breakpointExpirationSec;
 
     setTimeout(() => {

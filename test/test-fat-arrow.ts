@@ -49,22 +49,20 @@ describe(__filename, () => {
   });
   beforeEach((done) => {
     if (!api) {
-      scanner.scan(true, config.workingDirectory, /.js$/)
-          .then((fileStats) => {
-            const jsStats = fileStats.selectStats(/.js$/);
-            const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
-            // TODO: Determine if the err parameter should be used.
-            SourceMapper.create(mapFiles, (err, mapper) => {
-              // TODO: Handle the case when mapper is undefined
-              // TODO: Handle the case when v8debugapi.create returns null
-              api =
-                  debugapi.create(
-                      logger, config, jsStats,
-                      mapper as SourceMapper.SourceMapper) as debugapi.DebugApi;
-              assert.ok(api, 'should be able to create the api');
-              done();
-            });
-          });
+      scanner.scan(true, config.workingDirectory, /.js$/).then((fileStats) => {
+        const jsStats = fileStats.selectStats(/.js$/);
+        const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
+        // TODO: Determine if the err parameter should be used.
+        SourceMapper.create(mapFiles, (err, mapper) => {
+          // TODO: Handle the case when mapper is undefined
+          // TODO: Handle the case when v8debugapi.create returns null
+          api = debugapi.create(
+                    logger, config, jsStats,
+                    mapper as SourceMapper.SourceMapper) as debugapi.DebugApi;
+          assert.ok(api, 'should be able to create the api');
+          done();
+        });
+      });
     } else {
       assert(stateIsClean(api));
       done();
@@ -97,30 +95,29 @@ describe(__filename, () => {
       process.nextTick(foo.bind(null, 'test'));
     });
   });
-  it('Should process the argument value change of the fat arrow',
-     (done) => {
-       // TODO: Have this implement Breakpoint
-       const brk: stackdriver.Breakpoint = {
-         id: 'fake-id-123',
-         location: {path: 'fixtures/fat-arrow.js', line: 6}
-       } as stackdriver.Breakpoint;
-       api.set(brk, (err1) => {
-         assert.ifError(err1);
-         api.wait(brk, (err2) => {
-           assert.ifError(err2);
-           // TODO: Fix this explicit cast.
-           const frame = brk.stackFrames[0];
-           const args = frame.arguments;
-           const locals = frame.locals;
-           assert.equal(args.length, 0, 'There should be zero arguments');
-           assert.equal(locals.length, 1, 'There should be one local');
-           assert.deepEqual(locals[0], {name: 'b', value: '2'});
-           api.clear(brk, (err3) => {
-             assert.ifError(err3);
-             done();
-           });
-         });
-         process.nextTick(foo.bind(null, 'test'));
-       });
-     });
+  it('Should process the argument value change of the fat arrow', (done) => {
+    // TODO: Have this implement Breakpoint
+    const brk: stackdriver.Breakpoint = {
+      id: 'fake-id-123',
+      location: {path: 'fixtures/fat-arrow.js', line: 6}
+    } as stackdriver.Breakpoint;
+    api.set(brk, (err1) => {
+      assert.ifError(err1);
+      api.wait(brk, (err2) => {
+        assert.ifError(err2);
+        // TODO: Fix this explicit cast.
+        const frame = brk.stackFrames[0];
+        const args = frame.arguments;
+        const locals = frame.locals;
+        assert.equal(args.length, 0, 'There should be zero arguments');
+        assert.equal(locals.length, 1, 'There should be one local');
+        assert.deepEqual(locals[0], {name: 'b', value: '2'});
+        api.clear(brk, (err3) => {
+          assert.ifError(err3);
+          done();
+        });
+      });
+      process.nextTick(foo.bind(null, 'test'));
+    });
+  });
 });

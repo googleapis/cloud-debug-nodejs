@@ -46,23 +46,21 @@ describe(__filename, () => {
 
   beforeEach((done) => {
     if (!api) {
-      scanner.scan(true, config.workingDirectory, /.js$/)
-          .then((fileStats) => {
-            const jsStats = fileStats.selectStats(/.js$/);
-            const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
-            SourceMapper.create(mapFiles, (err, mapper) => {
-              assert(!err);
+      scanner.scan(true, config.workingDirectory, /.js$/).then((fileStats) => {
+        const jsStats = fileStats.selectStats(/.js$/);
+        const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
+        SourceMapper.create(mapFiles, (err, mapper) => {
+          assert(!err);
 
-              // TODO: Handle the case when mapper is undefined
-              // TODO: Handle the case when v8debugapi.create returns null
-              api =
-                  debugapi.create(
-                      logger, config, jsStats,
-                      mapper as SourceMapper.SourceMapper) as debugapi.DebugApi;
-              assert.ok(api, 'should be able to create the api');
-              done();
-            });
-          });
+          // TODO: Handle the case when mapper is undefined
+          // TODO: Handle the case when v8debugapi.create returns null
+          api = debugapi.create(
+                    logger, config, jsStats,
+                    mapper as SourceMapper.SourceMapper) as debugapi.DebugApi;
+          assert.ok(api, 'should be able to create the api');
+          done();
+        });
+      });
     } else {
       assert(stateIsClean2(api));
       done();
@@ -121,32 +119,30 @@ describe(__filename, () => {
     });
   });
 
-  it('Should read an argument value after its value is modified',
-     (done) => {
-       // TODO: Have this actually implement Breakpoint
-       const brk: stackdriver.Breakpoint = {
-         id: 'fake-id-1234',
-         location:
-             {path: 'test-duplicate-nested-expressions-code.js', line: 6}
-       } as stackdriver.Breakpoint;
-       api.set(brk, (err1) => {
-         assert.ifError(err1);
-         api.wait(brk, (err2) => {
-           assert.ifError(err2);
-           const frame = brk.stackFrames[0];
-           const args = frame.arguments;
-           const locals = frame.locals;
-           assert.equal(args.length, 0, 'There should be zero arguments');
-           assert.equal(locals.length, 1, 'There should be one local');
-           assert.deepEqual(locals[0], {name: 'a', value: '11'});
-           api.clear(brk, (err3) => {
-             assert.ifError(err3);
-             done();
-           });
-         });
-         process.nextTick(foo.bind(null, 'test'));
-       });
-     });
+  it('Should read an argument value after its value is modified', (done) => {
+    // TODO: Have this actually implement Breakpoint
+    const brk: stackdriver.Breakpoint = {
+      id: 'fake-id-1234',
+      location: {path: 'test-duplicate-nested-expressions-code.js', line: 6}
+    } as stackdriver.Breakpoint;
+    api.set(brk, (err1) => {
+      assert.ifError(err1);
+      api.wait(brk, (err2) => {
+        assert.ifError(err2);
+        const frame = brk.stackFrames[0];
+        const args = frame.arguments;
+        const locals = frame.locals;
+        assert.equal(args.length, 0, 'There should be zero arguments');
+        assert.equal(locals.length, 1, 'There should be one local');
+        assert.deepEqual(locals[0], {name: 'a', value: '11'});
+        api.clear(brk, (err3) => {
+          assert.ifError(err3);
+          done();
+        });
+      });
+      process.nextTick(foo.bind(null, 'test'));
+    });
+  });
 
   it('Should represent a const name at its local-scope when clearly defined',
      (done) => {

@@ -60,14 +60,14 @@ bench('fib(29)', () => {
 
 // FIXME: the following test isn't really working because of a V8 bug.
 (() => {
-const bp = {
-  id: 'breakpoint1',
-  location: {path: __filename, line: 4},
-  condition: 'n > 50000'
-};
-v8debugapi.set(bp);
-bench('fib(29) with breakpoint: ', () => {
-  fib(29);
-});
-v8debugapi.clear(bp);
+  const bp = {
+    id: 'breakpoint1',
+    location: {path: __filename, line: 4},
+    condition: 'n > 50000'
+  };
+  v8debugapi.set(bp);
+  bench('fib(29) with breakpoint: ', () => {
+    fib(29);
+  });
+  v8debugapi.clear(bp);
 })();
