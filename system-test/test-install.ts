@@ -74,7 +74,7 @@ interface CodeSample {
 
 describe('Installation', () => {
   let installDir: string|undefined;
-  before(async function() {
+  before(async () => {
     const tgz = await globP(`${process.cwd()}/*.tgz`);
     assert.deepStrictEqual(tgz.length, 0,
       `Expected zero tgz files in the current working directory before ` +

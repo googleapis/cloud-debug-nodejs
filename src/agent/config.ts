@@ -16,8 +16,12 @@
 
 import * as common from '../types/common';
 
-export interface DebugAgentConfig extends common.AuthenticationConfig {
-  workingDirectory?: string;
+export type DebugAgentConfig = {
+  [K in keyof ResolvedDebugAgentConfig]?: Partial<ResolvedDebugAgentConfig[K]>
+};
+
+export interface ResolvedDebugAgentConfig extends common.AuthenticationConfig {
+  workingDirectory: string;
 
   /**
    * A user specified way of identifying the service
@@ -29,7 +33,7 @@ export interface DebugAgentConfig extends common.AuthenticationConfig {
    * Locals and arguments are not displayed and watch expressions and
    * conditions are dissallowed when this is `false`.
    */
-  allowExpressions?: boolean;
+  allowExpressions: boolean;
 
   /**
    * Identifies the context of the running service -
@@ -40,7 +44,7 @@ export interface DebugAgentConfig extends common.AuthenticationConfig {
    * choose to provide this information yourself to identify your service
    * differently from the default mechanism.
    */
-  serviceContext?: {
+  serviceContext: {
     /**
      * The service name.
      */
@@ -70,46 +74,46 @@ export interface DebugAgentConfig extends common.AuthenticationConfig {
   /**
    * agent log level 0-disabled, 1-error, 2-warn, 3-info, 4-debug
    */
-  logLevel?: number;
+  logLevel: number;
 
   /**
    * How frequently should the list of breakpoints be refreshed from the cloud
    * debug server.
    */
-  breakpointUpdateIntervalSec?: number;
+  breakpointUpdateIntervalSec: number;
 
   /**
    * breakpoints and logpoints older than this number of seconds will be expired
    * on the server.
    */
-  breakpointExpirationSec?: number;
+  breakpointExpirationSec: number;
 
   /**
    * configuration options on what is captured on a snapshot.
    */
-  capture?: {
+  capture: {
     /**
      * Whether to include details about stack frames belonging to node-core.
      */
-    includeNodeModules?: boolean;
+    includeNodeModules: boolean;
 
     /**
      * Maximum number of stack frames to capture data for. The limit is aimed to
      * reduce overall capture time.
      */
-    maxFrames?: number;
+    maxFrames: number;
 
     /**
      * We collect locals and arguments on a few top frames. For the rest only
      * collect the source location
      */
-    maxExpandFrames?: number;
+    maxExpandFrames: number;
 
     /**
      * To reduce the overall capture time, limit the number of properties
      * gathered on large objects. A value of 0 disables the limit.
      */
-    maxProperties?: number;
+    maxProperties: number;
 
     /**
      * Total 'size' of data to gather. This is NOT the number of bytes of data
@@ -119,78 +123,47 @@ export interface DebugAgentConfig extends common.AuthenticationConfig {
      * data and subsequently the network traffic. A value of 0 disables the
      * limit.
      */
-    maxDataSize?: number;
+    maxDataSize: number;
 
     /**
      * To limit the size of the buffer, we truncate long strings. A value of 0
      * disables truncation.
      */
-    maxStringLength?: number;
+    maxStringLength: number;
   };
 
   /**
    * options affecting log points.
    */
-  log?: {
+  log: {
     /**
      * The maximum number of logs to record per second per logpoint.
      */
-    maxLogsPerSecond?: number;
+    maxLogsPerSecond: number;
 
     /**
      * Number of seconds to wait after the `maxLogsPerSecond` rate is hit before
      * logging resumes per logpoint.
      */
-    logDelaySeconds?: number;
+    logDelaySeconds: number;
   };
 
   /**
    * These configuration options are for internal  experimentation only.
    */
-  internal?: {
-    registerDelayOnFetcherErrorSec?: number;
-    maxRegistrationRetryDelay?: number;
+  internal: {
+    registerDelayOnFetcherErrorSec: number;
+    maxRegistrationRetryDelay: number;
   };
 
   /**
    * Used by tests to force loading of a new agent if one exists already
    */
-  forceNewAgent_?: boolean;
+  forceNewAgent_: boolean;
 
   /**
    * Uses by tests to cause the start() function to return the debuglet.
    */
-  testMode_?: boolean;
-}
-
-export interface ResolvedDebugAgentConfig extends DebugAgentConfig {
-  workingDirectory: string;
-  allowExpressions: boolean;
-  serviceContext: {
-    service?: string;
-    version?: string;
-    minorVersion_?: string;
-  };
-  logLevel: number;
-  breakpointUpdateIntervalSec: number;
-  breakpointExpirationSec: number;
-  capture: {
-    includeNodeModules: boolean;
-    maxFrames: number;
-    maxExpandFrames: number;
-    maxProperties: number;
-    maxDataSize: number;
-    maxStringLength: number;
-  };
-  log: {
-    maxLogsPerSecond: number;
-    logDelaySeconds: number;
-  };
-  internal: {
-    registerDelayOnFetcherErrorSec: number;
-    maxRegistrationRetryDelay: number;
-  };
-  forceNewAgent_: boolean;
   testMode_: boolean;
 }
 
