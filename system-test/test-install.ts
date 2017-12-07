@@ -36,6 +36,36 @@ debug.start();`,
     code: `import * as debug from '@google-cloud/debug-agent';
 debug.start({ allowExpressions: true });`,
     description: 'imports the module and starts with {allowExpressions: true}'
+  },
+  {
+    code: `import * as debug from '@google-cloud/debug-agent';
+debug.start({
+  allowExpressions: true,
+  serviceContext: {
+    service: 'Some service'
+  }
+});`,
+    description: 'imports the module and starts with a partial `serviceContext`'
+  },
+  {
+    code: `import * as debug from '@google-cloud/debug-agent';
+debug.start({
+  allowExpressions: true,
+  serviceContext: {
+    service: 'Some service',
+    version: 'Some version'
+  }
+});`,
+    description: 'imports the module and starts with a complete `serviceContext`'
+  },
+  {
+    code: `import * as debug from '@google-cloud/debug-agent';
+debug.start({
+  capture: {
+    maxFrames: 1
+  }
+});`,
+    description: 'imports the module and starts with a partial `capture`'
   }
 ];
 
