@@ -292,7 +292,7 @@ export class Debuglet extends EventEmitter {
     let fileStats: scanner.ScanResults;
     try {
       fileStats =
-          await scanner.scan(!id, that.config.workingDirectory, /.js$|.map$/);
+          await scanner.scan(!id, that.config.workingDirectory, /.js$|.js.map$/);
     } catch (err) {
       that.logger.error('Error scanning the filesystem.', err);
       that.emit('initError', err);
@@ -300,7 +300,7 @@ export class Debuglet extends EventEmitter {
     }
 
     const jsStats = fileStats.selectStats(/.js$/);
-    const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
+    const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
     SourceMapper.create(mapFiles, async (err3, sourcemapper) => {
       if (err3) {
         that.logger.error('Error processing the sourcemaps.', err3);
