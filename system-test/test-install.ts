@@ -17,7 +17,7 @@
 import * as assert from 'assert';
 import * as path from 'path';
 
-import {globP, ncpP, rimrafP, spawnP, tmpDirP, writeFileP, mkdirP} from './utils';
+import {globP, mkdirP, ncpP, rimrafP, spawnP, tmpDirP, writeFileP} from './utils';
 
 const INDEX_TS = 'index.ts';
 const INDEX_JS = 'index.js';
@@ -76,12 +76,13 @@ describe('Installation', () => {
   let installDir: string|undefined;
   before(async () => {
     const tgz = await globP(`${process.cwd()}/*.tgz`);
-    assert.deepStrictEqual(tgz.length, 0,
-      `Expected zero tgz files in the current working directory before ` +
-      `running the test but found files: ${tgz.map(file => {
-        const parts = file.split(path.sep);
-        return parts[parts.length-1];
-      })}`);
+    assert.deepStrictEqual(
+        tgz.length, 0,
+        `Expected zero tgz files in the current working directory before ` +
+            `running the test but found files: ${tgz.map(file => {
+              const parts = file.split(path.sep);
+              return parts[parts.length - 1];
+            })}`);
   });
 
   beforeEach(async function() {
@@ -113,24 +114,26 @@ describe('Installation', () => {
 
   describe('When used with Typescript code', () => {
     TS_CODE_ARRAY.forEach((sample) => {
-      it.only(`should install and work with code that ${sample.description}`,
-         async function() {
-           this.timeout(TIMEOUT_MS);
-           assert(installDir);
-           const srcDir = path.join(installDir!, 'src');
-           await mkdirP(srcDir);
-           await writeFileP(path.join(srcDir, INDEX_TS), sample.code, 'utf-8');
-           await spawnP('npm',
-             ['install', '--save-dev', 'gts', 'typescript@2.x'],
-               {cwd: installDir, stdio}, log);
-           await spawnP('gts', ['init', '--yes'],
-             {cwd: installDir, stdio}, log);
-           await spawnP('npm', ['run', 'compile'],
-             {cwd: installDir, stdio}, log);
-           const buildDir = path.join(installDir!, 'build');
-           await spawnP('node', [path.join(buildDir, 'src', INDEX_JS)],
-             {cwd: installDir, stdio}, log);
-         });
+      it.only(
+          `should install and work with code that ${sample.description}`,
+          async function() {
+            this.timeout(TIMEOUT_MS);
+            assert(installDir);
+            const srcDir = path.join(installDir!, 'src');
+            await mkdirP(srcDir);
+            await writeFileP(path.join(srcDir, INDEX_TS), sample.code, 'utf-8');
+            await spawnP(
+                'npm', ['install', '--save-dev', 'gts', 'typescript@2.x'],
+                {cwd: installDir, stdio}, log);
+            await spawnP(
+                'gts', ['init', '--yes'], {cwd: installDir, stdio}, log);
+            await spawnP(
+                'npm', ['run', 'compile'], {cwd: installDir, stdio}, log);
+            const buildDir = path.join(installDir!, 'build');
+            await spawnP(
+                'node', [path.join(buildDir, 'src', INDEX_JS)],
+                {cwd: installDir, stdio}, log);
+          });
     });
   });
 

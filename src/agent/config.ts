@@ -152,8 +152,7 @@ export interface ResolvedDebugAgentConfig extends common.AuthenticationConfig {
    * These configuration options are for internal  experimentation only.
    */
   internal: {
-    registerDelayOnFetcherErrorSec: number;
-    maxRegistrationRetryDelay: number;
+    registerDelayOnFetcherErrorSec: number; maxRegistrationRetryDelay: number;
   };
 
   /**

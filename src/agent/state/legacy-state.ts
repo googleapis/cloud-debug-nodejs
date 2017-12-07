@@ -565,7 +565,8 @@ export function testAssert(): void {
  */
 export function capture(
     execState: v8.ExecutionState, expressions: string[],
-    config: ResolvedDebugAgentConfig, v8debug: v8.Debug): stackdriver.Breakpoint {
+    config: ResolvedDebugAgentConfig,
+    v8debug: v8.Debug): stackdriver.Breakpoint {
   return (new StateResolver(execState, expressions, config, v8debug))
       .capture_();
 }
