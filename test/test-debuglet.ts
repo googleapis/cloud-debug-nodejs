@@ -351,33 +351,32 @@ describe('Debuglet', () => {
       assert.deepEqual(mergedConfig, compareConfig);
     });
 
-    it(
-        'should remove inspector warning listener on debug.stop', (done) => {
-          function countCustomListeners(): number {
-            let count = 0;
-            for (const fn of process.listeners('warning')) {
-              if (fn.name === 'debugAgentWarningListener') {
-                count++;
-              }
-            }
-            return count;
+    it('should remove inspector warning listener on debug.stop', (done) => {
+      function countCustomListeners(): number {
+        let count = 0;
+        for (const fn of process.listeners('warning')) {
+          if (fn.name === 'debugAgentWarningListener') {
+            count++;
           }
+        }
+        return count;
+      }
 
-          const projectId = '11020304f2934-a';
-          const debug =
-              new Debug({projectId, credentials: fakeCredentials}, packageInfo);
-          const debuglet = new Debuglet(debug, defaultConfig);
-          debuglet.once('started', () => {
-            assert.strictEqual(countCustomListeners(), 1);
-            debuglet.stop();
-          });
-          debuglet.once('stopped', () => {
-            assert.strictEqual(countCustomListeners(), 0);
-            done();
-          });
-          assert.strictEqual(countCustomListeners(), 0);
-          debuglet.start();
-        });
+      const projectId = '11020304f2934-a';
+      const debug =
+          new Debug({projectId, credentials: fakeCredentials}, packageInfo);
+      const debuglet = new Debuglet(debug, defaultConfig);
+      debuglet.once('started', () => {
+        assert.strictEqual(countCustomListeners(), 1);
+        debuglet.stop();
+      });
+      debuglet.once('stopped', () => {
+        assert.strictEqual(countCustomListeners(), 0);
+        done();
+      });
+      assert.strictEqual(countCustomListeners(), 0);
+      debuglet.start();
+    });
 
     it('should elaborate on inspector warning on 32 bit but not on 64 bit',
        (done) => {
