@@ -351,14 +351,12 @@ describe('Debuglet', () => {
       assert.deepEqual(mergedConfig, compareConfig);
     });
 
-    it.only(
+    it(
         'should remove inspector warning listener on debug.stop', (done) => {
           function countCustomListeners(): number {
             let count = 0;
             for (const fn of process.listeners('warning')) {
-              if ((fn as {} as {
-                    fromGcpDebugAgent: boolean
-                  }).fromGcpDebugAgent) {
+              if (fn.name === 'debugAgentWarningListener') {
                 count++;
               }
             }
