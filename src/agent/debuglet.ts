@@ -164,7 +164,9 @@ export class Debuglet extends EventEmitter {
   private project: string|null;
   private controller: Controller;
   private completedBreakpointMap: {[key: string]: boolean};
-  private warningListener: ((warning: NodeJS.ErrnoException) => void) & { fromGcpDebugAgent: boolean; };
+  private warningListener: ((warning: NodeJS.ErrnoException) => void)&{
+    fromGcpDebugAgent: boolean;
+  };
 
   // breakpointFetchedTimestamp represents the last timestamp when
   // breakpointFetched was resolved, which means breakpoint update was
@@ -244,14 +246,11 @@ export class Debuglet extends EventEmitter {
     this.breakpointFetchedTimestamp = -Infinity;
     this.debuggeeRegistered = new CachedPromise();
 
-    this.warningListener = Object.assign(
-      (warning: NodeJS.ErrnoException) => {
-        if (warning.code === 'INSPECTOR_ASYNC_STACK_TRACES_NOT_AVAILABLE') {
-          this.logger.info(utils.messages.ASYNC_TRACES_WARNING);
-        }
-      },
-      { fromGcpDebugAgent: true }
-    );
+    this.warningListener = Object.assign((warning: NodeJS.ErrnoException) => {
+      if (warning.code === 'INSPECTOR_ASYNC_STACK_TRACES_NOT_AVAILABLE') {
+        this.logger.info(utils.messages.ASYNC_TRACES_WARNING);
+      }
+    }, {fromGcpDebugAgent: true});
   }
 
   static normalizeConfig_(config: DebugAgentConfig): ResolvedDebugAgentConfig {
