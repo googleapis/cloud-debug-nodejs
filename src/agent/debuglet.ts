@@ -244,11 +244,12 @@ export class Debuglet extends EventEmitter {
     this.breakpointFetchedTimestamp = -Infinity;
     this.debuggeeRegistered = new CachedPromise();
 
-    const debugAgentWarningListener = (warning: NodeJS.ErrnoException) => {
+    const that = this;
+    function debugAgentWarningListener(warning: NodeJS.ErrnoException) {
       if (warning.code === 'INSPECTOR_ASYNC_STACK_TRACES_NOT_AVAILABLE') {
-        this.logger.info(utils.messages.ASYNC_TRACES_WARNING);
+        that.logger.info(utils.messages.ASYNC_TRACES_WARNING);
       }
-    };
+    }
 
     this.warningListener = debugAgentWarningListener;
   }
