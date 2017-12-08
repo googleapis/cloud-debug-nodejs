@@ -32,11 +32,19 @@ const SYSTEM_TEST = 'system-test';
 const PROJECT_ROOT = path.join(__dirname, '..', '..');
 const BUILD_DIR = path.join(PROJECT_ROOT, 'build');
 
+const INPUT_TYPES_DIR = path.join(PROJECT_ROOT, 'src', 'types');
+const OUTPUT_TYPES_DIR = path.join(BUILD_DIR, 'src', 'types');
+
 const INPUT_TEST_DIR = path.join(PROJECT_ROOT, TEST);
 const INPUT_SYSTEM_TEST_DIR = path.join(PROJECT_ROOT, SYSTEM_TEST);
 
 const OUTPUT_TEST_DIR = path.join(BUILD_DIR, TEST);
 const OUTPUT_SYSTEM_TEST_DIR = path.join(BUILD_DIR, SYSTEM_TEST);
+
+async function copyTypes(): Promise<void> {
+  await mkdirp(OUTPUT_TYPES_DIR);
+  await ncp(INPUT_TYPES_DIR, OUTPUT_TYPES_DIR);
+}
 
 async function setupUnitTests(): Promise<void> {
   await mkdirp(OUTPUT_TEST_DIR);
@@ -50,6 +58,7 @@ async function setupSystemTests(): Promise<void> {
 
 async function main(): Promise<void> {
   try {
+    await copyTypes();
     await setupUnitTests();
     await setupSystemTests();
   }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {DebugAgentConfig} from '../src/agent/config';
+import {ResolvedDebugAgentConfig} from '../src/agent/config';
 import {DebugApi} from '../src/agent/v8/debugapi';
 import * as stackdriver from '../src/types/stackdriver';
 
@@ -113,7 +113,7 @@ function validateBreakpoint(breakpoint: stackdriver.Breakpoint): void {
   }
 }
 describe('debugapi selection', () => {
-  const config: DebugAgentConfig = extend(
+  const config: ResolvedDebugAgentConfig = extend(
       {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
   const logger =
       new common.logger({levelLevel: config.logLevel} as {} as LoggerOptions);
@@ -156,7 +156,7 @@ describe('debugapi selection', () => {
 });
 
 describe('v8debugapi', () => {
-  const config: DebugAgentConfig = extend(
+  const config: ResolvedDebugAgentConfig = extend(
       {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
   // TODO: It appears `logLevel` is a typo and should be `level`.  However,
   //       with this change, the tests fail.  Resolve this.

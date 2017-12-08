@@ -46,7 +46,7 @@ import * as debugapi from './v8/debugapi';
 import * as assert from 'assert';
 
 import * as stackdriver from '../types/stackdriver';
-import {DebugAgentConfig} from './config';
+import {DebugAgentConfig, ResolvedDebugAgentConfig} from './config';
 import {Debug, PackageInfo} from '../client/stackdriver/debug';
 import {Logger} from '../types/common';
 import {DebugApi} from './v8/debugapi';
@@ -179,7 +179,7 @@ export class Debuglet extends EventEmitter {
   isReadyManager: IsReady = new IsReadyImpl(this);
 
   // Exposed for testing
-  config: DebugAgentConfig;
+  config: ResolvedDebugAgentConfig;
   fetcherActive: boolean;
   logger: Logger;
   debuggee: Debuggee|null;
@@ -244,7 +244,7 @@ export class Debuglet extends EventEmitter {
     this.debuggeeRegistered = new CachedPromise();
   }
 
-  static normalizeConfig_(config: DebugAgentConfig): DebugAgentConfig {
+  static normalizeConfig_(config: DebugAgentConfig): ResolvedDebugAgentConfig {
     const envConfig = {
       logLevel: process.env.GCLOUD_DEBUG_LOGLEVEL,
       serviceContext: {

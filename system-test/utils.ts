@@ -15,7 +15,7 @@
  */
 
 import {ChildProcess, fork, ForkOptions, spawn, SpawnOptions} from 'child_process';
-import {readFile, stat, Stats, writeFile} from 'fs';
+import {mkdir, readFile, stat, Stats, writeFile} from 'fs';
 import * as glob from 'glob';
 import {ncp} from 'ncp';
 import * as once from 'once';
@@ -35,6 +35,8 @@ export const writeFileP: (path: string, data: string, encoding?: string) =>
 export const statP: (path: string) => Promise<Stats> = pify(stat);
 export const tmpDirP: () => Promise<string> = pify(tmp.dir);
 export const rimrafP: (f: string) => Promise<void> = pify(rimraf);
+export const mkdirP: (path: string, mode?: number) => Promise<void> =
+    pify(mkdir);
 
 export function nodule(nodule: string) {
   return path.relative(BUILD_DIRECTORY, `node_modules/${nodule}`);

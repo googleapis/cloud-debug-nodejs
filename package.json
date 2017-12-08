@@ -3,8 +3,8 @@
   "version": "2.3.0",
   "author": "Google Inc.",
   "description": "Stackdriver Debug Agent for Node.js",
-  "main": "./build/src/index.js",
-  "types": "./build/types/index.d.ts",
+  "main": "./build/src/index",
+  "types": "./build/src/index.d.ts",
   "repository": "googlecloudplatform/cloud-debug-nodejs",
   "keywords": [
     "google",
@@ -81,7 +81,7 @@
     "test": "./bin/run-test.sh",
     "check": "gts check",
     "clean": "gts clean",
-    "precompile": "npm run compile-scripts && node build/scripts/setup-test.js",
+    "precompile": "npm run compile-scripts && node build/scripts/setup-build-dir.js",
     "compile": "tsc -p .",
     "compile-scripts": "tsc -p scripts-tsconfig.json",
     "fix": "gts fix",
@@ -93,7 +93,6 @@
     "CHANGELOG.md",
     "LICENSE",
     "README.md",
-    "build/src",
-    "build/types"
+    "build/src"
   ]
 }

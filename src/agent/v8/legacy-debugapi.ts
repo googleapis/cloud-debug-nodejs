@@ -25,7 +25,7 @@ import {StatusMessage} from '../../client/stackdriver/status-message';
 import {Logger} from '../../types/common';
 import * as stackdriver from '../../types/stackdriver';
 import * as v8 from '../../types/v8';
-import {DebugAgentConfig} from '../config';
+import {ResolvedDebugAgentConfig} from '../config';
 import {FileStats, ScanStats} from '../io/scanner';
 import {MapInfoOutput, SourceMapper} from '../io/sourcemapper';
 import * as state from '../state/legacy-state';
@@ -47,7 +47,7 @@ export class V8DebugApi implements debugapi.DebugApi {
   breakpoints: {[id: string]: V8BreakpointData} = {};
   sourcemapper: SourceMapper;
   v8: v8.Debug;
-  config: DebugAgentConfig;
+  config: ResolvedDebugAgentConfig;
   fileStats: ScanStats;
   listeners: {[id: string]: utils.Listener} = {};
   v8Version: RegExpExecArray|null;
@@ -60,7 +60,7 @@ export class V8DebugApi implements debugapi.DebugApi {
   numBreakpoints = 0;
 
   constructor(
-      logger: Logger, config: DebugAgentConfig, jsFiles: ScanStats,
+      logger: Logger, config: ResolvedDebugAgentConfig, jsFiles: ScanStats,
       sourcemapper: SourceMapper) {
     this.sourcemapper = sourcemapper;
     this.v8 = vm.runInDebugContext('Debug');

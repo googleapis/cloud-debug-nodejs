@@ -17,7 +17,7 @@
 import * as assert from 'assert';
 import * as path from 'path';
 
-import {globP, ncpP, rimrafP, spawnP, tmpDirP, writeFileP} from './utils';
+import {globP, mkdirP, ncpP, rimrafP, spawnP, tmpDirP, writeFileP} from './utils';
 
 const INDEX_TS = 'index.ts';
 const INDEX_JS = 'index.js';
@@ -36,6 +36,36 @@ debug.start();`,
     code: `import * as debug from '@google-cloud/debug-agent';
 debug.start({ allowExpressions: true });`,
     description: 'imports the module and starts with {allowExpressions: true}'
+  },
+  {
+    code: `import * as debug from '@google-cloud/debug-agent';
+debug.start({
+  allowExpressions: true,
+  serviceContext: {
+    service: 'Some service'
+  }
+});`,
+    description: 'imports the module and starts with a partial `serviceContext`'
+  },
+  {
+    code: `import * as debug from '@google-cloud/debug-agent';
+debug.start({
+  allowExpressions: true,
+  serviceContext: {
+    service: 'Some service',
+    version: 'Some version'
+  }
+});`,
+    description: 'imports the module and starts with a complete `serviceContext`'
+  },
+  {
+    code: `import * as debug from '@google-cloud/debug-agent';
+debug.start({
+  capture: {
+    maxFrames: 1
+  }
+});`,
+    description: 'imports the module and starts with a partial `capture`'
   }
 ];
 
@@ -74,6 +104,17 @@ interface CodeSample {
 
 describe('Installation', () => {
   let installDir: string|undefined;
+  before(async () => {
+    const tgz = await globP(`${process.cwd()}/*.tgz`);
+    assert.deepStrictEqual(
+        tgz.length, 0,
+        `Expected zero tgz files in the current working directory before ` +
+            `running the test but found files: ${tgz.map(file => {
+              const parts = file.split(path.sep);
+              return parts[parts.length - 1];
+            })}`);
+  });
+
   beforeEach(async function() {
     this.timeout(TIMEOUT_MS);
     // This script assumes that you don't already have a TGZ file
@@ -103,17 +144,26 @@ describe('Installation', () => {
 
   describe('When used with Typescript code', () => {
     TS_CODE_ARRAY.forEach((sample) => {
-      it(`should install and work with code that ${sample.description}`,
-         async function() {
-           this.timeout(TIMEOUT_MS);
-           assert(installDir);
-           await writeFileP(
-               path.join(installDir!, INDEX_TS), sample.code, 'utf-8');
-           await spawnP(
-               `node_modules${path.sep}.bin${path.sep}tsc`, [INDEX_TS],
-               {cwd: installDir, stdio}, log);
-           await spawnP('node', [INDEX_JS], {cwd: installDir, stdio}, log);
-         });
+      it.only(
+          `should install and work with code that ${sample.description}`,
+          async function() {
+            this.timeout(TIMEOUT_MS);
+            assert(installDir);
+            const srcDir = path.join(installDir!, 'src');
+            await mkdirP(srcDir);
+            await writeFileP(path.join(srcDir, INDEX_TS), sample.code, 'utf-8');
+            await spawnP(
+                'npm', ['install', '--save-dev', 'gts', 'typescript@2.x'],
+                {cwd: installDir, stdio}, log);
+            await spawnP(
+                'gts', ['init', '--yes'], {cwd: installDir, stdio}, log);
+            await spawnP(
+                'npm', ['run', 'compile'], {cwd: installDir, stdio}, log);
+            const buildDir = path.join(installDir!, 'build');
+            await spawnP(
+                'node', [path.join(buildDir, 'src', INDEX_JS)],
+                {cwd: installDir, stdio}, log);
+          });
     });
   });
 

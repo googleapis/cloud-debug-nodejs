@@ -16,7 +16,11 @@
 
 import * as common from '../types/common';
 
-export interface DebugAgentConfig extends common.AuthenticationConfig {
+export type DebugAgentConfig = {
+  [K in keyof ResolvedDebugAgentConfig]?: Partial<ResolvedDebugAgentConfig[K]>
+};
+
+export interface ResolvedDebugAgentConfig extends common.AuthenticationConfig {
   workingDirectory: string;
 
   /**
@@ -166,7 +170,7 @@ export interface StackdriverConfig extends common.AuthenticationConfig {
   debug?: DebugAgentConfig;
 }
 
-export const defaultConfig: DebugAgentConfig = {
+export const defaultConfig: ResolvedDebugAgentConfig = {
   // FIXME(ofrobots): presently this is dependent what cwd() is at the time this
   // file is first required. We should make the default config static.
   workingDirectory: process.cwd(),

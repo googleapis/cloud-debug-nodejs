@@ -27,7 +27,7 @@ import {StatusMessage} from '../../client/stackdriver/status-message';
 
 import * as v8 from '../../types/v8';
 import * as stackdriver from '../../types/stackdriver';
-import {DebugAgentConfig} from '../config';
+import {ResolvedDebugAgentConfig} from '../config';
 
 // TODO: Determine if `ScopeType` should be named `scopeType`.
 // tslint:disable-next-line:variable-name
@@ -72,7 +72,7 @@ export function evaluate(expression: string, frame: v8.FrameMirror):
 class StateResolver {
   private state: v8.ExecutionState;
   private expressions: string[];
-  private config: DebugAgentConfig;
+  private config: ResolvedDebugAgentConfig;
   private ctx: v8.Debug;
   private evaluatedExpressions: stackdriver.Variable[];
   private totalSize: number;
@@ -88,7 +88,7 @@ class StateResolver {
    */
   constructor(
       execState: v8.ExecutionState, expressions: string[],
-      config: DebugAgentConfig, v8debug: v8.Debug) {
+      config: ResolvedDebugAgentConfig, v8debug: v8.Debug) {
     this.state = execState;
     this.expressions = expressions;
     this.config = config;
@@ -565,7 +565,8 @@ export function testAssert(): void {
  */
 export function capture(
     execState: v8.ExecutionState, expressions: string[],
-    config: DebugAgentConfig, v8debug: v8.Debug): stackdriver.Breakpoint {
+    config: ResolvedDebugAgentConfig,
+    v8debug: v8.Debug): stackdriver.Breakpoint {
   return (new StateResolver(execState, expressions, config, v8debug))
       .capture_();
 }

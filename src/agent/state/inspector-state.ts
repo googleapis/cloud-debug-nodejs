@@ -27,7 +27,7 @@ const isEmpty = lodash.isEmpty;
 import {StatusMessage} from '../../client/stackdriver/status-message';
 
 import * as stackdriver from '../../types/stackdriver';
-import {DebugAgentConfig} from '../config';
+import {ResolvedDebugAgentConfig} from '../config';
 import {V8Inspector} from '../v8/v8inspector';
 
 const assert = debugAssert(!!process.env.CLOUD_DEBUG_ASSERTIONS);
@@ -79,7 +79,7 @@ class StateResolver {
   private callFrames: inspector.Debugger.CallFrame[];
   private v8Inspector: V8Inspector;
   private expressions: string[]|undefined;
-  private config: DebugAgentConfig;
+  private config: ResolvedDebugAgentConfig;
   private scriptmapper: {[id: string]: {url: string}};
   private breakpoint: stackdriver.Breakpoint;
   private evaluatedExpressions: stackdriver.Variable[];
@@ -96,7 +96,7 @@ class StateResolver {
    */
   constructor(
       callFrames: inspector.Debugger.CallFrame[],
-      breakpoint: stackdriver.Breakpoint, config: DebugAgentConfig,
+      breakpoint: stackdriver.Breakpoint, config: ResolvedDebugAgentConfig,
       scriptmapper: {[id: string]: {url: string}}, v8Inspector: V8Inspector) {
     this.callFrames = callFrames;
     this.breakpoint = breakpoint;
@@ -552,7 +552,7 @@ export function testAssert(): void {
  */
 export function capture(
     callFrames: inspector.Debugger.CallFrame[],
-    breakpoint: stackdriver.Breakpoint, config: DebugAgentConfig,
+    breakpoint: stackdriver.Breakpoint, config: ResolvedDebugAgentConfig,
     scriptmapper: {[id: string]: {url: string}},
     v8Inspector: V8Inspector): stackdriver.Breakpoint {
   return (new StateResolver(
