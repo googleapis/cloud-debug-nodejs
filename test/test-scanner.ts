@@ -25,6 +25,8 @@ const fixture = (file: string): string => {
 
 import * as scanner from '../src/agent/io/scanner';
 
+const COFFEE_FILES_REGEX = /^(.*\.js\.map)|(.*\.js)|(.*\.coffee)$/;
+
 describe('scanner', () => {
 
   describe('scan', () => {
@@ -44,19 +46,21 @@ describe('scanner', () => {
     });
 
     it('should be able to return all file stats directly', (done) => {
-      scanner.scan(true, fixture('coffee'), /.*$/).then((fileStats) => {
-        const files = Object.keys(fileStats.all());
-        assert.strictEqual(files.length, 3);
-        done();
-      });
+      scanner.scan(true, fixture('coffee'), COFFEE_FILES_REGEX)
+          .then((fileStats) => {
+            const files = Object.keys(fileStats.all());
+            assert.strictEqual(files.length, 3);
+            done();
+          });
     });
 
     it('should be able to filter to return all file stats', (done) => {
-      scanner.scan(true, fixture('coffee'), /.*$/).then((fileStats) => {
-        const files = fileStats.selectFiles(/.*$/, '');
-        assert.strictEqual(files.length, 3);
-        done();
-      });
+      scanner.scan(true, fixture('coffee'), COFFEE_FILES_REGEX)
+          .then((fileStats) => {
+            const files = fileStats.selectFiles(/.*$/, '');
+            assert.strictEqual(files.length, 3);
+            done();
+          });
     });
 
     it('should be able to filter filenames', (done) => {
