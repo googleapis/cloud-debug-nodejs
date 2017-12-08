@@ -56,7 +56,8 @@ debug.start({
     version: 'Some version'
   }
 });`,
-    description: 'imports the module and starts with a complete `serviceContext`'
+    description:
+        'imports the module and starts with a complete `serviceContext`'
   },
   {
     code: `import * as debug from '@google-cloud/debug-agent';
