@@ -294,14 +294,12 @@ class StateResolver {
 
   stripCurrentWorkingDirectory_(path: string): string {
     // Strip 1 extra character to remove the slash.
-    // TODO: Handle the case where `this.config.workingDirectory` is `null`.
-    return path.substr((this.config.workingDirectory as string).length + 1);
+    return path.substr((this.config.workingDirectory!).length + 1);
   }
 
   isPathInCurrentWorkingDirectory_(path: string): boolean {
     // return true;
-    // TODO: Handle the case where `this.config.workingDirectory` is `null`.
-    return path.indexOf(this.config.workingDirectory as string) === 0;
+    return path.indexOf(this.config.workingDirectory) === 0;
   }
 
   isPathInNodeModulesDirectory_(path: string): boolean {
