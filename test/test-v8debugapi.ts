@@ -166,8 +166,7 @@ describe('v8debugapi', () => {
 
   beforeEach((done) => {
     if (!api) {
-      // TODO: Handle the case when config.workingDirectory is null
-      scanner.scan(true, config.workingDirectory as string, /.js$|.map$/)
+      scanner.scan(true, config.workingDirectory, /.js$|.map$/)
           .then((fileStats) => {
             const jsStats = fileStats.selectStats(/.js$/);
             const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());

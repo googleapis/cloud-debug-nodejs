@@ -3,7 +3,7 @@ import * as path from 'path';
 import {StatusMessage} from '../../client/stackdriver/status-message';
 import * as stackdriver from '../../types/stackdriver';
 
-import {DebugAgentConfig} from '../config';
+import {ResolvedDebugAgentConfig} from '../config';
 import {ScanStats} from '../io/scanner';
 
 
@@ -39,13 +39,12 @@ export interface Listener {
 }
 // Exposed for unit testing.
 export function findScripts(
-    scriptPath: string, config: DebugAgentConfig,
+    scriptPath: string, config: ResolvedDebugAgentConfig,
     fileStats: ScanStats): string[] {
   // Use repository relative mapping if present.
   if (config.appPathRelativeToRepository) {
     const candidate = scriptPath.replace(
-        // TODO: Address the case where `config.workingDirectory` is `null`.
-        config.appPathRelativeToRepository, config.workingDirectory as string);
+        config.appPathRelativeToRepository, config.workingDirectory);
     // There should be no ambiguity resolution if project root is provided.
     return fileStats[candidate] ? [candidate] : [];
   }

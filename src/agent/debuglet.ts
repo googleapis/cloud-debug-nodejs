@@ -37,7 +37,6 @@ import {Controller} from './controller';
 import {Debuggee} from '../debuggee';
 import {StatusMessage} from '../client/stackdriver/status-message';
 
-// The following import syntax is used because './config' has a default export
 import {defaultConfig} from './config';
 import * as scanner from './io/scanner';
 import * as SourceMapper from './io/sourcemapper';
@@ -283,10 +282,8 @@ export class Debuglet extends EventEmitter {
     const stat = promisify(fs.stat);
 
     try {
-      // TODO: Address the fact that `that.config.workingDirectory` could
-      //       be `null`.
       await stat(
-          path.join(that.config.workingDirectory as string, 'package.json'));
+          path.join(that.config.workingDirectory, 'package.json'));
     } catch (err) {
       that.logger.error('No package.json located in working directory.');
       that.emit('initError', new Error('No package.json found.'));
@@ -301,10 +298,8 @@ export class Debuglet extends EventEmitter {
 
     let fileStats: scanner.ScanResults;
     try {
-      // TODO: Address the case when `that.config.workingDirectory` is
-      //       `null`.
       fileStats = await scanner.scan(
-          !id, that.config.workingDirectory as string, /.js$|.map$/);
+          !id, that.config.workingDirectory, /.js$|.map$/);
     } catch (err) {
       that.logger.error('Error scanning the filesystem.', err);
       that.emit('initError', err);
