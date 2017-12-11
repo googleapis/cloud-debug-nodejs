@@ -351,42 +351,6 @@ describe('Debuglet', () => {
       assert.deepEqual(mergedConfig, compareConfig);
     });
 
-    it('should elaborate on inspector warning on 32 bit but not on 64 bit',
-       (done) => {
-         const projectId = '11020304f2934-a';
-         const debug =
-             new Debug({projectId, credentials: fakeCredentials}, packageInfo);
-         const debuglet = new Debuglet(debug, defaultConfig);
-         let logText = '';
-         debuglet.logger.info = (s: string) => {
-           logText += s;
-         };
-         nocks.projectId('project-via-metadata');
-         const scope = nock(API).post(REGISTER_PATH).reply(200, {
-           debuggee: {id: DEBUGGEE_ID}
-         });
-
-         debuglet.once('registered', (id: string) => {
-           assert.equal(id, DEBUGGEE_ID);
-           // TODO: Handle the case where debuglet.debuggee is undefined
-           assert.equal((debuglet.debuggee as Debuggee).project, projectId);
-           const arch = process.arch;
-           if (semver.satisfies(process.version, '>=8.5.0') &&
-               semver.satisfies(process.version, '<8.9.0') &&
-               (arch === 'ia32' || arch === 'x86') &&
-               process.env.GCLOUD_USE_INSPECTOR) {
-             assert(logText.includes(utils.messages.ASYNC_TRACES_WARNING));
-           } else {
-             assert(!logText.includes(utils.messages.ASYNC_TRACES_WARNING));
-           }
-           debuglet.stop();
-           scope.done();
-           done();
-         });
-
-         debuglet.start();
-       });
-
     it('should not start when projectId is not available', (done) => {
       const savedGetProjectId = Debuglet.getProjectId;
       Debuglet.getProjectId = () => {
