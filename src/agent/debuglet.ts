@@ -163,6 +163,7 @@ export class Debuglet extends EventEmitter {
   private project: string|null;
   private controller: Controller;
   private completedBreakpointMap: {[key: string]: boolean};
+  private warningListener: (warning: NodeJS.ErrnoException) => void;
 
   // breakpointFetchedTimestamp represents the last timestamp when
   // breakpointFetched was resolved, which means breakpoint update was
@@ -241,6 +242,15 @@ export class Debuglet extends EventEmitter {
     this.breakpointFetched = null;
     this.breakpointFetchedTimestamp = -Infinity;
     this.debuggeeRegistered = new CachedPromise();
+
+    const that = this;
+    function debugAgentWarningListener(warning: NodeJS.ErrnoException) {
+      if (warning.code === 'INSPECTOR_ASYNC_STACK_TRACES_NOT_AVAILABLE') {
+        that.logger.info(utils.messages.ASYNC_TRACES_WARNING);
+      }
+    }
+
+    this.warningListener = debugAgentWarningListener;
   }
 
   static normalizeConfig_(config: DebugAgentConfig): ResolvedDebugAgentConfig {
@@ -273,11 +283,7 @@ export class Debuglet extends EventEmitter {
    */
   async start(): Promise<void> {
     const that = this;
-    process.on('warning', (warning: NodeJS.ErrnoException) => {
-      if (warning.code === 'INSPECTOR_ASYNC_STACK_TRACES_NOT_AVAILABLE') {
-        that.logger.info(utils.messages.ASYNC_TRACES_WARNING);
-      }
-    });
+    process.on('warning', this.warningListener);
 
     const stat = promisify(fs.stat);
 
@@ -935,6 +941,7 @@ export class Debuglet extends EventEmitter {
     assert.ok(this.running, 'stop can only be called on a running agent');
     this.logger.debug('Stopping Debuglet');
     this.running = false;
+    process.removeListener('warning', this.warningListener);
     this.emit('stopped');
   }
 
