@@ -1,5 +1,17 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## 2017-12-11, Version 2.3.1 (Beta), @dominickramer
+
+This release addresses issue [#367](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/issues/367) where compile time errors would occur when using the agent within Typescript code.
+
+In addition, the `isReady` functionality has been documented.
+
+* [[`cc8803122e`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/cc8803122e)] - **chore**: Remove casts when accessing config props (#374) (Dominic Kramer)
+* [[`5b493170be`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/5b493170be)] - **fix**: only look for relevant files in scanner test (#372) (Dominic Kramer)
+* [[`37399c2e70`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/37399c2e70)] - **fix**: Address compilation errors when using the agent with Typescript (#370) (Dominic Kramer)
+* [[`d7bec412f0`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/d7bec412f0)] - **chore**: Run `gts fix` and manually fix some errors (#369) (Dominic Kramer)
+* [[`1d300ace78`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/1d300ace78)] - **chore**: Update Readme to include isReady interface (#368) (Michael Gao)
+
 ## 2017-11-20, Version 2.3.0 (Beta), @dominickramer
 
 This release introduces a new `isReady` method that returns a `Promise` that is resolved either when the debug agent has received snapshot information from the Stackdriver service, or has determined that it is not possible to receive this information.
