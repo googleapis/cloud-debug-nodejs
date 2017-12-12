@@ -25,10 +25,6 @@ export const messages = {
   INVALID_LINE_NUMBER: 'Invalid snapshot position: ',
   COULD_NOT_FIND_OUTPUT_FILE:
       'Could not determine the output file associated with the transpiled input file',
-  ASYNC_TRACES_WARNING:
-      'The Stackdriver Debugger for Node.js does not require V8 Inspector ' +
-      'async stack traces. The INSPECTOR_ASYNC_STACK_TRACES_NOT_AVAILABLE ' +
-      'can be ignored.',
   INSPECTOR_NOT_AVAILABLE:
       'The V8 Inspector protocol is only available in Node 8+'
 };

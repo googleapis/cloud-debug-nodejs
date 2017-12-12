@@ -273,12 +273,6 @@ export class Debuglet extends EventEmitter {
    */
   async start(): Promise<void> {
     const that = this;
-    process.on('warning', (warning: NodeJS.ErrnoException) => {
-      if (warning.code === 'INSPECTOR_ASYNC_STACK_TRACES_NOT_AVAILABLE') {
-        that.logger.info(utils.messages.ASYNC_TRACES_WARNING);
-      }
-    });
-
     const stat = promisify(fs.stat);
 
     try {
