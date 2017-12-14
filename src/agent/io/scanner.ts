@@ -173,7 +173,7 @@ function computeStats(
  */
 function findFiles(baseDir: string, regex: RegExp): Promise<string[]> {
   return new Promise<string[]>((resolve, reject) => {
-    let errored = false;
+    let error: Error|undefined;
 
     if (!baseDir) {
       reject(new Error('hasher.findJSFiles requires a baseDir argument'));
@@ -184,8 +184,7 @@ function findFiles(baseDir: string, regex: RegExp): Promise<string[]> {
     const fileList: string[] = [];
 
     find.on('error', (err: Error) => {
-      errored = true;
-      reject(err);
+      error = err;
       return;
     });
 
@@ -203,12 +202,13 @@ function findFiles(baseDir: string, regex: RegExp): Promise<string[]> {
     });
 
     find.on('end', () => {
-      if (errored) {
-        // the end event fires even after an error
-        // simply return because the on('error') has already called back
-        return;
+      // Note: the `end` event fires even after an error
+      if (error) {
+        reject(error);
       }
-      resolve(fileList);
+      else {
+        resolve(fileList);
+      }
     });
   });
 }
