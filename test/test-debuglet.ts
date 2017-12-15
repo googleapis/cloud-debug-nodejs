@@ -474,9 +474,10 @@ describe('Debuglet', () => {
     describe('filesystem scan', () => {
       const workingDir = path.join(__dirname, 'fixtures',
         'project-cannot-read-files');
+      const readonlyFilenames = ['cannot-read-1.js', 'cannot-read-2.js']
       before(async () => {
-        for (let i=1; i<=2; i++) {
-          const f = path.join(workingDir, `cannot-read-${i}.js`);
+        for (const filename of readonlyFilenames) {
+          const f = path.join(workingDir, filename);
           // Recall:
           // read:    4
           // write:   2
@@ -490,8 +491,8 @@ describe('Debuglet', () => {
       });
 
       after(async () => {
-        for (let i=1; i<=2; i++) {
-          const f = path.join(workingDir, `cannot-read-${i}.js`);
+        for (const filename of readonlyFilenames) {
+          const f = path.join(workingDir, filename);
           // User:  read + write = 4 + 2 = 6
           // Group: read = 4
           // Other: read = 4
@@ -519,11 +520,11 @@ describe('Debuglet', () => {
         });
 
         debuglet.once('started', () => {
-          for (let i=1; i<=2; i++) {
+          for (const filename of readonlyFilenames) {
             const regex = new RegExp(
-              `Error: EACCES: permission denied, open \'.*\/cannot-read-${i}.js\'`);
+              `Error: EACCES: permission denied, open \'.*\/${filename}\'`);
             assert(regex.test(text),
-              `Should warn that file 'cannot-read-${i}.js' cannot be read`);
+              `Should warn that file '${filename}' cannot be read`);
           }
           done();
         });
