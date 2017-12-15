@@ -45,6 +45,15 @@ describe('scanner', () => {
           });
     });
 
+    it.only('should ignore broken links', (done) => {
+      scanner.scan(true, fixture('project-cannot-read-files'), /.*/)
+        .then((fileStats) => {
+          assert.strictEqual(fileStats.selectFiles(/broken-link\.js/, '').length, 0);
+          assert.strictEqual(fileStats.selectFiles(/intended-link\.js/, '').length, 0);
+          done();
+        });
+    });
+
     it('should be able to return all file stats directly', (done) => {
       scanner.scan(true, fixture('coffee'), COFFEE_FILES_REGEX)
           .then((fileStats) => {
