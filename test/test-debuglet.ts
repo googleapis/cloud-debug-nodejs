@@ -15,11 +15,11 @@
  */
 
 import * as assert from 'assert';
+import * as rawFs from 'fs';
 import * as _ from 'lodash';
 import * as path from 'path';
-import * as semver from 'semver';
 import * as pify from 'pify';
-import * as rawFs from 'fs';
+import * as semver from 'semver';
 
 const chmod = pify(rawFs.chmod);
 
@@ -472,9 +472,9 @@ describe('Debuglet', () => {
     });
 
     describe('filesystem scan', () => {
-      const workingDir = path.join(__dirname, 'fixtures',
-        'project-cannot-read-files');
-      const readonlyFilenames = ['cannot-read-1.js', 'cannot-read-2.js']
+      const workingDir =
+          path.join(__dirname, 'fixtures', 'project-cannot-read-files');
+      const readonlyFilenames = ['cannot-read-1.js', 'cannot-read-2.js'];
       before(async () => {
         for (const filename of readonlyFilenames) {
           const f = path.join(workingDir, filename);
@@ -502,13 +502,10 @@ describe('Debuglet', () => {
 
       it('should not fail if files cannot be read', (done) => {
         const debug = new Debug(
-          {projectId: 'fake-project', credentials: fakeCredentials},
-          packageInfo);
-        const config = extend(
-          {},
-          defaultConfig,
-          {workingDirectory: workingDir}
-        );
+            {projectId: 'fake-project', credentials: fakeCredentials},
+            packageInfo);
+        const config =
+            extend({}, defaultConfig, {workingDirectory: workingDir});
         const debuglet = new Debuglet(debug, config);
         let text = '';
         debuglet.logger.warn = (s: string) => {
@@ -522,9 +519,10 @@ describe('Debuglet', () => {
         debuglet.once('started', () => {
           for (const filename of readonlyFilenames) {
             const regex = new RegExp(
-              `Error: EACCES: permission denied, open \'.*\/${filename}\'`);
-            assert(regex.test(text),
-              `Should warn that file '${filename}' cannot be read`);
+                `Error: EACCES: permission denied, open \'.*\/${filename}\'`);
+            assert(
+                regex.test(text),
+                `Should warn that file '${filename}' cannot be read`);
           }
           done();
         });

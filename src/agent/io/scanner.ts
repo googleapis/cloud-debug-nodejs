@@ -57,9 +57,9 @@ class ScanResultsImpl implements ScanResults {
    *  attributes respectively
    * @param hash A hashcode computed from the contents of all the files.
    */
-  constructor(private readonly stats: ScanStats,
-              readonly errorMap: Map<string, Error>,
-              readonly hash?: string) {}
+  constructor(
+      private readonly stats: ScanStats, readonly errorMap: Map<string, Error>,
+      readonly hash?: string) {}
 
   errors(): Map<string, Error> {
     return this.errorMap;
@@ -150,8 +150,7 @@ function computeStats(
           hashes.push(fileStats.hash);
         }
         statistics[filename] = fileStats;
-      }
-      catch (err) {
+      } catch (err) {
         errors.set(filename, err);
       }
     }
@@ -161,8 +160,7 @@ function computeStats(
       // Sort the hashes to get a deterministic order as the files may
       // not be in the same order each time we scan the disk.
       const buffer = hashes.sort().join();
-      const sha1 =
-          crypto.createHash('sha1').update(buffer).digest('hex');
+      const sha1 = crypto.createHash('sha1').update(buffer).digest('hex');
       hash = 'SHA1-' + sha1;
     }
     resolve(new ScanResultsImpl(statistics, errors, hash));
@@ -212,8 +210,7 @@ function findFiles(baseDir: string, regex: RegExp): Promise<string[]> {
       // Note: the `end` event fires even after an error
       if (error) {
         reject(error);
-      }
-      else {
+      } else {
         resolve(fileList);
       }
     });
@@ -227,8 +224,8 @@ function findFiles(baseDir: string, regex: RegExp): Promise<string[]> {
  * @param {function} cb errorback style callback which returns the sha string
  * @private
  */
-function statsForFile(filename: string,
-                      shouldHash: boolean): Promise<FileStats> {
+function statsForFile(
+    filename: string, shouldHash: boolean): Promise<FileStats> {
   return new Promise<FileStats>((resolve, reject) => {
     const reader = fs.createReadStream(filename);
     reader.on('error', (err) => {
@@ -255,8 +252,7 @@ function statsForFile(filename: string,
       byLine.on('end', () => {
         if (error) {
           reject(error);
-        }
-        else {
+        } else {
           let d: string|undefined;
           if (shouldHash) {
             d = shasum.digest('hex');
