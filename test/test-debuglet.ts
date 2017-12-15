@@ -524,6 +524,7 @@ describe('Debuglet', () => {
                 regex.test(text),
                 `Should warn that file '${filename}' cannot be read`);
           }
+          debuglet.stop();
           done();
         });
 
