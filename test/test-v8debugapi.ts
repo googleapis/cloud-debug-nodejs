@@ -125,6 +125,7 @@ describe('debugapi selection', () => {
     let api: DebugApi;
     scanner.scan(true, config.workingDirectory, /.js$|.js.map$/)
         .then((fileStats) => {
+          assert.strictEqual(fileStats.errors().size, 0);
           const jsStats = fileStats.selectStats(/.js$/);
           const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
           SourceMapper.create(mapFiles, (err, mapper) => {
@@ -168,6 +169,7 @@ describe('v8debugapi', () => {
     if (!api) {
       scanner.scan(true, config.workingDirectory, /.js$|.js.map$/)
           .then((fileStats) => {
+            assert.strictEqual(fileStats.errors().size, 0);
             const jsStats = fileStats.selectStats(/.js$/);
             const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
             SourceMapper.create(mapFiles, (err1, mapper) => {

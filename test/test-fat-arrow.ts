@@ -50,6 +50,7 @@ describe(__filename, () => {
   beforeEach((done) => {
     if (!api) {
       scanner.scan(true, config.workingDirectory, /.js$/).then((fileStats) => {
+        assert.strictEqual(fileStats.errors().size, 0);
         const jsStats = fileStats.selectStats(/.js$/);
         const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
         // TODO: Determine if the err parameter should be used.
