@@ -18,6 +18,10 @@ import * as assert from 'assert';
 import * as _ from 'lodash';
 import * as path from 'path';
 import * as semver from 'semver';
+import * as pify from 'pify';
+import * as rawFs from 'fs';
+
+const chmod = pify(rawFs.chmod);
 
 import {DebugAgentConfig} from '../src/agent/config';
 import {defaultConfig as DEFAULT_CONFIG} from '../src/agent/config';
@@ -465,6 +469,67 @@ describe('Debuglet', () => {
       });
 
       debuglet.start();
+    });
+
+    describe('filesystem scan', () => {
+      const workingDir = path.join(__dirname, 'fixtures',
+        'project-cannot-read-files');
+      before(async () => {
+        for (let i=1; i<=2; i++) {
+          const f = path.join(workingDir, `cannot-read-${i}.js`);
+          // Recall:
+          // read:    4
+          // write:   2
+          // execute: 1
+          //
+          // User:  write = 2
+          // Group: none  = 0
+          // Other: none  = 0
+          await chmod(f, 0o200);
+        }
+      });
+
+      after(async () => {
+        for (let i=1; i<=2; i++) {
+          const f = path.join(workingDir, `cannot-read-${i}.js`);
+          // User:  read + write = 4 + 2 = 6
+          // Group: read = 4
+          // Other: read = 4
+          await chmod(f, 0o644);
+        }
+      });
+
+      it('should not fail if files cannot be read', (done) => {
+        const debug = new Debug(
+          {projectId: 'fake-project', credentials: fakeCredentials},
+          packageInfo);
+        const config = extend(
+          {},
+          defaultConfig,
+          {workingDirectory: workingDir}
+        );
+        const debuglet = new Debuglet(debug, config);
+        let text = '';
+        debuglet.logger.warn = (s: string) => {
+          text += s;
+        };
+
+        debuglet.on('initError', (err) => {
+          assert.fail('It should not fail for files it cannot read');
+        });
+
+        debuglet.once('started', () => {
+          for (let i=1; i<=2; i++) {
+            const regex = new RegExp(
+              `Error: EACCES: permission denied, open \'.*\/cannot-read-${i}.js\'`);
+            assert(regex.test(text),
+              `Should warn that file 'cannot-read-${i}.js' cannot be read`);
+          }
+          done();
+        });
+
+        debuglet.start();
+      });
     });
 
     describe('environment variables', () => {

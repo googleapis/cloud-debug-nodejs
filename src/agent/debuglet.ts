@@ -306,6 +306,9 @@ export class Debuglet extends EventEmitter {
     let findResults: FindFilesResult;
     try {
       findResults = await Debuglet.findFiles(!id, that.config.workingDirectory);
+      fileStats.errors().forEach(err => {
+        that.logger.warn(err);
+      });
     } catch (err) {
       that.logger.error('Error scanning the filesystem.', err);
       that.emit('initError', err);

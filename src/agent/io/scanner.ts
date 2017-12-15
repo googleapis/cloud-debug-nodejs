@@ -25,7 +25,7 @@ import * as _ from 'lodash';
 import * as path from 'path';
 
 // TODO: Make this more precise.
-const split: () => {} = require('split');
+const split: () => fs.WriteStream = require('split');
 
 export interface FileStats {
   // TODO: Verify that this member should actually be optional.
@@ -37,6 +37,7 @@ export interface FileStats {
 export interface ScanStats { [filename: string]: FileStats|undefined; }
 
 export interface ScanResults {
+  errors(): Map<string, Error>;
   all(): ScanStats;
   selectStats(regex: RegExp): ScanStats;
   selectFiles(regex: RegExp, baseDir: string): string[];
@@ -56,7 +57,13 @@ class ScanResultsImpl implements ScanResults {
    *  attributes respectively
    * @param hash A hashcode computed from the contents of all the files.
    */
-  constructor(private readonly stats: ScanStats, readonly hash?: string) {}
+  constructor(private readonly stats: ScanStats,
+              readonly errorMap: Map<string, Error>,
+              readonly hash?: string) {}
+
+  errors(): Map<string, Error> {
+    return this.errorMap;
+  }
 
   /**
    * Used to get all of the file scan results.
@@ -127,26 +134,26 @@ function computeStats(
   return new Promise<ScanResults>(async (resolve, reject) => {
     // return a valid, if fake, result when there are no js files to hash.
     if (fileList.length === 0) {
-      resolve(new ScanResultsImpl({}, 'EMPTY-no-js-files'));
+      resolve(new ScanResultsImpl({}, new Map(), 'EMPTY-no-js-files'));
       return;
     }
 
     // TODO: Address the case where the array contains `undefined`.
     const hashes: Array<string|undefined> = [];
     const statistics: ScanStats = {};
+    const errors: Map<string, Error> = new Map<string, Error>();
 
-    try {
-      for (const filename of fileList) {
+    for (const filename of fileList) {
+      try {
         const fileStats = await statsForFile(filename, shouldHash);
         if (shouldHash) {
           hashes.push(fileStats.hash);
         }
         statistics[filename] = fileStats;
       }
-    }
-    catch(err) {
-      reject(err);
-      return;
+      catch (err) {
+        errors.set(filename, err);
+      }
     }
 
     let hash;
@@ -158,7 +165,7 @@ function computeStats(
           crypto.createHash('sha1').update(buffer).digest('hex');
       hash = 'SHA1-' + sha1;
     }
-    resolve(new ScanResultsImpl(statistics, hash));
+    resolve(new ScanResultsImpl(statistics, errors, hash));
   });
 }
 
@@ -223,29 +230,40 @@ function findFiles(baseDir: string, regex: RegExp): Promise<string[]> {
 function statsForFile(filename: string,
                       shouldHash: boolean): Promise<FileStats> {
   return new Promise<FileStats>((resolve, reject) => {
-    let shasum: crypto.Hash;
-    if (shouldHash) {
-      shasum = crypto.createHash('sha1');
-    }
-    // TODO: Determine why property 'ReadStream' does not exist on type 'fs'
-    const s = (fs as {} as {ReadStream: Function}).ReadStream(filename);
-    let lines = 0;
-    const byLine = s.pipe(split());
-    byLine.on('error', (e: Error) => {
-      reject(e);
+    const reader = fs.createReadStream(filename);
+    reader.on('error', (err) => {
+      reject(err);
     });
-    byLine.on('data', (d: string) => {
+    reader.on('open', () => {
+      let shasum: crypto.Hash;
       if (shouldHash) {
-        shasum.update(d);
+        shasum = crypto.createHash('sha1');
       }
-      lines++;
-    });
-    byLine.on('end', () => {
-      let d: string|undefined;
-      if (shouldHash) {
-        d = shasum.digest('hex');
-      }
-      resolve({hash: d, lines});
+
+      let lines = 0;
+      let error: Error|undefined;
+      const byLine = reader!.pipe(split());
+      byLine.on('error', (e: Error) => {
+        error = e;
+      });
+      byLine.on('data', (d: string) => {
+        if (shouldHash) {
+          shasum.update(d);
+        }
+        lines++;
+      });
+      byLine.on('end', () => {
+        if (error) {
+          reject(error);
+        }
+        else {
+          let d: string|undefined;
+          if (shouldHash) {
+            d = shasum.digest('hex');
+          }
+          resolve({hash: d, lines});
+        }
+      });
     });
   });
 }
