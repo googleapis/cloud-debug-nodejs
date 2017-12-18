@@ -253,11 +253,8 @@ function statsForFile(
         if (error) {
           reject(error);
         } else {
-          let d: string|undefined;
-          if (shouldHash) {
-            d = shasum.digest('hex');
-          }
-          resolve({hash: d, lines});
+          const hash = shouldHash ? shasum.digest('hex') : undefined;
+          resolve({hash, lines});
         }
       });
     });
