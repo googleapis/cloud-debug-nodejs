@@ -145,7 +145,7 @@ describe('Installation', () => {
 
   describe('When used with Typescript code', () => {
     TS_CODE_ARRAY.forEach((sample) => {
-      it.only(
+      it(
           `should install and work with code that ${sample.description}`,
           async function() {
             this.timeout(TIMEOUT_MS);
