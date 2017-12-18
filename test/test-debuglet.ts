@@ -18,10 +18,8 @@ import * as assert from 'assert';
 import * as rawFs from 'fs';
 import * as _ from 'lodash';
 import * as path from 'path';
-import * as pify from 'pify';
 import * as semver from 'semver';
-
-const chmod = pify(rawFs.chmod);
+import * as proxyquire from 'proxyquire';
 
 import {DebugAgentConfig} from '../src/agent/config';
 import {defaultConfig as DEFAULT_CONFIG} from '../src/agent/config';
@@ -31,6 +29,7 @@ import * as stackdriver from '../src/types/stackdriver';
 DEFAULT_CONFIG.allowExpressions = true;
 DEFAULT_CONFIG.workingDirectory = path.join(__dirname, '..', '..');
 import {Debuglet, CachedPromise} from '../src/agent/debuglet';
+import {ScanResults} from '../src/agent/io/scanner';
 import * as dns from 'dns';
 import * as extend from 'extend';
 import * as rawMetadata from 'gcp-metadata';
@@ -471,65 +470,67 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    describe('filesystem scan', () => {
-      const workingDir =
-          path.join(__dirname, 'fixtures', 'project-cannot-read-files');
-      const readonlyFilenames = ['cannot-read-1.js', 'cannot-read-2.js'];
-      before(async () => {
-        for (const filename of readonlyFilenames) {
-          const f = path.join(workingDir, filename);
-          // Recall:
-          // read:    4
-          // write:   2
-          // execute: 1
-          //
-          // User:  write = 2
-          // Group: none  = 0
-          // Other: none  = 0
-          await chmod(f, 0o200);
-        }
-      });
-
-      after(async () => {
-        for (const filename of readonlyFilenames) {
-          const f = path.join(workingDir, filename);
-          // User:  read + write = 4 + 2 = 6
-          // Group: read = 4
-          // Other: read = 4
-          await chmod(f, 0o644);
-        }
-      });
-
-      it('should not fail if files cannot be read', (done) => {
-        const debug = new Debug(
-            {projectId: 'fake-project', credentials: fakeCredentials},
-            packageInfo);
-        const config =
-            extend({}, defaultConfig, {workingDirectory: workingDir});
-        const debuglet = new Debuglet(debug, config);
-        let text = '';
-        debuglet.logger.warn = (s: string) => {
-          text += s;
-        };
-
-        debuglet.on('initError', (err) => {
-          assert.fail('It should not fail for files it cannot read');
-        });
-
-        debuglet.once('started', () => {
-          for (const filename of readonlyFilenames) {
-            const regex = new RegExp(
-                `Error: EACCES: permission denied, open \'.*\/${filename}\'`);
-            assert(
-                regex.test(text),
-                `Should warn that file '${filename}' cannot be read`);
+    it('should not fail if files cannot be read', (done) => {
+      const MOCKED_DIRECTORY = process.cwd();
+      const errors: Array<{filename: string; error: string;}> = [];
+      for (let i=1; i<=2; i++) {
+        const filename = `cannot-read-${i}.js`;
+        const error = `EACCES: permission denied, open '${filename}'`;
+        errors.push({ filename, error });
+      }
+      const mockedDebuglet = proxyquire('../src/agent/debuglet', {
+        './io/scanner': {
+          scan: (shouldHash: boolean, baseDir: string, regex: RegExp) => {
+            assert.strictEqual(baseDir, MOCKED_DIRECTORY);
+            const results: ScanResults = {
+              errors: () => {
+                const map = new Map<string, Error>();
+                for (const item of errors) {
+                  map.set(item.filename, new Error(item.error));
+                }
+                return map;
+              },
+              all: () => {
+                return {};
+              },
+              selectStats: (regex: RegExp) => {
+                return {};
+              },
+              selectFiles: (regex: RegExp, baseDir: string) => {
+                return [];
+              }
+            };
+            return results;
           }
-          debuglet.stop();
-          done();
-        });
-
-        debuglet.start();
+        }
       });
+      const debug = new Debug(
+          {projectId: 'fake-project', credentials: fakeCredentials},
+          packageInfo);
+      const config =
+          extend({}, defaultConfig, {workingDirectory: MOCKED_DIRECTORY});
+      const debuglet = new mockedDebuglet.Debuglet(debug, config);
+      let text = '';
+      debuglet.logger.warn = (s: string) => {
+        text += s;
+      };
+
+      debuglet.on('initError', (err: Error) => {
+        assert.fail('It should not fail for files it cannot read');
+      });
+
+      debuglet.once('started', () => {
+        for (const item of errors) {
+          const regex = new RegExp(item.error);
+          assert(
+            regex.test(text),
+            `Should warn that file '${item.filename}' cannot be read`);
+        }
+        debuglet.stop();
+        done();
+      });
+
+      debuglet.start();
     });
 
     describe('environment variables', () => {
