@@ -51,12 +51,12 @@ describe('scanner', () => {
     });
 
     it('should ignore broken links', function(done) {
-      if (process.platform.indexOf('win') >= 0) {
+      if (process.platform === 'win32') {
         this.skip();
         return;
       }
 
-      scanner.scan(true, fixture('project-cannot-read-files'), /.*/)
+      scanner.scan(true, fixture('broken-links'), /.*/)
           .then((fileStats) => {
             assert.strictEqual(
                 fileStats.selectFiles(/broken-link\.js/, '').length, 0);
