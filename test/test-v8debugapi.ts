@@ -123,10 +123,10 @@ describe('debugapi selection', () => {
   };
   it('should use the correct debugapi and have appropriate warning', (done) => {
     let api: DebugApi;
-    scanner.scan(true, config.workingDirectory as string, /.js$|.map$/)
+    scanner.scan(true, config.workingDirectory, /.js$|.js.map$/)
         .then((fileStats) => {
           const jsStats = fileStats.selectStats(/.js$/);
-          const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
+          const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
           SourceMapper.create(mapFiles, (err, mapper) => {
             assert(!err);
             // TODO: Handle the case when mapper is undefined.
@@ -166,10 +166,10 @@ describe('v8debugapi', () => {
 
   beforeEach((done) => {
     if (!api) {
-      scanner.scan(true, config.workingDirectory, /.js$|.map$/)
+      scanner.scan(true, config.workingDirectory, /.js$|.js.map$/)
           .then((fileStats) => {
             const jsStats = fileStats.selectStats(/.js$/);
-            const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
+            const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
             SourceMapper.create(mapFiles, (err1, mapper) => {
               assert(!err1);
 
