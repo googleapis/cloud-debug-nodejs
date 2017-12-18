@@ -276,8 +276,7 @@ export class Debuglet extends EventEmitter {
     const stat = promisify(fs.stat);
 
     try {
-      await stat(
-          path.join(that.config.workingDirectory, 'package.json'));
+      await stat(path.join(that.config.workingDirectory, 'package.json'));
     } catch (err) {
       that.logger.error('No package.json located in working directory.');
       that.emit('initError', new Error('No package.json found.'));
@@ -292,8 +291,8 @@ export class Debuglet extends EventEmitter {
 
     let fileStats: scanner.ScanResults;
     try {
-      fileStats = await scanner.scan(
-          !id, that.config.workingDirectory, /.js$|.map$/);
+      fileStats =
+          await scanner.scan(!id, that.config.workingDirectory, /.js$|.map$/);
     } catch (err) {
       that.logger.error('Error scanning the filesystem.', err);
       that.emit('initError', err);
