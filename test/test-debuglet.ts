@@ -18,8 +18,8 @@ import * as assert from 'assert';
 import * as rawFs from 'fs';
 import * as _ from 'lodash';
 import * as path from 'path';
-import * as semver from 'semver';
 import * as proxyquire from 'proxyquire';
+import * as semver from 'semver';
 
 import {DebugAgentConfig} from '../src/agent/config';
 import {defaultConfig as DEFAULT_CONFIG} from '../src/agent/config';
@@ -472,11 +472,15 @@ describe('Debuglet', () => {
 
     it('should not fail if files cannot be read', (done) => {
       const MOCKED_DIRECTORY = process.cwd();
-      const errors: Array<{filename: string; error: string;}> = [];
-      for (let i=1; i<=2; i++) {
+      const errors: Array < {
+        filename: string;
+        error: string;
+      }
+      > = [];
+      for (let i = 1; i <= 2; i++) {
         const filename = `cannot-read-${i}.js`;
         const error = `EACCES: permission denied, open '${filename}'`;
-        errors.push({ filename, error });
+        errors.push({filename, error});
       }
       const mockedDebuglet = proxyquire('../src/agent/debuglet', {
         './io/scanner': {
@@ -523,8 +527,8 @@ describe('Debuglet', () => {
         for (const item of errors) {
           const regex = new RegExp(item.error);
           assert(
-            regex.test(text),
-            `Should warn that file '${item.filename}' cannot be read`);
+              regex.test(text),
+              `Should warn that file '${item.filename}' cannot be read`);
         }
         debuglet.stop();
         done();

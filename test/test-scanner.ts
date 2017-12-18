@@ -50,7 +50,12 @@ describe('scanner', () => {
           });
     });
 
-    it('should ignore broken links', (done) => {
+    it('should ignore broken links', function(done) {
+      if (process.platform.indexOf('win') >= 0) {
+        this.skip();
+        return;
+      }
+
       scanner.scan(true, fixture('project-cannot-read-files'), /.*/)
           .then((fileStats) => {
             assert.strictEqual(
