@@ -379,7 +379,7 @@ describe('Debuglet', () => {
 
     it('should not start when workingDirectory is the a directory', (done) => {
       const debug = new Debug({}, packageInfo);
-      const config = extend({}, defaultConfig, {workingDirectory: '/'});
+      const config = extend({}, defaultConfig, {workingDirectory: path.sep});
       const debuglet = new Debuglet(debug, config);
       let text = '';
       debuglet.logger.error = (str: string) => {
