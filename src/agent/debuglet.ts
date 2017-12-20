@@ -301,11 +301,11 @@ export class Debuglet extends EventEmitter {
 
     const workingDir = that.config.workingDirectory;
     // Don't continue if the working directory is a root directory
-    if (path.join(workingDir, '..') === workingDir) {
+    if (!that.config.allowRootAsWorkingDirectory && path.join(workingDir, '..') === workingDir) {
       const message = `Refusing to start the cloud debugger with \`workingDirectory\` set to a root ` +
         `directory (${workingDir}) to avoid scanning the entire filesystem for Javascript files.`;
       that.logger.error(message);
-      that.emit('initError',new Error(message));
+      that.emit('initError', new Error(message));
       return;
     }
 

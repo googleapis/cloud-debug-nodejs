@@ -28,7 +28,7 @@ import * as stackdriver from '../src/types/stackdriver';
 
 DEFAULT_CONFIG.allowExpressions = true;
 DEFAULT_CONFIG.workingDirectory = path.join(__dirname, '..', '..');
-import {Debuglet, CachedPromise} from '../src/agent/debuglet';
+import {Debuglet, CachedPromise, FindFilesResult} from '../src/agent/debuglet';
 import {ScanResults} from '../src/agent/io/scanner';
 import * as dns from 'dns';
 import * as extend from 'extend';
@@ -814,7 +814,7 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should error when workingDirectory is a root directory with a package.json', (done) => {
+    it('should by default error when workingDirectory is a root directory with a package.json', (done) => {
       const debug = new Debug({}, packageInfo);
       /*
        * `path.sep` represents a root directory on both Windows and Unix.
@@ -865,6 +865,56 @@ describe('Debuglet', () => {
 
       debuglet.once('started', () => {
         assert.fail('Should not start if workingDirectory is a root directory');
+      });
+
+      debuglet.start();
+    });
+
+    it('should be able to force the workingDirectory to be a root directory', (done) => {
+      const root = path.sep;
+      // Act like the root directory contains a `package.json` file
+      const mockedDebuglet = proxyquire('../src/agent/debuglet', {
+        fs: {
+          stat: (filepath: string|Buffer, cb: (err: Error|null, stats: {}) => void) => {
+            if (filepath === path.join(root, 'package.json')) {
+              return cb(null, {});
+            }
+            fs.stat(filepath, cb);
+          }
+        }
+      });
+
+      // Don't actually scan the entire filesystem.  Act like the filesystem is empty.
+      mockedDebuglet.Debuglet.findFiles = (shouldHash: boolean, baseDir: string): Promise<FindFilesResult> => {
+        assert.strictEqual(baseDir, root);
+        return Promise.resolve({
+          jsStats: {},
+          mapFiles: [],
+          errors: new Map<string, Error>()
+        });
+      }
+
+      // Act like the debuglet can get a project id
+      mockedDebuglet.Debuglet.getProjectId = () => 'some-project-id';
+
+      // No need to restore `findFiles` and `getProjectId` because we are modifying
+      // a mocked version of `Debuglet` not `Debuglet` itself.
+
+      const config = extend({}, defaultConfig, {
+        workingDirectory: root,
+        allowRootAsWorkingDirectory: true
+      });
+      const debug = new Debug({}, packageInfo);
+      const debuglet = new mockedDebuglet.Debuglet(debug, config);
+
+      debuglet.on('initError', (err: Error) => {
+        assert.ifError(err);
+        done();
+      });
+
+      debuglet.once('started', () => {
+        debuglet.stop();
+        done();
       });
 
       debuglet.start();
