@@ -304,10 +304,10 @@ export class Debuglet extends EventEmitter {
     // unless the user wants to force using the root directory
     if (!that.config.allowRootAsWorkingDirectory &&
         path.join(workingDir, '..') === workingDir) {
-      const message =
-          `Refusing to start the cloud debugger with \`workingDirectory\` set to a root ` +
-          `directory (${
-              workingDir}) to avoid scanning the entire filesystem for Javascript files.`;
+      const message = 'The working directory is a root directory. Disabling ' +
+        'to avoid a scan of the entire filesystem for JavaScript files. ' +
+        'Use config \allowRootAsWorkingDirectory` if you really want to ' +
+        'do this.';
       that.logger.error(message);
       that.emit('initError', new Error(message));
       return;
