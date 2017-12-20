@@ -156,6 +156,12 @@ class IsReadyImpl implements IsReady {
   }
 }
 
+export interface FindFilesResult {
+  jsStats: scanner.ScanStats;
+  mapFiles: string[];
+  hash?: string;
+}
+
 export class Debuglet extends EventEmitter {
   private debug: Debug;
   private v8debug: DebugApi|null;
@@ -266,11 +272,7 @@ export class Debuglet extends EventEmitter {
     return extend(true, {}, defaultConfig, config, envConfig);
   }
 
-  static async findFiles(shouldHash: boolean, baseDir: string): Promise<{
-    jsStats: scanner.ScanStats;
-    mapFiles: string[];
-    hash?: string;
-  }> {
+  static async findFiles(shouldHash: boolean, baseDir: string): Promise<FindFilesResult> {
     const fileStats = await scanner.scan(shouldHash, baseDir, /.js$|.js.map$/);
     const jsStats = fileStats.selectStats(/.js$/);
     const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
@@ -304,11 +306,7 @@ export class Debuglet extends EventEmitter {
       id = 'GAE-' + process.env.GAE_MINOR_VERSION;
     }
 
-    let findResults: {
-      jsStats: scanner.ScanStats;
-      mapFiles: string[];
-      hash?: string;
-    };
+    let findResults: FindFilesResult;
     try {
       findResults = await Debuglet.findFiles(!id, that.config.workingDirectory);
     } catch (err) {
