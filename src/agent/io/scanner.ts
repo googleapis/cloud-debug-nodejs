@@ -25,7 +25,7 @@ import * as _ from 'lodash';
 import * as path from 'path';
 
 // TODO: Make this more precise.
-const split: () => {} = require('split');
+const split: () => fs.WriteStream = require('split');
 
 export interface FileStats {
   // TODO: Verify that this member should actually be optional.
@@ -37,6 +37,7 @@ export interface FileStats {
 export interface ScanStats { [filename: string]: FileStats|undefined; }
 
 export interface ScanResults {
+  errors(): Map<string, Error>;
   all(): ScanStats;
   selectStats(regex: RegExp): ScanStats;
   selectFiles(regex: RegExp, baseDir: string): string[];
@@ -56,7 +57,13 @@ class ScanResultsImpl implements ScanResults {
    *  attributes respectively
    * @param hash A hashcode computed from the contents of all the files.
    */
-  constructor(private readonly stats: ScanStats, readonly hash?: string) {}
+  constructor(
+      private readonly stats: ScanStats, readonly errorMap: Map<string, Error>,
+      readonly hash?: string) {}
+
+  errors(): Map<string, Error> {
+    return this.errorMap;
+  }
 
   /**
    * Used to get all of the file scan results.
@@ -105,22 +112,10 @@ class ScanResultsImpl implements ScanResults {
   }
 }
 
-export function scan(
+export async function scan(
     shouldHash: boolean, baseDir: string, regex: RegExp): Promise<ScanResults> {
-  return new Promise<ScanResults>((resolve, reject) => {
-    findFiles(baseDir, regex, (err1: Error|null, fileList?: string[]) => {
-      if (err1) {
-        return reject(err1);
-      }
-      // TODO: Handle the case where `fileList` is undefined.
-      computeStats(fileList as string[], shouldHash, (err2, results) => {
-        if (err2) {
-          return reject(err2);
-        }
-        resolve(results);
-      });
-    });
-  });
+  const fileList = await findFiles(baseDir, regex);
+  return await computeStats(fileList, shouldHash);
 }
 
 /**
@@ -135,46 +130,40 @@ export function scan(
 // TODO: Typescript: Fix the docs associated with this function to match the
 // call signature
 function computeStats(
-    fileList: string[], shouldHash: boolean,
-    callback: (err: Error|null, results?: ScanResults) => void): void {
-  let pending = fileList.length;
-  // return a valid, if fake, result when there are no js files to hash.
-  if (pending === 0) {
-    callback(null, new ScanResultsImpl({}, 'EMPTY-no-js-files'));
-    return;
-  }
+    fileList: string[], shouldHash: boolean): Promise<ScanResults> {
+  return new Promise<ScanResults>(async (resolve, reject) => {
+    // return a valid, if fake, result when there are no js files to hash.
+    if (fileList.length === 0) {
+      resolve(new ScanResultsImpl({}, new Map(), 'EMPTY-no-js-files'));
+      return;
+    }
 
-  // TODO: Address the case where the array contains `undefined`.
-  const hashes: Array<string|undefined> = [];
-  const statistics: ScanStats = {};
-  fileList.forEach((filename) => {
-    statsForFile(
-        filename, shouldHash, (err: Error|null, fileStats?: FileStats) => {
-          if (err) {
-            callback(err);
-            return;
-          }
+    // TODO: Address the case where the array contains `undefined`.
+    const hashes: Array<string|undefined> = [];
+    const statistics: ScanStats = {};
+    const errors: Map<string, Error> = new Map<string, Error>();
 
-          pending--;
-          if (shouldHash) {
-            // TODO: Address the case when `fileStats` is `undefined`
-            hashes.push((fileStats as FileStats).hash);
-          }
-          statistics[filename] = fileStats;
+    for (const filename of fileList) {
+      try {
+        const fileStats = await statsForFile(filename, shouldHash);
+        if (shouldHash) {
+          hashes.push(fileStats.hash);
+        }
+        statistics[filename] = fileStats;
+      } catch (err) {
+        errors.set(filename, err);
+      }
+    }
 
-          if (pending === 0) {
-            let hash;
-            if (shouldHash) {
-              // Sort the hashes to get a deterministic order as the files may
-              // not be in the same order each time we scan the disk.
-              const buffer = hashes.sort().join();
-              const sha1 =
-                  crypto.createHash('sha1').update(buffer).digest('hex');
-              hash = 'SHA1-' + sha1;
-            }
-            callback(null, new ScanResultsImpl(statistics, hash));
-          }
-        });
+    let hash;
+    if (shouldHash) {
+      // Sort the hashes to get a deterministic order as the files may
+      // not be in the same order each time we scan the disk.
+      const buffer = hashes.sort().join();
+      const sha1 = crypto.createHash('sha1').update(buffer).digest('hex');
+      hash = 'SHA1-' + sha1;
+    }
+    resolve(new ScanResultsImpl(statistics, errors, hash));
   });
 }
 
@@ -187,45 +176,44 @@ function computeStats(
  *  files to find based on their filename
  * @param {!function(?Error, Array<string>)} callback error-back callback
  */
-function findFiles(
-    baseDir: string, regex: RegExp,
-    callback: (err: Error|null, fileList?: string[]) => void): void {
-  let errored = false;
+function findFiles(baseDir: string, regex: RegExp): Promise<string[]> {
+  return new Promise<string[]>((resolve, reject) => {
+    let error: Error|undefined;
 
-  if (!baseDir) {
-    callback(new Error('hasher.findJSFiles requires a baseDir argument'));
-    return;
-  }
-
-  const find = findit(baseDir);
-  const fileList: string[] = [];
-
-  find.on('error', (err: Error) => {
-    errored = true;
-    callback(err);
-    return;
-  });
-
-  find.on('directory', (dir: string, ignore: fs.Stats, stop: () => void) => {
-    const base = path.basename(dir);
-    if (base === '.git' || base === 'node_modules') {
-      stop();  // do not descend
-    }
-  });
-
-  find.on('file', (file: string) => {
-    if (regex.test(file)) {
-      fileList.push(file);
-    }
-  });
-
-  find.on('end', () => {
-    if (errored) {
-      // the end event fires even after an error
-      // simply return because the on('error') has already called back
+    if (!baseDir) {
+      reject(new Error('hasher.findJSFiles requires a baseDir argument'));
       return;
     }
-    callback(null, fileList);
+
+    const find = findit(baseDir);
+    const fileList: string[] = [];
+
+    find.on('error', (err: Error) => {
+      error = err;
+      return;
+    });
+
+    find.on('directory', (dir: string, ignore: fs.Stats, stop: () => void) => {
+      const base = path.basename(dir);
+      if (base === '.git' || base === 'node_modules') {
+        stop();  // do not descend
+      }
+    });
+
+    find.on('file', (file: string) => {
+      if (regex.test(file)) {
+        fileList.push(file);
+      }
+    });
+
+    find.on('end', () => {
+      // Note: the `end` event fires even after an error
+      if (error) {
+        reject(error);
+      } else {
+        resolve(fileList);
+      }
+    });
   });
 }
 
@@ -237,31 +225,38 @@ function findFiles(
  * @private
  */
 function statsForFile(
-    filename: string, shouldHash: boolean,
-    cb: (err: Error|null, stats?: FileStats) => void): void {
-  let shasum: crypto.Hash;
-  if (shouldHash) {
-    shasum = crypto.createHash('sha1');
-  }
-  // TODO: Determine why property 'ReadStream' does not exist on type 'fs'
-  const s = (fs as {} as {ReadStream: Function}).ReadStream(filename);
-  let lines = 0;
-  const byLine = s.pipe(split());
-  byLine.on('error', (e: Error) => {
-    cb(e);
-  });
-  byLine.on('data', (d: string) => {
-    if (shouldHash) {
-      shasum.update(d);
-    }
-    lines++;
-  });
-  byLine.on('end', () => {
-    // TODO: Address the case where `d` is `undefined`.
-    let d: string|undefined;
-    if (shouldHash) {
-      d = shasum.digest('hex');
-    }
-    cb(null, {hash: d, lines});
+    filename: string, shouldHash: boolean): Promise<FileStats> {
+  return new Promise<FileStats>((resolve, reject) => {
+    const reader = fs.createReadStream(filename);
+    reader.on('error', (err) => {
+      reject(err);
+    });
+    reader.on('open', () => {
+      let shasum: crypto.Hash;
+      if (shouldHash) {
+        shasum = crypto.createHash('sha1');
+      }
+
+      let lines = 0;
+      let error: Error|undefined;
+      const byLine = reader!.pipe(split());
+      byLine.on('error', (e: Error) => {
+        error = e;
+      });
+      byLine.on('data', (d: string) => {
+        if (shouldHash) {
+          shasum.update(d);
+        }
+        lines++;
+      });
+      byLine.on('end', () => {
+        if (error) {
+          reject(error);
+        } else {
+          const hash = shouldHash ? shasum.digest('hex') : undefined;
+          resolve({hash, lines});
+        }
+      });
+    });
   });
 }

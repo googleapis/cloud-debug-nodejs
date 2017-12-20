@@ -15,8 +15,13 @@
  */
 
 import * as assert from 'assert';
+import * as events from 'events';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as proxyquire from 'proxyquire';
+import * as stream from 'stream';
+
+const findit: (dir: string) => events.EventEmitter = require('findit2');
 
 const fixtureDir = path.join(__dirname, './fixtures');
 const fixture = (file: string): string => {
@@ -41,6 +46,22 @@ describe('scanner', () => {
       // TODO: Determine if the err parameter should be used.
       scanner.scan(true, './this directory does not exist', /.js$/)
           .catch((err) => {
+            done();
+          });
+    });
+
+    it('should ignore broken links', function(done) {
+      if (process.platform === 'win32') {
+        this.skip();
+        return;
+      }
+
+      scanner.scan(true, fixture('broken-links'), /.*/)
+          .then((fileStats) => {
+            assert.strictEqual(
+                fileStats.selectFiles(/broken-link\.js/, '').length, 0);
+            assert.strictEqual(
+                fileStats.selectFiles(/intended-link\.js/, '').length, 0);
             done();
           });
     });
@@ -164,6 +185,74 @@ describe('scanner', () => {
           });
         });
       });
+    });
+  });
+
+  describe('on errors', () => {
+    const MOCKED_DIRECTORY = '!NOT_A_REAL_DIRECTORY!';
+    const MOCKED_FILES: Array < {
+      filename: string;
+      error: string
+    }
+    > = [];
+    for (let i = 1; i <= 2; i++) {
+      const filename = `cannot-read-${i}.js`;
+      MOCKED_FILES.push(
+          {filename, error: `EACCES: permission denied, open ${filename}`});
+    }
+    let mockedScanner: {
+      scan: (shouldHash: boolean, baseDir: string, regex: RegExp) =>
+          Promise<scanner.ScanResults>
+    };
+    before(() => {
+      mockedScanner = proxyquire('../src/agent/io/scanner', {
+        findit2: (dir: string) => {
+          if (dir === MOCKED_DIRECTORY) {
+            const emitter = new events.EventEmitter();
+            setImmediate(() => {
+              for (const mock of MOCKED_FILES) {
+                emitter.emit('file', mock.filename);
+              }
+              emitter.emit('end');
+            });
+            return emitter;
+          }
+
+          throw new Error(
+              `'findit' should have been called with ` +
+              `'${MOCKED_DIRECTORY}' but encountered '${dir}'`);
+        },
+        fs: {
+          createReadStream: (filename: string) => {
+            const rs = new stream.Readable();
+            setImmediate(() => {
+              let found = false;
+              for (const mock of MOCKED_FILES) {
+                if (mock.filename === filename) {
+                  found = true;
+                  rs.emit('error', new Error(mock.error));
+                  break;
+                }
+              }
+              assert.ok(
+                  found,
+                  `The file ${filename} should not be read ` +
+                      `because it doesn't have a mock`);
+            });
+            return rs;
+          }
+        }
+      });
+    });
+
+    it('should report errors on files that cannot be read', async () => {
+      const files = await mockedScanner.scan(true, MOCKED_DIRECTORY, /.*/);
+      const errors = files.errors();
+      assert.strictEqual(errors.size, MOCKED_FILES.length);
+      for (const mock of MOCKED_FILES) {
+        assert.ok(errors.has(mock.filename));
+        assert.strictEqual(errors.get(mock.filename)!.message, mock.error);
+      }
     });
   });
 });
