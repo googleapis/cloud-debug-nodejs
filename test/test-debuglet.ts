@@ -15,7 +15,7 @@
  */
 
 import * as assert from 'assert';
-import * as rawFs from 'fs';
+import * as fs from 'fs';
 import * as _ from 'lodash';
 import * as path from 'path';
 import * as proxyquire from 'proxyquire';
@@ -375,41 +375,6 @@ describe('Debuglet', () => {
       // maxExpandFrames adjusted.
       compareConfig.capture.maxExpandFrames = testValue;
       assert.deepEqual(mergedConfig, compareConfig);
-    });
-
-    it('should not start when workingDirectory is a root directory', (done) => {
-      const debug = new Debug({}, packageInfo);
-      // `path.sep` represents a root directory on both Windows and Unix.
-      // On Windows, `path.sep` resolves to the current drive.
-      //
-      // That is, after opening a command prompt in Windows, relative to the
-      // drive C: and starting the Node REPL, the value of `path.sep`
-      // represents `C:\\'.
-      //
-      // If `D:` is entered in the prompt to switch to the D: drive before starting
-      // the Node REPL, `path.sep` represents `D:\\`.
-      const config = extend({}, defaultConfig, {workingDirectory: path.sep});
-      const debuglet = new Debuglet(debug, config);
-      let text = '';
-      debuglet.logger.error = (str: string) => {
-        text += str;
-      };
-
-      debuglet.on('initError', (err: Error) => {
-        assert.ok(err);
-        assert.strictEqual(
-            err.message,
-            'Cannot start the agent when the working directory is a root directory');
-        assert.ok(text.includes(
-            'Refusing to start with `workingDirectory` set to a root directory:  '));
-        done();
-      });
-
-      debuglet.once('started', () => {
-        assert.fail('Should not start if workingDirectory is a root directory');
-      });
-
-      debuglet.start();
     });
 
     it('should not start when projectId is not available', (done) => {
@@ -844,6 +809,62 @@ describe('Debuglet', () => {
       debuglet.once('initError', (err: Error) => {
         assert(err);
         done();
+      });
+
+      debuglet.start();
+    });
+
+    it('should error when workingDirectory is a root directory with a package.json', (done) => {
+      const debug = new Debug({}, packageInfo);
+      /*
+       * `path.sep` represents a root directory on both Windows and Unix.
+       * On Windows, `path.sep` resolves to the current drive.
+       *
+       * That is, after opening a command prompt in Windows, relative to the
+       * drive C: and starting the Node REPL, the value of `path.sep`
+       * represents `C:\\'.
+       *
+       * If `D:` is entered at the prompt to switch to the D: drive before starting
+       * the Node REPL, `path.sep` represents `D:\\`.
+       */
+      const root = path.sep;
+      const mockedDebuglet = proxyquire('../src/agent/debuglet', {
+        /*
+         * Mock the 'fs' module to verify that if the root directory is used,
+         * and the root directory is reported to contain a `package.json` file,
+         * then the agent still produces an `initError` when the working directory
+         * is the root directory.
+         */
+        fs: {
+          stat: (filepath: string|Buffer, cb: (err: Error|null, stats: {}) => void) => {
+            if (filepath === path.join(root, 'package.json')) {
+              // The key point is that looking for `package.json` in the root
+              // directory does not cause an error.
+              return cb(null, {});
+            }
+            fs.stat(filepath, cb);
+          }
+        }
+      });
+      const config = extend({}, defaultConfig, {workingDirectory: root});
+      const debuglet = new mockedDebuglet.Debuglet(debug, config);
+      let text = '';
+      debuglet.logger.error = (str: string) => {
+        text += str;
+      };
+
+      debuglet.on('initError', (err: Error) => {
+        const errorMessage = `Refusing to start the cloud debugger with \`workingDirectory\` ` +
+          `set to a root directory (${root}) to avoid scanning the entire filesystem ` +
+          `for Javascript files.`;
+        assert.ok(err);
+        assert.strictEqual(err.message, errorMessage);
+        assert.ok(text.includes(errorMessage));
+        done();
+      });
+
+      debuglet.once('started', () => {
+        assert.fail('Should not start if workingDirectory is a root directory');
       });
 
       debuglet.start();
