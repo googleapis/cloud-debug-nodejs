@@ -272,15 +272,12 @@ export class Debuglet extends EventEmitter {
     return extend(true, {}, defaultConfig, config, envConfig);
   }
 
-  static async findFiles(shouldHash: boolean, baseDir: string): Promise<FindFilesResult> {
+  static async findFiles(shouldHash: boolean, baseDir: string):
+      Promise<FindFilesResult> {
     const fileStats = await scanner.scan(shouldHash, baseDir, /.js$|.js.map$/);
     const jsStats = fileStats.selectStats(/.js$/);
     const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
-    return {
-      jsStats,
-      mapFiles,
-      hash: fileStats.hash
-    };
+    return {jsStats, mapFiles, hash: fileStats.hash};
   }
 
   /**
@@ -325,7 +322,8 @@ export class Debuglet extends EventEmitter {
       // At this point err3 being falsy implies sourcemapper is defined
       const mapper = sourcemapper as SourceMapper.SourceMapper;
 
-      that.v8debug = debugapi.create(that.logger, that.config, findResults.jsStats, mapper);
+      that.v8debug = debugapi.create(
+          that.logger, that.config, findResults.jsStats, mapper);
 
       id = id || findResults.hash;
 

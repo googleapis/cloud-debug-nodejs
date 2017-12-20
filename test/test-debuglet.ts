@@ -100,8 +100,7 @@ describe('Debuglet', () => {
       let err: Error|null = null;
       try {
         await Debuglet.findFiles(false, path.join(SOURCEMAP_DIR, '!INVALID!'));
-      }
-      catch (e) {
+      } catch (e) {
         err = e;
       }
       assert.ok(err);
