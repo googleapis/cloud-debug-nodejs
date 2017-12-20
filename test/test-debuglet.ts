@@ -377,8 +377,17 @@ describe('Debuglet', () => {
       assert.deepEqual(mergedConfig, compareConfig);
     });
 
-    it('should not start when workingDirectory is the a directory', (done) => {
+    it('should not start when workingDirectory is a root directory', (done) => {
       const debug = new Debug({}, packageInfo);
+      // `path.sep` represents a root directory on both Windows and Unix.
+      // On Windows, `path.sep` resolves to the current drive.
+      //
+      // That is, after opening a command prompt in Windows, relative to the
+      // drive C: and starting the Node REPL, the value of `path.sep`
+      // represents `C:\\'.
+      //
+      // If `D:` is entered in the prompt to switch to the D: drive before starting
+      // the Node REPL, `path.sep` represents `D:\\`.
       const config = extend({}, defaultConfig, {workingDirectory: path.sep});
       const debuglet = new Debuglet(debug, config);
       let text = '';
@@ -391,7 +400,7 @@ describe('Debuglet', () => {
         assert.strictEqual(
             err.message,
             'Cannot start the agent when the working directory is a root directory');
-        assert(text.includes(
+        assert.ok(text.includes(
             'Refusing to start with `workingDirectory` set to a root directory:  '));
         done();
       });
