@@ -301,6 +301,7 @@ export class Debuglet extends EventEmitter {
 
     const workingDir = that.config.workingDirectory;
     // Don't continue if the working directory is a root directory
+    // unless the user wants to force using the root directory
     if (!that.config.allowRootAsWorkingDirectory &&
         path.join(workingDir, '..') === workingDir) {
       const message =
