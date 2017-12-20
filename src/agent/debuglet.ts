@@ -291,6 +291,14 @@ export class Debuglet extends EventEmitter {
     const that = this;
     const stat = promisify(fs.stat);
 
+    const workingDir = that.config.workingDirectory;
+    // Don't continue if the working directory is a root directory
+    if (path.join(workingDir, '..') === workingDir) {
+      that.logger.error(`Refusing to start with \`workingDirectory\` set to a root directory:  '${workingDir}'`);
+      that.emit('initError', new Error(`Cannot start the agent when the working directory is a root directory`));
+      return;
+    }
+
     try {
       await stat(path.join(that.config.workingDirectory, 'package.json'));
     } catch (err) {

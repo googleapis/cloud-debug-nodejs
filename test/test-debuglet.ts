@@ -377,6 +377,30 @@ describe('Debuglet', () => {
       assert.deepEqual(mergedConfig, compareConfig);
     });
 
+    it('should not start when workingDirectory is the a directory', (done) => {
+      const debug = new Debug({}, packageInfo);
+      const config = extend({}, defaultConfig, {workingDirectory: '/'});
+      const debuglet = new Debuglet(debug, config);
+      let text = '';
+      debuglet.logger.error = (str: string) => {
+        text += str;
+      };
+
+      debuglet.on('initError', (err: Error) => {
+        assert.ok(err);
+        assert.strictEqual(err.message, 'Cannot start the agent when the working directory is a root directory');
+        assert(text.includes('Refusing to start with `workingDirectory` set to a root directory:  '));
+        done();
+      });
+
+      debuglet.once('started', () => {
+        assert.fail('Should not start if workingDirectory is a root directory');
+      });
+
+      debuglet.start();
+
+    });
+
     it('should not start when projectId is not available', (done) => {
       const savedGetProjectId = Debuglet.getProjectId;
       Debuglet.getProjectId = () => {
