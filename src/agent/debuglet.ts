@@ -159,6 +159,7 @@ class IsReadyImpl implements IsReady {
 export interface FindFilesResult {
   jsStats: scanner.ScanStats;
   mapFiles: string[];
+  errors: Map<string, Error>;
   hash?: string;
 }
 
@@ -277,7 +278,8 @@ export class Debuglet extends EventEmitter {
     const fileStats = await scanner.scan(shouldHash, baseDir, /.js$|.js.map$/);
     const jsStats = fileStats.selectStats(/.js$/);
     const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
-    return {jsStats, mapFiles, hash: fileStats.hash};
+    const errors = fileStats.errors();
+    return {jsStats, mapFiles, errors, hash: fileStats.hash};
   }
 
   /**
@@ -306,7 +308,7 @@ export class Debuglet extends EventEmitter {
     let findResults: FindFilesResult;
     try {
       findResults = await Debuglet.findFiles(!id, that.config.workingDirectory);
-      fileStats.errors().forEach(that.logger.warn);
+      findResults.errors.forEach(that.logger.warn);
     } catch (err) {
       that.logger.error('Error scanning the filesystem.', err);
       that.emit('initError', err);
