@@ -93,6 +93,29 @@ describe('CachedPromise', () => {
 });
 
 describe('Debuglet', () => {
+  describe('findFiles', () => {
+    const SOURCEMAP_DIR = path.join(__dirname, 'fixtures', 'sourcemaps');
+
+    it('throws an error for an invalid directory', async () => {
+      let err: Error|null = null;
+      try {
+        await Debuglet.findFiles(false, path.join(SOURCEMAP_DIR, '!INVALID!'));
+      } catch (e) {
+        err = e;
+      }
+      assert.ok(err);
+    });
+
+    it('finds the correct sourcemaps files', async () => {
+      const searchResults = await Debuglet.findFiles(false, SOURCEMAP_DIR);
+      assert(searchResults.jsStats);
+      assert.strictEqual(Object.keys(searchResults.jsStats).length, 1);
+      assert(searchResults.jsStats[path.join(SOURCEMAP_DIR, 'js-file.js')]);
+      assert.strictEqual(searchResults.mapFiles.length, 1);
+      assert(searchResults.mapFiles[0].endsWith('js-map-file.js.map'));
+    });
+  });
+
   describe('runningOnGCP', () => {
     // TODO: Make this more precise.
     let savedLookup: Function;

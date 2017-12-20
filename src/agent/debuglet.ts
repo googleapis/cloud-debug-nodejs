@@ -156,6 +156,12 @@ class IsReadyImpl implements IsReady {
   }
 }
 
+export interface FindFilesResult {
+  jsStats: scanner.ScanStats;
+  mapFiles: string[];
+  hash?: string;
+}
+
 export class Debuglet extends EventEmitter {
   private debug: Debug;
   private v8debug: DebugApi|null;
@@ -266,6 +272,14 @@ export class Debuglet extends EventEmitter {
     return extend(true, {}, defaultConfig, config, envConfig);
   }
 
+  static async findFiles(shouldHash: boolean, baseDir: string):
+      Promise<FindFilesResult> {
+    const fileStats = await scanner.scan(shouldHash, baseDir, /.js$|.js.map$/);
+    const jsStats = fileStats.selectStats(/.js$/);
+    const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
+    return {jsStats, mapFiles, hash: fileStats.hash};
+  }
+
   /**
    * Starts the Debuglet. It is important that this is as quick as possible
    * as it is on the critical path of application startup.
@@ -289,19 +303,16 @@ export class Debuglet extends EventEmitter {
       id = 'GAE-' + process.env.GAE_MINOR_VERSION;
     }
 
-    let fileStats: scanner.ScanResults;
+    let findResults: FindFilesResult;
     try {
-      fileStats =
-          await scanner.scan(!id, that.config.workingDirectory, /.js$|.map$/);
+      findResults = await Debuglet.findFiles(!id, that.config.workingDirectory);
     } catch (err) {
       that.logger.error('Error scanning the filesystem.', err);
       that.emit('initError', err);
       return;
     }
 
-    const jsStats = fileStats.selectStats(/.js$/);
-    const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
-    SourceMapper.create(mapFiles, async (err3, sourcemapper) => {
+    SourceMapper.create(findResults.mapFiles, async (err3, sourcemapper) => {
       if (err3) {
         that.logger.error('Error processing the sourcemaps.', err3);
         that.emit('initError', err3);
@@ -311,9 +322,10 @@ export class Debuglet extends EventEmitter {
       // At this point err3 being falsy implies sourcemapper is defined
       const mapper = sourcemapper as SourceMapper.SourceMapper;
 
-      that.v8debug = debugapi.create(that.logger, that.config, jsStats, mapper);
+      that.v8debug = debugapi.create(
+          that.logger, that.config, findResults.jsStats, mapper);
 
-      id = id || fileStats.hash;
+      id = id || findResults.hash;
 
       that.logger.info('Unique ID for this Application: ' + id);
 
