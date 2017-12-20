@@ -223,7 +223,6 @@ describe('@google-cloud/debug end-to-end behavior', () => {
           // TODO: Determine if the results parameter should be used.
         })
         .then((results: stackdriver.Breakpoint[]) => {
-
           // Check the contents of the log, but keep the original breakpoint.
 
           // TODO: This is never used.  Determine if it should be used.

@@ -294,8 +294,13 @@ export class Debuglet extends EventEmitter {
     const workingDir = that.config.workingDirectory;
     // Don't continue if the working directory is a root directory
     if (path.join(workingDir, '..') === workingDir) {
-      that.logger.error(`Refusing to start with \`workingDirectory\` set to a root directory:  '${workingDir}'`);
-      that.emit('initError', new Error(`Cannot start the agent when the working directory is a root directory`));
+      that.logger.error(
+          `Refusing to start with \`workingDirectory\` set to a root directory:  '${
+              workingDir}'`);
+      that.emit(
+          'initError',
+          new Error(
+              `Cannot start the agent when the working directory is a root directory`));
       return;
     }
 
@@ -740,7 +745,6 @@ export class Debuglet extends EventEmitter {
           formatBreakpoints('Server breakpoints: ', updatedBreakpointMap));
     }
     breakpoints.forEach((breakpoint: stackdriver.Breakpoint) => {
-
       // TODO: Address the case when `breakpoint.id` is `undefined`.
       if (!that.completedBreakpointMap[breakpoint.id as string] &&
           !that.activeBreakpointMap[breakpoint.id as string]) {

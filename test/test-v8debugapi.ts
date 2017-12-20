@@ -308,7 +308,6 @@ describe('v8debugapi', () => {
           assert.ok(bp.status!.isError);
           done();
         });
-
       });
     });
 
@@ -349,7 +348,6 @@ describe('v8debugapi', () => {
         done();
       });
     });
-
   });
 
   function conditionTests(
@@ -584,7 +582,6 @@ describe('v8debugapi', () => {
   });
 
   describe('set and wait', () => {
-
     it('should be possible to wait on a breakpoint', (done) => {
       // clone a clean breakpointInFoo
       // TODO: Have this actually implement Breakpoint
@@ -605,7 +602,6 @@ describe('v8debugapi', () => {
           code.foo(1);
         });
       });
-
     });
 
     it('should resolve actual line number hit rather than originally set',
@@ -687,7 +683,6 @@ describe('v8debugapi', () => {
              code.foo(1);
            });
          });
-
        });
 
     it('should capture state', (done) => {
@@ -1312,7 +1307,6 @@ describe('v8debugapi', () => {
              code.foo(3);
            });
          });
-
        });
 
     it('should be possible to set conditional breakpoints', (done) => {
@@ -1342,7 +1336,6 @@ describe('v8debugapi', () => {
           code.foo(5);
         });
       });
-
     });
 
     it('should be possible to set conditional breakpoints in coffeescript',
@@ -1637,7 +1630,6 @@ describe('v8debugapi', () => {
             assert.ifError(err3);
             throw new Error(message);
           });
-
         });
         process.nextTick(() => {
           code.foo(1);
@@ -1710,7 +1702,6 @@ describe('v8debugapi.findScriptsFuzzy', () => {
   });
 
   it('should do suffix matches correctly', () => {
-
     const TESTS = [
       // Exact match.
       {scriptPath: 'foo.js', fileList: ['/foo.js'], result: ['/foo.js']},

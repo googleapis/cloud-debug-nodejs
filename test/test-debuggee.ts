@@ -20,7 +20,6 @@ import {Debuggee} from '../src/debuggee';
 const agentVersion = `SomeName/client/SomeVersion`;
 
 describe('Debuggee', () => {
-
   it('should create a Debuggee instance on valid input', () => {
     const debuggee = new Debuggee({
       project: 'project',
@@ -62,5 +61,4 @@ describe('Debuggee', () => {
       });
     });
   });
-
 });

@@ -33,7 +33,6 @@ import * as scanner from '../src/agent/io/scanner';
 const COFFEE_FILES_REGEX = /^(.*\.js\.map)|(.*\.js)|(.*\.coffee)$/;
 
 describe('scanner', () => {
-
   describe('scan', () => {
     it('should complain when called without a path', (done) => {
       // TODO: The second argument must be a string.  Fix that.
@@ -56,14 +55,13 @@ describe('scanner', () => {
         return;
       }
 
-      scanner.scan(true, fixture('broken-links'), /.*/)
-          .then((fileStats) => {
-            assert.strictEqual(
-                fileStats.selectFiles(/broken-link\.js/, '').length, 0);
-            assert.strictEqual(
-                fileStats.selectFiles(/intended-link\.js/, '').length, 0);
-            done();
-          });
+      scanner.scan(true, fixture('broken-links'), /.*/).then((fileStats) => {
+        assert.strictEqual(
+            fileStats.selectFiles(/broken-link\.js/, '').length, 0);
+        assert.strictEqual(
+            fileStats.selectFiles(/intended-link\.js/, '').length, 0);
+        done();
+      });
     });
 
     it('should be able to return all file stats directly', (done) => {

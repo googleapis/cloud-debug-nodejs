@@ -174,7 +174,6 @@ class StateResolver {
           }
         }
         this.evaluatedExpressions[index2] = evaluated;
-
       });
     }
     // The frames are resolved after the evaluated expressions so that

@@ -388,8 +388,11 @@ describe('Debuglet', () => {
 
       debuglet.on('initError', (err: Error) => {
         assert.ok(err);
-        assert.strictEqual(err.message, 'Cannot start the agent when the working directory is a root directory');
-        assert(text.includes('Refusing to start with `workingDirectory` set to a root directory:  '));
+        assert.strictEqual(
+            err.message,
+            'Cannot start the agent when the working directory is a root directory');
+        assert(text.includes(
+            'Refusing to start with `workingDirectory` set to a root directory:  '));
         done();
       });
 
@@ -398,7 +401,6 @@ describe('Debuglet', () => {
       });
 
       debuglet.start();
-
     });
 
     it('should not start when projectId is not available', (done) => {
