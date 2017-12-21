@@ -37,5 +37,4 @@ describe('Debug module', () => {
       module.start();
     });
   });
-
 });

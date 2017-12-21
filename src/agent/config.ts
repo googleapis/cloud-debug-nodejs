@@ -23,6 +23,8 @@ export type DebugAgentConfig = {
 export interface ResolvedDebugAgentConfig extends common.AuthenticationConfig {
   workingDirectory: string;
 
+  allowRootAsWorkingDirectory: boolean;
+
   /**
    * A user specified way of identifying the service
    */
@@ -174,6 +176,7 @@ export const defaultConfig: ResolvedDebugAgentConfig = {
   // FIXME(ofrobots): presently this is dependent what cwd() is at the time this
   // file is first required. We should make the default config static.
   workingDirectory: process.cwd(),
+  allowRootAsWorkingDirectory: false,
   description: undefined,
   allowExpressions: false,
 

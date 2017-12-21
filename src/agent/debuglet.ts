@@ -299,6 +299,20 @@ export class Debuglet extends EventEmitter {
       return;
     }
 
+    const workingDir = that.config.workingDirectory;
+    // Don't continue if the working directory is a root directory
+    // unless the user wants to force using the root directory
+    if (!that.config.allowRootAsWorkingDirectory &&
+        path.join(workingDir, '..') === workingDir) {
+      const message = 'The working directory is a root directory. Disabling ' +
+        'to avoid a scan of the entire filesystem for JavaScript files. ' +
+        'Use config \allowRootAsWorkingDirectory` if you really want to ' +
+        'do this.';
+      that.logger.error(message);
+      that.emit('initError', new Error(message));
+      return;
+    }
+
     // TODO: Verify that it is fine for `id` to be undefined.
     let id: string|undefined;
     if (process.env.GAE_MINOR_VERSION) {
@@ -732,7 +746,6 @@ export class Debuglet extends EventEmitter {
           formatBreakpoints('Server breakpoints: ', updatedBreakpointMap));
     }
     breakpoints.forEach((breakpoint: stackdriver.Breakpoint) => {
-
       // TODO: Address the case when `breakpoint.id` is `undefined`.
       if (!that.completedBreakpointMap[breakpoint.id as string] &&
           !that.activeBreakpointMap[breakpoint.id as string]) {

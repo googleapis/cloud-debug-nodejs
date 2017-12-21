@@ -121,5 +121,4 @@ describe('Controller', function() {
   // To be able to write the following test we need a service for adding a
   // breakpoint (need the debugger API). TODO.
   it('should update an active breakpoint');
-
 });

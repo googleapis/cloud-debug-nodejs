@@ -39,7 +39,6 @@ const api = '/v2/controller';
 nock.disableNetConnect();
 
 describe('Controller API', () => {
-
   describe('register', () => {
     it('should get a debuggeeId', (done) => {
       const scope = nock(url).post(api + '/debuggees/register').reply(200, {
@@ -85,11 +84,9 @@ describe('Controller API', () => {
         done();
       });
     });
-
   });
 
   describe('listBreakpoints', () => {
-
     // register before each test
     before((done) => {
       nock(url).post(api + '/debuggees/register').reply(200, {
@@ -268,7 +265,4 @@ describe('Controller API', () => {
           });
     });
   });
-
-
-
 });
