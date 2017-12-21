@@ -1,11 +1,26 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## 2017-12-21, Version 2.3.2 (Beta), @dominickramer
+
+This release addresses issues:
+* [Gracefully handle unexpected source maps #366](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/issues/366)
+* [GKE: Error scanning the filesystem #377](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/issues/377)
+
+### Commits
+* [[`3b97598725`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/3b97598725)] - **fix**: refuse to start if working dir is root dir (#381) (Dominic Kramer)
+* [[`5c93c445b6`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/5c93c445b6)] - **fix**: Address startup failure from file access errors (#379) (Dominic Kramer)
+* [[`e38854efdc`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/e38854efdc)] - **fix**: index only .js.map source map files (#371) (Dominic Kramer)
+* [[`c75494cfc1`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/c75494cfc1)] - **chore**: Replace it.only with it in test-install.ts (#380) (Dominic Kramer)
+* [[`f24a466290`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/f24a466290)] - **chore(package)**: update @types/nock to version 9.1.0 (#378) (greenkeeper[bot])
+* [[`7fef0a432e`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/7fef0a432e)] - **fix**: Remove the `process` warning listener (#376) (Dominic Kramer)
+
 ## 2017-12-11, Version 2.3.1 (Beta), @dominickramer
 
 This release addresses issue [#367](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/issues/367) where compile time errors would occur when using the agent within Typescript code.
 
 In addition, the `isReady` functionality has been documented.
 
+### Commits
 * [[`cc8803122e`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/cc8803122e)] - **chore**: Remove casts when accessing config props (#374) (Dominic Kramer)
 * [[`5b493170be`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/5b493170be)] - **fix**: only look for relevant files in scanner test (#372) (Dominic Kramer)
 * [[`37399c2e70`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/37399c2e70)] - **fix**: Address compilation errors when using the agent with Typescript (#370) (Dominic Kramer)
@@ -20,6 +35,7 @@ This is needed in environments such as Google Cloud Functions where, without thi
 
 This release also fixes an issue so that now a more friendly error message is provided in the case when the debug agent cannot determine the project ID.
 
+### Commits
 * [[`a828ea62a4`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/a828ea62a4)] - **feat**: Enable isReady for debugger for GCF (#358) (Michael Gao) 
 * [[`bbf4b98848`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/bbf4b98848)] - **chore**: Move install tests to `system-test` (#361) (Dominic Kramer) 
 * [[`acdefca12e`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/acdefca12e)] - **test**: add installation verification (#359) (Dominic Kramer) 
