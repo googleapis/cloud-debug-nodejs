@@ -1,6 +1,5 @@
 {
   "packageWhitelist": [
-    "log-driver",
-    "modelo"
+    "log-driver"
   ]
 }
