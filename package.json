@@ -47,6 +47,7 @@
     "glob": "^7.1.2",
     "gts": "latest",
     "istanbul": "^0.4.1",
+    "js-green-licenses": "^0.2.0",
     "mkdirp": "^0.5.1",
     "mocha": "^4.0.1",
     "ncp": "^2.0.0",
@@ -88,8 +89,9 @@
     "compile-scripts": "tsc -p scripts-tsconfig.json",
     "fix": "gts fix",
     "pretest": "npm run compile",
-    "posttest": "npm run check",
-    "prepack": "npm run compile"
+    "posttest": "npm run check && npm run license-check",
+    "prepack": "npm run compile",
+    "license-check": "jsgl --local ."
   },
   "files": [
     "CHANGELOG.md",
