@@ -47,7 +47,7 @@
     "glob": "^7.1.2",
     "gts": "latest",
     "istanbul": "^0.4.1",
-    "js-green-licenses": "^0.2.0",
+    "js-green-licenses": "^0.3.0",
     "mkdirp": "^0.5.1",
     "mocha": "^4.0.1",
     "ncp": "^2.0.0",
