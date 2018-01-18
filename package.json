@@ -49,7 +49,7 @@
     "istanbul": "^0.4.1",
     "js-green-licenses": "^0.4.0",
     "mkdirp": "^0.5.1",
-    "mocha": "^4.0.1",
+    "mocha": "^5.0.0",
     "ncp": "^2.0.0",
     "nock": "^9.0.0",
     "once": "^1.4.0",
