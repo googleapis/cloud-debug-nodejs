@@ -20,11 +20,9 @@ const common: Common = require('@google-cloud/common');
 import * as crypto from 'crypto';
 import {EventEmitter} from 'events';
 import * as extend from 'extend';
-import * as dns from 'dns';
 import * as fs from 'fs';
 
 import * as metadata from 'gcp-metadata';
-import * as request from 'request';
 
 import * as _ from 'lodash';
 import * as path from 'path';
@@ -514,32 +512,16 @@ export class Debuglet extends EventEmitter {
     return project;
   }
 
-  static async runningOnGCP(): Promise<boolean> {
-    const lookup = promisify(dns.lookup);
-    try {
-      await lookup('metadata.google.internal.');
-      return true;
-    } catch (err) {
-      // Take failure to resolve metadata service to indicate that we are not
-      // running on GCP.
-      return false;
-    }
+  static runningOnGCP(): Promise<boolean> {
+    return metadata.isAvailable();
   }
 
-  static getProjectIdFromMetadata() {
-    return new Promise<string>((resolve, reject) => {
-      metadata.project('project-id', (err, res, projectId) => {
-        err ? reject(err) : resolve(projectId);
-      });
-    });
+  static async getProjectIdFromMetadata() : Promise<string> {
+    return (await metadata.project('project-id')).data as string;
   }
 
-  static getClusterNameFromMetadata() {
-    return new Promise<string>((resolve, reject) => {
-      metadata.instance('attributes/cluster-name', (err, res, clusterName) => {
-        err ? reject(err) : resolve(clusterName);
-      });
-    });
+  static async getClusterNameFromMetadata() : Promise<string> {
+    return (await metadata.instance('attributes/cluster-name')).data as string;
   }
 
   getSourceContext_(
