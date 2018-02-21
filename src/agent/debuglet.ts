@@ -254,12 +254,8 @@ export class Debuglet extends EventEmitter {
       serviceContext: {
         service: process.env.GAE_SERVICE || process.env.GAE_MODULE_NAME,
         version: process.env.GAE_VERSION || process.env.GAE_MODULE_VERSION,
-        // Debug UI expects GAE_MINOR_VERSION to be available for AppEngine, but
-        // AppEngine Flex doesn't have this environment variable. We provide a
-        // fake value as a work-around, but only on Flex (GAE_SERVICE will be
-        // defined on Flex).
-        minorVersion_: process.env.GAE_MINOR_VERSION ||
-            (process.env.GAE_SERVICE ? 'fake-minor-version' : undefined)
+        minorVersion_:
+            process.env.GAE_DEPLOYMENT_ID || process.env.GAE_MINOR_VERSION
       }
     };
 
@@ -303,9 +299,9 @@ export class Debuglet extends EventEmitter {
     if (!that.config.allowRootAsWorkingDirectory &&
         path.join(workingDir, '..') === workingDir) {
       const message = 'The working directory is a root directory. Disabling ' +
-        'to avoid a scan of the entire filesystem for JavaScript files. ' +
-        'Use config \allowRootAsWorkingDirectory` if you really want to ' +
-        'do this.';
+          'to avoid a scan of the entire filesystem for JavaScript files. ' +
+          'Use config \allowRootAsWorkingDirectory` if you really want to ' +
+          'do this.';
       that.logger.error(message);
       that.emit('initError', new Error(message));
       return;
@@ -516,11 +512,11 @@ export class Debuglet extends EventEmitter {
     return metadata.isAvailable();
   }
 
-  static async getProjectIdFromMetadata() : Promise<string> {
+  static async getProjectIdFromMetadata(): Promise<string> {
     return (await metadata.project('project-id')).data as string;
   }
 
-  static async getClusterNameFromMetadata() : Promise<string> {
+  static async getClusterNameFromMetadata(): Promise<string> {
     return (await metadata.instance('attributes/cluster-name')).data as string;
   }
 

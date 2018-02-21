@@ -706,9 +706,9 @@ describe('Debuglet', () => {
 
          debuglet.on('initError', (err: Error) => {
            const errorMessage = 'The working directory is a root ' +
-             'directory. Disabling to avoid a scan of the entire filesystem ' +
-             'for JavaScript files. Use config \allowRootAsWorkingDirectory` ' +
-             'if you really want to do this.';
+               'directory. Disabling to avoid a scan of the entire filesystem ' +
+               'for JavaScript files. Use config \allowRootAsWorkingDirectory` ' +
+               'if you really want to do this.';
            assert.ok(err);
            assert.strictEqual(err.message, errorMessage);
            assert.ok(text.includes(errorMessage));
