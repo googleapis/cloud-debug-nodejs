@@ -530,7 +530,19 @@ describe('Debuglet', () => {
             debuglet.config.serviceContext.version, 'fake-gae-version');
       });
 
+      it('should respect GAE_DEPLOYMENT_ID env. var. when available', () => {
+        process.env.GAE_DEPLOYMENT_ID = 'some deployment id';
+        delete process.env.GAE_MINOR_VERSION;
+        const debug = new Debug({}, packageInfo);
+        const debuglet = new Debuglet(debug, defaultConfig);
+        assert.ok(debuglet.config);
+        assert.ok(debuglet.config.serviceContext);
+        assert.strictEqual(
+            debuglet.config.serviceContext.minorVersion_, 'some deployment id');
+      });
+
       it('should respect GAE_MINOR_VERSION env. var. when available', () => {
+        delete process.env.GAE_DEPLOYMENT_ID;
         process.env.GAE_MINOR_VERSION = 'some minor version';
         const debug = new Debug({}, packageInfo);
         const debuglet = new Debuglet(debug, defaultConfig);
@@ -540,13 +552,15 @@ describe('Debuglet', () => {
             debuglet.config.serviceContext.minorVersion_, 'some minor version');
       });
 
-      it('should conjure a fake minor version when running on flex', () => {
-        process.env.GAE_SERVICE = 'fake-gae-service';
+      it('should prefer GAE_DEPLOYMENT_ID over GAE_MINOR_VERSION', () => {
+        process.env.GAE_DEPLOYMENT_ID = 'some deployment id';
+        process.env.GAE_MINOR_VERSION = 'some minor version';
         const debug = new Debug({}, packageInfo);
         const debuglet = new Debuglet(debug, defaultConfig);
         assert.ok(debuglet.config);
         assert.ok(debuglet.config.serviceContext);
-        assert.ok(_.isString(debuglet.config.serviceContext.minorVersion_));
+        assert.strictEqual(
+            debuglet.config.serviceContext.minorVersion_, 'some deployment id');
       });
 
       it('should not have minorVersion unless enviroment provides it', () => {
@@ -590,34 +604,6 @@ describe('Debuglet', () => {
            });
            debuglet.start();
          });
-
-      it('should provide minorversion upon registration if on flex', (done) => {
-        process.env.GAE_SERVICE = 'fake-service';
-        const debug = new Debug(
-            {projectId: 'fake-project', credentials: fakeCredentials},
-            packageInfo);
-        const debuglet = new Debuglet(debug, defaultConfig);
-
-        nocks.oauth2();
-        const scope =
-            nock(API)
-                .post(
-                    REGISTER_PATH,
-                    (body: {debuggee: Debuggee}) => {
-                      assert.ok(_.isString(body.debuggee.labels!.minorversion));
-                      return true;
-                    })
-                .once()
-                .reply(200, {debuggee: {id: DEBUGGEE_ID}});
-
-        // TODO: Determine if the response parameter should be used.
-        debuglet.once('registered', (id: string) => {
-          debuglet.stop();
-          scope.done();
-          done();
-        });
-        debuglet.start();
-      });
     });
 
     it('should retry on failed registration', function(done) {
