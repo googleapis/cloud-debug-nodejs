@@ -49,6 +49,7 @@ export interface MapInfoOutput {
  * @private
  */
 async function processSourcemap(
+    prefix: string|undefined,
     infoMap: Map<string, MapInfoInput>, mapPath: string) {
   // this handles the case when the path is undefined, null, or
   // the empty string
@@ -105,6 +106,17 @@ async function processSourcemap(
                         return path.normalize(path.join(parentDir, relPath));
                       });
 
+  sources.forEach((src: string) => {
+    const key = path.normalize(path.join(prefix || '', src));
+    infoMap.set(
+        key,
+        {
+          outputFile: path.normalize(path.join(prefix || '', outputPath)),
+          mapFile:path.normalize(path.join(prefix || '',  mapPath)),
+          mapConsumer: consumer
+        });
+  });
+
   if (sources.length === 0) {
     throw new Error('No sources listed in the sourcemap file ' + mapPath);
   }
@@ -126,7 +138,7 @@ export class SourceMapper {
    *  processing the given sourcemap files
    * @constructor
    */
-  constructor() {
+  constructor(private prefix?: string) {
     this.infoMap = new Map();
   }
 
@@ -142,8 +154,9 @@ export class SourceMapper {
    *  could possibly be associated with the given input path.
    */
   private getMappingInfo(inputPath: string): MapInfoInput|null {
-    if (this.infoMap.has(path.normalize(inputPath))) {
-      return this.infoMap.get(inputPath) as MapInfoInput;
+    const key = path.normalize(path.join(this.prefix || '', inputPath));
+    if (this.infoMap.has(key)) {
+      return this.infoMap.get(key) as MapInfoInput;
     }
 
     const matches =
@@ -192,6 +205,12 @@ export class SourceMapper {
    *   with it then null is returned.
    */
   mappingInfo(inputPath: string, lineNumber: number, colNumber: number):
+      MapInfoOutput|null {
+    const result = this.mappingInfoImpl(inputPath, lineNumber, colNumber);
+    return result;
+  }
+
+  mappingInfoImpl(inputPath: string, lineNumber: number, colNumber: number):
       MapInfoOutput|null {
     inputPath = path.normalize(inputPath);
     const entry = this.getMappingInfo(inputPath);
@@ -244,11 +263,11 @@ export class SourceMapper {
   }
 }
 
-export async function create(sourcemapPaths: string[]): Promise<SourceMapper> {
+export async function create(prefix: string|undefined, sourcemapPaths: string[]): Promise<SourceMapper> {
   const limit = pLimit(CONCURRENCY);
-  const mapper = new SourceMapper();
+  const mapper = new SourceMapper(prefix);
   const promises = sourcemapPaths.map(
-      path => limit(() => processSourcemap(mapper.infoMap, path)));
+      path => limit(() => processSourcemap(prefix, mapper.infoMap, path)));
   try {
     await Promise.all(promises);
   } catch (err) {

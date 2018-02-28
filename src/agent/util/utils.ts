@@ -38,10 +38,10 @@ export function findScripts(
     fileStats: ScanStats): string[] {
   // Use repository relative mapping if present.
   if (config.appPathRelativeToRepository) {
-    const candidate = scriptPath.replace(
-        config.appPathRelativeToRepository, config.workingDirectory);
-    // There should be no ambiguity resolution if project root is provided.
-    return fileStats[candidate] ? [candidate] : [];
+    const prefix = path.normalize(config.appPathRelativeToRepository);
+    if (!scriptPath.startsWith(prefix)) {
+      scriptPath = path.join(prefix, scriptPath);
+    }
   }
   const regexp = pathToRegExp(scriptPath);
   // Next try to match path.
