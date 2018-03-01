@@ -344,7 +344,7 @@ export class Debuglet extends EventEmitter {
 
     let mapper;
     try {
-      mapper = await SourceMapper.create(findResults.mapFiles);
+      mapper = await SourceMapper.create(this.config.appPathRelativeToRepository, findResults.mapFiles);
     } catch (err3) {
       that.logger.error('Error processing the sourcemaps.', err3);
       that.emit('initError', err3);
