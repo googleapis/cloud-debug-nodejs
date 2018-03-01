@@ -106,13 +106,17 @@ async function processSourcemap(
                         return path.normalize(path.join(parentDir, relPath));
                       });
 
+  function getKey(src: string) {
+    return path.normalize(path.join(prefix || '', src));
+  }
+
   sources.forEach((src: string) => {
-    const key = path.normalize(path.join(prefix || '', src));
+    const key = getKey(src);
     infoMap.set(
         key,
         {
-          outputFile: path.normalize(path.join(prefix || '', outputPath)),
-          mapFile:path.normalize(path.join(prefix || '',  mapPath)),
+          outputFile: getKey(outputPath),
+          mapFile: getKey(mapPath),
           mapConsumer: consumer
         });
   });
