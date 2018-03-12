@@ -74,12 +74,13 @@
     "semver": "^5.1.0",
     "source-map": "^0.6.1",
     "split": "^1.0.0",
-    "util.promisify": "^1.0.0"
+    "util.promisify": "^1.0.0",
+    "snyk": "^1.69.7"
   },
   "scripts": {
     "changelog": "npm run compile && ./bin/run-changelog.sh",
     "coverage": "npm run compile && ./bin/run-test.sh -c",
-    "prepare": "npm run compile",
+    "prepare": "npm run snyk-protect; npm run compile",
     "system-test": "npm run compile && ./bin/run-system-test.sh",
     "test": "./bin/run-test.sh",
     "check": "gts check",
@@ -91,12 +92,14 @@
     "pretest": "npm run compile",
     "posttest": "npm run check && npm run license-check",
     "prepack": "npm run compile",
-    "license-check": "jsgl --local ."
+    "license-check": "jsgl --local .",
+    "snyk-protect": "snyk protect"
   },
   "files": [
     "CHANGELOG.md",
     "LICENSE",
     "README.md",
     "build/src"
-  ]
+  ],
+  "snyk": true
 }
