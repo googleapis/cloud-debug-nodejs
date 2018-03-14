@@ -23,8 +23,8 @@ export interface PackageInfo {
 }
 
 export class Debug extends common.Service {
-  options: AuthenticationConfig;
-  packageInfo: PackageInfo;
+  options!: AuthenticationConfig;
+  packageInfo!: PackageInfo;
 
   /**
    * <p class="notice">
