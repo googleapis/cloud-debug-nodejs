@@ -5,6 +5,7 @@
 With this release:
 * [@google-cloud/common](https://www.npmjs.com/package/@google-cloud/common) has been updated to version `0.16.0`.  This addresses issue [#405](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/issues/405).
 * The `GAE_DEPLOYMENT_ID` environment variable (with a fallback to `GAE_MINOR_VERSION`) will now be used as the default value of `minorVersion_`.
+
 ### Commits
 * [[`d2cf1bcdc9`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/d2cf1bcdc9)] - **chore**: remove js-green-licenses.json (#408) (Dominic Kramer)
 * [[`ca643666e5`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/ca643666e5)] - **chore**: update `proxyquire` to `2.0.0` (#406) (Dominic Kramer)
