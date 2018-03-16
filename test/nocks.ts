@@ -28,8 +28,8 @@ export type Validator = (body: {
 // TODO: Determine if the type of `validator` is correct.
 export function oauth2(validator?: Validator): nock.Scope {
   validator = validator || accept;
-  return nock('https://accounts.google.com')
-      .post('/o/oauth2/token', validator)
+  return nock('https://www.googleapis.com')
+      .post(/\/oauth2.*token/, validator)
       .once()
       .reply(200, {
         refresh_token: 'hello',
@@ -44,7 +44,7 @@ export function register(validator?: Validator): nock.Scope {
   return nock('https://clouddebugger.googleapis.com')
       .post('/v2/controller/debuggees/register', validator)
       .once()
-      .reply(200);
+      .reply(200, {debuggee: {}});
 }
 
 export function projectId(reply: string): nock.Scope {
