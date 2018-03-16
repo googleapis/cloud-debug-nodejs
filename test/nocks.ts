@@ -44,9 +44,7 @@ export function register(validator?: Validator): nock.Scope {
   return nock('https://clouddebugger.googleapis.com')
       .post('/v2/controller/debuggees/register', validator)
       .once()
-      .reply(200, {
-        debuggee: {}
-      });
+      .reply(200, {debuggee: {}});
 }
 
 export function projectId(reply: string): nock.Scope {
