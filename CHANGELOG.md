@@ -1,5 +1,25 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## 2018-03-16, Version 2.4.0 (Beta), @dominickramer
+
+With this release:
+* [@google-cloud/common](https://www.npmjs.com/package/@google-cloud/common) has been updated to version `0.16.0`.  This addresses issue [#405](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/issues/405).
+* The `GAE_DEPLOYMENT_ID` environment variable (with a fallback to `GAE_MINOR_VERSION`) will now be used as the default value of `minorVersion_`.
+### Commits
+* [[`d2cf1bcdc9`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/d2cf1bcdc9)] - **chore**: remove js-green-licenses.json (#408) (Dominic Kramer)
+* [[`ca643666e5`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/ca643666e5)] - **chore**: update `proxyquire` to `2.0.0` (#406) (Dominic Kramer)
+* [[`9c4c1bb5a9`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/9c4c1bb5a9)] - **chore**: update gcp-metadata to 0.6.3 (#407) (Dominic Kramer)
+* [[`6e933cb331`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/6e933cb331)] - chore(package): update js-green-licenses to version 0.5.0 (#404) (greenkeeper[bot])
+* [[`f6985f7a6a`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/f6985f7a6a)] - **feat**: GAE\_DEPLOYMENT\_ID used for minor version (#400) (Dominic Kramer)
+* [[`e19e514a67`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/e19e514a67)] - Update gcp-metadata to the latest version 🚀 (#395) (greenkeeper[bot])
+* [[`9c93e7fb4e`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/9c93e7fb4e)] - fix(package): update @google-cloud/common to version 0.16.0 (#394) (greenkeeper[bot])
+* [[`9a5d8a1066`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/9a5d8a1066)] - chore(package): update mocha to version 5.0.0 (#392) (greenkeeper[bot])
+* [[`b09419ebf6`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/b09419ebf6)] - chore(package): update js-green-licenses to version 0.4.0 (#390) (greenkeeper[bot])
+* [[`bcab5cb0b1`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/bcab5cb0b1)] - chore(package): update js-green-licenses to version 0.3.1 (#389) (greenkeeper[bot])
+* [[`3b2a3ef412`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/3b2a3ef412)] - **chore**: license check as posttest (#384) (Jinwoo Lee)
+* [[`56b8340153`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/56b8340153)] - chore(package): update @types/node to version 9.3.0 (#385) (greenkeeper[bot])
+* [[`bcc3b893fa`](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/commit/bcc3b893fa)] - Update LICENSE (#386) (chenyumic)
+
 ## 2017-12-21, Version 2.3.2 (Beta), @dominickramer
 
 This release addresses issues:
