@@ -28,7 +28,7 @@ export type Validator = (body: {
 // TODO: Determine if the type of `validator` is correct.
 export function oauth2(validator?: Validator): nock.Scope {
   validator = validator || accept;
-  return nock(/https:\/\/(accounts\.google\.com|www\.googleapis\.com)/)
+  return nock('https://www.googleapis.com')
       .post(/\/oauth2.*token/, validator)
       .once()
       .reply(200, {
