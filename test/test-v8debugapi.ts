@@ -27,15 +27,16 @@ const breakpointInFoo: stackdriver.Breakpoint = {
 
 const MAX_INT = 2147483647;  // Max signed int32.
 
-import {Common, LoggerOptions} from '../src/types/common';
+import {Common, Logger, LoggerOptions} from '../src/types/common';
 
 import * as assert from 'assert';
 import * as extend from 'extend';
 import * as debugapi from '../src/agent/v8/debugapi';
 const common: Common = require('@google-cloud/common');
-import {defaultConfig} from '../src/agent/config';
+import {defaultConfig, DebugAgentConfig} from '../src/agent/config';
 import {StatusMessage} from '../src/client/stackdriver/status-message';
 import * as scanner from '../src/agent/io/scanner';
+import {ScanStats} from '../src/agent/io/scanner';
 import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as path from 'path';
 import * as semver from 'semver';
@@ -150,6 +151,53 @@ describe('debugapi selection', () => {
             } else {
               assert(!logText.includes(utils.messages.INSPECTOR_NOT_AVAILABLE));
             }
+            done();
+          });
+        });
+  });
+});
+
+describe('debugapi selection on Node >=10', () => {
+  const config: ResolvedDebugAgentConfig = extend(
+      {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
+  const logger =
+      new common.logger({levelLevel: config.logLevel} as {} as LoggerOptions);
+  let logText = '';
+  logger.warn = (s: string) => {
+    logText += s;
+  };
+
+  let initialVersion = process.version;
+  let newDebugapi: { create: (logger: Logger, config: DebugAgentConfig, jsFiles: ScanStats, sourcemapper: SourceMapper.SourceMapper) => DebugApi };
+  before(() => {
+    delete require.cache[require.resolve('../src/agent/v8/debugapi')];
+    Object.defineProperty(process, 'version', { value: 'v10.0.0' });
+    newDebugapi = require('../src/agent/v8/debugapi');
+  });
+
+  after(() => {
+    delete require.cache[require.resolve('../src/agent/v8/debugapi')];
+    Object.defineProperty(process, 'version', { value: initialVersion });
+  });
+
+  it.only('should always use the inspector api', (done) => {
+    let api: DebugApi;
+    scanner.scan(true, config.workingDirectory, /.js$|.js.map$/)
+        .then((fileStats) => {
+          assert.strictEqual(fileStats.errors().size, 0);
+          const jsStats = fileStats.selectStats(/.js$/);
+          const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
+          SourceMapper.create(mapFiles, (err, mapper) => {
+            assert(!err);
+            // TODO: Handle the case when mapper is undefined.
+            // TODO: Handle the case when v8debugapi.create returns null
+            api = newDebugapi.create(
+                      logger, config, jsStats,
+                      mapper as SourceMapper.SourceMapper) as DebugApi;
+            const inspectorapi =
+                require('../src/agent/v8/inspector-debugapi');
+            assert.ok(api instanceof inspectorapi.InspectorDebugApi);
+            assert(!logText.includes(utils.messages.INSPECTOR_NOT_AVAILABLE));
             done();
           });
         });
