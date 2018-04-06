@@ -170,17 +170,21 @@ describe('debugapi selection on Node >=10', () => {
     logText += s;
   };
 
-  let initialVersion = process.version;
-  let newDebugapi: { create: (logger: Logger, config: DebugAgentConfig, jsFiles: ScanStats, sourcemapper: SourceMapper.SourceMapper) => DebugApi };
+  const initialVersion = process.version;
+  let newDebugapi: {
+    create: (
+        logger: Logger, config: DebugAgentConfig, jsFiles: ScanStats,
+        sourcemapper: SourceMapper.SourceMapper) => DebugApi
+  };
   before(() => {
     delete require.cache[require.resolve('../src/agent/v8/debugapi')];
-    Object.defineProperty(process, 'version', { value: 'v10.0.0' });
+    Object.defineProperty(process, 'version', {value: 'v10.0.0'});
     newDebugapi = require('../src/agent/v8/debugapi');
   });
 
   after(() => {
     delete require.cache[require.resolve('../src/agent/v8/debugapi')];
-    Object.defineProperty(process, 'version', { value: initialVersion });
+    Object.defineProperty(process, 'version', {value: initialVersion});
   });
 
   itFn('should always use the inspector api', (done) => {
@@ -197,8 +201,7 @@ describe('debugapi selection on Node >=10', () => {
             api = newDebugapi.create(
                       logger, config, jsStats,
                       mapper as SourceMapper.SourceMapper) as DebugApi;
-            const inspectorapi =
-                require('../src/agent/v8/inspector-debugapi');
+            const inspectorapi = require('../src/agent/v8/inspector-debugapi');
             assert.ok(api instanceof inspectorapi.InspectorDebugApi);
             assert(!logText.includes(utils.messages.INSPECTOR_NOT_AVAILABLE));
             done();
