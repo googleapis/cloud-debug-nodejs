@@ -157,9 +157,9 @@ describe('debugapi selection', () => {
   });
 });
 
-describe('debugapi selection on Node >=10', () => {
-  const itFn = semver.satisfies(process.version, '>=8') ? it : it.skip;
-
+const describeFn =
+    semver.satisfies(process.version, '>=8') ? describe : describe.skip;
+describeFn('debugapi selection on Node >=10', () => {
   const config: ResolvedDebugAgentConfig = extend(
       {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
   const logger =
@@ -187,7 +187,7 @@ describe('debugapi selection on Node >=10', () => {
     Object.defineProperty(process, 'version', {value: initialVersion});
   });
 
-  itFn('should always use the inspector api', (done) => {
+  it('should always use the inspector api', (done) => {
     let api: DebugApi;
     scanner.scan(true, config.workingDirectory, /.js$|.js.map$/)
         .then((fileStats) => {
