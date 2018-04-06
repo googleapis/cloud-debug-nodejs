@@ -158,10 +158,13 @@ describe('debugapi selection', () => {
 });
 
 describe('debugapi selection on Node >=10', () => {
+  const itFn = semver.satisfies(process.version, '>=8') ? it : it.skip;
+
   const config: ResolvedDebugAgentConfig = extend(
       {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
   const logger =
       new common.logger({levelLevel: config.logLevel} as {} as LoggerOptions);
+
   let logText = '';
   logger.warn = (s: string) => {
     logText += s;
@@ -180,7 +183,7 @@ describe('debugapi selection on Node >=10', () => {
     Object.defineProperty(process, 'version', { value: initialVersion });
   });
 
-  it.only('should always use the inspector api', (done) => {
+  itFn('should always use the inspector api', (done) => {
     let api: DebugApi;
     scanner.scan(true, config.workingDirectory, /.js$|.js.map$/)
         .then((fileStats) => {
