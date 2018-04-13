@@ -42,19 +42,24 @@ interface DebugApiConstructor {
 
 let debugApiConstructor: DebugApiConstructor;
 
-// Coercing the version is needed to handle nightly builds correctly.
-// In particular,
-//   semver.satisfies('v10.0.0-nightly201804132a6ab9b37b', '>=10')
-// returns `false`.
-//
-// `semver.coerce` can be used to coerce that nightly version to v10.0.0.
-const coercedVersion = semver.coerce(process.version);
-const nodeVersion = coercedVersion ? coercedVersion.version : process.version;
-const node10Above = semver.satisfies(nodeVersion, '>=10');
-const node8Above = semver.satisfies(nodeVersion, '>=8');
-const useInspector = !!process.env.GCLOUD_USE_INSPECTOR;
+export function willUseInspector(nodeVersion?: string, useInspector?: boolean) {
+  // Coercing the version is needed to handle nightly builds correctly.
+  // In particular,
+  //   semver.satisfies('v10.0.0-nightly201804132a6ab9b37b', '>=10')
+  // returns `false`.
+  //
+  // `semver.coerce` can be used to coerce that nightly version to v10.0.0.
+  const version = nodeVersion != null ? nodeVersion : process.version;
+  const coercedVersion = semver.coerce(version);
+  const resolvedVersion = coercedVersion ? coercedVersion.version : version;
+  const node10Above = semver.satisfies(resolvedVersion, '>=10');
+  const node8Above = semver.satisfies(resolvedVersion, '>=8');
+  const resolvedUseInspector = useInspector != null ? useInspector : !!process.env.GCLOUD_USE_INSPECTOR;
 
-if (node10Above || (node8Above && useInspector)) {
+  return node10Above || (node8Above && resolvedUseInspector);
+}
+
+if (willUseInspector()) {
   const inspectorapi = require('./inspector-debugapi');
   debugApiConstructor = inspectorapi.InspectorDebugApi;
 } else {
