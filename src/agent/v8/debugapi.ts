@@ -57,8 +57,10 @@ export function create(
 
   let debugApiConstructor: DebugApiConstructor;
 
-  if (semver.satisfies(processInfo.nodeVersion(), '>=8') &&
-      processInfo.useInspectorProtocol()) {
+  const node8Above = semver.satisfies(processInfo.nodeVersion(), '>=8');
+  const useInspector = processInfo.useInspectorProtocol();
+
+  if (node8Above && useInspector) {
     const inspectorapi = require('./inspector-debugapi');
     debugApiConstructor = inspectorapi.InspectorDebugApi;
   } else {
