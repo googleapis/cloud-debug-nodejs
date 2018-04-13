@@ -20,6 +20,7 @@ import * as stackdriver from '../../types/stackdriver';
 import {DebugAgentConfig} from '../config';
 import {ScanStats} from '../io/scanner';
 import {SourceMapper} from '../io/sourcemapper';
+import * as processInfo from '../../process-info';
 
 export interface DebugApi {
   set(breakpoint: stackdriver.Breakpoint, cb: (err: Error|null) => void): void;
@@ -42,8 +43,8 @@ interface DebugApiConstructor {
 
 let debugApiConstructor: DebugApiConstructor;
 
-if (semver.satisfies(process.version, '>=8') &&
-    process.env.GCLOUD_USE_INSPECTOR) {
+if (semver.satisfies(processInfo.nodeVersion(), '>=8') &&
+    processInfo.useInspectorProtocol()) {
   const inspectorapi = require('./inspector-debugapi');
   debugApiConstructor = inspectorapi.InspectorDebugApi;
 } else {
