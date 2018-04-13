@@ -158,7 +158,7 @@ describe('debugapi selection', () => {
 });
 
 const describeFn =
-    semver.satisfies(process.version, '>=8') ? describe : describe.skip;
+    semver.satisfies(process.version, '>=10') ? describe : describe.skip;
 describeFn('debugapi selection on Node >=10', () => {
   const config: ResolvedDebugAgentConfig = extend(
       {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
@@ -170,23 +170,6 @@ describeFn('debugapi selection on Node >=10', () => {
     logText += s;
   };
 
-  const initialVersion = process.version;
-  let newDebugapi: {
-    create: (
-        logger: Logger, config: DebugAgentConfig, jsFiles: ScanStats,
-        sourcemapper: SourceMapper.SourceMapper) => DebugApi
-  };
-  before(() => {
-    delete require.cache[require.resolve('../src/agent/v8/debugapi')];
-    Object.defineProperty(process, 'version', {value: 'v10.0.0'});
-    newDebugapi = require('../src/agent/v8/debugapi');
-  });
-
-  after(() => {
-    delete require.cache[require.resolve('../src/agent/v8/debugapi')];
-    Object.defineProperty(process, 'version', {value: initialVersion});
-  });
-
   it('should always use the inspector api', (done) => {
     let api: DebugApi;
     scanner.scan(true, config.workingDirectory, /.js$|.js.map$/)
@@ -196,11 +179,10 @@ describeFn('debugapi selection on Node >=10', () => {
           const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
           SourceMapper.create(mapFiles, (err, mapper) => {
             assert(!err);
-            // TODO: Handle the case when mapper is undefined.
-            // TODO: Handle the case when v8debugapi.create returns null
-            api = newDebugapi.create(
+            assert(mapper);
+            api = debugapi.create(
                       logger, config, jsStats,
-                      mapper as SourceMapper.SourceMapper) as DebugApi;
+                      mapper!);
             const inspectorapi = require('../src/agent/v8/inspector-debugapi');
             assert.ok(api instanceof inspectorapi.InspectorDebugApi);
             assert(!logText.includes(utils.messages.INSPECTOR_NOT_AVAILABLE));
