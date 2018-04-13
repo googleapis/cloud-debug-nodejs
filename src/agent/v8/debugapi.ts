@@ -57,10 +57,11 @@ export function create(
 
   let debugApiConstructor: DebugApiConstructor;
 
+  const node10Above = semver.satisfies(processInfo.nodeVersion(), '>=10');
   const node8Above = semver.satisfies(processInfo.nodeVersion(), '>=8');
   const useInspector = processInfo.useInspectorProtocol();
 
-  if (node8Above && useInspector) {
+  if (node10Above || (node8Above && useInspector)) {
     const inspectorapi = require('./inspector-debugapi');
     debugApiConstructor = inspectorapi.InspectorDebugApi;
   } else {
