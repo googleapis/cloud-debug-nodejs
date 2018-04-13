@@ -180,9 +180,7 @@ describeFn('debugapi selection on Node >=10', () => {
           SourceMapper.create(mapFiles, (err, mapper) => {
             assert(!err);
             assert(mapper);
-            api = debugapi.create(
-                      logger, config, jsStats,
-                      mapper!);
+            api = debugapi.create(logger, config, jsStats, mapper!);
             const inspectorapi = require('../src/agent/v8/inspector-debugapi');
             assert.ok(api instanceof inspectorapi.InspectorDebugApi);
             assert(!logText.includes(utils.messages.INSPECTOR_NOT_AVAILABLE));
