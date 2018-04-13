@@ -41,17 +41,6 @@ interface DebugApiConstructor {
       sourcemapper: SourceMapper): DebugApi;
 }
 
-let debugApiConstructor: DebugApiConstructor;
-
-if (semver.satisfies(processInfo.nodeVersion(), '>=8') &&
-    processInfo.useInspectorProtocol()) {
-  const inspectorapi = require('./inspector-debugapi');
-  debugApiConstructor = inspectorapi.InspectorDebugApi;
-} else {
-  const v8debugapi = require('./legacy-debugapi');
-  debugApiConstructor = v8debugapi.V8DebugApi;
-}
-
 export const MODULE_WRAP_PREFIX_LENGTH =
     require('module').wrap('☃').indexOf('☃');
 
@@ -64,6 +53,17 @@ export function create(
     return singleton;
   } else if (singleton) {
     singleton.disconnect();
+  }
+
+  let debugApiConstructor: DebugApiConstructor;
+
+  if (semver.satisfies(processInfo.nodeVersion(), '>=8') &&
+      processInfo.useInspectorProtocol()) {
+    const inspectorapi = require('./inspector-debugapi');
+    debugApiConstructor = inspectorapi.InspectorDebugApi;
+  } else {
+    const v8debugapi = require('./legacy-debugapi');
+    debugApiConstructor = v8debugapi.V8DebugApi;
   }
 
   singleton = new debugApiConstructor(logger, config, jsFiles, sourcemapper);
