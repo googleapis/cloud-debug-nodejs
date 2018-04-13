@@ -20,6 +20,7 @@ import * as stackdriver from '../../types/stackdriver';
 import {DebugAgentConfig} from '../config';
 import {ScanStats} from '../io/scanner';
 import {SourceMapper} from '../io/sourcemapper';
+import * as processInfo from '../../process-info';
 
 export interface DebugApi {
   set(breakpoint: stackdriver.Breakpoint, cb: (err: Error|null) => void): void;
@@ -40,17 +41,6 @@ interface DebugApiConstructor {
       sourcemapper: SourceMapper): DebugApi;
 }
 
-let debugApiConstructor: DebugApiConstructor;
-
-if (semver.satisfies(process.version, '>=8') &&
-    process.env.GCLOUD_USE_INSPECTOR) {
-  const inspectorapi = require('./inspector-debugapi');
-  debugApiConstructor = inspectorapi.InspectorDebugApi;
-} else {
-  const v8debugapi = require('./legacy-debugapi');
-  debugApiConstructor = v8debugapi.V8DebugApi;
-}
-
 export const MODULE_WRAP_PREFIX_LENGTH =
     require('module').wrap('☃').indexOf('☃');
 
@@ -63,6 +53,20 @@ export function create(
     return singleton;
   } else if (singleton) {
     singleton.disconnect();
+  }
+
+  let debugApiConstructor: DebugApiConstructor;
+
+  const node10Above = semver.satisfies(processInfo.nodeVersion(), '>=10');
+  const node8Above = semver.satisfies(processInfo.nodeVersion(), '>=8');
+  const useInspector = processInfo.useInspectorProtocol();
+
+  if (node10Above || (node8Above && useInspector)) {
+    const inspectorapi = require('./inspector-debugapi');
+    debugApiConstructor = inspectorapi.InspectorDebugApi;
+  } else {
+    const v8debugapi = require('./legacy-debugapi');
+    debugApiConstructor = v8debugapi.V8DebugApi;
   }
 
   singleton = new debugApiConstructor(logger, config, jsFiles, sourcemapper);
