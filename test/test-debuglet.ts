@@ -19,7 +19,6 @@ import * as fs from 'fs';
 import * as _ from 'lodash';
 import * as path from 'path';
 import * as proxyquire from 'proxyquire';
-import * as semver from 'semver';
 
 import {DebugAgentConfig} from '../src/agent/config';
 import {defaultConfig as DEFAULT_CONFIG} from '../src/agent/config';

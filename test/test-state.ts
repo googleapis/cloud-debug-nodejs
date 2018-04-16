@@ -15,13 +15,10 @@
  */
 
 import * as assert from 'assert';
-import * as semver from 'semver';
 
-const coercedVersion = semver.coerce(process.version);
-const resolvedVersion = coercedVersion ? coercedVersion.version : process.version;
-const node10Above = semver.satisfies(resolvedVersion, '>=10');
+import * as utils from '../src/agent/util/utils';
 
-const describeFn = node10Above ? describe.skip : describe;
+const describeFn = utils.satisfies(process.version, '>=10') ? describe.skip : describe;
 
 describeFn('state', () => {
   // Testing of state.js is driven through test-v8debugapi.js. There are

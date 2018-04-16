@@ -39,7 +39,6 @@ import * as scanner from '../src/agent/io/scanner';
 import {ScanStats} from '../src/agent/io/scanner';
 import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as path from 'path';
-import * as semver from 'semver';
 import * as utils from '../src/agent/util/utils';
 import { debugAssert } from '../src/agent/util/debug-assert';
 const code = require('./test-v8debugapi-code.js');
@@ -184,9 +183,10 @@ describe('debugapi selection', () => {
               assert.ok(api instanceof v8debugapi.V8DebugApi);
             }
             if (process.env.GCLOUD_USE_INSPECTOR &&
-                semver.satisfies(process.version, '<8')) {
+                utils.satisfies(process.version, '<8')) {
               assert(logText.includes(utils.messages.INSPECTOR_NOT_AVAILABLE));
             } else {
+              console.log(`logText='${logText}'`);
               assert(!logText.includes(utils.messages.INSPECTOR_NOT_AVAILABLE));
             }
             done();
@@ -195,11 +195,7 @@ describe('debugapi selection', () => {
   });
 });
 
-// Using `semver.coerce` is needed to properly handle nightly build versions
-// such as 'v10.0.0-nightly201804132a6ab9b37b'
-const coercedVersion = semver.coerce(process.version);
-const nodeVersion = coercedVersion ? coercedVersion.version : process.version;
-const describeFn = semver.satisfies(nodeVersion, '>=10') ? describe : describe.skip;
+const describeFn = utils.satisfies(process.version, '>=10') ? describe : describe.skip;
 describeFn('debugapi selection on Node >=10', () => {
   const config: ResolvedDebugAgentConfig = extend(
       {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
@@ -507,7 +503,7 @@ describe('v8debugapi', () => {
         '/ٹوٹ بٹوٹ کے دو مُرغے تھے/',
       ]);
 
-  if (semver.satisfies(process.version, '>=4.0')) {
+  if (utils.satisfies(process.version, '>=4.0')) {
     conditionTests('invalid conditions Node 4+', assert, [
       '[][Symbol.iterator]()', '`${[][Symbol.iterator]()}`', '`${let x = 1}`',
       '`${JSON.parse("{x:1}")}`', '`${try {1}}`'

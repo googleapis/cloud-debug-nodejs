@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as semver from 'semver';
 
 import {Logger} from '../../types/common';
 import * as stackdriver from '../../types/stackdriver';
 import {DebugAgentConfig} from '../config';
 import {ScanStats} from '../io/scanner';
 import {SourceMapper} from '../io/sourcemapper';
+import * as utils from '../util/utils';
 
 export interface DebugApi {
   set(breakpoint: stackdriver.Breakpoint, cb: (err: Error|null) => void): void;
@@ -43,17 +43,9 @@ interface DebugApiConstructor {
 let debugApiConstructor: DebugApiConstructor;
 
 export function willUseInspector(nodeVersion?: string, useInspector?: boolean) {
-  // Coercing the version is needed to handle nightly builds correctly.
-  // In particular,
-  //   semver.satisfies('v10.0.0-nightly201804132a6ab9b37b', '>=10')
-  // returns `false`.
-  //
-  // `semver.coerce` can be used to coerce that nightly version to v10.0.0.
   const version = nodeVersion != null ? nodeVersion : process.version;
-  const coercedVersion = semver.coerce(version);
-  const resolvedVersion = coercedVersion ? coercedVersion.version : version;
-  const node10Above = semver.satisfies(resolvedVersion, '>=10');
-  const node8Above = semver.satisfies(resolvedVersion, '>=8');
+  const node10Above = utils.satisfies(version, '>=10');
+  const node8Above = utils.satisfies(version, '>=8');
   const resolvedUseInspector = useInspector != null ? useInspector : !!process.env.GCLOUD_USE_INSPECTOR;
 
   return node10Above || (node8Above && resolvedUseInspector);
