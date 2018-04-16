@@ -1477,7 +1477,7 @@ describe('v8debugapi', () => {
            location: {
              path: path.join(
                  '.', 'build', 'test', 'fixtures', 'es6', 'transpile.es6'),
-             line: 3
+             line: 2
            },
            condition: 'i + j === 3'
          } as {} as stackdriver.Breakpoint;

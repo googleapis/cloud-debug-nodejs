@@ -31,6 +31,9 @@ export interface FakeAssert {
   strictEqual: Function;
   throws: Function;
   AssertionError: Function;
+  rejects: Function;
+  doesNotReject: Function;
+  strict: Function;
 }
 
 const nop = (_: {}) => _;
@@ -49,9 +52,13 @@ const fakeAssert: FakeAssert = {
   ok: nop,
   strictEqual: nop,
   throws: nop,
-  AssertionError: nop
+  AssertionError: nop,
+  rejects: nop,
+  doesNotReject: nop,
+  strict: nop
 };
 
 export function debugAssert(enableAssertions: boolean): FakeAssert {
-  return enableAssertions ? realAssert : fakeAssert;
+  // The typecast is needed since the @types/node doesn't cover Node 10 yet
+  return enableAssertions ? realAssert as {} as FakeAssert : fakeAssert;
 }

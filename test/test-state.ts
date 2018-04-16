@@ -15,13 +15,21 @@
  */
 
 import * as assert from 'assert';
-import * as state from '../src/agent/state/legacy-state';
+import * as semver from 'semver';
 
-describe('state', () => {
+const coercedVersion = semver.coerce(process.version);
+const resolvedVersion = coercedVersion ? coercedVersion.version : process.version;
+const node10Above = semver.satisfies(resolvedVersion, '>=10');
+
+const describeFn = node10Above ? describe.skip : describe;
+
+describeFn('state', () => {
   // Testing of state.js is driven through test-v8debugapi.js. There are
   // minimal unit tests here.
 
   it('should have assertions enabled', () => {
+    const state = require('../src/agent/state/legacy-state');
+
     // this test makes sure that the necessary environment variables to enable
     // asserts are present during testing. Use run-tests.sh, or export
     // CLOUD_DEBUG_ASSERTIONS=1 to make sure this test passes.
