@@ -4,6 +4,9 @@ node_js:
 - '4'
 - '6'
 - '8'
+- '10'
+env:
+- NVM_NODEJS_ORG_MIRROR=https://nodejs.org/download/nightly
 script:
 - npm run coverage
 notifications:
