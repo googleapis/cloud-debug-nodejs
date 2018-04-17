@@ -186,7 +186,6 @@ describe('debugapi selection', () => {
                 utils.satisfies(process.version, '<8')) {
               assert(logText.includes(utils.messages.INSPECTOR_NOT_AVAILABLE));
             } else {
-              console.log(`logText='${logText}'`);
               assert(!logText.includes(utils.messages.INSPECTOR_NOT_AVAILABLE));
             }
             done();
