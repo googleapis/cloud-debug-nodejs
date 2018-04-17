@@ -17,7 +17,6 @@
 import * as assert from 'assert';
 import * as cp from 'child_process';
 import * as _ from 'lodash';  // for _.find. Can't use ES6 yet.
-import * as semver from 'semver';
 import * as util from 'util';
 
 import * as stackdriver from '../src/types/stackdriver';
@@ -26,6 +25,7 @@ const promisifyAll = require('@google-cloud/common').util.promisifyAll;
 import {Debug} from '../src/client/stackdriver/debug';
 import {Debuggee} from '../src/debuggee';
 import {Debugger} from '../test/debugger';
+import * as utils from '../src/agent/util/utils';
 
 const CLUSTER_WORKERS = 3;
 
@@ -293,7 +293,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
           assert.ok(top.function, 'frame should have a function property');
           assert.strictEqual(top.function, 'fib');
 
-          if (semver.satisfies(process.version, '>=4.0')) {
+          if (utils.satisfies(process.version, '>=4.0')) {
             arg = _.find(top.locals, {name: 'n'});
           } else {
             arg = _.find(top.arguments, {name: 'n'});

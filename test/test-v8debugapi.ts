@@ -27,19 +27,20 @@ const breakpointInFoo: stackdriver.Breakpoint = {
 
 const MAX_INT = 2147483647;  // Max signed int32.
 
-import {Common, LoggerOptions} from '../src/types/common';
+import {Common, Logger, LoggerOptions} from '../src/types/common';
 
 import * as assert from 'assert';
 import * as extend from 'extend';
 import * as debugapi from '../src/agent/v8/debugapi';
 const common: Common = require('@google-cloud/common');
-import {defaultConfig} from '../src/agent/config';
+import {defaultConfig, DebugAgentConfig} from '../src/agent/config';
 import {StatusMessage} from '../src/client/stackdriver/status-message';
 import * as scanner from '../src/agent/io/scanner';
+import {ScanStats} from '../src/agent/io/scanner';
 import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as path from 'path';
-import * as semver from 'semver';
 import * as utils from '../src/agent/util/utils';
+import {debugAssert} from '../src/agent/util/debug-assert';
 const code = require('./test-v8debugapi-code.js');
 
 function stateIsClean(api: DebugApi): boolean {
@@ -112,6 +113,61 @@ function validateBreakpoint(breakpoint: stackdriver.Breakpoint): void {
     breakpoint.stackFrames.forEach(validateStackFrame);
   }
 }
+describe(
+    'propertly determines if the inspector protocol should be used', () => {
+      const suffixes = ['', '.11', '.11.1'];
+      it('handles nightly builds correctly', () => {
+        for (const suffix of suffixes) {
+          // nightly builds should be handled correctly
+          assert.strictEqual(
+              debugapi.willUseInspector(
+                  'v10.0.0-nightly201804132a6ab9b37b', true),
+              true);
+          assert.strictEqual(
+              debugapi.willUseInspector(
+                  'v10.0.0-nightly201804132a6ab9b37b', false),
+              true);
+        }
+      });
+
+      it('handles Node >=10 correctly', () => {
+        for (const suffix of suffixes) {
+          // on Node >= 10, inspector should always be used
+          assert.strictEqual(
+              debugapi.willUseInspector(`v10${suffix}`, true), true);
+          assert.strictEqual(
+              debugapi.willUseInspector(`v10${suffix}`, false), true);
+          assert.strictEqual(
+              debugapi.willUseInspector(`v11${suffix}`, true), true);
+          assert.strictEqual(
+              debugapi.willUseInspector(`v11${suffix}`, false), true);
+        }
+      });
+
+      it('handles Node 8 correctly', () => {
+        for (const suffix of suffixes) {
+          // on Node 8, inspector should only be used if explicitly specified
+          assert.strictEqual(
+              debugapi.willUseInspector(`v8${suffix}`, true), true);
+          assert.strictEqual(
+              debugapi.willUseInspector(`v8${suffix}`, false), false);
+        }
+      });
+
+      it('handles Node <8 correctly', () => {
+        for (const suffix of suffixes) {
+          // on Node < 8, inspector should never be used
+          assert.strictEqual(
+              debugapi.willUseInspector(`v6${suffix}`, true), false);
+          assert.strictEqual(
+              debugapi.willUseInspector(`v6${suffix}`, false), false);
+          assert.strictEqual(
+              debugapi.willUseInspector(`v4${suffix}`, true), false);
+          assert.strictEqual(
+              debugapi.willUseInspector(`v4${suffix}`, false), false);
+        }
+      });
+    });
 describe('debugapi selection', () => {
   const config: ResolvedDebugAgentConfig = extend(
       {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
@@ -135,8 +191,7 @@ describe('debugapi selection', () => {
             api = debugapi.create(
                       logger, config, jsStats,
                       mapper as SourceMapper.SourceMapper) as DebugApi;
-            if (process.env.GCLOUD_USE_INSPECTOR &&
-                semver.satisfies(process.version, '>=8')) {
+            if (debugapi.willUseInspector()) {
               const inspectorapi =
                   require('../src/agent/v8/inspector-debugapi');
               assert.ok(api instanceof inspectorapi.InspectorDebugApi);
@@ -145,11 +200,44 @@ describe('debugapi selection', () => {
               assert.ok(api instanceof v8debugapi.V8DebugApi);
             }
             if (process.env.GCLOUD_USE_INSPECTOR &&
-                semver.satisfies(process.version, '<8')) {
+                utils.satisfies(process.version, '<8')) {
               assert(logText.includes(utils.messages.INSPECTOR_NOT_AVAILABLE));
             } else {
               assert(!logText.includes(utils.messages.INSPECTOR_NOT_AVAILABLE));
             }
+            done();
+          });
+        });
+  });
+});
+
+const describeFn =
+    utils.satisfies(process.version, '>=10') ? describe : describe.skip;
+describeFn('debugapi selection on Node >=10', () => {
+  const config: ResolvedDebugAgentConfig = extend(
+      {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
+  const logger =
+      new common.logger({levelLevel: config.logLevel} as {} as LoggerOptions);
+
+  let logText = '';
+  logger.warn = (s: string) => {
+    logText += s;
+  };
+
+  it('should always use the inspector api', (done) => {
+    let api: DebugApi;
+    scanner.scan(true, config.workingDirectory, /.js$|.js.map$/)
+        .then((fileStats) => {
+          assert.strictEqual(fileStats.errors().size, 0);
+          const jsStats = fileStats.selectStats(/.js$/);
+          const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
+          SourceMapper.create(mapFiles, (err, mapper) => {
+            assert(!err);
+            assert(mapper);
+            api = debugapi.create(logger, config, jsStats, mapper!);
+            const inspectorapi = require('../src/agent/v8/inspector-debugapi');
+            assert.ok(api instanceof inspectorapi.InspectorDebugApi);
+            assert(!logText.includes(utils.messages.INSPECTOR_NOT_AVAILABLE));
             done();
           });
         });
@@ -432,7 +520,7 @@ describe('v8debugapi', () => {
         '/ٹوٹ بٹوٹ کے دو مُرغے تھے/',
       ]);
 
-  if (semver.satisfies(process.version, '>=4.0')) {
+  if (utils.satisfies(process.version, '>=4.0')) {
     conditionTests('invalid conditions Node 4+', assert, [
       '[][Symbol.iterator]()', '`${[][Symbol.iterator]()}`', '`${let x = 1}`',
       '`${JSON.parse("{x:1}")}`', '`${try {1}}`'
@@ -1402,7 +1490,7 @@ describe('v8debugapi', () => {
            location: {
              path: path.join(
                  '.', 'build', 'test', 'fixtures', 'es6', 'transpile.es6'),
-             line: 3
+             line: 2
            },
            condition: 'i + j === 3'
          } as {} as stackdriver.Breakpoint;

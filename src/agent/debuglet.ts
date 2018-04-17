@@ -26,7 +26,6 @@ import * as metadata from 'gcp-metadata';
 
 import * as _ from 'lodash';
 import * as path from 'path';
-import * as semver from 'semver';
 import * as util from 'util';
 import * as utils from './util/utils';
 import * as http from 'http';
@@ -375,7 +374,7 @@ export class Debuglet extends EventEmitter {
           // This is ignorable.
         }
 
-        if (semver.satisfies(process.version, '5.2 || <4')) {
+        if (utils.satisfies(process.version, '5.2 || <4')) {
           // Using an unsupported version. We report an error
           // message about the Node.js version, but we keep on
           // running. The idea is that the user may miss the error
@@ -807,7 +806,7 @@ export class Debuglet extends EventEmitter {
       return;
     }
 
-    if (semver.satisfies(process.version, '5.2 || <4')) {
+    if (utils.satisfies(process.version, '5.2 || <4')) {
       const message = NODE_VERSION_MESSAGE;
       that.logger.error(message);
       breakpoint.status =
