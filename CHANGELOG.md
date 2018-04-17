@@ -1,5 +1,14 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## 2018-04-17, Version 2.5.0 (Beta), @dominickramer
+
+This release adds support for Node 10 by always using the inspector protocol on Node >= 10.  This is needed  because the `vm.runInDebugContext` function, needed to use the legacy debug protocol, is no longer available in Node 10.
+
+### Commits
+* feat: support Node 10 (#412) `b21b084`
+* fix(package): update @google-cloud/common to version 0.17.0 (#410) `6c4a878`
+* chore(package): update @types/mocha to version 5.0.0 (#411) `87fdf0e`
+
 ## 2018-03-16, Version 2.4.0 (Beta), @dominickramer
 
 With this release:
