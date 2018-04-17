@@ -18,7 +18,8 @@ import * as assert from 'assert';
 
 import * as utils from '../src/agent/util/utils';
 
-const describeFn = utils.satisfies(process.version, '>=10') ? describe.skip : describe;
+const describeFn =
+    utils.satisfies(process.version, '>=10') ? describe.skip : describe;
 
 describeFn('state', () => {
   // Testing of state.js is driven through test-v8debugapi.js. There are

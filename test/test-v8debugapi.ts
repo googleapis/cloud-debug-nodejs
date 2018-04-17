@@ -40,7 +40,7 @@ import {ScanStats} from '../src/agent/io/scanner';
 import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as path from 'path';
 import * as utils from '../src/agent/util/utils';
-import { debugAssert } from '../src/agent/util/debug-assert';
+import {debugAssert} from '../src/agent/util/debug-assert';
 const code = require('./test-v8debugapi-code.js');
 
 function stateIsClean(api: DebugApi): boolean {
@@ -113,44 +113,61 @@ function validateBreakpoint(breakpoint: stackdriver.Breakpoint): void {
     breakpoint.stackFrames.forEach(validateStackFrame);
   }
 }
-describe('propertly determines if the inspector protocol should be used', () => {
-  const suffixes = ['', '.11', '.11.1'];
-  it('handles nightly builds correctly', () => {
-    for (const suffix of suffixes) {
-      // nightly builds should be handled correctly
-      assert.strictEqual(debugapi.willUseInspector('v10.0.0-nightly201804132a6ab9b37b', true), true);
-      assert.strictEqual(debugapi.willUseInspector('v10.0.0-nightly201804132a6ab9b37b', false), true);
-    }
-  });
+describe(
+    'propertly determines if the inspector protocol should be used', () => {
+      const suffixes = ['', '.11', '.11.1'];
+      it('handles nightly builds correctly', () => {
+        for (const suffix of suffixes) {
+          // nightly builds should be handled correctly
+          assert.strictEqual(
+              debugapi.willUseInspector(
+                  'v10.0.0-nightly201804132a6ab9b37b', true),
+              true);
+          assert.strictEqual(
+              debugapi.willUseInspector(
+                  'v10.0.0-nightly201804132a6ab9b37b', false),
+              true);
+        }
+      });
 
-  it('handles Node >=10 correctly', () => {
-    for (const suffix of suffixes) {
-      // on Node >= 10, inspector should always be used
-      assert.strictEqual(debugapi.willUseInspector(`v10${suffix}`, true), true);
-      assert.strictEqual(debugapi.willUseInspector(`v10${suffix}`, false), true);
-      assert.strictEqual(debugapi.willUseInspector(`v11${suffix}`, true), true);
-      assert.strictEqual(debugapi.willUseInspector(`v11${suffix}`, false), true);
-    }
-  });
+      it('handles Node >=10 correctly', () => {
+        for (const suffix of suffixes) {
+          // on Node >= 10, inspector should always be used
+          assert.strictEqual(
+              debugapi.willUseInspector(`v10${suffix}`, true), true);
+          assert.strictEqual(
+              debugapi.willUseInspector(`v10${suffix}`, false), true);
+          assert.strictEqual(
+              debugapi.willUseInspector(`v11${suffix}`, true), true);
+          assert.strictEqual(
+              debugapi.willUseInspector(`v11${suffix}`, false), true);
+        }
+      });
 
-  it('handles Node 8 correctly', () => {
-    for (const suffix of suffixes) {
-      // on Node 8, inspector should only be used if explicitly specified
-      assert.strictEqual(debugapi.willUseInspector(`v8${suffix}`, true), true);
-      assert.strictEqual(debugapi.willUseInspector(`v8${suffix}`, false), false);
-    }
-  });
+      it('handles Node 8 correctly', () => {
+        for (const suffix of suffixes) {
+          // on Node 8, inspector should only be used if explicitly specified
+          assert.strictEqual(
+              debugapi.willUseInspector(`v8${suffix}`, true), true);
+          assert.strictEqual(
+              debugapi.willUseInspector(`v8${suffix}`, false), false);
+        }
+      });
 
-  it('handles Node <8 correctly', () => {
-    for (const suffix of suffixes) {
-      // on Node < 8, inspector should never be used
-      assert.strictEqual(debugapi.willUseInspector(`v6${suffix}`, true), false);
-      assert.strictEqual(debugapi.willUseInspector(`v6${suffix}`, false), false);
-      assert.strictEqual(debugapi.willUseInspector(`v4${suffix}`, true), false);
-      assert.strictEqual(debugapi.willUseInspector(`v4${suffix}`, false), false);
-    }
-  });
-});
+      it('handles Node <8 correctly', () => {
+        for (const suffix of suffixes) {
+          // on Node < 8, inspector should never be used
+          assert.strictEqual(
+              debugapi.willUseInspector(`v6${suffix}`, true), false);
+          assert.strictEqual(
+              debugapi.willUseInspector(`v6${suffix}`, false), false);
+          assert.strictEqual(
+              debugapi.willUseInspector(`v4${suffix}`, true), false);
+          assert.strictEqual(
+              debugapi.willUseInspector(`v4${suffix}`, false), false);
+        }
+      });
+    });
 describe('debugapi selection', () => {
   const config: ResolvedDebugAgentConfig = extend(
       {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
@@ -194,7 +211,8 @@ describe('debugapi selection', () => {
   });
 });
 
-const describeFn = utils.satisfies(process.version, '>=10') ? describe : describe.skip;
+const describeFn =
+    utils.satisfies(process.version, '>=10') ? describe : describe.skip;
 describeFn('debugapi selection on Node >=10', () => {
   const config: ResolvedDebugAgentConfig = extend(
       {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
