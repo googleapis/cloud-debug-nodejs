@@ -24,7 +24,7 @@
   "devDependencies": {
     "@types/acorn": "^4.0.2",
     "@types/async": "^2.0.40",
-    "@types/estree": "0.0.38",
+    "@types/estree": "0.0.39",
     "@types/extend": "^3.0.0",
     "@types/glob": "^5.0.33",
     "@types/lodash": "^4.14.69",
