@@ -1,5 +1,15 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## 2018-04-27, Version 2.5.1 (Beta), @dominickramer
+
+This release addresses issue [#420](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/issues/420).  In particular, if `semver` version `5.1.0` was already installed as a dependency prior to installing `@google-cloud/debug-agent`, the agent would have an out of date version of `semver` and would fail to start.
+
+### Commits
+
+* chore: update semver to `5.5.0` (#421) `960bbc7`
+* chore: test on Node 10 (#419) `9b15b29`
+* chore(package): update @types/estree to version 0.0.39 (#416) `9c4427e`
+
 ## 2018-04-17, Version 2.5.0 (Beta), @dominickramer
 
 This release adds support for Node 10 by always using the inspector protocol on Node >= 10.  This is needed  because the `vm.runInDebugContext` function, needed to use the legacy debug protocol, is no longer available in Node 10.
