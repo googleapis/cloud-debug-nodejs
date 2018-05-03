@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 import * as stackdriver from '../src/types/stackdriver';
-import * as semver from 'semver';
 import * as debugapi from '../src/agent/v8/debugapi';
 import * as extend from 'extend';
 import {defaultConfig} from '../src/agent/config';
@@ -23,6 +22,7 @@ import * as SourceMapper from '../src/agent/io/sourcemapper';
 import {Common, LoggerOptions} from '../src/types/common';
 import * as assert from 'assert';
 import {StatusMessage} from '../src/client/stackdriver/status-message';
+import * as utils from '../src/agent/util/utils';
 
 const code = require('./test-expression-side-effect-code.js');
 
@@ -67,7 +67,7 @@ describe('expression side effect', () => {
       expressions: [ 'item.getPrice()']
     } as stackdriver.Breakpoint;
 
-    if (semver.satisfies(process.version, '<8')
+    if (utils.satisfies(process.version, '<8')
         || !process.env.GCLOUD_USE_INSPECTOR) {
       done();
     } else {
@@ -97,7 +97,7 @@ describe('expression side effect', () => {
       expressions: [ 'item.increasePriceByOne()']
     } as stackdriver.Breakpoint;
 
-    if (semver.satisfies(process.version, '<8')
+    if (utils.satisfies(process.version, '<8')
         && !process.env.GCLOUD_USE_INSPECTOR) {
       done();
     } else {
@@ -127,7 +127,7 @@ describe('expression side effect', () => {
       expressions: [ 'process']
     } as stackdriver.Breakpoint;
 
-    if (semver.satisfies(process.version, '<9.1.0')
+    if (utils.satisfies(process.version, '<9.1.0')
         || !process.env.GCLOUD_USE_INSPECTOR) {
       // This test will be skipped for now as runtime.getproperties is not
       // side-effect free in current node version. It will be tested for the
