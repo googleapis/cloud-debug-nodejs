@@ -43,7 +43,6 @@ describe('expression side effect', () => {
   });
 
   before(function(done) {
-    assert(false);
     // TODO: It appears `logLevel` is a typo and should be `level`.  However,
     //       with this change, the tests fail.  Resolve this.
     const logger = new common.logger({ levelLevel: config.logLevel } as any as LoggerOptions);
