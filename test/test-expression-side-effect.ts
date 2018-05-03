@@ -28,6 +28,14 @@ const code = require('./test-expression-side-effect-code.js');
 
 const common: Common = require('@google-cloud/common');
 
+const nodeAtLeast8withInspector = utils.satisfies(process.version, '>=8') && process.env.GCLOUD_USE_INSPECTOR;
+const nodeAtLeast8OrInspector = utils.satisfies(process.version, '>=8') || process.env.GCLOUD_USE_INSPECTOR;
+const nodeAtLeast9withInspector = utils.satisfies(process.version, '>=9.1.0') && process.env.GCLOUD_USE_INSPECTOR;
+
+const itOnNodeAtLeast8withInspector = nodeAtLeast8withInspector ? it : it.skip;
+const itOnNodeAtLeast8OrWithInspector = nodeAtLeast8OrInspector ? it : it.skip;
+const itOnNodeAtLeast9withInspector = nodeAtLeast9withInspector ? it : it.skip;
+
 describe('expression side effect', () => {
   let api: debugapi.DebugApi;
   const config = extend({}, defaultConfig, {
@@ -35,29 +43,26 @@ describe('expression side effect', () => {
   });
 
   before(function(done) {
-    if (!api) {
-      // TODO: It appears `logLevel` is a typo and should be `level`.  However,
-      //       with this change, the tests fail.  Resolve this.
-      const logger = new common.logger({ levelLevel: config.logLevel } as any as LoggerOptions);
-      scanner.scan(true, config.workingDirectory, /.js$/)
-        .then(function (fileStats) {
-          const jsStats = fileStats.selectStats(/.js$/);
-          const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
-          SourceMapper.create(mapFiles, function (err, mapper) {
-            assert(!err);
+    assert(false);
+    // TODO: It appears `logLevel` is a typo and should be `level`.  However,
+    //       with this change, the tests fail.  Resolve this.
+    const logger = new common.logger({ levelLevel: config.logLevel } as any as LoggerOptions);
+    scanner.scan(true, config.workingDirectory, /.js$/)
+      .then(function (fileStats) {
+        const jsStats = fileStats.selectStats(/.js$/);
+        const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
+        SourceMapper.create(mapFiles, function (err, mapper) {
+          assert(!err);
 
-            // TODO: Handle the case when mapper is undefined
-            // TODO: Handle the case when v8debugapi.create returns null
-            api = debugapi.create(logger, config, jsStats, mapper as SourceMapper.SourceMapper) as debugapi.DebugApi;
-            done();
-          });
+          // TODO: Handle the case when mapper is undefined
+          // TODO: Handle the case when v8debugapi.create returns null
+          api = debugapi.create(logger, config, jsStats, mapper as SourceMapper.SourceMapper) as debugapi.DebugApi;
+          done();
         });
-    } else {
-      done();
-    }
+      });
   });
 
-  it('should have expression evaluated without side effects', (done) => {
+  itOnNodeAtLeast8withInspector('should have expression evaluated without side effects', (done) => {
     // this test makes sure that the necessary environment variables to enable
     // asserts are present during testing. Use run-tests.sh, or export
     // CLOUD_DEBUG_ASSERTIONS=1 to make sure this test passes.
@@ -67,27 +72,22 @@ describe('expression side effect', () => {
       expressions: [ 'item.getPrice()']
     } as stackdriver.Breakpoint;
 
-    if (utils.satisfies(process.version, '<8')
-        || !process.env.GCLOUD_USE_INSPECTOR) {
-      done();
-    } else {
-      api.set(bp, function(err) {
+    api.set(bp, function(err) {
+      assert.ifError(err);
+      api.wait(bp, function(err) {
         assert.ifError(err);
-        api.wait(bp, function(err) {
+        const watch = bp.evaluatedExpressions[0];
+        assert.equal((watch as any).value, '2');
+        api.clear(bp, function(err) {
           assert.ifError(err);
-          const watch = bp.evaluatedExpressions[0];
-          assert.equal((watch as any).value, '2');
-          api.clear(bp, function(err) {
-            assert.ifError(err);
-            done();
-          });
-        })
-        process.nextTick(function() {code.foo();});
+          done();
+        });
       })
-    }
+      process.nextTick(function() {code.foo();});
+    })
   });
 
-  it('should not have expression evaluated with side effects', (done) => {
+  itOnNodeAtLeast8OrWithInspector('should not have expression evaluated with side effects', (done) => {
     // this test makes sure that the necessary environment variables to enable
     // asserts are present during testing. Use run-tests.sh, or export
     // CLOUD_DEBUG_ASSERTIONS=1 to make sure this test passes.
@@ -97,27 +97,25 @@ describe('expression side effect', () => {
       expressions: [ 'item.increasePriceByOne()']
     } as stackdriver.Breakpoint;
 
-    if (utils.satisfies(process.version, '<8')
-        && !process.env.GCLOUD_USE_INSPECTOR) {
-      done();
-    } else {
-      api.set(bp, function(err) {
+    api.set(bp, function(err) {
+      assert.ifError(err);
+      api.wait(bp, function(err) {
         assert.ifError(err);
-        api.wait(bp, function(err) {
+        const watch = bp.evaluatedExpressions[0];
+        assert(((watch as any).status as StatusMessage).isError);
+        api.clear(bp, function(err) {
           assert.ifError(err);
-          const watch = bp.evaluatedExpressions[0];
-          assert(((watch as any).status as StatusMessage).isError);
-          api.clear(bp, function(err) {
-            assert.ifError(err);
-            done();
-          });
-        })
-        process.nextTick(function() {code.foo();});
+          done();
+        });
       })
-    }
+      process.nextTick(function() {code.foo();});
+    })
   });
 
-  it('process.title should not be evaluated', (done) => {
+  // This test will be skipped for now as runtime.getproperties is not
+  // side-effect free in current node version. It will be tested for the
+  // future node version when the change is merged.
+  itOnNodeAtLeast9withInspector('process.title should not be evaluated', (done) => {
     // this test makes sure that the necessary environment variables to enable
     // asserts are present during testing. Use run-tests.sh, or export
     // CLOUD_DEBUG_ASSERTIONS=1 to make sure this test passes.
@@ -127,34 +125,26 @@ describe('expression side effect', () => {
       expressions: [ 'process']
     } as stackdriver.Breakpoint;
 
-    if (utils.satisfies(process.version, '<9.1.0')
-        || !process.env.GCLOUD_USE_INSPECTOR) {
-      // This test will be skipped for now as runtime.getproperties is not
-      // side-effect free in current node version. It will be tested for the
-      // future node version when the change is merged.
-      done();
-    } else {
-      api.set(bp, function(err) {
+    api.set(bp, function(err) {
+      assert.ifError(err);
+      api.wait(bp, function(err) {
         assert.ifError(err);
-        api.wait(bp, function(err) {
-          assert.ifError(err);
-          const varIndex = (bp.evaluatedExpressions[0] as any).varTableIndex;
-          assert(varIndex);
-          const members = (bp.variableTable[varIndex] as any).members;
-          assert(members);
-          for (let entry of members) {
-            if ((entry as any).name === 'title') {
-              assert((entry as any).value === undefined);
-            }
+        const varIndex = (bp.evaluatedExpressions[0] as any).varTableIndex;
+        assert(varIndex);
+        const members = (bp.variableTable[varIndex] as any).members;
+        assert(members);
+        for (let entry of members) {
+          if ((entry as any).name === 'title') {
+            assert((entry as any).value === undefined);
           }
+        }
 
-          api.clear(bp, function(err) {
-            assert.ifError(err);
-            done();
-          });
-        })
-        process.nextTick(function() {code.foo();});
+        api.clear(bp, function(err) {
+          assert.ifError(err);
+          done();
+        });
       })
-    }
+      process.nextTick(function() {code.foo();});
+    })
   });
 });
