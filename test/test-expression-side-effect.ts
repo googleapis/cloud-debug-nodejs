@@ -17,7 +17,7 @@ import * as stackdriver from '../src/types/stackdriver';
 import * as semver from 'semver';
 import * as debugapi from '../src/agent/v8/debugapi';
 import * as extend from 'extend';
-import defaultConfig from '../src/agent/config';
+import {defaultConfig} from '../src/agent/config';
 import * as scanner from '../src/agent/io/scanner';
 import * as SourceMapper from '../src/agent/io/sourcemapper';
 import {Common, LoggerOptions} from '../src/types/common';
