@@ -26,7 +26,7 @@ import * as stackdriver from '../src/types/stackdriver';
 
 const common: Common = require('@google-cloud/common');
 
-const code = require('./test-variable-content-code.js');
+const code = require('./test-evaluated-expressions-code.js');
 
 describe('debugger provides useful information', () => {
   let api: debugapi.DebugApi;
@@ -103,7 +103,7 @@ describe('debugger provides useful information', () => {
   it(`should provide data about plain objects`, done => {
     const bp: stackdriver.Breakpoint = {
       id: 'fake-id-123',
-      location: {path: 'build/test/test-variable-content-code.js', line: 17},
+      location: {path: 'build/test/test-evaluated-expressions-code.js', line: 17},
       expressions: ['someObject']
     } as stackdriver.Breakpoint;
 
@@ -129,7 +129,7 @@ describe('debugger provides useful information', () => {
   it(`should provide data about arrays`, done => {
     const bp: stackdriver.Breakpoint = {
       id: 'fake-id-123',
-      location: {path: 'build/test/test-variable-content-code.js', line: 18},
+      location: {path: 'build/test/test-evaluated-expressions-code.js', line: 18},
       expressions: ['someArray']
     } as stackdriver.Breakpoint;
 
@@ -155,7 +155,7 @@ describe('debugger provides useful information', () => {
   it(`should provide data about regexes`, done => {
     const bp: stackdriver.Breakpoint = {
       id: 'fake-id-123',
-      location: {path: 'build/test/test-variable-content-code.js', line: 19},
+      location: {path: 'build/test/test-evaluated-expressions-code.js', line: 19},
       expressions: ['someRegex']
     } as stackdriver.Breakpoint;
 
@@ -176,7 +176,7 @@ describe('debugger provides useful information', () => {
   it(`should provide data about responses`, done => {
     const bp: stackdriver.Breakpoint = {
       id: 'fake-id-123',
-      location: {path: 'build/test/test-variable-content-code.js', line: 19},
+      location: {path: 'build/test/test-evaluated-expressions-code.js', line: 19},
       expressions: ['res']
     } as stackdriver.Breakpoint;
 
