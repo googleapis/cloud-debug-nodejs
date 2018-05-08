@@ -207,18 +207,11 @@ describe('debugger provides useful information', () => {
         assert.ifError(err);
         assertMembers(bp, 0, 'res', [
           {name: 'readable', value: 'true'},
-          // {name: 'domain', value: 'null'},
           {name: '_eventsCount', value: '0'},
           {name: '_maxListeners', value: 'undefined'},
-          // {name: 'httpVersionMajor', value: 'null'},
-          // {name: 'httpVersionMinor', value: 'null'},
-          // {name: 'httpVersion', value: 'null'},
           {name: 'complete', value: 'false'},
-          // {name: 'upgrade', value: 'null'},
           {name: 'url', value: ''},
-          // {name: 'method', value: 'null'},
           {name: 'statusCode', value: '200'},
-          // {name: 'statusMessage', value: 'null'},
           {name: '_consuming', value: 'false'},
           {name: '_dumped', value: 'false'}
         ]);
