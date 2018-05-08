@@ -34,11 +34,10 @@ describe('debugger provides useful information', () => {
       extend({}, defaultConfig, {allowExpressions: true, forceNewAgent_: true});
 
   before(done => {
-    const logger =
-        new common.logger({
-          level: common.logger.LEVELS[config.logLevel],
-          tag: 'test-evaluated-expressions'
-        });
+    const logger = new common.logger({
+      level: common.logger.LEVELS[config.logLevel],
+      tag: 'test-evaluated-expressions'
+    });
     scanner.scan(true, config.workingDirectory, /\.js$/).then(fileStats => {
       const jsStats = fileStats.selectStats(/\.js$/);
       const mapFiles = fileStats.selectFiles(/\.map$/, process.cwd());
@@ -51,7 +50,9 @@ describe('debugger provides useful information', () => {
     });
   });
 
-  function getValue(exp: stackdriver.Variable, varTable: Array<stackdriver.Variable|null>): string|null|undefined {
+  function getValue(
+      exp: stackdriver.Variable,
+      varTable: Array<stackdriver.Variable|null>): string|null|undefined {
     if ('value' in exp) {
       return exp.value;
     }
@@ -65,12 +66,14 @@ describe('debugger provides useful information', () => {
       return getValue(val, varTable);
     }
 
-    throw new Error(`The variable ${JSON.stringify(exp, null, 2)} ` +
-      `does not have a 'value' nor a 'varTableIndex' property`);
+    throw new Error(
+        `The variable ${JSON.stringify(exp, null, 2)} ` +
+        `does not have a 'value' nor a 'varTableIndex' property`);
   }
 
-  function assertValue(bp: stackdriver.Breakpoint, targetIndex: number,
-      expectedName: string, expectedValue: string) {
+  function assertValue(
+      bp: stackdriver.Breakpoint, targetIndex: number, expectedName: string,
+      expectedValue: string) {
     const rawExp = bp.evaluatedExpressions[targetIndex];
     assert(rawExp);
 
@@ -109,11 +112,13 @@ describe('debugger provides useful information', () => {
       const rawName = member.name;
       assert.notStrictEqual(rawName, undefined);
       const expected = member.value;
-      assert.notStrictEqual(expected, undefined,
-        'Each expected member must have its value specified');
+      assert.notStrictEqual(
+          expected, undefined,
+          'Each expected member must have its value specified');
       const actual = memberMap.get(rawName!);
-      assert.deepEqual(actual, expected,
-        `Expected ${rawName} to have value ${expected} but found ${actual}`);
+      assert.deepEqual(
+          actual, expected,
+          `Expected ${rawName} to have value ${expected} but found ${actual}`);
     }
   }
 
@@ -206,11 +211,9 @@ describe('debugger provides useful information', () => {
       api.wait(bp, err => {
         assert.ifError(err);
         assertMembers(bp, 0, 'res', [
-          {name: 'readable', value: 'true'},
-          {name: '_eventsCount', value: '0'},
+          {name: 'readable', value: 'true'}, {name: '_eventsCount', value: '0'},
           {name: '_maxListeners', value: 'undefined'},
-          {name: 'complete', value: 'false'},
-          {name: 'url', value: ''},
+          {name: 'complete', value: 'false'}, {name: 'url', value: ''},
           {name: 'statusCode', value: '200'},
           {name: '_consuming', value: 'false'},
           {name: '_dumped', value: 'false'}
