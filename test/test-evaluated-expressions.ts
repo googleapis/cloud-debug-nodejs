@@ -34,21 +34,18 @@ describe('debugger provides useful information', () => {
       extend({}, defaultConfig, {allowExpressions: true, forceNewAgent_: true});
 
   before(done => {
-    // TODO: It appears `logLevel` is a typo and should be `level`.  However,
-    //       with this change, the tests fail.  Resolve this.
     const logger =
-        new common.logger({levelLevel: config.logLevel} as {} as LoggerOptions);
-    scanner.scan(true, config.workingDirectory, /.js$/).then(fileStats => {
-      const jsStats = fileStats.selectStats(/.js$/);
-      const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
+        new common.logger({
+          level: common.logger.LEVELS[config.logLevel],
+          tag: 'test-evaluated-expressions'
+        });
+    scanner.scan(true, config.workingDirectory, /\.js$/).then(fileStats => {
+      const jsStats = fileStats.selectStats(/\.js$/);
+      const mapFiles = fileStats.selectFiles(/\.map$/, process.cwd());
       SourceMapper.create(mapFiles, (err, mapper) => {
         assert(!err);
-
-        // TODO: Handle the case when mapper is undefined
-        // TODO: Handle the case when v8debugapi.create returns null
-        api = debugapi.create(
-                  logger, config, jsStats,
-                  mapper as SourceMapper.SourceMapper) as debugapi.DebugApi;
+        assert(mapper);
+        api = debugapi.create(logger, config, jsStats, mapper!);
         done();
       });
     });
