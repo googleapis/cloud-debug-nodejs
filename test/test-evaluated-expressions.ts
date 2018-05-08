@@ -166,7 +166,7 @@ describe('debugger provides useful information', () => {
     });
   });
 
-  it.only(`should provide data about regexes`, done => {
+  it(`should provide data about regexes`, done => {
     const bp: stackdriver.Breakpoint = {
       id: 'fake-id-123',
       location:
