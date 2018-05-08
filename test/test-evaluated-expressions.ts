@@ -54,32 +54,42 @@ describe('debugger provides useful information', () => {
     });
   });
 
-  function xor(a: boolean, b: boolean): boolean {
-    return (a || b) && !(a && b);
+  function getValue(exp: stackdriver.Variable, varTable: Array<stackdriver.Variable|null>): string|null|undefined {
+    if ('value' in exp) {
+      return exp.value;
+    }
+
+    if ('varTableIndex' in exp) {
+      const index = exp.varTableIndex!;
+      const val = varTable[index];
+      if (!val) {
+        return val;
+      }
+      return getValue(val, varTable);
+    }
+
+    throw new Error(`The variable ${JSON.stringify(exp, null, 2)} ` +
+      `does not have a 'value' nor a 'varTableIndex' property`);
   }
 
-  function assertVariable(
-      bp: stackdriver.Breakpoint, targetIndex: number, expectedName: string,
-      expectedMembers: stackdriver.Variable[]) {
+  function assertValue(bp: stackdriver.Breakpoint, targetIndex: number,
+      expectedName: string, expectedValue: string) {
     const rawExp = bp.evaluatedExpressions[targetIndex];
     assert(rawExp);
 
     const exp = rawExp!;
     assert.strictEqual(exp.name, expectedName);
+    assert.strictEqual(getValue(exp, bp.variableTable), expectedValue);
+  }
 
-    const hasValue = 'value' in exp;
-    const hasIndex = 'varTableIndex' in exp;
-    assert(xor(hasValue, hasIndex));
+  function assertMembers(
+      bp: stackdriver.Breakpoint, targetIndex: number, expectedName: string,
+      expectedMemberValues: stackdriver.Variable[]) {
+    const rawExp = bp.evaluatedExpressions[targetIndex];
+    assert(rawExp);
 
-    if (hasValue) {
-      assert.strictEqual(
-          expectedMembers.length, 1,
-          'A value should only have one member for the value itself');
-      const member = expectedMembers[0];
-      assert.strictEqual(exp.name, member.name);
-      assert.strictEqual(exp.value, member.value);
-      return;
-    }
+    const exp = rawExp!;
+    assert.strictEqual(exp.name, expectedName);
 
     const rawIndex = exp.varTableIndex;
     assert.notStrictEqual(rawIndex, undefined);
@@ -89,26 +99,24 @@ describe('debugger provides useful information', () => {
     assert.notStrictEqual(rawVarData, undefined);
 
     const varData = rawVarData!;
-    if ('value' in varData) {
-      assert.strictEqual(expectedMembers.length, 1);
-      assert.strictEqual(varData.value, expectedMembers[0].value);
-      return;
-    }
-
-    const memberMap = new Map<string, stackdriver.Variable>();
+    const memberMap = new Map<string, string|null|undefined>();
     assert.notStrictEqual(varData.members, undefined);
     for (const member of varData.members!) {
       assert.notStrictEqual(member.name, undefined);
       const name = member.name!;
       assert(!memberMap.has(name));
-      memberMap.set(name, member);
+      memberMap.set(name, getValue(member, bp.variableTable));
     }
 
-    for (const member of expectedMembers) {
+    for (const member of expectedMemberValues) {
       const rawName = member.name;
       assert.notStrictEqual(rawName, undefined);
-      const name = rawName!;
-      assert.deepEqual(memberMap.get(name), member);
+      const expected = member.value;
+      assert.notStrictEqual(expected, undefined,
+        'Each expected member must have its value specified');
+      const actual = memberMap.get(rawName!);
+      assert.deepEqual(actual, expected,
+        `Expected ${rawName} to have value ${expected} but found ${actual}`);
     }
   }
 
@@ -116,7 +124,7 @@ describe('debugger provides useful information', () => {
     const bp: stackdriver.Breakpoint = {
       id: 'fake-id-123',
       location:
-          {path: 'build/test/test-evaluated-expressions-code.js', line: 17},
+          {path: 'build/test/test-evaluated-expressions-code.js', line: 19},
       expressions: ['someObject']
     } as stackdriver.Breakpoint;
 
@@ -125,7 +133,7 @@ describe('debugger provides useful information', () => {
       api.wait(bp, err => {
         assert.ifError(err);
 
-        assertVariable(bp, 0, 'someObject', [
+        assertMembers(bp, 0, 'someObject', [
           {name: 'aNumber', value: '1'},
           {name: 'aString', value: 'some string'}
         ]);
@@ -143,7 +151,7 @@ describe('debugger provides useful information', () => {
     const bp: stackdriver.Breakpoint = {
       id: 'fake-id-123',
       location:
-          {path: 'build/test/test-evaluated-expressions-code.js', line: 18},
+          {path: 'build/test/test-evaluated-expressions-code.js', line: 19},
       expressions: ['someArray']
     } as stackdriver.Breakpoint;
 
@@ -152,7 +160,7 @@ describe('debugger provides useful information', () => {
       api.wait(bp, err => {
         assert.ifError(err);
 
-        assertVariable(bp, 0, 'someArray', [
+        assertMembers(bp, 0, 'someArray', [
           {name: '0', value: '1'}, {name: '1', value: '2'},
           {name: '2', value: '3'}, {name: 'length', value: '3'}
         ]);
@@ -178,8 +186,7 @@ describe('debugger provides useful information', () => {
       assert.ifError(err);
       api.wait(bp, err => {
         assert.ifError(err);
-        assertVariable(
-            bp, 0, 'someRegex', [{name: 'someRegex', value: '/abc+/'}]);
+        assertValue(bp, 0, 'someRegex', '/abc+/');
         api.clear(bp, err => {
           assert.ifError(err);
           done();
@@ -201,20 +208,20 @@ describe('debugger provides useful information', () => {
       assert.ifError(err);
       api.wait(bp, err => {
         assert.ifError(err);
-        assertVariable(bp, 0, 'res', [
+        assertMembers(bp, 0, 'res', [
           {name: 'readable', value: 'true'},
-          //{name: 'domain', value: 'null'},
+          // {name: 'domain', value: 'null'},
           {name: '_eventsCount', value: '0'},
           {name: '_maxListeners', value: 'undefined'},
-          //{name: 'httpVersionMajor', value: 'null'},
-          //{name: 'httpVersionMinor', value: 'null'},
-          //{name: 'httpVersion', value: 'null'},
+          // {name: 'httpVersionMajor', value: 'null'},
+          // {name: 'httpVersionMinor', value: 'null'},
+          // {name: 'httpVersion', value: 'null'},
           {name: 'complete', value: 'false'},
-          //{name: 'upgrade', value: 'null'},
+          // {name: 'upgrade', value: 'null'},
           {name: 'url', value: ''},
-          //{name: 'method', value: 'null'},
+          // {name: 'method', value: 'null'},
           {name: 'statusCode', value: '200'},
-          //{name: 'statusMessage', value: 'null'},
+          // {name: 'statusMessage', value: 'null'},
           {name: '_consuming', value: 'false'},
           {name: '_dumped', value: 'false'}
         ]);
