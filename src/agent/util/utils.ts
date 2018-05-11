@@ -25,9 +25,7 @@ export const messages = {
   CAPTURE_BREAKPOINT_DATA: 'Error trying to capture snapshot data: ',
   INVALID_LINE_NUMBER: 'Invalid snapshot position: ',
   COULD_NOT_FIND_OUTPUT_FILE:
-      'Could not determine the output file associated with the transpiled input file',
-  INSPECTOR_NOT_AVAILABLE:
-      'The V8 Inspector protocol is only available in Node 8+'
+      'Could not determine the output file associated with the transpiled input file'
 };
 
 export interface Listener {

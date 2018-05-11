@@ -176,19 +176,6 @@ Further, you do not need to deploy the original source files to the deployment e
 
 In the Debug UI, you only need to provide the original source code -- you don't need the transpiled output files or the sourcemaps. When you set a snapshot in an original source file in the Debug UI, the corresponding file and line in the transpiled code is automatically determined based on the sourcemap files provided with the transpiled code at runtime.  See the [Using the Debugger](#using-the-debugger) section for more information about using the Debug UI.  In addition, the exact directory layout of the original source is somewhat flexible, just as it is with the use of non-transpiled code as described in the [Using the Debugger](#using-the-debugger) section.
 
-## Experimental Features
-
-The Stackdriver Debugger includes experimental support for the new [V8 Inspector Protocol](https://chromedevtools.github.io/debugger-protocol-viewer/v8/) and will use it if and only if the `GCLOUD_USE_INSPECTOR` environment variable is set and the running version of Node supports the inspector protocol (Node 8+).
-
-If the `GCLOUD_USE_INSPECTOR` environment variable is set, but the running version of Node does not support the inspector protocol, the agent will fall back to the legacy debugger protocol and a warning message will be logged.
-
-The `GCLOUD_USE_INSPECTOR` can be set programmatically, but must be set before calling the `start` method as illustrated below:
-
-```js
-process.env['GCLOUD_USE_INSPECTOR'] = true;
-require('@google-cloud/debug-agent').start({ ... });
-```
-
 ## Using Stackdriver Debugger on Google Cloud Functions
 
 The Stackdriver Debugger also introduces a new `isReady` method that returns a `Promise` that is resolved in either of the three scenarios.
