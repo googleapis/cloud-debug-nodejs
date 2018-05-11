@@ -42,14 +42,9 @@ interface DebugApiConstructor {
 
 let debugApiConstructor: DebugApiConstructor;
 
-export function willUseInspector(nodeVersion?: string, useInspector?: boolean) {
+export function willUseInspector(nodeVersion?: string) {
   const version = nodeVersion != null ? nodeVersion : process.version;
-  const node10Above = utils.satisfies(version, '>=10');
-  const node8Above = utils.satisfies(version, '>=8');
-  const resolvedUseInspector =
-      useInspector != null ? useInspector : !!process.env.GCLOUD_USE_INSPECTOR;
-
-  return node10Above || (node8Above && resolvedUseInspector);
+  return utils.satisfies(version, '>=10');
 }
 
 if (willUseInspector()) {

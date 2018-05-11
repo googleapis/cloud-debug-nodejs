@@ -113,61 +113,39 @@ function validateBreakpoint(breakpoint: stackdriver.Breakpoint): void {
     breakpoint.stackFrames.forEach(validateStackFrame);
   }
 }
+
 describe(
     'propertly determines if the inspector protocol should be used', () => {
-      const suffixes = ['', '.11', '.11.1'];
-      it('handles nightly builds correctly', () => {
-        for (const suffix of suffixes) {
-          // nightly builds should be handled correctly
-          assert.strictEqual(
-              debugapi.willUseInspector(
-                  'v10.0.0-nightly201804132a6ab9b37b', true),
-              true);
-          assert.strictEqual(
-              debugapi.willUseInspector(
-                  'v10.0.0-nightly201804132a6ab9b37b', false),
-              true);
-        }
-      });
+      let suffixes = ['', '.11', '.11.1'];
+      // also handle suffixes associated with nightly builds
+      suffixes = suffixes.concat(
+          suffixes.map(suffix => suffix + '-nightly201804132a6ab9b37b'));
 
       it('handles Node >=10 correctly', () => {
-        for (const suffix of suffixes) {
-          // on Node >= 10, inspector should always be used
-          assert.strictEqual(
-              debugapi.willUseInspector(`v10${suffix}`, true), true);
-          assert.strictEqual(
-              debugapi.willUseInspector(`v10${suffix}`, false), true);
-          assert.strictEqual(
-              debugapi.willUseInspector(`v11${suffix}`, true), true);
-          assert.strictEqual(
-              debugapi.willUseInspector(`v11${suffix}`, false), true);
+        // on Node >= 10, inspector should always be used
+        for (let version = 10; version <= 11; version++) {
+          for (const suffix of suffixes) {
+            const fullVersion = `v${version}${suffix}`;
+            assert.strictEqual(
+                debugapi.willUseInspector(fullVersion), true,
+                `Should use inspector in Node.js version ${fullVersion}`);
+          }
         }
       });
 
-      it('handles Node 8 correctly', () => {
-        for (const suffix of suffixes) {
-          // on Node 8, inspector should only be used if explicitly specified
-          assert.strictEqual(
-              debugapi.willUseInspector(`v8${suffix}`, true), true);
-          assert.strictEqual(
-              debugapi.willUseInspector(`v8${suffix}`, false), false);
-        }
-      });
-
-      it('handles Node <8 correctly', () => {
-        for (const suffix of suffixes) {
-          // on Node < 8, inspector should never be used
-          assert.strictEqual(
-              debugapi.willUseInspector(`v6${suffix}`, true), false);
-          assert.strictEqual(
-              debugapi.willUseInspector(`v6${suffix}`, false), false);
-          assert.strictEqual(
-              debugapi.willUseInspector(`v4${suffix}`, true), false);
-          assert.strictEqual(
-              debugapi.willUseInspector(`v4${suffix}`, false), false);
+      it('handles Node <10 correctly', () => {
+        // on Node < 10, inspector should never be used
+        for (let version = 4; version <= 9; version++) {
+          for (const suffix of suffixes) {
+            const fullVersion = `v${version}${suffix}`;
+            assert.strictEqual(
+                debugapi.willUseInspector(fullVersion), false,
+                `Should not use inspector in Node.js version ${fullVersion}`);
+          }
         }
       });
     });
+
 describe('debugapi selection', () => {
   const config: ResolvedDebugAgentConfig = extend(
       {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
@@ -198,12 +176,6 @@ describe('debugapi selection', () => {
             } else {
               const v8debugapi = require('../src/agent/v8/legacy-debugapi');
               assert.ok(api instanceof v8debugapi.V8DebugApi);
-            }
-            if (process.env.GCLOUD_USE_INSPECTOR &&
-                utils.satisfies(process.version, '<8')) {
-              assert(logText.includes(utils.messages.INSPECTOR_NOT_AVAILABLE));
-            } else {
-              assert(!logText.includes(utils.messages.INSPECTOR_NOT_AVAILABLE));
             }
             done();
           });
@@ -237,7 +209,6 @@ describeFn('debugapi selection on Node >=10', () => {
             api = debugapi.create(logger, config, jsStats, mapper!);
             const inspectorapi = require('../src/agent/v8/inspector-debugapi');
             assert.ok(api instanceof inspectorapi.InspectorDebugApi);
-            assert(!logText.includes(utils.messages.INSPECTOR_NOT_AVAILABLE));
             done();
           });
         });
