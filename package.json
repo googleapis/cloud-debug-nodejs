@@ -72,7 +72,7 @@
     "gcp-metadata": "^0.6.3",
     "lodash": "^4.12.0",
     "semver": "^5.5.0",
-    "source-map": "^0.6.1",
+    "source-map": "^0.7.3",
     "split": "^1.0.0",
     "util.promisify": "^1.0.0"
   },
