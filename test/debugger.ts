@@ -1,5 +1,5 @@
 /**
- * Copyright 2016 Google Inc. All Rights Reserved.
+ * Copyright 2018 Google Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ export class Debugger extends common.ServiceObject {
    *     debuggees in the list (default false).
    * @param {!function(?Error,Debuggee[]=)} callback - A function that will be
    *     called with a list of Debuggee objects as a parameter, or an Error
-   * object if an error occurred in obtaining it.
+   *     object if an error occurred in obtaining it.
    */
   listDebuggees(
       projectId: string, includeInactive: boolean,
@@ -109,10 +109,7 @@ export class Debugger extends common.ServiceObject {
    *     breakpoints set by all users, or just by the caller (default false).
    * @param {boolean=} options.includeInactive - Whether or not to include
    *     inactive breakpoints in the list (default false).
-   * @param {boolean=} options.stripResults - If set to true, breakpoints will be
-   *     stripped of the following fields: stackFrames, evaluatedExpressions,
-   *     and variableTable (default false).
-   * @param {string=} options.action - Either 'CAPTURE' or 'LOG'. If specified,
+   * @param {Action=} options.action - Either 'CAPTURE' or 'LOG'. If specified,
    *     only breakpoints with a matching action will be part of the list.
    * @param {!function(?Error,Breakpoint[]=)} callback - A function that will be
    *     called with a list of Breakpoint objects as a parameter, or an Error
@@ -122,8 +119,7 @@ export class Debugger extends common.ServiceObject {
       debuggeeId: string, options: {
         includeAllUsers?: boolean;
         includeInactive?: boolean;
-        stripResults?: boolean;
-        action?: string
+        action?: stackdriver.Action
       },
       callback:
           (err: Error|null, breakpoints?: stackdriver.Breakpoint[]) => void) {
@@ -135,14 +131,12 @@ export class Debugger extends common.ServiceObject {
     // TODO: Remove this cast as `any`
     const query: {
       clientVersion: string; includeAllUsers: boolean; includeInactive: boolean;
-      stripResults: boolean;
-      action?: {value: string};
+      action?: {value: stackdriver.Action};
       waitToken?: string;
     } = {
       clientVersion: this.clientVersion,
       includeAllUsers: !!options.includeAllUsers,
       includeInactive: !!options.includeInactive,
-      stripResults: !!options.stripResults
     };
     // TODO: Determine how to remove this cast.
     if (options.action) {
