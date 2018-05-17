@@ -28,15 +28,9 @@ const code = require('./test-expression-side-effect-code.js');
 
 const common: Common = require('@google-cloud/common');
 
-const nodeAtLeast8withInspector = utils.satisfies(process.version, '>=8') && process.env.GCLOUD_USE_INSPECTOR;
-const nodeAtLeast8OrInspector = utils.satisfies(process.version, '>=8') || process.env.GCLOUD_USE_INSPECTOR;
-const nodeAtLeast9withInspector = utils.satisfies(process.version, '>=9.1.0') && process.env.GCLOUD_USE_INSPECTOR;
+const itWithInspector = utils.satisfies(process.version, '>=10') ? it : it.skip;
 
-const itOnNodeAtLeast8withInspector = nodeAtLeast8withInspector ? it : it.skip;
-const itOnNodeAtLeast8OrWithInspector = nodeAtLeast8OrInspector ? it : it.skip;
-const itOnNodeAtLeast9withInspector = nodeAtLeast9withInspector ? it : it.skip;
-
-describe('expression side effect', () => {
+describe('evaluating expressions', () => {
   let api: debugapi.DebugApi;
   const config = extend({}, defaultConfig, {
     forceNewAgent_: true
@@ -60,7 +54,7 @@ describe('expression side effect', () => {
       });
   });
 
-  itOnNodeAtLeast8withInspector('should have expression evaluated without side effects', (done) => {
+  itWithInspector('should evaluate expressions without side effects', (done) => {
     // this test makes sure that the necessary environment variables to enable
     // asserts are present during testing. Use run-tests.sh, or export
     // CLOUD_DEBUG_ASSERTIONS=1 to make sure this test passes.
@@ -85,7 +79,7 @@ describe('expression side effect', () => {
     })
   });
 
-  itOnNodeAtLeast8OrWithInspector('should not have expression evaluated with side effects', (done) => {
+  itWithInspector('should not evaluate expressions with side effects', (done) => {
     // this test makes sure that the necessary environment variables to enable
     // asserts are present during testing. Use run-tests.sh, or export
     // CLOUD_DEBUG_ASSERTIONS=1 to make sure this test passes.
@@ -110,10 +104,7 @@ describe('expression side effect', () => {
     })
   });
 
-  // This test will be skipped for now as runtime.getproperties is not
-  // side-effect free in current node version. It will be tested for the
-  // future node version when the change is merged.
-  itOnNodeAtLeast9withInspector('process.title should not be evaluated', (done) => {
+  itWithInspector('should not evaluate process.title', (done) => {
     // this test makes sure that the necessary environment variables to enable
     // asserts are present during testing. Use run-tests.sh, or export
     // CLOUD_DEBUG_ASSERTIONS=1 to make sure this test passes.
