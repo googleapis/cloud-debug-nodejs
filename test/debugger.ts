@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 Google Inc. All Rights Reserved.
+ * Copyright 2016 Google Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -119,7 +119,7 @@ export class Debugger extends common.ServiceObject {
       debuggeeId: string, options: {
         includeAllUsers?: boolean;
         includeInactive?: boolean;
-        action?: stackdriver.Action
+        action?: stackdriver.Action;
       },
       callback:
           (err: Error|null, breakpoints?: stackdriver.Breakpoint[]) => void) {
