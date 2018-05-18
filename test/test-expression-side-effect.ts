@@ -29,6 +29,8 @@ const code = require('./test-expression-side-effect-code.js');
 
 const common: Common = require('@google-cloud/common');
 
+// the inspector protocol is only used on Node >= 10 and thus isn't
+// tested on earlier versions
 const itWithInspector = utils.satisfies(process.version, '>=10') ? it : it.skip;
 
 describe('evaluating expressions', () => {
