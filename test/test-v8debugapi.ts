@@ -1530,50 +1530,57 @@ describe('v8debugapi', () => {
        });
 
     it('should capture without values for invalid watch expressions in coffeescript',
-      function(done) {
-        // TODO: Have this actually implement Breakpoint
-        const bp: stackdriver.Breakpoint = {
-            id: 'coffee-id-1729',
-            // TODO: Determine if this path should contain 'build'
-            location: { path: path.join('.', 'build', 'test', 'fixtures',
-              'coffee', 'transpile.coffee'),
-              line: 3 },
-            expressions: [':)', 'n n, n', 'process=this', '((x) -> x x) n', 'return']
-          } as any as stackdriver.Breakpoint;
-        const tt = require('./fixtures/coffee/transpile');
-        api.set(bp, function(err) {
-          assert.ifError(err);
-          api.wait(bp, function(err) {
-            assert.ifError(err);
-            assert.ok(bp.stackFrames);
-            assert.ok(bp.variableTable);
-            assert.ok(bp.evaluatedExpressions);
+       done => {
+         // TODO: Have this actually implement Breakpoint
+         const bp: stackdriver.Breakpoint = {
+           id: 'coffee-id-1729',
+           // TODO: Determine if this path should contain 'build'
+           location: {
+             path: path.join(
+                 '.', 'build', 'test', 'fixtures', 'coffee',
+                 'transpile.coffee'),
+             line: 3
+           },
+           expressions:
+               [':)', 'n n, n', 'process=this', '((x) -> x x) n', 'return']
+         } as {} as stackdriver.Breakpoint;
+         const tt = require('./fixtures/coffee/transpile');
+         api.set(bp, err => {
+           assert.ifError(err);
+           api.wait(bp, err => {
+             assert.ifError(err);
+             assert.ok(bp.stackFrames);
+             assert.ok(bp.variableTable);
+             assert.ok(bp.evaluatedExpressions);
 
-            for (const i in bp.evaluatedExpressions) {
-              const expr = bp.evaluatedExpressions[i];
-              // TODO: Handle the case when expr is undefined
-              assert((expr as any).status && (expr as any).status.isError);
-              if ((expr as any).name === ':)' ||
-                  (expr as any).name === 'process=this' ||
-                  (expr as any).name === 'return' ||
-                  (expr as any).name === '((x) -> x x) n') {
-                assert.equal((expr as any).status.description.format,
-                  'Error Compiling Expression');
-              } else {
-                assert(
-                  (expr as any).status.description.format.match('Expression not allowed')
-                || (expr as any).status.description.format.match('TypeError'));
-              }
-            }
+             for (const rawExpr of bp.evaluatedExpressions) {
+               assert(rawExpr);
+               const expr = rawExpr!;
+               assert(expr.status);
+               const status = expr.status!;
+               assert(status.isError);
+               if (expr.name === ':)' || expr.name === 'process=this' ||
+                   expr.name === 'return' || expr.name === '((x) -> x x) n') {
+                 assert.equal(
+                     status.description.format, 'Error Compiling Expression');
+               } else {
+                 assert(
+                     status.description.format.match(
+                         'Expression not allowed') ||
+                     status.description.format.match('TypeError'));
+               }
+             }
 
-            api.clear(bp, function(err) {
-              assert.ifError(err);
-              done();
-            });
-          });
-          process.nextTick(function() {tt.foo(3);});
-        });
-      });
+             api.clear(bp, err => {
+               assert.ifError(err);
+               done();
+             });
+           });
+           process.nextTick(() => {
+             tt.foo(3);
+           });
+         });
+       });
 
     it('should remove listener when breakpoint is cleared before hitting',
        (done) => {
