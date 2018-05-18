@@ -412,7 +412,6 @@ describe('@google-cloud/debug end-to-end behavior', () => {
 
           console.log('-- waiting before checking if the log was written');
           return Promise.all([breakpoint, delay(10 * 1000)]);
-          // TODO: Determine if the results parameter should be used.
         })
         .then((results: stackdriver.Breakpoint[]) => {
           // Check that the contents of the log is correct
