@@ -432,6 +432,7 @@ export class V8DebugApi implements debugapi.DebugApi {
                 true)
           });
           breakpoint.expressions.splice(i, 1);
+          i--;
         }
       }
     }
