@@ -708,7 +708,7 @@ describe('v8debugapi', () => {
              });
            });
          });
-         setImmediate(() => {
+         process.nextTick(() => {
            dist({x: 1, y: 2}, {x: 3, y: 4});
          });
        });
