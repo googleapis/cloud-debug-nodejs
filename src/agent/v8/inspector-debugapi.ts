@@ -466,7 +466,8 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       const captured = state.capture(
           callFrames, breakpoint, this.config, this.scriptMapper,
           this.v8Inspector);
-      if (breakpoint.location && breakpoint.location.path.toLowerCase().endsWith('.js')) {
+      if (breakpoint.location &&
+          breakpoint.location.path.toLowerCase().endsWith('.js')) {
         breakpoint.location.line = callFrames[0].location.lineNumber + 1;
       }
       breakpoint.stackFrames = captured.stackFrames;

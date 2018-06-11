@@ -21,7 +21,8 @@ import * as stackdriver from '../src/types/stackdriver';
 // TODO(dominickramer): Have this actually implement Breakpoint
 const breakpointInFoo: stackdriver.Breakpoint = {
   id: 'fake-id-123',
-  // TODO(dominickramer): Determine if we should be restricting to only the build directory.
+  // TODO(dominickramer): Determine if we should be restricting to only the
+  // build directory.
   location: {path: 'build/test/test-v8debugapi-code.js', line: 5}
 } as stackdriver.Breakpoint;
 
@@ -166,7 +167,8 @@ describe('debugapi selection', () => {
           SourceMapper.create(mapFiles, (err, mapper) => {
             assert(!err);
             // TODO(dominickramer): Handle the case when mapper is undefined.
-            // TODO(dominickramer): Handle the case when v8debugapi.create returns null
+            // TODO(dominickramer): Handle the case when v8debugapi.create
+            // returns null
             api = debugapi.create(
                       logger, config, jsStats,
                       mapper as SourceMapper.SourceMapper) as DebugApi;
@@ -219,7 +221,8 @@ describeFn('debugapi selection on Node >=10', () => {
 describe('v8debugapi', () => {
   const config: ResolvedDebugAgentConfig = extend(
       {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
-  // TODO(dominickramer): It appears `logLevel` is a typo and should be `level`.  However,
+  // TODO(dominickramer): It appears `logLevel` is a typo and should be `level`.
+  // However,
   //       with this change, the tests fail.  Resolve this.
   const logger =
       new common.logger({levelLevel: config.logLevel} as {} as LoggerOptions);
@@ -236,7 +239,8 @@ describe('v8debugapi', () => {
               assert(!err1);
 
               // TODO(dominickramer): Handle the case when mapper is undefined.
-              // TODO(dominickramer): Handle the case when v8debugapi.create returns null
+              // TODO(dominickramer): Handle the case when v8debugapi.create
+              // returns null
               api = debugapi.create(
                         logger, config, jsStats,
                         mapper as SourceMapper.SourceMapper) as DebugApi;
@@ -686,28 +690,29 @@ describe('v8debugapi', () => {
          });
        });
 
-    it.only('should not change line number when breakpoints hit for transpiled files',
-      (done) => {
-        const bp: stackdriver.Breakpoint = {
-          id: 'fake-id-125',
-          location: {path: 'test/test-v8debugapi-ts-code.ts', line: 10}
-        } as stackdriver.Breakpoint;
-        api.set(bp, (err1) => {
-          assert.ifError(err1);
-          api.wait(bp, (err2) => {
-            assert.ifError(err2);
-            assert(bp.location);
-            assert.equal(bp.location!.line, 10);
-            api.clear(bp, (err3) => {
-              assert.ifError(err3);
-              done();
+    it.only(
+        'should not change line number when breakpoints hit for transpiled files',
+        (done) => {
+          const bp: stackdriver.Breakpoint = {
+            id: 'fake-id-125',
+            location: {path: 'test/test-v8debugapi-ts-code.ts', line: 10}
+          } as stackdriver.Breakpoint;
+          api.set(bp, (err1) => {
+            assert.ifError(err1);
+            api.wait(bp, (err2) => {
+              assert.ifError(err2);
+              assert(bp.location);
+              assert.equal(bp.location!.line, 10);
+              api.clear(bp, (err3) => {
+                assert.ifError(err3);
+                done();
+              });
             });
           });
+          setImmediate(() => {
+            dist({x: 1, y: 2}, {x: 3, y: 4});
+          });
         });
-        setImmediate(() => {
-          dist({x: 1, y: 2}, {x: 3, y: 4});
-        });
-      });
 
     it('should work with multiply hit breakpoints', (done) => {
       const oldWarn = logger.warn;
@@ -819,7 +824,8 @@ describe('v8debugapi', () => {
           assert.ok(topFrame);
           assert.equal(topFrame['function'], 'foo');
           assert.equal(topFrame.arguments.length, 1);
-          // TODO(dominickramer): Handle the case when topFrame.arguments[0].varTableIndex
+          // TODO(dominickramer): Handle the case when
+          // topFrame.arguments[0].varTableIndex
           //       is undefined.
           const argsVal =
               bp.variableTable[topFrame.arguments[0].varTableIndex as number];
@@ -827,7 +833,8 @@ describe('v8debugapi', () => {
           assert(argsVal!.status!.description.format.match(
               'Locals and arguments are only displayed.*config.capture.maxExpandFrames=0'));
           assert.equal(topFrame.locals.length, 1);
-          // TODO(dominickramer): Handle the case when topFrame.locals[0].varTableIndex is
+          // TODO(dominickramer): Handle the case when
+          // topFrame.locals[0].varTableIndex is
           //       undefined.
           const localsVal =
               bp.variableTable[topFrame.locals[0].varTableIndex as number];
@@ -934,7 +941,8 @@ describe('v8debugapi', () => {
       // TODO(dominickramer): Have this actually implement Breakpoint
       const bp: stackdriver.Breakpoint = {
         id: 'fake-id-124',
-        // TODO(dominickramer): This path can be lest strict when this file has been
+        // TODO(dominickramer): This path can be lest strict when this file has
+        // been
         //       converted to Typescript.
         location: {path: 'build/test/test-v8debugapi-code.js', line: 10},
         expressions: ['process.env', 'hasGetter']
@@ -980,7 +988,8 @@ describe('v8debugapi', () => {
       // TODO(dominickramer): Have this actually implement Breakpoint
       const bp: stackdriver.Breakpoint = {
         id: breakpointInFoo.id,
-        // TODO(dominickramer): This path can be lest strict when this file has been
+        // TODO(dominickramer): This path can be lest strict when this file has
+        // been
         //       converted to Typescript.
         location: {path: 'build/test/test-v8debugapi-code.js', line: 6},
         expressions: ['A']
@@ -1018,7 +1027,8 @@ describe('v8debugapi', () => {
       // TODO(dominickramer): Have this actually implement Breakpoint
       const bp: stackdriver.Breakpoint = {
         id: 'fake-id-124',
-        // TODO(dominickramer): This path can be lest strict when this file has been
+        // TODO(dominickramer): This path can be lest strict when this file has
+        // been
         //       converted to Typescript.
         location: {path: 'build/test/test-v8debugapi-code.js', line: 10}
       } as {} as stackdriver.Breakpoint;
@@ -1059,7 +1069,8 @@ describe('v8debugapi', () => {
       // TODO(dominickramer): Have this actually implement Breakpoint
       const bp: stackdriver.Breakpoint = {
         id: 'fake-id-124',
-        // TODO(dominickramer): This path can be lest strict when this file has been
+        // TODO(dominickramer): This path can be lest strict when this file has
+        // been
         //       converted to Typescript.
         location: {path: 'build/test/test-v8debugapi-code.js', line: 6}
       } as {} as stackdriver.Breakpoint;
@@ -1094,7 +1105,8 @@ describe('v8debugapi', () => {
       // TODO(dominickramer): Have this actually implement Breakpoint
       const bp: stackdriver.Breakpoint = {
         id: 'fake-id-124',
-        // TODO(dominickramer): This path can be lest strict when this file has been
+        // TODO(dominickramer): This path can be lest strict when this file has
+        // been
         //       converted to Typescript.
         location: {path: 'build/test/test-v8debugapi-code.js', line: 6}
       } as {} as stackdriver.Breakpoint;
@@ -1130,7 +1142,8 @@ describe('v8debugapi', () => {
          // TODO(dominickramer): Have this actually implement Breakpoint
          const bp: stackdriver.Breakpoint = {
            id: 'fake-id-124',
-           // TODO(dominickramer): This path can be lest strict when this file has been
+           // TODO(dominickramer): This path can be lest strict when this file
+           // has been
            //       converted to Typescript.
            location: {path: 'build/test/test-v8debugapi-code.js', line: 10},
            expressions: ['hasGetter']
@@ -1170,7 +1183,8 @@ describe('v8debugapi', () => {
          // TODO(dominickramer): Have this actually implement Breakpoint
          const bp: stackdriver.Breakpoint = {
            id: 'fake-id-124',
-           // TODO(dominickramer): This path can be lest strict when this file has been
+           // TODO(dominickramer): This path can be lest strict when this file
+           // has been
            //       converted to Typescript.
            location: {path: 'build/test/test-v8debugapi-code.js', line: 6},
            expressions: ['A']
@@ -1207,7 +1221,8 @@ describe('v8debugapi', () => {
          // TODO(dominickramer): Have this actually implement Breakpoint
          const bp: stackdriver.Breakpoint = {
            id: 'fake-id-124',
-           // TODO(dominickramer): This path can be lest strict when this file has been
+           // TODO(dominickramer): This path can be lest strict when this file
+           // has been
            //       converted to Typescript.
            location: {path: 'build/test/test-v8debugapi-code.js', line: 6},
            expressions: ['B']
@@ -1243,7 +1258,8 @@ describe('v8debugapi', () => {
          // TODO(dominickramer): Have this actually implement Breakpoint
          const bp: stackdriver.Breakpoint = {
            id: 'fake-id-124',
-           // TODO(dominickramer): This path can be lest strict when this file has been
+           // TODO(dominickramer): This path can be lest strict when this file
+           // has been
            //       converted to Typescript.
            location: {path: 'build/test/test-v8debugapi-code.js', line: 6},
            expressions: ['A']
@@ -1280,7 +1296,8 @@ describe('v8debugapi', () => {
          // TODO(dominickramer): Have this actually implement Breakpoint
          const bp: stackdriver.Breakpoint = {
            id: 'fake-id-124',
-           // TODO(dominickramer): This path can be lest strict when this file has been
+           // TODO(dominickramer): This path can be lest strict when this file
+           // has been
            //       converted to Typescript.
            location: {path: 'build/test/test-v8debugapi-code.js', line: 6},
            expressions: ['B']
@@ -1317,7 +1334,8 @@ describe('v8debugapi', () => {
          // TODO(dominickramer): Have this actually implement Breakpoint
          const bp: stackdriver.Breakpoint = {
            id: 'fake-id-124',
-           // TODO(dominickramer): This path can be lest strict when this file has been
+           // TODO(dominickramer): This path can be lest strict when this file
+           // has been
            //       converted to Typescript.
            location: {path: 'build/test/test-v8debugapi-code.js', line: 6},
            expressions: ['A']
@@ -1756,11 +1774,13 @@ describe('v8debugapi', () => {
 
 describe('v8debugapi.findScripts', () => {
   it('should properly handle appPathRelativeToRepository', () => {
-    // TODO(dominickramer): `config` was used before it was defined and passed as the third
+    // TODO(dominickramer): `config` was used before it was defined and passed
+    // as the third
     //       parameter below.  This was a Typescript compile error.  The
     //       value of `undefined` should be functionally equivalent.
     //       Make sure that is the case.
-    // TODO(dominickramer): The third argument should be of type Object (not undefined).
+    // TODO(dominickramer): The third argument should be of type Object (not
+    // undefined).
     //       Fix this.
     const config = extend(true, {}, undefined!, {
       workingDirectory: '/some/strange/directory',

@@ -454,7 +454,9 @@ export class V8DebugApi implements debugapi.DebugApi {
       // TODO: Address the case where `breakpoint.expression` is `undefined`.
       const captured = state.capture(
           execState, breakpoint.expressions as string[], this.config, this.v8);
-      if (breakpoint.location && breakpoint.location.path.toLowerCase().endsWith('.js') && captured.location && captured.location.line) {
+      if (breakpoint.location &&
+          breakpoint.location.path.toLowerCase().endsWith('.js') &&
+          captured.location && captured.location.line) {
         breakpoint.location.line = captured.location.line;
       }
       breakpoint.stackFrames = captured.stackFrames;
