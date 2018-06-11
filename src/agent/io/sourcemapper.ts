@@ -113,6 +113,8 @@ function processSourcemap(
           {outputFile: outputPath, mapFile: mapPath, mapConsumer: consumer});
     });
 
+    console.log(`info map=${require('util').inspect(infoMap, {depth: 1})}`);
+
     callback(null);
   });
 }
