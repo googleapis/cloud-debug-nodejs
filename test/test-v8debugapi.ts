@@ -42,6 +42,7 @@ import * as path from 'path';
 import * as utils from '../src/agent/util/utils';
 import {debugAssert} from '../src/agent/util/debug-assert';
 const code = require('./test-v8debugapi-code.js');
+import {dist} from './test-v8debugapi-ts-code';
 
 function stateIsClean(api: DebugApi): boolean {
   assert.equal(
@@ -663,7 +664,7 @@ describe('v8debugapi', () => {
       });
     });
 
-    it('should resolve actual line number hit rather than originally set',
+    it('should resolve actual line number hit rather than originally set for js files',
        (done) => {
          const bp: stackdriver.Breakpoint = {
            id: 'fake-id-124',
@@ -684,6 +685,29 @@ describe('v8debugapi', () => {
            });
          });
        });
+
+    it.only('should not change line number when breakpoints hit for transpiled files',
+      (done) => {
+        const bp: stackdriver.Breakpoint = {
+          id: 'fake-id-125',
+          location: {path: 'test/test-v8debugapi-ts-code.ts', line: 10}
+        } as stackdriver.Breakpoint;
+        api.set(bp, (err1) => {
+          assert.ifError(err1);
+          api.wait(bp, (err2) => {
+            assert.ifError(err2);
+            assert(bp.location);
+            assert.equal(bp.location!.line, 10);
+            api.clear(bp, (err3) => {
+              assert.ifError(err3);
+              done();
+            });
+          });
+        });
+        setImmediate(() => {
+          dist({x: 1, y: 2}, {x: 3, y: 4});
+        });
+      });
 
     it('should work with multiply hit breakpoints', (done) => {
       const oldWarn = logger.warn;
