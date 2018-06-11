@@ -694,7 +694,7 @@ describe('v8debugapi', () => {
        (done) => {
          const bp: stackdriver.Breakpoint = {
            id: 'fake-id-125',
-           location: {path: 'test/test-v8debugapi-ts-code.ts', line: 10}
+           location: {path: path.join('test', 'test-v8debugapi-ts-code.ts'), line: 10}
          } as stackdriver.Breakpoint;
          api.set(bp, (err1) => {
            assert.ifError(err1);
