@@ -690,7 +690,7 @@ describe('v8debugapi', () => {
          });
        });
 
-    it('should not change line number when breakpoints hit for transpiled files',
+    it.only('should not change line number when breakpoints hit for transpiled files',
        (done) => {
          const bp: stackdriver.Breakpoint = {
            id: 'fake-id-125',
@@ -707,9 +707,9 @@ describe('v8debugapi', () => {
                done();
              });
            });
-         });
-         process.nextTick(() => {
-           dist({x: 1, y: 2}, {x: 3, y: 4});
+           process.nextTick(() => {
+            dist({x: 1, y: 2}, {x: 3, y: 4});
+          });
          });
        });
 
