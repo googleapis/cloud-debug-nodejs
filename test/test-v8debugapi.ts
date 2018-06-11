@@ -690,29 +690,28 @@ describe('v8debugapi', () => {
          });
        });
 
-    it.only(
-        'should not change line number when breakpoints hit for transpiled files',
-        (done) => {
-          const bp: stackdriver.Breakpoint = {
-            id: 'fake-id-125',
-            location: {path: 'test/test-v8debugapi-ts-code.ts', line: 10}
-          } as stackdriver.Breakpoint;
-          api.set(bp, (err1) => {
-            assert.ifError(err1);
-            api.wait(bp, (err2) => {
-              assert.ifError(err2);
-              assert(bp.location);
-              assert.equal(bp.location!.line, 10);
-              api.clear(bp, (err3) => {
-                assert.ifError(err3);
-                done();
-              });
-            });
-          });
-          setImmediate(() => {
-            dist({x: 1, y: 2}, {x: 3, y: 4});
-          });
-        });
+    it('should not change line number when breakpoints hit for transpiled files',
+       (done) => {
+         const bp: stackdriver.Breakpoint = {
+           id: 'fake-id-125',
+           location: {path: 'test/test-v8debugapi-ts-code.ts', line: 10}
+         } as stackdriver.Breakpoint;
+         api.set(bp, (err1) => {
+           assert.ifError(err1);
+           api.wait(bp, (err2) => {
+             assert.ifError(err2);
+             assert(bp.location);
+             assert.equal(bp.location!.line, 10);
+             api.clear(bp, (err3) => {
+               assert.ifError(err3);
+               done();
+             });
+           });
+         });
+         setImmediate(() => {
+           dist({x: 1, y: 2}, {x: 3, y: 4});
+         });
+       });
 
     it('should work with multiply hit breakpoints', (done) => {
       const oldWarn = logger.warn;
