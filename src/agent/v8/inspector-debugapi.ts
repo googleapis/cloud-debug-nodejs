@@ -439,6 +439,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
                 true)
           });
           breakpoint.expressions.splice(i, 1);
+          i--;
         }
       }
     }

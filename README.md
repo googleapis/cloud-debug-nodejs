@@ -135,17 +135,17 @@ require('@google-cloud/debug-agent').start({
 
 Once your application is running (deployed, or elsewhere), you should be able to use the [Debug UI][debug-tab] in your Cloud [developer console][dev-console]. You can find the Debug UI in the 'STACKDRIVER -> Debug' section in the navigation panel, or by simply searching for 'Debug' in the cloud console.
 
-![Debug UI](doc/images/debug-ui.png?raw=true)
+<img src="/doc/images/debug-ui.png" alt="Debug UI" />
 
 If your source is hosted in a [cloud source repository](https://cloud.google.com/tools/cloud-repositories/docs/), Stackdriver Debugger will display the source code of your application automatically. Alternatively, you can also point the debugger to local files, a GitHub or Bitbucket repository, through a Source Capture, or you can simply type in a filename and line number. More details are on source options are [available here](https://cloud.google.com/debugger/docs/source-options).
 
 If you have the source available, you can set a snapshot by clicking in the gutter (line number area). Once you set a snapshot, the debug agent will insert a momentary breakpoint at the code location in the running instances of the application.
 
-![Breakpoint Set](doc/images/breakpoint-set.png?raw=true)
+<img src="/doc/images/breakpoint-set.png" alt="Breakpoint Set" />
 
 As soon as that line of code is reached in any of the running instances of your application, the stack traces, local variables, and watch expressions are captured, and your application continues.
 
-![Breakpoint Hit](doc/images/breakpoint-hit.png?raw=true)
+<img src="/doc/images/breakpoint-hit.png" alt="Breakpoint Hit" />
 
 **Note:** The directory layout of the code that is being debugged does not have to exactly match the source code specified in the Debug UI.  This is because the debug agent resolves a snapshot filename by searching for a file with the longest matching path suffix. If a unique match is found, that file will be used to set the snapshot.
 
