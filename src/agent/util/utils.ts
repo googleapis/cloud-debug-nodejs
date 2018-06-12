@@ -207,3 +207,13 @@ export function satisfies(nodeVersion: string, semverRange: string) {
   const finalVersion = coercedVersion ? coercedVersion.version : nodeVersion;
   return semver.satisfies(finalVersion, semverRange);
 }
+
+/**
+ * Used to determine if the specified file is a JavaScript file
+ * by determining if it has a `.js` file extension.
+ *
+ * @param filepath The path of the file to analyze.
+ */
+export function isJavaScriptFile(filepath: string) {
+  return path.extname(filepath).toLowerCase() === '.js';
+}

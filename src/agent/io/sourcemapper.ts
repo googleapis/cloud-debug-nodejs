@@ -202,7 +202,8 @@ export class SourceMapper {
     }
 
     const sourcePos = {
-      source: path.relative(path.dirname(entry.mapFile), inputPath).replace(/\\/g, '/'),
+      source: path.relative(path.dirname(entry.mapFile), inputPath)
+                  .replace(/\\/g, '/'),
       line: lineNumber + 1,  // the SourceMapConsumer expects the line number
                              // to be one-based but expects the column number
       column: colNumber      // to be zero-based

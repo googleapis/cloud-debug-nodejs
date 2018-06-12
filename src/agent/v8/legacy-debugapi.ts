@@ -455,7 +455,7 @@ export class V8DebugApi implements debugapi.DebugApi {
       const captured = state.capture(
           execState, breakpoint.expressions as string[], this.config, this.v8);
       if (breakpoint.location &&
-          path.extname(breakpoint.location.path).toLowerCase() === '.js' &&
+          utils.isJavaScriptFile(breakpoint.location.path) &&
           captured.location && captured.location.line) {
         breakpoint.location.line = captured.location.line;
       }

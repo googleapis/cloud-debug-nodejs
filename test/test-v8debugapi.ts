@@ -694,7 +694,10 @@ describe('v8debugapi', () => {
        (done) => {
          const bp: stackdriver.Breakpoint = {
            id: 'fake-id-125',
-           location: {path: path.join('test', 'test-v8debugapi-ts-code.ts'), line: 10}
+           location: {
+             path: path.join('test', 'test-v8debugapi-ts-code.ts'),
+             line: 10
+           }
          } as stackdriver.Breakpoint;
          api.set(bp, (err1) => {
            assert.ifError(err1);
@@ -708,8 +711,8 @@ describe('v8debugapi', () => {
              });
            });
            process.nextTick(() => {
-            dist({x: 1, y: 2}, {x: 3, y: 4});
-          });
+             dist({x: 1, y: 2}, {x: 3, y: 4});
+           });
          });
        });
 
