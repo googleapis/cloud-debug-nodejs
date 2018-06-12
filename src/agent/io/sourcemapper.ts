@@ -201,7 +201,7 @@ export class SourceMapper {
       return null;
     }
 
-    const sourcePath = path.relative(path.dirname(entry.mapFile), inputPath).replace('\\', '/');
+    const sourcePath = path.relative(path.dirname(entry.mapFile), inputPath).replace(/\\/g, '/');
     console.log(`sourcePath=${sourcePath}`);
     const sourcePos = {
       source: sourcePath,
