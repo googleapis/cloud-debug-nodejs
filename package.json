@@ -45,7 +45,7 @@
     "closure-npc": "*",
     "coveralls": "^3.0.0",
     "glob": "^7.1.2",
-    "gts": "^0.5.4",
+    "gts": "^0.7.0",
     "istanbul": "^0.4.1",
     "js-green-licenses": "^0.5.0",
     "mkdirp": "^0.5.1",
