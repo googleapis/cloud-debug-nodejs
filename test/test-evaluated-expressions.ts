@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import * as assert from 'assert';
-import * as extend from 'extend';
+import assert from 'assert';
+import extend from 'extend';
 
 import {defaultConfig} from '../src/agent/config';
 import * as scanner from '../src/agent/io/scanner';
 import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as debugapi from '../src/agent/v8/debugapi';
-import {Common, LoggerOptions} from '../src/types/common';
+import {Common} from '../src/types/common';
 import * as stackdriver from '../src/types/stackdriver';
 
 const common: Common = require('@google-cloud/common');

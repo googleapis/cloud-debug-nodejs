@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as lodash from 'lodash';
+import lodash from 'lodash';
 import * as util from 'util';
-import * as vm from 'vm';
+import vm from 'vm';
 
 import {debugAssert} from '../util/debug-assert';
 

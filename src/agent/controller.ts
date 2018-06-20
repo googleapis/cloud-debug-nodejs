@@ -21,7 +21,7 @@
 import {Common} from '../types/common';
 export const common: Common = require('@google-cloud/common');
 
-import * as assert from 'assert';
+import assert from 'assert';
 import * as http from 'http';
 import * as qs from 'querystring';
 

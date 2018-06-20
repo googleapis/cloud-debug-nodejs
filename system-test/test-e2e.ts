@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as assert from 'assert';
+import assert from 'assert';
 import * as cp from 'child_process';
 import * as _ from 'lodash';  // for _.find. Can't use ES6 yet.
 import * as util from 'util';

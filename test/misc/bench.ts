@@ -17,7 +17,7 @@
 
 const v8debugapi = require('../src/v8debugapi.js');
 const config = require('../config.js').default;
-import * as assert from 'assert';
+import assert from 'assert';
 const pretty = require('pretty-hrtime');
 // const util = require('util');
 const fib = require('./bench-code.js');

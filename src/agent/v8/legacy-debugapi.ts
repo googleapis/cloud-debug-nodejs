@@ -19,7 +19,7 @@ import * as estree from 'estree';
 import * as _ from 'lodash';
 import * as path from 'path';
 import * as semver from 'semver';
-import * as vm from 'vm';
+import vm from 'vm';
 
 import {StatusMessage} from '../../client/stackdriver/status-message';
 import {Logger} from '../../types/common';
