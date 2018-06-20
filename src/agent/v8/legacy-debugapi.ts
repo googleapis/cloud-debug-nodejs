@@ -90,9 +90,6 @@ export class V8DebugApi implements debugapi.DebugApi {
             this.logger.warn('Internal V8 error on breakpoint event: ' + e);
           }
         };
-    if (process.env.GCLOUD_USE_INSPECTOR) {
-      this.logger.warn(utils.messages.INSPECTOR_NOT_AVAILABLE);
-    }
     if (this.usePermanentListener) {
       this.logger.info('activating v8 breakpoint listener (permanent)');
 
@@ -122,7 +119,6 @@ export class V8DebugApi implements debugapi.DebugApi {
       const column = 0;
       const mapInfo =
           this.sourcemapper.mappingInfo(baseScriptPath, line, column);
-
       const compile = utils.getBreakpointCompiler(breakpoint);
       if (breakpoint.condition && compile) {
         try {
@@ -435,6 +431,7 @@ export class V8DebugApi implements debugapi.DebugApi {
                 true)
           });
           breakpoint.expressions.splice(i, 1);
+          i--;
         }
       }
     }
@@ -457,7 +454,9 @@ export class V8DebugApi implements debugapi.DebugApi {
       // TODO: Address the case where `breakpoint.expression` is `undefined`.
       const captured = state.capture(
           execState, breakpoint.expressions as string[], this.config, this.v8);
-      if (breakpoint.location && captured.location && captured.location.line) {
+      if (breakpoint.location &&
+          utils.isJavaScriptFile(breakpoint.location.path) &&
+          captured.location && captured.location.line) {
         breakpoint.location.line = captured.location.line;
       }
       breakpoint.stackFrames = captured.stackFrames;

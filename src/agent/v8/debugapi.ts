@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as semver from 'semver';
 
 import {Logger} from '../../types/common';
 import * as stackdriver from '../../types/stackdriver';
 import {DebugAgentConfig} from '../config';
 import {ScanStats} from '../io/scanner';
 import {SourceMapper} from '../io/sourcemapper';
+import * as utils from '../util/utils';
 
 export interface DebugApi {
   set(breakpoint: stackdriver.Breakpoint, cb: (err: Error|null) => void): void;
@@ -42,8 +42,12 @@ interface DebugApiConstructor {
 
 let debugApiConstructor: DebugApiConstructor;
 
-if (semver.satisfies(process.version, '>=8') &&
-    process.env.GCLOUD_USE_INSPECTOR) {
+export function willUseInspector(nodeVersion?: string) {
+  const version = nodeVersion != null ? nodeVersion : process.version;
+  return utils.satisfies(version, '>=10');
+}
+
+if (willUseInspector()) {
   const inspectorapi = require('./inspector-debugapi');
   debugApiConstructor = inspectorapi.InspectorDebugApi;
 } else {

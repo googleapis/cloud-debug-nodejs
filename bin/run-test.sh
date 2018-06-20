@@ -30,8 +30,7 @@ function run {
 }
 
 # Run test/coverage
-GCLOUD_USE_INSPECTOR= run build/test
-GCLOUD_USE_INSPECTOR=true run build/test
+run build/test
 
 # Conditionally publish coverage
 if [ "$cover" ]; then

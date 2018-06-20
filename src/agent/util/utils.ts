@@ -1,4 +1,5 @@
 import * as path from 'path';
+import * as semver from 'semver';
 
 import {StatusMessage} from '../../client/stackdriver/status-message';
 import * as stackdriver from '../../types/stackdriver';
@@ -24,9 +25,7 @@ export const messages = {
   CAPTURE_BREAKPOINT_DATA: 'Error trying to capture snapshot data: ',
   INVALID_LINE_NUMBER: 'Invalid snapshot position: ',
   COULD_NOT_FIND_OUTPUT_FILE:
-      'Could not determine the output file associated with the transpiled input file',
-  INSPECTOR_NOT_AVAILABLE:
-      'The V8 Inspector protocol is only available in Node 8+'
+      'Could not determine the output file associated with the transpiled input file'
 };
 
 export interface Listener {
@@ -185,4 +184,36 @@ export function removeFirstOccurrenceInArray<T>(array: T[], element: T): void {
   if (index >= 0) {
     array.splice(index, 1);
   }
+}
+
+/**
+ * Used to determine whether the specified node version satisfies the
+ * given semver range.  This method is able to properly handle nightly
+ * builds.  For example,
+ *    satisfies('v10.0.0-nightly201804132a6ab9b37b', '>=10')
+ * returns `true`.
+ *
+ * @param version The node version.
+ * @param semverRange The semver range to check against
+ */
+export function satisfies(nodeVersion: string, semverRange: string) {
+  // Coercing the version is needed to handle nightly builds correctly.
+  // In particular,
+  //   semver.satisfies('v10.0.0-nightly201804132a6ab9b37b', '>=10')
+  // returns `false`.
+  //
+  // `semver.coerce` can be used to coerce that nightly version to v10.0.0.
+  const coercedVersion = semver.coerce(nodeVersion);
+  const finalVersion = coercedVersion ? coercedVersion.version : nodeVersion;
+  return semver.satisfies(finalVersion, semverRange);
+}
+
+/**
+ * Used to determine if the specified file is a JavaScript file
+ * by determining if it has a `.js` file extension.
+ *
+ * @param filepath The path of the file to analyze.
+ */
+export function isJavaScriptFile(filepath: string) {
+  return path.extname(filepath).toLowerCase() === '.js';
 }

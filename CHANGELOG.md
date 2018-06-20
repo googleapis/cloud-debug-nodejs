@@ -1,5 +1,40 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## 2018-06-12, Version 2.6.0 (Beta), @dominickramer
+
+This release adds side-effect-free evaluation [#335](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/issues/335) and fixes an issue where when a breakpoint is hit in a transpiled file, the line number of the breakpoint incorrectly changes [#436](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/issues/436).
+
+### Commits
+
+* fix: line numbers don't change in transpiled files (#436) `2d7a0f7`
+* docs: fix image links on npmjs.com (#435) `71ae615`
+* chore: remove stripResults parameter (#432) `e42836f`
+* chore: clean up test-e2e.ts (#431) `a627642`
+* feat: implement side-effect-free expression evaluation (#335) `173c9e7`
+* chore: remove the GCLOUD_USE_INSPECTOR env var (#429) `73b171e`
+* chore: change the gts version to `^0.5.4` (#427) `54d3d10`
+* chore: add tests to verify evaluated expressions (#425) `d03e0e5`
+* chore(package): update @types/node to version 10.0.3 (#424) `cc40309`
+
+## 2018-04-27, Version 2.5.1 (Beta), @dominickramer
+
+This release addresses issue [#420](https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/issues/420).  In particular, if `semver` version `5.1.0` was already installed as a dependency prior to installing `@google-cloud/debug-agent`, the agent would have an out of date version of `semver` and would fail to start.
+
+### Commits
+
+* chore: update semver to `5.5.0` (#421) `960bbc7`
+* chore: test on Node 10 (#419) `9b15b29`
+* chore(package): update @types/estree to version 0.0.39 (#416) `9c4427e`
+
+## 2018-04-17, Version 2.5.0 (Beta), @dominickramer
+
+This release adds support for Node 10 by always using the inspector protocol on Node >= 10.  This is needed  because the `vm.runInDebugContext` function, needed to use the legacy debug protocol, is no longer available in Node 10.
+
+### Commits
+* feat: support Node 10 (#412) `b21b084`
+* fix(package): update @google-cloud/common to version 0.17.0 (#410) `6c4a878`
+* chore(package): update @types/mocha to version 5.0.0 (#411) `87fdf0e`
+
 ## 2018-03-16, Version 2.4.0 (Beta), @dominickramer
 
 With this release:

@@ -50,26 +50,19 @@ export function evaluate(
     v8inspector: V8Inspector, returnByValue: boolean):
     {error: string|null, object?: inspector.Runtime.RemoteObject} {
   // First validate the expression to make sure it doesn't mutate state
-  const acorn = require('acorn');
-  try {
-    const ast = acorn.parse(expression, {sourceType: 'script'});
-    const validator = require('../util/validator');
-    if (!validator.isValid(ast)) {
-      return {error: 'expression not allowed'};
-    }
-  } catch (err) {
-    return {error: err.message};
-  }
-
-  // Now actually ask V8 Inspector to evaluate the expression
-  const result = v8inspector.evaluateOnCallFrame(
-      {callFrameId: frame.callFrameId, expression, returnByValue});
+  // and ask V8 Inspector to evaluate the expression
+  const result = v8inspector.evaluateOnCallFrame({
+    callFrameId: frame.callFrameId,
+    expression,
+    returnByValue,
+    throwOnSideEffect: true
+  });
   if (result.error || !result.response) {
     return {
       error: result.error ? String(result.error) : 'no reponse in result'
     };
   } else if (result.response.exceptionDetails) {
-    return {error: String(result.response.exceptionDetails)};
+    return {error: String(result.response.result.description).split('\n')[0]};
   } else {
     return {error: null, object: result.response.result};
   }
