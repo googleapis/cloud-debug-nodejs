@@ -154,7 +154,7 @@ export function getBreakpointCompiler(breakpoint: stackdriver.Breakpoint):
           .pop()) {
     case 'coffee':
       return (uncompiled) => {
-        const comp = require('coffee-script');
+        const comp = require('coffeescript');
         const compiled = comp.compile('0 || (' + uncompiled + ')');
         // Strip out coffeescript scoping wrapper to get translated condition
         const re = /\(function\(\) {\s*0 \|\| \((.*)\);\n\n\}\)\.call\(this\);/;
