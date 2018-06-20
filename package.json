@@ -19,7 +19,7 @@
   ],
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=4"
+    "node": ">=6"
   },
   "devDependencies": {
     "@types/acorn": "^4.0.2",
