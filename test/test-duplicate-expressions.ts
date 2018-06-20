@@ -23,8 +23,8 @@ const breakpointInFoo: stackdriver.Breakpoint = {
   location: {path: 'test-duplicate-expressions-code.js', line: 4}
 } as stackdriver.Breakpoint;
 
-import * as assert from 'assert';
-import * as extend from 'extend';
+import assert from 'assert';
+import extend from 'extend';
 import * as debugapi from '../src/agent/v8/debugapi';
 const common: Common = require('@google-cloud/common');
 import {defaultConfig} from '../src/agent/config';

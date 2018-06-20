@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as assert from 'assert';
+import assert from 'assert';
 import {Debuggee} from '../src/debuggee';
 
 const agentVersion = `SomeName/client/SomeVersion`;

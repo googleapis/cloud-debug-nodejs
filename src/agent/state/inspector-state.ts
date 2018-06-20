@@ -17,7 +17,7 @@
 // TODO: Unify some common code with state.ts in future PRs.
 
 import * as inspector from 'inspector';
-import * as lodash from 'lodash';
+import lodash from 'lodash';
 import * as util from 'util';
 
 import {debugAssert} from '../util/debug-assert';

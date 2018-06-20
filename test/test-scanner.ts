@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-import * as assert from 'assert';
+import assert from 'assert';
 import * as events from 'events';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as proxyquire from 'proxyquire';
+import proxyquire from 'proxyquire';
 import * as stream from 'stream';
-
-const findit: (dir: string) => events.EventEmitter = require('findit2');
 
 const fixtureDir = path.join(__dirname, './fixtures');
 const fixture = (file: string): string => {
@@ -188,11 +186,7 @@ describe('scanner', () => {
 
   describe('on errors', () => {
     const MOCKED_DIRECTORY = '!NOT_A_REAL_DIRECTORY!';
-    const MOCKED_FILES: Array < {
-      filename: string;
-      error: string
-    }
-    > = [];
+    const MOCKED_FILES: Array<{filename: string; error: string}> = [];
     for (let i = 1; i <= 2; i++) {
       const filename = `cannot-read-${i}.js`;
       MOCKED_FILES.push(
