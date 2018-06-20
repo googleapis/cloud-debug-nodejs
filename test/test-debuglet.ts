@@ -1139,7 +1139,7 @@ describe('Debuglet', () => {
           debuglet.stop();
           scope.done();
           done();
-        }, 1000);
+        }, 2000);
       });
 
       debuglet.start();
