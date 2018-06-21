@@ -1091,7 +1091,7 @@ describe('Debuglet', () => {
          debuglet.start();
        });
 
-    it('should re-fetch breakpoints on error', function(done) {
+    it.skip('should re-fetch breakpoints on error', function(done) {
       this.timeout(6000);
 
       const debug = new Debug(
