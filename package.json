@@ -39,6 +39,7 @@
     "@types/request": "^2.0.0",
     "@types/rimraf": "^2.0.2",
     "@types/semver": "^5.3.32",
+    "@types/sinon": "^5.0.1",
     "@types/tmp": "0.0.33",
     "changelog-maker": "^2.2.2",
     "closure-npc": "*",
@@ -56,13 +57,14 @@
     "proxyquire": "^2.0.0",
     "request": "^2.81.0",
     "rimraf": "^2.6.2",
+    "sinon": "^6.0.0",
     "source-map-support": "^0.5.0",
     "tmp": "0.0.33",
     "tslint": "^5.4.3",
     "typescript": "~2.9.1"
   },
   "dependencies": {
-    "@google-cloud/common": "^0.17.0",
+    "@google-cloud/common": "^0.20.1",
     "acorn": "^5.0.3",
     "async": "^2.1.2",
     "coffeescript": "^1.9.3",

@@ -17,6 +17,7 @@
 import {ResolvedDebugAgentConfig} from '../src/agent/config';
 import {DebugApi} from '../src/agent/v8/debugapi';
 import * as stackdriver from '../src/types/stackdriver';
+import sinon, { SinonSandbox } from 'sinon';
 
 // TODO(dominickramer): Have this actually implement Breakpoint
 const breakpointInFoo: stackdriver.Breakpoint = {
@@ -28,22 +29,18 @@ const breakpointInFoo: stackdriver.Breakpoint = {
 
 const MAX_INT = 2147483647;  // Max signed int32.
 
-import {Common, Logger, LoggerOptions} from '../src/types/common';
-
 import assert from 'assert';
 import extend from 'extend';
 import * as debugapi from '../src/agent/v8/debugapi';
-const common: Common = require('@google-cloud/common');
-import {defaultConfig, DebugAgentConfig} from '../src/agent/config';
+import {defaultConfig} from '../src/agent/config';
 import {StatusMessage} from '../src/client/stackdriver/status-message';
 import * as scanner from '../src/agent/io/scanner';
-import {ScanStats} from '../src/agent/io/scanner';
 import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as path from 'path';
 import * as utils from '../src/agent/util/utils';
-import {debugAssert} from '../src/agent/util/debug-assert';
 const code = require('./test-v8debugapi-code.js');
 import {dist} from './test-v8debugapi-ts-code';
+import { Logger } from '@google-cloud/common';
 
 function stateIsClean(api: DebugApi): boolean {
   assert.equal(
@@ -151,12 +148,13 @@ describe(
 describe('debugapi selection', () => {
   const config: ResolvedDebugAgentConfig = extend(
       {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
-  const logger =
-      new common.logger({levelLevel: config.logLevel} as {} as LoggerOptions);
+  const logger = new Logger({level: config.logLevel});
   let logText = '';
-  logger.warn = (s: string) => {
+  const sandbox = sinon.createSandbox();
+  sandbox.stub(logger, 'warn').callsFake((s: string) => {
     logText += s;
-  };
+  });
+
   it('should use the correct debugapi and have appropriate warning', (done) => {
     let api: DebugApi;
     scanner.scan(true, config.workingDirectory, /.js$|.js.map$/)
@@ -191,13 +189,13 @@ const describeFn =
 describeFn('debugapi selection on Node >=10', () => {
   const config: ResolvedDebugAgentConfig = extend(
       {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
-  const logger =
-      new common.logger({levelLevel: config.logLevel} as {} as LoggerOptions);
+  const logger = new Logger({level: config.logLevel});
 
   let logText = '';
-  logger.warn = (s: string) => {
+  const sandbox = sinon.createSandbox();
+  sandbox.stub(logger, 'warn').callsFake((s: string) => {
     logText += s;
-  };
+  });
 
   it('should always use the inspector api', (done) => {
     let api: DebugApi;
@@ -224,8 +222,7 @@ describe('v8debugapi', () => {
   // TODO(dominickramer): It appears `logLevel` is a typo and should be `level`.
   // However,
   //       with this change, the tests fail.  Resolve this.
-  const logger =
-      new common.logger({levelLevel: config.logLevel} as {} as LoggerOptions);
+  const logger = new Logger({level: config.logLevel});
   let api: DebugApi;
 
   beforeEach((done) => {
@@ -717,12 +714,12 @@ describe('v8debugapi', () => {
        });
 
     it('should work with multiply hit breakpoints', (done) => {
-      const oldWarn = logger.warn;
       let logCount = 0;
       // If an exception is thrown we will log
-      logger.warn = () => {
+      const sandbox = sinon.createSandbox();
+      sandbox.stub(logger, 'warn').callsFake(() => {
         logCount++;
-      };
+      });
       // clone a clean breakpointInFoo
       // TODO(dominickramer): Have this actually implement Breakpoint
       const bp: stackdriver.Breakpoint = {
@@ -734,7 +731,7 @@ describe('v8debugapi', () => {
         api.wait(bp, (err2) => {
           assert.ifError(err2);
           setTimeout(() => {
-            logger.warn = oldWarn;
+            sandbox.restore();
             assert.equal(logCount, 0);
             api.clear(bp, (err3) => {
               assert.ifError(err3);

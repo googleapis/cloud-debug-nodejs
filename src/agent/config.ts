@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-import * as common from '../types/common';
+import {GoogleAuthOptions} from '@google-cloud/common';
+
 
 export type DebugAgentConfig = {
   [K in keyof ResolvedDebugAgentConfig]?: Partial<ResolvedDebugAgentConfig[K]>
 };
 
-export interface ResolvedDebugAgentConfig extends common.AuthenticationConfig {
+export interface ResolvedDebugAgentConfig extends GoogleAuthOptions {
   workingDirectory: string;
 
   allowRootAsWorkingDirectory: boolean;
@@ -76,7 +77,7 @@ export interface ResolvedDebugAgentConfig extends common.AuthenticationConfig {
   /**
    * agent log level 0-disabled, 1-error, 2-warn, 3-info, 4-debug
    */
-  logLevel: number;
+  logLevel: string;
 
   /**
    * How frequently should the list of breakpoints be refreshed from the cloud
@@ -168,7 +169,7 @@ export interface ResolvedDebugAgentConfig extends common.AuthenticationConfig {
   testMode_: boolean;
 }
 
-export interface StackdriverConfig extends common.AuthenticationConfig {
+export interface StackdriverConfig extends GoogleAuthOptions {
   debug?: DebugAgentConfig;
 }
 
@@ -186,7 +187,7 @@ export const defaultConfig: ResolvedDebugAgentConfig = {
       {service: undefined, version: undefined, minorVersion_: undefined},
 
   appPathRelativeToRepository: undefined,
-  logLevel: 1,
+  logLevel: 'error',
   breakpointUpdateIntervalSec: 10,
   breakpointExpirationSec: 60 * 60 * 24,  // 24 hours
 

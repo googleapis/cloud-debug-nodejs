@@ -17,11 +17,9 @@
 import assert from 'assert';
 import * as http from 'http';
 import nock from 'nock';
-
 import {Debug} from '../src/client/stackdriver/debug';
 import {Debuggee} from '../src/debuggee';
 import * as stackdriver from '../src/types/stackdriver';
-
 import {authRequest as request} from './auth-request';
 
 // the tests in this file rely on the GCLOUD_PROJECT environment variable
@@ -40,7 +38,7 @@ nock.disableNetConnect();
 
 describe('Controller API', () => {
   describe('register', () => {
-    it('should get a debuggeeId', (done) => {
+    it.only('should get a debuggeeId', (done) => {
       const scope = nock(url).post(api + '/debuggees/register').reply(200, {
         debuggee: {id: 'fake-debuggee'},
         activePeriodSec: 600
@@ -120,7 +118,7 @@ describe('Controller API', () => {
       // TODO: Determine if the response parameter should be used.
       controller.listBreakpoints(
           debuggee as Debuggee,
-          (err: Error|null, response?: http.ServerResponse,
+          (err, response,
            result?: stackdriver.ListBreakpointsResponse) => {
             assert(!err, 'not expecting an error');
             // TODO: Handle the case where result is undefined
@@ -148,7 +146,7 @@ describe('Controller API', () => {
           // TODO: Determine if the response parameter should be used.
           controller.listBreakpoints(
               debuggee as Debuggee,
-              (err: Error|null, response?: http.ServerResponse,
+              (err, response,
                result?: stackdriver.ListBreakpointsResponse) => {
                 assert(!err, 'not expecting an error');
                 // TODO: Handle the case where result is undefined

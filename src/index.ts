@@ -17,6 +17,7 @@
 import {DebugAgentConfig, StackdriverConfig} from './agent/config';
 import {Debuglet, IsReady} from './agent/debuglet';
 import {Debug} from './client/stackdriver/debug';
+import { GoogleAuthOptions } from '@google-cloud/common';
 
 const pjson = require('../../package.json');
 
@@ -46,7 +47,7 @@ export function start(options?: DebugAgentConfig|StackdriverConfig): Debuglet|
     throw new Error('Debug Agent has already been started');
   }
 
-  const debug = new Debug(options, pjson);
+  const debug = new Debug(options as GoogleAuthOptions, pjson);
   debuglet = new Debuglet(debug, agentConfig);
   debuglet.start();
 

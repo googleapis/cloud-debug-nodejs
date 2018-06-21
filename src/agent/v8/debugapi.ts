@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import {Logger} from '../../types/common';
 import * as stackdriver from '../../types/stackdriver';
 import {DebugAgentConfig} from '../config';
 import {ScanStats} from '../io/scanner';
 import {SourceMapper} from '../io/sourcemapper';
 import * as utils from '../util/utils';
+import {Logger} from '@google-cloud/common';
 
 export interface DebugApi {
   set(breakpoint: stackdriver.Breakpoint, cb: (err: Error|null) => void): void;

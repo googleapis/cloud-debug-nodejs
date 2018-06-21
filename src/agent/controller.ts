@@ -18,21 +18,18 @@
  * @module debug/controller
  */
 
-import {Common} from '../types/common';
-export const common: Common = require('@google-cloud/common');
-
+import {ServiceObject} from '@google-cloud/common';
 import assert from 'assert';
-import * as http from 'http';
 import * as qs from 'querystring';
-
 import {Debug} from '../client/stackdriver/debug';
 import {Debuggee} from '../debuggee';
 import * as stackdriver from '../types/stackdriver';
+import { Response } from 'request';
 
 /** @const {string} Cloud Debug API endpoint */
 const API = 'https://clouddebugger.googleapis.com/v2/controller';
 
-export class Controller extends common.ServiceObject {
+export class Controller extends ServiceObject {
   private nextWaitToken: string|null;
 
   /**
@@ -60,22 +57,18 @@ export class Controller extends common.ServiceObject {
       json: true,
       body: {debuggee}
     };
-    this.request(
-        options,
-        (err: Error, body: {debuggee: Debuggee},
-         response: http.ServerResponse) => {
-          if (err) {
-            callback(err);
-          } else if (response.statusCode !== 200) {
-            callback(new Error(
-                'unable to register, statusCode ' + response.statusCode));
-          } else if (!body.debuggee) {
-            callback(new Error('invalid response body from server'));
-          } else {
-            debuggee.id = body.debuggee.id;
-            callback(null, body);
-          }
-        });
+    this.request(options, (err, body: {debuggee: Debuggee}, res) => {
+      if (err) {
+        callback(err);
+      } else if (res!.statusCode !== 200) {
+        callback(new Error(`unable to register, statusCode ${res!.statusCode}`));
+      } else if (!body.debuggee) {
+        callback(new Error('invalid response body from server'));
+      } else {
+        debuggee.id = body.debuggee.id;
+        callback(null, body);
+      }
+    });
   }
 
 
@@ -87,7 +80,7 @@ export class Controller extends common.ServiceObject {
   listBreakpoints(
       debuggee: Debuggee,
       callback:
-          (err: Error|null, response?: http.ServerResponse,
+          (err: Error|null, response?: Response,
            body?: stackdriver.ListBreakpointsResponse) => void): void {
     const that = this;
     assert(debuggee.id, 'should have a registered debuggee');
@@ -100,8 +93,7 @@ export class Controller extends common.ServiceObject {
         '/breakpoints?' + qs.stringify(query);
     that.request(
         {uri, json: true},
-        (err: Error, body: stackdriver.ListBreakpointsResponse,
-         response: http.ServerResponse) => {
+        (err, body: stackdriver.ListBreakpointsResponse, response) => {
           if (!response) {
             callback(
                 err || new Error('unknown error - request response missing'));
@@ -132,7 +124,7 @@ export class Controller extends common.ServiceObject {
    */
   updateBreakpoint(
       debuggee: Debuggee, breakpoint: stackdriver.Breakpoint,
-      callback: (err?: Error, body?: {}) => void): void {
+      callback: (err: Error|null, body?: {}) => void): void {
     assert(debuggee.id, 'should have a registered debuggee');
 
     breakpoint.action = 'CAPTURE';
@@ -151,7 +143,7 @@ export class Controller extends common.ServiceObject {
     // stringify them. The try-catch keeps it resilient and avoids crashing the
     // user's app.
     try {
-      this.request(options, (err: Error, body: {} /*, response */) => {
+      this.request(options, (err, body /*, response */) => {
         callback(err, body);
       });
     } catch (error) {
