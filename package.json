@@ -62,7 +62,7 @@
     "typescript": "~2.9.1"
   },
   "dependencies": {
-    "@google-cloud/common": "^0.17.0",
+    "@google-cloud/common": "^0.19.2",
     "acorn": "^5.0.3",
     "async": "^2.1.2",
     "coffeescript": "^1.9.3",
