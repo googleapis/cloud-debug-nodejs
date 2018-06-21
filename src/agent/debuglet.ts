@@ -19,7 +19,7 @@ const common: Common = require('@google-cloud/common');
 
 import * as crypto from 'crypto';
 import {EventEmitter} from 'events';
-import * as extend from 'extend';
+import extend from 'extend';
 import * as fs from 'fs';
 
 import * as metadata from 'gcp-metadata';
@@ -39,7 +39,7 @@ import * as scanner from './io/scanner';
 import * as SourceMapper from './io/sourcemapper';
 import * as debugapi from './v8/debugapi';
 
-import * as assert from 'assert';
+import assert from 'assert';
 
 import * as stackdriver from '../types/stackdriver';
 import {DebugAgentConfig, ResolvedDebugAgentConfig} from './config';
@@ -141,7 +141,9 @@ export class CachedPromise {
  * 3. Debuggee registration expired or failed, listBreakpoint cannot be
  *    completed.
  */
-export interface IsReady { isReady(): Promise<void>; }
+export interface IsReady {
+  isReady(): Promise<void>;
+}
 
 /**
  * IsReadyManager is a wrapper class to use debuglet.isReady().

@@ -15,12 +15,10 @@
  */
 
 import * as path from 'path';
-import * as pify from 'pify';
-import * as rawFs from 'fs';
-import * as rawMkdirp from 'mkdirp';
-import * as rawNcp from 'ncp';
+import pify from 'pify';
+import rawMkdirp from 'mkdirp';
+import rawNcp from 'ncp';
 
-const fs = pify(rawFs);
 const mkdirp = pify(rawMkdirp);
 const ncp = pify(rawNcp);
 

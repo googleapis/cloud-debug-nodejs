@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import * as assert from 'assert';
+import assert from 'assert';
 import * as fs from 'fs';
 import * as _ from 'lodash';
 import * as path from 'path';
-import * as proxyquire from 'proxyquire';
+import proxyquire from 'proxyquire';
 
 import {DebugAgentConfig} from '../src/agent/config';
 import {defaultConfig as DEFAULT_CONFIG} from '../src/agent/config';
@@ -29,13 +29,9 @@ DEFAULT_CONFIG.allowExpressions = true;
 DEFAULT_CONFIG.workingDirectory = path.join(__dirname, '..', '..');
 import {Debuglet, CachedPromise, FindFilesResult} from '../src/agent/debuglet';
 import {ScanResults} from '../src/agent/io/scanner';
-import * as dns from 'dns';
-import * as extend from 'extend';
-import * as rawMetadata from 'gcp-metadata';
-const metadata: {project: Function; instance: Function;} = rawMetadata;
+import extend from 'extend';
 
 import {Debug} from '../src/client/stackdriver/debug';
-import * as utils from '../src/agent/util/utils';
 
 const DEBUGGEE_ID = 'bar';
 const API = 'https://clouddebugger.googleapis.com';
@@ -51,16 +47,13 @@ const packageInfo = {
   version: 'Some version'
 };
 
-import * as nock from 'nock';
+import nock from 'nock';
 import * as nocks from './nocks';
 nock.disableNetConnect();
 
 const defaultConfig = extend(true, {}, DEFAULT_CONFIG, {logLevel: 0});
 
 let oldGP: string|undefined;
-
-declare type MetadataCallback = (err: Error|null, ob?: {}, result?: string) =>
-    void;
 
 // TODO: Have this actually implement Breakpoint.
 const bp: stackdriver.Breakpoint = {
@@ -319,11 +312,7 @@ describe('Debuglet', () => {
 
     it('should not fail if files cannot be read', (done) => {
       const MOCKED_DIRECTORY = process.cwd();
-      const errors: Array < {
-        filename: string;
-        error: string;
-      }
-      > = [];
+      const errors: Array<{filename: string; error: string;}> = [];
       for (let i = 1; i <= 2; i++) {
         const filename = `cannot-read-${i}.js`;
         const error = `EACCES: permission denied, open '${filename}'`;

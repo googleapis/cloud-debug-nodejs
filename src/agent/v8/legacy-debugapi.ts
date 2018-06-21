@@ -19,7 +19,7 @@ import * as estree from 'estree';
 import * as _ from 'lodash';
 import * as path from 'path';
 import * as semver from 'semver';
-import * as vm from 'vm';
+import vm from 'vm';
 
 import {StatusMessage} from '../../client/stackdriver/status-message';
 import {Logger} from '../../types/common';
@@ -119,7 +119,6 @@ export class V8DebugApi implements debugapi.DebugApi {
       const column = 0;
       const mapInfo =
           this.sourcemapper.mappingInfo(baseScriptPath, line, column);
-
       const compile = utils.getBreakpointCompiler(breakpoint);
       if (breakpoint.condition && compile) {
         try {
@@ -455,7 +454,9 @@ export class V8DebugApi implements debugapi.DebugApi {
       // TODO: Address the case where `breakpoint.expression` is `undefined`.
       const captured = state.capture(
           execState, breakpoint.expressions as string[], this.config, this.v8);
-      if (breakpoint.location && captured.location && captured.location.line) {
+      if (breakpoint.location &&
+          utils.isJavaScriptFile(breakpoint.location.path) &&
+          captured.location && captured.location.line) {
         breakpoint.location.line = captured.location.line;
       }
       breakpoint.stackFrames = captured.stackFrames;

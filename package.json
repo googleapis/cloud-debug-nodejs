@@ -1,6 +1,6 @@
 {
   "name": "@google-cloud/debug-agent",
-  "version": "2.5.1",
+  "version": "2.6.0",
   "author": "Google Inc.",
   "description": "Stackdriver Debug Agent for Node.js",
   "main": "./build/src/index",
@@ -19,7 +19,7 @@
   ],
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=4"
+    "node": ">=6"
   },
   "devDependencies": {
     "@types/acorn": "^4.0.2",
@@ -39,13 +39,12 @@
     "@types/request": "^2.0.0",
     "@types/rimraf": "^2.0.2",
     "@types/semver": "^5.3.32",
-    "@types/source-map": "^0.5.0",
     "@types/tmp": "0.0.33",
     "changelog-maker": "^2.2.2",
     "closure-npc": "*",
     "coveralls": "^3.0.0",
     "glob": "^7.1.2",
-    "gts": "^0.5.4",
+    "gts": "^0.7.1",
     "istanbul": "^0.4.1",
     "js-green-licenses": "^0.5.0",
     "mkdirp": "^0.5.1",
@@ -60,13 +59,13 @@
     "source-map-support": "^0.5.0",
     "tmp": "0.0.33",
     "tslint": "^5.4.3",
-    "typescript": "~2.7.2"
+    "typescript": "~2.9.1"
   },
   "dependencies": {
     "@google-cloud/common": "^0.17.0",
     "acorn": "^5.0.3",
     "async": "^2.1.2",
-    "coffee-script": "^1.9.3",
+    "coffeescript": "^1.9.3",
     "extend": "^3.0.1",
     "findit2": "^2.2.3",
     "gcp-metadata": "^0.6.3",

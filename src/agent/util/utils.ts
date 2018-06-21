@@ -154,7 +154,7 @@ export function getBreakpointCompiler(breakpoint: stackdriver.Breakpoint):
           .pop()) {
     case 'coffee':
       return (uncompiled) => {
-        const comp = require('coffee-script');
+        const comp = require('coffeescript');
         const compiled = comp.compile('0 || (' + uncompiled + ')');
         // Strip out coffeescript scoping wrapper to get translated condition
         const re = /\(function\(\) {\s*0 \|\| \((.*)\);\n\n\}\)\.call\(this\);/;
@@ -206,4 +206,14 @@ export function satisfies(nodeVersion: string, semverRange: string) {
   const coercedVersion = semver.coerce(nodeVersion);
   const finalVersion = coercedVersion ? coercedVersion.version : nodeVersion;
   return semver.satisfies(finalVersion, semverRange);
+}
+
+/**
+ * Used to determine if the specified file is a JavaScript file
+ * by determining if it has a `.js` file extension.
+ *
+ * @param filepath The path of the file to analyze.
+ */
+export function isJavaScriptFile(filepath: string) {
+  return path.extname(filepath).toLowerCase() === '.js';
 }

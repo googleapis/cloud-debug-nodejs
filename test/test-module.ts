@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import * as assert from 'assert';
-const module: NodeModule&{start: Function} = require('../..');
-import * as nock from 'nock';
+import assert from 'assert';
+const m: NodeModule&{start: Function} = require('../..');
+import nock from 'nock';
 import * as nocks from './nocks';
 
 nock.disableNetConnect();
@@ -24,7 +24,7 @@ nock.disableNetConnect();
 describe('Debug module', () => {
   before((done) => {
     nocks.projectId('project-via-metadata');
-    const debuglet = module.start(
+    const debuglet = m.start(
         {projectId: '0', debug: {forceNewAgent_: true, testMode_: true}});
     debuglet.on('started', () => {
       debuglet.stop();
@@ -34,7 +34,7 @@ describe('Debug module', () => {
 
   it('should throw on attempt to start a new agent', () => {
     assert.throws(() => {
-      module.start();
+      m.start();
     });
   });
 });

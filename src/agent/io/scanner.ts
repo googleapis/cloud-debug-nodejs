@@ -34,7 +34,9 @@ export interface FileStats {
 }
 
 // TODO: Update the code so that `undefined  is not a possible property value
-export interface ScanStats { [filename: string]: FileStats|undefined; }
+export interface ScanStats {
+  [filename: string]: FileStats|undefined;
+}
 
 export interface ScanResults {
   errors(): Map<string, Error>;
