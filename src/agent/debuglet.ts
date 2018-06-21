@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-import {AuthenticationConfig, Common} from '../types/common';
-const common: Common = require('@google-cloud/common');
-
 import * as crypto from 'crypto';
 import {EventEmitter} from 'events';
 import extend from 'extend';
 import * as fs from 'fs';
 
 import * as metadata from 'gcp-metadata';
-
+import {Logger, GoogleAuthOptions} from '@google-cloud/common';
 import * as _ from 'lodash';
 import * as path from 'path';
 import * as util from 'util';
@@ -44,7 +41,6 @@ import assert from 'assert';
 import * as stackdriver from '../types/stackdriver';
 import {DebugAgentConfig, ResolvedDebugAgentConfig} from './config';
 import {Debug, PackageInfo} from '../client/stackdriver/debug';
-import {Logger} from '../types/common';
 import {DebugApi} from './v8/debugapi';
 
 const promisify = require('util.promisify');
@@ -227,8 +223,8 @@ export class Debuglet extends EventEmitter {
     this.fetcherActive = false;
 
     /** @private {common.logger} */
-    this.logger = new common.logger({
-      level: common.logger.LEVELS[this.config.logLevel],
+    this.logger = new Logger({
+      level: this.config.logLevel,
       tag: this.debug.packageInfo.name
     });
 
@@ -498,7 +494,7 @@ export class Debuglet extends EventEmitter {
     return new Debuggee(properties);
   }
 
-  static async getProjectId(options: AuthenticationConfig): Promise<string> {
+  static async getProjectId(options: GoogleAuthOptions): Promise<string> {
     const project = options.projectId || process.env.GCLOUD_PROJECT ||
         await this.getProjectIdFromMetadata();
     if (!project) {
@@ -636,7 +632,7 @@ export class Debuglet extends EventEmitter {
               return;
             }
             // TODO: Address the case where `response` is `undefined`.
-            switch ((response as http.ServerResponse).statusCode) {
+            switch (response!.statusCode) {
               case 404:
                 // Registration expired. Deactivate the fetcher and queue
                 // re-registration, which will re-active breakpoint fetching.
@@ -649,7 +645,7 @@ export class Debuglet extends EventEmitter {
               default:
                 // TODO: Address the case where `response` is `undefined`.
                 that.logger.info(
-                    '\t' + (response as http.ServerResponse).statusCode +
+                    '\t' + response!.statusCode +
                     ' completed.');
                 if (!body) {
                   that.logger.error('\tinvalid list response: empty body');

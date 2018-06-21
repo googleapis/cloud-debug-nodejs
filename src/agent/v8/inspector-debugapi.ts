@@ -20,7 +20,7 @@ import * as inspector from 'inspector';
 import * as path from 'path';
 
 import {StatusMessage} from '../../client/stackdriver/status-message';
-import {Logger} from '../../types/common';
+import {Logger} from '@google-cloud/common';
 import * as stackdriver from '../../types/stackdriver';
 import {ResolvedDebugAgentConfig} from '../config';
 import {FileStats, ScanStats} from '../io/scanner';

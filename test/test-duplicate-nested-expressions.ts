@@ -18,10 +18,8 @@ import assert from 'assert';
 import extend from 'extend';
 
 import * as debugapi from '../src/agent/v8/debugapi';
-import {Common, LoggerOptions} from '../src/types/common';
 import * as stackdriver from '../src/types/stackdriver';
-
-const common: Common = require('@google-cloud/common');
+import {Logger} from '@google-cloud/common';
 import {defaultConfig} from '../src/agent/config';
 import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as scanner from '../src/agent/io/scanner';
@@ -40,8 +38,7 @@ describe(__filename, () => {
       {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
   // TODO: It appears `logLevel` is a typo and should be `level`.  However,
   //       with this change, the tests fail.  Resolve this.
-  const logger =
-      new common.logger({logLevel: config.logLevel} as {} as LoggerOptions);
+  const logger = new Logger({level: config.logLevel});
   let api: debugapi.DebugApi;
 
   beforeEach((done) => {

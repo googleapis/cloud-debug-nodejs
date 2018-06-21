@@ -19,7 +19,7 @@ import * as fs from 'fs';
 import * as _ from 'lodash';
 import * as path from 'path';
 import proxyquire from 'proxyquire';
-
+import sinon, { SinonSandbox } from 'sinon';
 import {DebugAgentConfig} from '../src/agent/config';
 import {defaultConfig as DEFAULT_CONFIG} from '../src/agent/config';
 import {Debuggee} from '../src/debuggee';
@@ -74,6 +74,14 @@ function verifyBreakpointRejection(
   const hasCorrectDescription = status!.description.format.match(re);
   return status!.isError && hasCorrectDescription;
 }
+
+let sandbox: SinonSandbox;
+beforeEach(() => {
+  sandbox = sinon.createSandbox();
+});
+afterEach(() => {
+  sandbox.restore();
+});
 
 describe('CachedPromise', () => {
   it('CachedPromise.get() will resolve after CachedPromise.resolve()',
@@ -250,13 +258,13 @@ describe('Debuglet', () => {
 
          let message = '';
          const savedLoggerError = debuglet.logger.error;
-         debuglet.logger.error = (text: string) => {
+         sandbox.stub(debuglet.logger, 'error').callsFake((text: string) => {
            message += text;
-         };
+         });
 
          debuglet.once('initError', (err) => {
            Debuglet.getProjectId = savedGetProjectId;
-           debuglet.logger.error = savedLoggerError;
+           sandbox.restore();
            assert.ok(err);
            assert(
                message.startsWith('The project ID could not be determined:'));

@@ -22,7 +22,7 @@ import * as semver from 'semver';
 import vm from 'vm';
 
 import {StatusMessage} from '../../client/stackdriver/status-message';
-import {Logger} from '../../types/common';
+import {Logger} from '@google-cloud/common';
 import * as stackdriver from '../../types/stackdriver';
 import * as v8 from '../../types/v8';
 import {ResolvedDebugAgentConfig} from '../config';
