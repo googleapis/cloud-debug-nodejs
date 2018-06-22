@@ -21,8 +21,28 @@ export type DebugAgentConfig = {
 };
 
 export interface ResolvedDebugAgentConfig extends common.AuthenticationConfig {
+  /**
+   * Specifies the working directory of the application being
+   * debugged. That is, the directory containing the application's
+   * `package.json` file.
+   *
+   * The default value is the value of `process.cwd()`.
+   */
   workingDirectory: string;
 
+  /**
+   * Specifies whether or not the computer's root directory should
+   * be allowed for the value of the `workingDirectory` configuration
+   * option.
+   *
+   * On startup, the debug agent scans the working directory for source
+   * files.  If the working directory is the computer's root directory,
+   * this scan would result is scanning the entire drive.
+   *
+   * To avoid this, the debug agent, by default, does not allow the
+   * working directory to be computer's root directory.  That check
+   * can be disabled with this configuration option.
+   */
   allowRootAsWorkingDirectory: boolean;
 
   /**
