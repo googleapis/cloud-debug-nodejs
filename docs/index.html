@@ -1,0 +1,336 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>@google-cloud/debug-agent</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="assets/js/search.js" data-base=".">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="index.html" class="title">@google-cloud/debug-agent</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="globals.html">Globals</a>
+				</li>
+			</ul>
+			<h1> @google-cloud/debug-agent</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<div class="tsd-panel tsd-typography">
+				<h1 id="stackdriver-debugger-agent-for-node-js">Stackdriver Debugger agent for Node.js</h1>
+				<p><a href="https://npmjs.org/package/@google-cloud/debug-agent"><img src="https://img.shields.io/npm/v/@google-cloud/debug-agent.svg" alt="NPM Version"></a>
+					<a href="https://travis-ci.org/GoogleCloudPlatform/cloud-debug-nodejs"><img src="https://travis-ci.org/GoogleCloudPlatform/cloud-debug-nodejs.svg?branch=master" alt="Build Status"></a>
+					<a href="https://coveralls.io/r/GoogleCloudPlatform/cloud-debug-nodejs?branch=master"><img src="https://img.shields.io/coveralls/GoogleCloudPlatform/cloud-debug-nodejs/master.svg" alt="Test Coverage"></a>
+					<a href="https://david-dm.org/GoogleCloudPlatform/cloud-debug-nodejs"><img src="https://david-dm.org/GoogleCloudPlatform/cloud-debug-nodejs.svg" alt="Dependency Status"></a>
+					<a href="https://david-dm.org/GoogleCloudPlatform/cloud-debug-nodejs?type=dev"><img src="https://david-dm.org/GoogleCloudPlatform/cloud-debug-nodejs/dev-status.svg" alt="devDependency Status"></a>
+					<a href="https://snyk.io/test/github/GoogleCloudPlatform/cloud-debug-nodejs"><img src="https://snyk.io/test/github/GoogleCloudPlatform/cloud-debug-nodejs/badge.svg" alt="Known Vulnerabilities"></a>
+				<a href="https://greenkeeper.io/"><img src="https://badges.greenkeeper.io/GoogleCloudPlatform/cloud-debug-nodejs.svg" alt="Greenkeeper badge"></a></p>
+				<blockquote>
+					<p><strong>Beta</strong>. <em>This is a Beta release of the Stackdriver Debugger agent for Node.js. These libraries might be changed in backward-incompatible ways and are not subject to any SLA or deprecation policy.</em></p>
+				</blockquote>
+				<p>This module provides Stackdriver Debugger support for Node.js applications. <a href="https://cloud.google.com/tools/cloud-debugger/">Stackdriver Debugger</a> is a feature of <a href="https://cloud.google.com/">Google Cloud Platform</a> that lets you debug your applications in production without stopping or pausing your application. Here&#39;s an introductory video:</p>
+				<p><a href="https://www.youtube.com/watch?v=tyHcK_kAOpw"><img src="http://img.youtube.com/vi/tyHcK_kAOpw/0.jpg" alt="Cloud Debugger Intro"></a></p>
+				<p>See also, <a href="https://cloud.google.com/debugger/docs/setup/nodejs">Setting up Stackdriver Debugger for Node.js</a>.</p>
+				<h2 id="prerequisites">Prerequisites</h2>
+				<ul>
+					<li>Stackdriver Debugger is comptible with Node.js version 4 or greater. Node.js v5+ is recommended.</li>
+				</ul>
+				<h2 id="quick-start">Quick Start</h2>
+				<pre><code class="lang-shell"><span class="hljs-meta">#</span><span class="bash"> Install with `npm` or add to your `package.json`.</span>
+npm install --save @google-cloud/debug-agent
+</code></pre>
+				<pre><code class="lang-js"><span class="hljs-comment">// Require and start in the startup of your application:</span>
+<span class="hljs-built_in">require</span>(<span class="hljs-string">'@google-cloud/debug-agent'</span>).start({ <span class="hljs-attr">allowExpressions</span>: <span class="hljs-literal">true</span> });
+<span class="hljs-comment">// No auth necessary if your code is running on Google Cloud Platform.</span>
+
+<span class="hljs-comment">// ... or, if you are running elsewhere, you can manually provide credentials:</span>
+<span class="hljs-built_in">require</span>(<span class="hljs-string">'@google-cloud/debug-agent'</span>).start({
+  <span class="hljs-attr">allowExpressions</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">projectId</span>: <span class="hljs-string">'particular-future-12345'</span>,
+  <span class="hljs-attr">keyFilename</span>: <span class="hljs-string">'/path/to/keyfile.json'</span>
+});
+</code></pre>
+				<p>This starts the automatic Debugger Agent that enables your app to be debuggable using the Stackdriver <a href="https://console.cloud.google.com/debug">Stackdriver Debug view</a> within
+				the <a href="https://console.cloud.google.com/">Google Cloud Console</a>. You can start adding snapshots and log-points to your application.</p>
+				<h2 id="running-on-google-cloud-platform">Running on Google Cloud Platform</h2>
+				<p>The Stackdriver Debugger agent should work without the need to manually provide authentication credentials for instances running on Google Cloud Platform, as long as the <a href="https://console.cloud.google.com/apis/api/clouddebugger.googleapis.com/overview">Stackdriver Debugger API</a> access scope is enabled on that instance.</p>
+				<h3 id="app-engine">App Engine</h3>
+				<p>On <strong>Google App Engine</strong>, the Stackdriver Debugger API access scope is enabled by default, and the Stackdriver Debugger agent can be used without needing to provide credentials or a project ID.</p>
+				<h3 id="container-engine">Container Engine</h3>
+				<p>On <strong>Google Container Engine</strong>, you need to explicitly add the <code>cloud_debugger</code> OAuth scope when creating the cluster:</p>
+				<pre><code>$ gcloud <span class="hljs-keyword">container</span> clusters create example-<span class="hljs-keyword">cluster</span>-name --scopes https:<span class="hljs-comment">//www.googleapis.com/auth/cloud_debugger</span>
+</code></pre><h3 id="compute-engine">Compute Engine</h3>
+				<p>For <strong>Google Compute Engine instances</strong>, you need to explicitly enable the <code>cloud_debugger</code> Stackdriver Debugger API access scope for each instance. When creating a new instance through the Google Cloud Platform Console, you can do this under <strong>Identity and API access</strong>: Use the Compute Engine default service account and select &quot;Allow full access to all Cloud APIs&quot; under Access scopes.</p>
+				<p>To use something other than the Compute Engine default service account see the docs for <a href="https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances">Creating and Enabling Service Accounts for Instances</a> and the <a href="#running-locally-and-elsewhere">Running elsewhere</a> section below. The important thing is that the service account you use has the <a href="https://cloud.google.com/debugger/docs/iam#roles"><strong>Cloud Debugger Agent</strong></a> role.</p>
+				<h2 id="running-locally-and-elsewhere">Running locally and elsewhere</h2>
+				<p>If your application is running outside of Google Cloud Platform, such as locally, on-premise, or on another cloud provider, you can still use Stackdriver Debugger, provided that you supply a project ID and credentials to the Stackdriver Debugger agent.</p>
+				<h3 id="project-id">Project ID</h3>
+				<p>Provide a project ID to the Stackdriver Debugger agent by setting the projectId value in the options object passed to the agent&#39;s <code>start</code> method, or set the <code>GCLOUD_PROJECT</code> environment variable:</p>
+				<p>On Linux or Mac OS X:</p>
+				<pre><code class="lang-bash"><span class="hljs-built_in">export</span> GCLOUD_PROJECT=your-project-id
+</code></pre>
+				<p>On Windows:</p>
+				<pre><code><span class="hljs-builtin-name">set</span> <span class="hljs-attribute">GCLOUD_PROJECT</span>=your-project-id
+</code></pre><p>And on Windows Powershell:</p>
+				<pre><code><span class="hljs-variable">$env</span><span class="hljs-symbol">:GCLOUD_PROJECT=<span class="hljs-string">"your-project-id"</span></span>
+</code></pre><h3 id="credentials">Credentials</h3>
+				<p>Google Cloud Platform client libraries use a strategy called <a href="https://developers.google.com/identity/protocols/application-default-credentials">Application Default Credentials (ADC)</a> to find your application&#39;s credentials. You can provide credentials to the Stackdriver Debugger agent by setting the <code>keyFilename</code> value in the <code>options</code> object passed to the agent&#39;s <code>start</code> method, or you can set the <code>GOOGLE_APPLICATION_CREDENTIALS</code> environment variable. For more information, see <a href="https://cloud.google.com/docs/authentication/production#providing_credentials_to_your_application">Providing credentials to your application</a>.</p>
+				<h3 id="example">Example</h3>
+				<pre><code class="lang-js"><span class="hljs-built_in">require</span>(<span class="hljs-string">'@google-cloud/debug-agent'</span>).start({
+  <span class="hljs-attr">projectId</span>: <span class="hljs-string">'your-project-id'</span>,
+  <span class="hljs-attr">keyFilename</span>: <span class="hljs-string">'/path/to/key.json'</span>
+});
+</code></pre>
+				<h3 id="source-version">Source version</h3>
+				<p>Generate a <code>source-context.json</code> file which contains information about the version of the source code used to build the application. This file should be located in the root directory of your application. When you open the Stackdriver Debugger in the Cloud Platform Console, it uses the information in this file to display the correct version of the source.</p>
+				<pre><code><span class="hljs-attribute">gcloud</span> beta <span class="hljs-literal">debug</span> source gen-repo-<span class="hljs-literal">info</span>-file
+</code></pre><p>For more information see <a href="https://cloud.google.com/debugger/docs/source-options">Selecting Source Code Manually</a>.</p>
+				<h2 id="debugger-agent-settings">Debugger Agent Settings</h2>
+				<p>You can customize the behaviour of the automatic debugger agent. See <a href="https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/blob/master/src/agent/config.ts">the agent configuration</a> for a list of possible configuration options. These options can be passed in the <code>options</code> object passed to the <code>start</code> function.</p>
+				<pre><code class="lang-js"><span class="hljs-built_in">require</span>(<span class="hljs-string">'@google-cloud/debug-agent'</span>).start({
+  <span class="hljs-comment">// .. auth settings ..</span>
+
+  <span class="hljs-comment">// debug agent settings:</span>
+  allowExpressions: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">serviceContext</span>: {
+    <span class="hljs-attr">service</span>: <span class="hljs-string">'my-service'</span>,
+    <span class="hljs-attr">version</span>: <span class="hljs-string">'version-1'</span>
+  },
+  <span class="hljs-attr">capture</span>: { <span class="hljs-attr">maxFrames</span>: <span class="hljs-number">20</span>, <span class="hljs-attr">maxProperties</span>: <span class="hljs-number">100</span> }
+});
+</code></pre>
+				<h2 id="using-the-debugger">Using the Debugger</h2>
+				<p>Once your application is running (deployed, or elsewhere), you should be able to use the <a href="https://console.cloud.google.com/debug">Debug UI</a> in your Cloud <a href="https://console.cloud.google.com/">developer console</a>. You can find the Debug UI in the &#39;STACKDRIVER -&gt; Debug&#39; section in the navigation panel, or by simply searching for &#39;Debug&#39; in the cloud console.</p>
+				<p><img src="/doc/images/debug-ui.png" alt="Debug UI" /></p>
+				<p>If your source is hosted in a <a href="https://cloud.google.com/tools/cloud-repositories/docs/">cloud source repository</a>, Stackdriver Debugger will display the source code of your application automatically. Alternatively, you can also point the debugger to local files, a GitHub or Bitbucket repository, through a Source Capture, or you can simply type in a filename and line number. More details are on source options are <a href="https://cloud.google.com/debugger/docs/source-options">available here</a>.</p>
+				<p>If you have the source available, you can set a snapshot by clicking in the gutter (line number area). Once you set a snapshot, the debug agent will insert a momentary breakpoint at the code location in the running instances of the application.</p>
+				<p><img src="/doc/images/breakpoint-set.png" alt="Breakpoint Set" /></p>
+				<p>As soon as that line of code is reached in any of the running instances of your application, the stack traces, local variables, and watch expressions are captured, and your application continues.</p>
+				<p><img src="/doc/images/breakpoint-hit.png" alt="Breakpoint Hit" /></p>
+				<p><strong>Note:</strong> The directory layout of the code that is being debugged does not have to exactly match the source code specified in the Debug UI.  This is because the debug agent resolves a snapshot filename by searching for a file with the longest matching path suffix. If a unique match is found, that file will be used to set the snapshot.</p>
+				<p>An example will help illustrate this.  That is, suppose that the code on the running instance is structured as follows:</p>
+				<pre><code><span class="hljs-regexp">/running/</span>instance/<span class="hljs-keyword">package</span>.json
+<span class="hljs-regexp">/running/</span>instance/main.js
+<span class="hljs-regexp">/running/</span>instance<span class="hljs-regexp">/a/</span>index.js
+<span class="hljs-regexp">/running/</span>instance<span class="hljs-regexp">/b/</span>a/index.js
+</code></pre><p>Further, suppose the source code repository or local directory you have provided to the Debug UI is structured as follows.</p>
+				<pre><code>package<span class="hljs-selector-class">.json</span>
+main<span class="hljs-selector-class">.js</span>
+a/index<span class="hljs-selector-class">.js</span>
+b/a/index.js
+</code></pre><p>In this case, if you specify a snapshot in file <code>b/a/index.js</code> in the Debug UI, the debugger will identify that that file corresponds to the file <code>/running/instance/b/a/index.js</code> of the code on the running instance, and the breakpoint will hit when the specified line of <code>/running/instance/b/a/index.js</code> is reached.</p>
+				<p>Note, however, if a snapshot is specified for the file <code>a/index.js</code> in the Debug UI, then the debugger would not know whether this file corresponds to the file <code>/running/instance/a/index.js</code> or <code>/running/instance/b/a/index.js</code>.  If such an ambiguity occurs, the snapshot cannot be set and a message will be displayed in the Debug UI with additional information.</p>
+				<h2 id="support-for-transpiled-code">Support for Transpiled Code</h2>
+				<p>The debugger supports the use of transpiled code, whether it be Javascript to Javascript transpilation or transpilation from another language (such as Typescript) to Javascript.  In order to use transpiled code with the debugger, sourcemaps need to be generated with the transpiled code.  The sourcemaps need to be provided in <code>.js.map</code> files.</p>
+				<p>Further, you do not need to deploy the original source files to the deployment environment as long as the sourcemap files are available at runtime.</p>
+				<p>In the Debug UI, you only need to provide the original source code -- you don&#39;t need the transpiled output files or the sourcemaps. When you set a snapshot in an original source file in the Debug UI, the corresponding file and line in the transpiled code is automatically determined based on the sourcemap files provided with the transpiled code at runtime.  See the <a href="#using-the-debugger">Using the Debugger</a> section for more information about using the Debug UI.  In addition, the exact directory layout of the original source is somewhat flexible, just as it is with the use of non-transpiled code as described in the <a href="#using-the-debugger">Using the Debugger</a> section.</p>
+				<h2 id="using-stackdriver-debugger-on-google-cloud-functions">Using Stackdriver Debugger on Google Cloud Functions</h2>
+				<p>The Stackdriver Debugger also introduces a new <code>isReady</code> method that returns a <code>Promise</code> that is resolved in either of the three scenarios.</p>
+				<ol>
+					<li>The debug agent has received snapshot information from the Stackdriver service.</li>
+					<li>The last snapshot received from Stackdriver service is relatively recent.</li>
+					<li>The debug agent has determined that it is not possible to receive snapshot information.</li>
+				</ol>
+				<p>In order for Stackdriver Debugger to work on GCF, users should call the <code>isReady</code> function and wait for the returned <code>Promise</code> to resolve before exiting the cloud function. The purpose of this is to allow the Debug Agent enough time to sync reasonably up-to-date snapshot information; in most cases this is instantaneous and the worst (rare) case is to delay up to 40 seconds.</p>
+				<pre><code class="lang-js"><span class="hljs-keyword">const</span> debug = <span class="hljs-built_in">require</span>(<span class="hljs-string">'@google-cloud/debug-agent'</span>).start();
+exports.myFunc = <span class="hljs-function">(<span class="hljs-params">event</span>) =&gt;</span> {
+  <span class="hljs-keyword">const</span> debugReady = debug.isReady();
+  debugReady.then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-comment">// ...</span>
+  });
+}
+</code></pre>
+				<h2 id="limitations-and-requirements">Limitations and Requirements</h2>
+				<ul>
+					<li>The root directory of your application needs to contain a <code>package.json</code> file.</li>
+					<li>You can set snapshot conditions and watch expressions to be evaluated in the context of your application. This leads to some issues you should be aware of<ul>
+							<li>You may be able to view sensitive data of your own users by looking at the values of the variables.</li>
+							<li>The debug agent tries to ensure that all conditions and watchpoints you add are read-only and have no side effects. It catches, and disallows, all expressions that may have static side effects to prevent accidental state change. However, it presently does not catch expressions that have dynamic side-effects. For example, <code>o.f</code> looks like a property access, but dynamically, it may end up calling a getter function. We presently do NOT detect such dynamic-side effects.</li>
+						</ul>
+					</li>
+					<li>With Node.js 4.x and older, your application may experience a performance impact when there are snapshots active. There should be no impact to performance when no snapshots are active. Node.js v5.x does not have this issue.</li>
+					<li>Node.js v0.10.x or older are not supported as they lack some necessary APIs to avoid a permanent (life of the application) performance hit.</li>
+				</ul>
+			</div>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class="globals  ">
+						<a href="globals.html"><em>Globals</em></a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_agent_config_.html">"agent/config"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_agent_controller_.html">"agent/controller"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_agent_debuglet_.html">"agent/debuglet"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_agent_io_scanner_.html">"agent/io/scanner"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_agent_io_sourcemapper_.html">"agent/io/sourcemapper"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_agent_state_inspector_state_.html">"agent/state/inspector-<wbr>state"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_agent_state_legacy_state_.html">"agent/state/legacy-<wbr>state"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_agent_util_debug_assert_.html">"agent/util/debug-<wbr>assert"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_agent_util_utils_.html">"agent/util/utils"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_agent_util_validator_.html">"agent/util/validator"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_agent_v8_debugapi_.html">"agent/v8/debugapi"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_agent_v8_inspector_debugapi_.html">"agent/v8/inspector-<wbr>debugapi"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_agent_v8_legacy_debugapi_.html">"agent/v8/legacy-<wbr>debugapi"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_agent_v8_v8inspector_.html">"agent/v8/v8inspector"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_client_stackdriver_debug_.html">"client/stackdriver/debug"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_client_stackdriver_status_message_.html">"client/stackdriver/status-<wbr>message"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_debuggee_.html">"debuggee"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_index_.html">"index"</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-module"><span class="tsd-kind-icon">Module</span></li>
+				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
+				<li class="tsd-kind-index-signature"><span class="tsd-kind-icon">Index signature</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-enum-member"><span class="tsd-kind-icon">Enumeration member</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-enum"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-enum"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-interface"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-interface"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class"><span class="tsd-kind-icon">Accessor</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-class"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static property</span></li>
+				<li class="tsd-kind-call-signature tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="http://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="assets/js/main.js"></script>
+<script>if (location.protocol == 'file:') document.write('<script src="assets/js/search.js"><' + '/script>');</script>
+</body>
+</html>

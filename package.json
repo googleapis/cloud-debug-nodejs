@@ -59,6 +59,7 @@
     "source-map-support": "^0.5.0",
     "tmp": "0.0.33",
     "tslint": "^5.4.3",
+    "typedoc": "^0.11.1",
     "typescript": "~2.9.1"
   },
   "dependencies": {
@@ -90,12 +91,14 @@
     "pretest": "npm run compile",
     "posttest": "npm run check && npm run license-check",
     "prepack": "npm run compile",
-    "license-check": "jsgl --local ."
+    "license-check": "jsgl --local .",
+    "docs": "typedoc --mode modules --excludeNotExported --excludePrivate --gitRevision HEAD --out docs src"
   },
   "files": [
     "CHANGELOG.md",
     "LICENSE",
     "README.md",
-    "build/src"
+    "build/src",
+    "docs"
   ]
 }
