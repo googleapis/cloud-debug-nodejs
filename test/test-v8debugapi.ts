@@ -165,7 +165,7 @@ describe('debugapi selection', () => {
           assert.strictEqual(fileStats.errors().size, 0);
           const jsStats = fileStats.selectStats(/.js$/);
           const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
-          const mapper = await SourceMapper.create(mapFiles);
+          const mapper = await SourceMapper.create(undefined, mapFiles);
           // TODO(dominickramer): Handle the case when mapper is undefined.
           // TODO(dominickramer): Handle the case when v8debugapi.create
           // returns null
@@ -204,7 +204,7 @@ describeFn('debugapi selection on Node >=10', () => {
           assert.strictEqual(fileStats.errors().size, 0);
           const jsStats = fileStats.selectStats(/.js$/);
           const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
-          const mapper = await SourceMapper.create(mapFiles);
+          const mapper = await SourceMapper.create(undefined, mapFiles);
           assert(mapper);
           api = debugapi.create(logger, config, jsStats, mapper!);
           const inspectorapi = require('../src/agent/v8/inspector-debugapi');
@@ -228,7 +228,7 @@ describe('v8debugapi', () => {
             assert.strictEqual(fileStats.errors().size, 0);
             const jsStats = fileStats.selectStats(/.js$/);
             const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
-            const mapper = await SourceMapper.create(mapFiles);
+            const mapper = await SourceMapper.create(undefined, mapFiles);
 
             // TODO(dominickramer): Handle the case when mapper is undefined.
             // TODO(dominickramer): Handle the case when v8debugapi.create
