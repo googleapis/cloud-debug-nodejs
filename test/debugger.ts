@@ -64,40 +64,35 @@ export class Debugger extends common.ServiceObject {
    *     called with a list of Debuggee objects as a parameter, or an Error
    *     object if an error occurred in obtaining it.
    */
-  listDebuggees(
-      projectId: string, includeInactive: boolean,
-      callback: (err: Error|null, debuggees?: Debuggee[]) => void) {
-    if (typeof (includeInactive) === 'function') {
-      callback = includeInactive;
-      includeInactive = false;
-    }
+  async listDebuggees(projectId: string, includeInactive: boolean) {
+    return new Promise<Debuggee[]>((resolve, reject) => {
+      const query = {
+        clientVersion: this.clientVersion,
+        includeInactive,
+        project: projectId
+      };
 
-    const query = {
-      clientVersion: this.clientVersion,
-      includeInactive,
-      project: projectId
-    };
-
-    const uri = API + '/debuggees?' + qs.stringify(query);
-    this.request({uri, json: true}, (err, body, response) => {
-      if (err) {
-        callback(err);
-      } else if (!response) {
-        callback(new Error('unknown error - request response missing'));
-      } else if (response.statusCode !== 200) {
-        callback(new Error(
-            'unable to list debuggees, status code ' + response.statusCode));
-      } else if (!body) {
-        callback(new Error('invalid response body from server'));
-      } else {
-        if (body.debuggees) {
-          callback(null, body.debuggees);
+      const uri = API + '/debuggees?' + qs.stringify(query);
+      this.request({uri, json: true}, (err, body, response) => {
+        if (err) {
+          reject(err);
+        } else if (!response) {
+          reject(new Error('unknown error - request response missing'));
+        } else if (response.statusCode !== 200) {
+          reject(new Error(
+              'unable to list debuggees, status code ' + response.statusCode));
+        } else if (!body) {
+          reject(new Error('invalid response body from server'));
         } else {
-          callback(null, []);
+          if (body.debuggees) {
+            resolve(body.debuggees);
+          } else {
+            resolve([]);
+          }
         }
-      }
+      });
     });
-  }
+ }
 
   /**
    * Gets a list of breakpoints in a given debuggee.
@@ -115,56 +110,50 @@ export class Debugger extends common.ServiceObject {
    *     called with a list of Breakpoint objects as a parameter, or an Error
    *     object if an error occurred in obtaining it.
    */
-  listBreakpoints(
-      debuggeeId: string, options: {
+  listBreakpoints(debuggeeId: string, options: {
         includeAllUsers?: boolean;
         includeInactive?: boolean;
         action?: stackdriver.Action;
-      },
-      callback:
-          (err: Error|null, breakpoints?: stackdriver.Breakpoint[]) => void) {
-    if (typeof (options) === 'function') {
-      callback = options;
-      options = {};
-    }
-
-    // TODO: Remove this cast as `any`
-    const query: {
-      clientVersion: string; includeAllUsers: boolean; includeInactive: boolean;
-      action?: {value: stackdriver.Action};
-      waitToken?: string;
-    } = {
-      clientVersion: this.clientVersion,
-      includeAllUsers: !!options.includeAllUsers,
-      includeInactive: !!options.includeInactive,
-    };
-    // TODO: Determine how to remove this cast.
-    if (options.action) {
-      query.action = {value: options.action};
-    }
-    if (this.nextWaitToken) {
-      query.waitToken = this.nextWaitToken;
-    }
-
-    const uri = API + '/debuggees/' + encodeURIComponent(debuggeeId) +
-        '/breakpoints?' + qs.stringify(query);
-    this.request({uri, json: true}, (err, body, response) => {
-      if (err) {
-        callback(err);
-      } else if (!response) {
-        callback(new Error('unknown error - request response missing'));
-      } else if (response.statusCode !== 200) {
-        callback(new Error(
-            'unable to list breakpoints, status code ' + response.statusCode));
-      } else if (!body) {
-        callback(new Error('invalid response body from server'));
-      } else {
-        if (body.breakpoints) {
-          callback(null, body.breakpoints);
-        } else {
-          callback(null, []);
-        }
+      }) {
+    return new Promise<stackdriver.Breakpoint[]>((resolve, reject) => {
+      // TODO: Remove this cast as `any`
+      const query: {
+        clientVersion: string; includeAllUsers: boolean; includeInactive: boolean;
+        action?: {value: stackdriver.Action};
+        waitToken?: string;
+      } = {
+        clientVersion: this.clientVersion,
+        includeAllUsers: !!options.includeAllUsers,
+        includeInactive: !!options.includeInactive,
+      };
+      // TODO: Determine how to remove this cast.
+      if (options.action) {
+        query.action = {value: options.action};
       }
+      if (this.nextWaitToken) {
+        query.waitToken = this.nextWaitToken;
+      }
+
+      const uri = API + '/debuggees/' + encodeURIComponent(debuggeeId) +
+        '/breakpoints?' + qs.stringify(query);
+      this.request({uri, json: true}, (err, body, response) => {
+        if (err) {
+          reject(err);
+        } else if (!response) {
+          reject(new Error('unknown error - request response missing'));
+        } else if (response.statusCode !== 200) {
+          reject(new Error(
+              'unable to list breakpoints, status code ' + response.statusCode));
+        } else if (!body) {
+          reject(new Error('invalid response body from server'));
+        } else {
+          if (body.breakpoints) {
+            resolve(body.breakpoints);
+          } else {
+            resolve([]);
+          }
+        }
+      });
     });
   }
 
@@ -178,28 +167,28 @@ export class Debugger extends common.ServiceObject {
    *     called with information about the given breakpoint, or an Error object
    *     if an error occurred in obtaining its information.
    */
-  getBreakpoint(
-      debuggeeId: string, breakpointId: string,
-      callback: (err: Error|null, bp?: stackdriver.Breakpoint) => void) {
-    const query = {clientVersion: this.clientVersion};
+  getBreakpoint(debuggeeId: string, breakpointId: string) {
+    return new Promise<stackdriver.Breakpoint>((resolve, reject) => {
+      const query = {clientVersion: this.clientVersion};
 
-    const uri = API + '/debuggees/' + encodeURIComponent(debuggeeId) +
-        '/breakpoints/' + encodeURIComponent(breakpointId) + '?' +
-        qs.stringify(query);
-    this.request({uri, json: true}, (err, body, response) => {
-      if (err) {
-        callback(err);
-      } else if (!response) {
-        callback(new Error('unknown error - request response missing'));
-      } else if (response.statusCode !== 200) {
-        callback(new Error(
-            'unable to get breakpoint info, status code ' +
-            response.statusCode));
-      } else if (!body || !body.breakpoint) {
-        callback(new Error('invalid response body from server'));
-      } else {
-        callback(null, body.breakpoint);
-      }
+      const uri = API + '/debuggees/' + encodeURIComponent(debuggeeId) +
+          '/breakpoints/' + encodeURIComponent(breakpointId) + '?' +
+          qs.stringify(query);
+      this.request({uri, json: true}, (err, body, response) => {
+        if (err) {
+          reject(err);
+        } else if (!response) {
+          reject(new Error('unknown error - request response missing'));
+        } else if (response.statusCode !== 200) {
+          reject(new Error(
+              'unable to get breakpoint info, status code ' +
+              response.statusCode));
+        } else if (!body || !body.breakpoint) {
+          reject(new Error('invalid response body from server'));
+        } else {
+          resolve(body.breakpoint);
+        }
+      });
     });
   }
 
@@ -215,31 +204,31 @@ export class Debugger extends common.ServiceObject {
    *     that the Breakpoint object here will differ from the input object in
    *     that its id field will be set.
    */
-  setBreakpoint(
-      debuggeeId: string, breakpoint: stackdriver.Breakpoint,
-      callback: (err: Error|null, bp?: stackdriver.Breakpoint) => void) {
-    const query = {clientVersion: this.clientVersion};
-    const options = {
-      uri: API + '/debuggees/' + encodeURIComponent(debuggeeId) +
-          '/breakpoints/set?' + qs.stringify(query),
-      method: 'POST',
-      json: true,
-      body: breakpoint
-    };
+  setBreakpoint(debuggeeId: string, breakpoint: stackdriver.Breakpoint) {
+    return new Promise<stackdriver.Breakpoint>((resolve, reject) => {
+      const query = {clientVersion: this.clientVersion};
+      const options = {
+        uri: API + '/debuggees/' + encodeURIComponent(debuggeeId) +
+            '/breakpoints/set?' + qs.stringify(query),
+        method: 'POST',
+        json: true,
+        body: breakpoint
+      };
 
-    this.request(options, (err, body, response) => {
-      if (err) {
-        callback(err);
-      } else if (!response) {
-        callback(new Error('unknown error - request response missing'));
-      } else if (response.statusCode !== 200) {
-        callback(new Error(
-            'unable to set breakpoint, status code ' + response.statusCode));
-      } else if (!body || !body.breakpoint) {
-        callback(new Error('invalid response body from server'));
-      } else {
-        callback(null, body.breakpoint);
-      }
+      this.request(options, (err, body, response) => {
+        if (err) {
+          reject(err);
+        } else if (!response) {
+          reject(new Error('unknown error - request response missing'));
+        } else if (response.statusCode !== 200) {
+          reject(new Error(
+              'unable to set breakpoint, status code ' + response.statusCode));
+        } else if (!body || !body.breakpoint) {
+          reject(new Error('invalid response body from server'));
+        } else {
+          resolve(body.breakpoint);
+        }
+      });
     });
   }
 
@@ -253,31 +242,31 @@ export class Debugger extends common.ServiceObject {
    *     deleting a breakpoint. If no error occurred, the first argument will be
    *     set to null.
    */
-  deleteBreakpoint(
-      debuggeeId: string, breakpointId: string,
-      callback: (err: Error|null) => void) {
-    const query = {clientVersion: this.clientVersion};
-    const options = {
-      uri: API + '/debuggees/' + encodeURIComponent(debuggeeId) +
-          '/breakpoints/' + encodeURIComponent(breakpointId) + '?' +
-          qs.stringify(query),
-      method: 'DELETE',
-      json: true
-    };
+  deleteBreakpoint(debuggeeId: string, breakpointId: string) {
+    return new Promise<void>((resolve, reject) => {
+      const query = {clientVersion: this.clientVersion};
+      const options = {
+        uri: API + '/debuggees/' + encodeURIComponent(debuggeeId) +
+            '/breakpoints/' + encodeURIComponent(breakpointId) + '?' +
+            qs.stringify(query),
+        method: 'DELETE',
+        json: true
+      };
 
-    this.request(options, (err, body, response) => {
-      if (err) {
-        callback(err);
-      } else if (!response) {
-        callback(new Error('unknown error - request response missing'));
-      } else if (response.statusCode !== 200) {
-        callback(new Error(
-            'unable to delete breakpoint, status code ' + response.statusCode));
-      } else if (Object.keys(body).length > 0) {
-        callback(new Error('response body is non-empty'));
-      } else {
-        callback(null);
-      }
+      this.request(options, (err, body, response) => {
+        if (err) {
+          reject(err);
+        } else if (!response) {
+          reject(new Error('unknown error - request response missing'));
+        } else if (response.statusCode !== 200) {
+          reject(new Error(
+              'unable to delete breakpoint, status code ' + response.statusCode));
+        } else if (Object.keys(body).length > 0) {
+          reject(new Error('response body is non-empty'));
+        } else {
+          resolve();
+        }
+      });
     });
   }
 }
