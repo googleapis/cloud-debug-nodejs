@@ -1791,6 +1791,26 @@ describe('v8debugapi.findScripts', () => {
     assert.deepStrictEqual(
         result, ['/some/strange/directory/test/fixtures/a/hello.js']);
   });
+
+  it('should properly handle appPathResolver', () => {
+    const config = extend(true, {}, undefined!, {
+      appPathResolver(scriptPath: string) {
+        return scriptPath.replace(/^\/src/, '/build').replace(/\.ts$/, '.js');
+      },
+    });
+
+    const fakeFileStats = {
+      '/build/index.js': {hash: 'fake', lines: 5},
+      '/build/some/subdir/module.js': {hash: 'fake', lines: 5},
+    };
+
+    assert.deepEqual(
+        utils.findScripts('/src/index.ts', config, fakeFileStats),
+        ['/build/index.js']);
+    assert.deepEqual(
+        utils.findScripts('/src/some/subdir/module.ts', config, fakeFileStats),
+        ['/build/some/subdir/module.js']);
+  });
 });
 
 describe('v8debugapi.findScriptsFuzzy', () => {

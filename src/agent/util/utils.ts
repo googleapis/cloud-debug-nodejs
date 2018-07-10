@@ -42,6 +42,9 @@ export function findScripts(
         config.appPathRelativeToRepository, config.workingDirectory);
     // There should be no ambiguity resolution if project root is provided.
     return fileStats[candidate] ? [candidate] : [];
+  } else if (config.appPathResolver) {
+    const candidate = config.appPathResolver(scriptPath);
+    return fileStats[candidate] ? [candidate] : [];
   }
   const regexp = pathToRegExp(scriptPath);
   // Next try to match path.

@@ -165,6 +165,15 @@ export interface ResolvedDebugAgentConfig extends GoogleAuthOptions {
   appPathRelativeToRepository?: string;
 
   /**
+   * A function which takes the path of a source file in your repository
+   * and returns the path of the corresponding script file in your running
+   * application. Usually this is unnecessary, but may be useful in cases
+   * where the debug agent is unable to resolve breakpoint locations
+   * unambiguously, and where appPathRelativeToRepository is not sufficent.
+   */
+  appPathResolver?: (scriptPath: string) => string;
+
+  /**
    * agent log level 0-disabled, 1-error, 2-warn, 3-info, 4-debug
    */
   logLevel: number;
@@ -277,6 +286,7 @@ export const defaultConfig: ResolvedDebugAgentConfig = {
       {service: undefined, version: undefined, minorVersion_: undefined},
 
   appPathRelativeToRepository: undefined,
+  appPathResolver: undefined,
   logLevel: 1,
   breakpointUpdateIntervalSec: 10,
   breakpointExpirationSec: 60 * 60 * 24,  // 24 hours
