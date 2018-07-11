@@ -14,12 +14,18 @@
  * limitations under the License.
  */
 
-import * as async from 'async';
 import * as fs from 'fs';
 import * as _ from 'lodash';
+import pLimit from 'p-limit';
 import * as path from 'path';
 import * as sourceMap from 'source-map';
+
 import {findScriptsFuzzy} from '../util/utils';
+
+const promisify = require('util.promisify');
+
+const CONCURRENCY = 10;
+const readFilep = promisify(fs.readFile);
 
 /** @define {string} */ const MAP_EXT = '.map';
 
@@ -42,78 +48,70 @@ export interface MapInfoOutput {
  *  path should be relative to the process's current working directory
  * @private
  */
-function processSourcemap(
-    infoMap: Map<string, MapInfoInput>, mapPath: string,
-    callback: (err: Error|null) => void): void {
+async function processSourcemap(
+    infoMap: Map<string, MapInfoInput>, mapPath: string) {
   // this handles the case when the path is undefined, null, or
   // the empty string
   if (!mapPath || !_.endsWith(mapPath, MAP_EXT)) {
-    return setImmediate(() => {
-      callback(new Error(
-          'The path ' + mapPath + ' does not specify a sourcemap file'));
-    });
+    throw new Error(`The path ${mapPath} does not specify a sourcemap file`);
   }
   mapPath = path.normalize(mapPath);
 
-  fs.readFile(mapPath, 'utf8', (err: Error, data: string) => {
-    if (err) {
-      return callback(
-          new Error('Could not read sourcemap file ' + mapPath + ': ' + err));
-    }
+  let contents;
+  try {
+    contents = await readFilep(mapPath, 'utf8');
+  } catch (e) {
+    throw new Error('Could not read sourcemap file ' + mapPath + ': ' + e);
+  }
 
-    let consumer: sourceMap.RawSourceMap;
-    try {
-      // TODO: Determine how to reconsile the type conflict where `consumer`
-      //       is constructed as a SourceMapConsumer but is used as a
-      //       RawSourceMap.
-      // TODO: Resolve the cast of `data as any` (This is needed because the
-      //       type is expected to be of `RawSourceMap` but the existing
-      //       working code uses a string.)
-      consumer = new sourceMap.SourceMapConsumer(
-                     data as {} as sourceMap.RawSourceMap) as {} as
-          sourceMap.RawSourceMap;
-    } catch (e) {
-      return callback(new Error(
-          'An error occurred while reading the ' +
-          'sourcemap file ' + mapPath + ': ' + e));
-    }
+  let consumer: sourceMap.RawSourceMap;
+  try {
+    // TODO: Determine how to reconsile the type conflict where `consumer`
+    //       is constructed as a SourceMapConsumer but is used as a
+    //       RawSourceMap.
+    // TODO: Resolve the cast of `contents as any` (This is needed because the
+    //       type is expected to be of `RawSourceMap` but the existing
+    //       working code uses a string.)
+    consumer = new sourceMap.SourceMapConsumer(
+                   contents as {} as sourceMap.RawSourceMap) as {} as
+        sourceMap.RawSourceMap;
+  } catch (e) {
+    throw new Error(
+        'An error occurred while reading the ' +
+        'sourcemap file ' + mapPath + ': ' + e);
+  }
 
-    /*
-     * If the sourcemap file defines a "file" attribute, use it as
-     * the output file where the path is relative to the directory
-     * containing the map file.  Otherwise, use the name of the output
-     * file (with the .map extension removed) as the output file.
-     */
-    const outputBase =
-        consumer.file ? consumer.file : path.basename(mapPath, '.map');
-    const parentDir = path.dirname(mapPath);
-    const outputPath = path.normalize(path.join(parentDir, outputBase));
+  /*
+   * If the sourcemap file defines a "file" attribute, use it as
+   * the output file where the path is relative to the directory
+   * containing the map file.  Otherwise, use the name of the output
+   * file (with the .map extension removed) as the output file.
+   */
+  const outputBase =
+      consumer.file ? consumer.file : path.basename(mapPath, '.map');
+  const parentDir = path.dirname(mapPath);
+  const outputPath = path.normalize(path.join(parentDir, outputBase));
 
-    const sources = Array.prototype.slice.call(consumer.sources)
-                        .filter((value: string) => {
-                          // filter out any empty string, null, or undefined
-                          // sources
-                          return !!value;
-                        })
-                        .map((relPath: string) => {
-                          // resolve the paths relative to the map file so that
-                          // they are relative to the process's current working
-                          // directory
-                          return path.normalize(path.join(parentDir, relPath));
-                        });
+  const sources = Array.prototype.slice.call(consumer.sources)
+                      .filter((value: string) => {
+                        // filter out any empty string, null, or undefined
+                        // sources
+                        return !!value;
+                      })
+                      .map((relPath: string) => {
+                        // resolve the paths relative to the map file so that
+                        // they are relative to the process's current working
+                        // directory
+                        return path.normalize(path.join(parentDir, relPath));
+                      });
 
-    if (sources.length === 0) {
-      return callback(
-          new Error('No sources listed in the sourcemap file ' + mapPath));
-    }
-
-    sources.forEach((src: string) => {
-      infoMap.set(
-          path.normalize(src),
-          {outputFile: outputPath, mapFile: mapPath, mapConsumer: consumer});
-    });
-
-    callback(null);
+  if (sources.length === 0) {
+    throw new Error('No sources listed in the sourcemap file ' + mapPath);
+  }
+  sources.forEach((src: string) => {
+    infoMap.set(
+        path.normalize(src),
+        {outputFile: outputPath, mapFile: mapPath, mapConsumer: consumer});
   });
 }
 
@@ -246,23 +244,16 @@ export class SourceMapper {
   }
 }
 
-export function create(
-    sourcemapPaths: string[],
-    callback: (err: Error|null, mapper?: SourceMapper) => void): void {
+export async function create(sourcemapPaths: string[]): Promise<SourceMapper> {
+  const limit = pLimit(CONCURRENCY);
   const mapper = new SourceMapper();
-  const callList =
-      Array.prototype.slice.call(sourcemapPaths).map((p: string) => {
-        return (cb: (err: Error|null) => void) => {
-          processSourcemap(mapper.infoMap, p, cb);
-        };
-      });
-
-  async.parallelLimit(callList, 10, (err) => {
-    if (err) {
-      return callback(new Error(
-          'An error occurred while processing the sourcemap files' + err));
-    }
-
-    callback(null, mapper);
-  });
+  const promises = sourcemapPaths.map(
+      path => limit(() => processSourcemap(mapper.infoMap, path)));
+  try {
+    await Promise.all(promises);
+  } catch (err) {
+    throw new Error(
+        'An error occurred while processing the sourcemap files' + err);
+  }
+  return mapper;
 }

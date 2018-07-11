@@ -20,6 +20,7 @@ import * as path from 'path';
 import * as sm from '../src/agent/io/sourcemapper';
 
 const BASE_PATH = path.join(__dirname, 'fixtures', 'sourcemapper');
+const QUICK_MILLISECONDS = 300;
 
 /**
  * @param {string} tool The name of the tool that was used to generate the
@@ -48,17 +49,12 @@ function testTool(
   describe('sourcemapper for tool ' + tool, () => {
     let sourcemapper: sm.SourceMapper;
 
-    it('for tool ' + tool, (done) => {
-      setTimeout(() => {
-        assert.ok(sourcemapper, 'should create the SourceMapper quickly');
-        done();
-      }, 300);
-
-      sm.create([mapFilePath], (err, mapper) => {
-        assert.ifError(err);
-        // TODO: Handle the case when sourceMapper is undefined
-        sourcemapper = mapper as sm.SourceMapper;
-      });
+    it('for tool ' + tool, async () => {
+      const start = Date.now();
+      sourcemapper = await sm.create([mapFilePath]);
+      assert(
+          Date.now() - start < QUICK_MILLISECONDS,
+          'should create the SourceMapper quickly');
     });
 
     it('for tool ' + tool +

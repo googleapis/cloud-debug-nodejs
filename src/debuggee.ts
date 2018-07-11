@@ -15,8 +15,9 @@
  */
 
 import * as _ from 'lodash';
-import {StatusMessage} from './client/stackdriver/status-message';
+
 import {PackageInfo} from './client/stackdriver/debug';
+import {StatusMessage} from './client/stackdriver/status-message';
 
 // TODO: Determine how to get this interface to satisfy both the code and the
 // docs
