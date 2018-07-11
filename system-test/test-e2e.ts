@@ -152,9 +152,9 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     assert.ok(result, 'should find the debuggee we just registered');
   }
 
-  async function verifyDeleteBreakpoints(
-      breakpoints: stackdriver.Breakpoint[]) {
+  async function verifyDeleteBreakpoints() {
     // Delete every breakpoint
+    const breakpoints = await api.listBreakpoints(debuggeeId!, {});
     console.log('-- List of breakpoints\n', breakpoints);
 
     const promises = breakpoints.map(breakpoint => {
@@ -272,8 +272,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
   it('should set breakpoints correctly', async function() {
     this.timeout(90 * 1000);
     await verifyDebuggeeFound();
-    const breakpoints = await api.listBreakpoints(debuggeeId!, {});
-    await verifyDeleteBreakpoints(breakpoints);
+    await verifyDeleteBreakpoints();
     await verifySetLogpoint();
     await verifySetDuplicateBreakpoint();
     await verifyHitLogpoint();
