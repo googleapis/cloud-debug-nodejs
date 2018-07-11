@@ -16,6 +16,7 @@
 
 import * as _ from 'lodash';
 import {StatusMessage} from './client/stackdriver/status-message';
+import {PackageInfo} from './client/stackdriver/debug';
 
 // TODO: Determine how to get this interface to satisfy both the code and the
 // docs
@@ -31,6 +32,7 @@ export interface DebuggeeProperties {
   };
   sourceContexts?: Array<{[key: string]: {}}>;
   statusMessage?: StatusMessage;
+  packageInfo?: PackageInfo;
 }
 
 export class Debuggee {
