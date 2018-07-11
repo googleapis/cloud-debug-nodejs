@@ -811,7 +811,7 @@ describe('Debuglet', () => {
           {projectId: 'fake-project', credentials: fakeCredentials},
           packageInfo);
       const old = Debuglet.getSourceContextFromFile;
-      Debuglet.getSourceContextFromFile = async function() {
+      Debuglet.getSourceContextFromFile = async () => {
         return {a: 5 as {} as string};
       };
       const debuglet = new Debuglet(debug, defaultConfig);

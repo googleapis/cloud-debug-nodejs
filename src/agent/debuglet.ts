@@ -535,7 +535,7 @@ export class Debuglet extends EventEmitter {
 
   static async getSourceContextFromFile(): Promise<SourceContext> {
     // If read errors, the error gets thrown to the caller.
-    let contents = await readFilep('source-context.json', 'utf8');
+    const contents = await readFilep('source-context.json', 'utf8');
     try {
       return JSON.parse(contents);
     } catch (e) {

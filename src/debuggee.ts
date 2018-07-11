@@ -32,7 +32,7 @@ export interface DebuggeeProperties {
   };
   sourceContexts?: Array<{[key: string]: {}}>;
   statusMessage?: StatusMessage;
-  packageInfo?: PackageInfo
+  packageInfo?: PackageInfo;
 }
 
 export class Debuggee {
