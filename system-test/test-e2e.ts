@@ -19,7 +19,6 @@ import * as cp from 'child_process';
 import * as _ from 'lodash';  // for _.find. Can't use ES6 yet.
 import * as util from 'util';
 
-import * as utils from '../src/agent/util/utils';
 import {Debug} from '../src/client/stackdriver/debug';
 import {Debuggee} from '../src/debuggee';
 import * as stackdriver from '../src/types/stackdriver';
@@ -231,8 +230,6 @@ describe('@google-cloud/debug end-to-end behavior', () => {
 
     // Check that the breakpoint was hit and contains the correct
     // information, which ends the test
-
-    let arg;
     console.log('-- results of get breakpoint\n', foundBreakpoint);
     assert.ok(foundBreakpoint, 'should have a breakpoint in the response');
     assert.ok(foundBreakpoint.isFinalState, 'breakpoint should have been hit');
@@ -242,11 +239,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     assert.ok(top.function, 'frame should have a function property');
     assert.strictEqual(top.function, 'fib');
 
-    if (utils.satisfies(process.version, '>=4.0')) {
-      arg = _.find(top.locals, {name: 'n'});
-    } else {
-      arg = _.find(top.arguments, {name: 'n'});
-    }
+    const arg = _.find(top.locals, {name: 'n'});
     assert.ok(arg, 'should find the n argument');
     assert.strictEqual(arg!.value, '10');
     console.log('-- checking log point was hit again');
