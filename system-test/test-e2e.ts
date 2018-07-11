@@ -287,95 +287,82 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     await verifyHitLogpoint();
   });
 
-  it('should throttle logs correctly', function() {
+  it('should throttle logs correctly', async function() {
     this.timeout(15 * 1000);
-    // Kick off promise chain by getting a list of debuggees
-    return api.listDebuggees(projectId!, true)
-        .then(debuggees => {
-          // Check that the debuggee created in this test is among the list of
-          // debuggees, then list its breakpoints
 
-          console.log(
-              '-- List of debuggees\n', util.inspect(debuggees, {depth: null}));
-          assert.ok(debuggees, 'should get a valid ListDebuggees response');
-          const result = _.find(debuggees, (d: Debuggee) => {
-            return d.id === debuggeeId;
-          });
-          assert.ok(result, 'should find the debuggee we just registered');
-          return api.listBreakpoints(debuggeeId!, {});
-        })
-        .then(breakpoints => {
-          // Delete every breakpoint
+    const debuggees = await api.listDebuggees(projectId!, true);
 
-          console.log('-- List of breakpoints\n', breakpoints);
+    // Check that the debuggee created in this test is among the list of
+    // debuggees, then list its breakpoints
 
-          const promises =
-              breakpoints.map((breakpoint: stackdriver.Breakpoint) => {
-                return api.deleteBreakpoint(debuggeeId!, breakpoint.id);
-              });
+    console.log(
+      '-- List of debuggees\n', util.inspect(debuggees, {depth: null}));
+    assert.ok(debuggees, 'should get a valid ListDebuggees response');
+    const result = _.find(debuggees, (d: Debuggee) => {
+      return d.id === debuggeeId;
+    });
+    assert.ok(result, 'should find the debuggee we just registered');
 
-          return Promise.all(promises);
-        })
-        .then(() => {
-          return api.listBreakpoints(debuggeeId!, {});
-        })
-        .then(breakpoints => {
-          // Set a breakpoint at which the debugger should write to a log
+    const breakpoints = await api.listBreakpoints(debuggeeId!, {});
+    // Delete every breakpoint
 
-          assert.strictEqual(breakpoints.length, 0);
-          console.log('-- deleted');
+    console.log('-- List of breakpoints\n', breakpoints);
 
-          console.log('-- setting a logpoint');
-          return api.setBreakpoint(debuggeeId!, {
-            id: 'breakpoint-3',
-            location: {path: FILENAME, line: 5},
-            condition: 'n === 10',
-            action: 'LOG',
-            expressions: ['o'],
-            logMessageFormat: 'o is: $0',
-            stackFrames: [],
-            evaluatedExpressions: [],
-            variableTable: []
-          });
-        })
-        .then(breakpoint => {
-          // Check that the breakpoint was set, and then wait for the log to be
-          // written to
-
-          assert.ok(breakpoint, 'should have set a breakpoint');
-          assert.ok(breakpoint.id, 'breakpoint should have an id');
-          assert.ok(breakpoint.location, 'breakpoint should have a location');
-          assert.strictEqual(breakpoint.location!.path, FILENAME);
-
-          console.log('-- waiting before checking if the log was written');
-          return Promise.all([breakpoint, delay(10 * 1000)]);
-        })
-        .then(results => {
-          // Check that the contents of the log is correct
-
-          const breakpoint = results[0];
-
-          // If no throttling occurs, we expect ~20 logs since we are logging
-          // 2x per second over a 10 second period.
-          children.forEach((child) => {
-            const logCount = (child.transcript.match(
-                                  /LOGPOINT: o is: \{"a":\[1,"hi",true\]\}/g) ||
-                              []).length;
-            // A log count of greater than 10 indicates that we did not
-            // successfully pause when the rate of `maxLogsPerSecond` was
-            // reached.
-            assert(logCount <= 10, 'log count is greater than 10: ' + logCount);
-            // A log count of less than 3 indicates that we did not successfully
-            // resume logging after `logDelaySeconds` have passed.
-            assert(
-                logCount > 2, 'log count is not greater than 2: ' + logCount);
-          });
-
+    const promises =
+        breakpoints.map((breakpoint: stackdriver.Breakpoint) => {
           return api.deleteBreakpoint(debuggeeId!, breakpoint.id);
-        })
-        .then(() => {
-          console.log('-- test passed');
-          return Promise.resolve();
         });
+
+    await Promise.all(promises);
+
+    const foundBreakpoints = await api.listBreakpoints(debuggeeId!, {});
+
+    // Set a breakpoint at which the debugger should write to a log
+
+    assert.strictEqual(foundBreakpoints.length, 0);
+    console.log('-- deleted');
+
+    console.log('-- setting a logpoint');
+    const breakpoint = await api.setBreakpoint(debuggeeId!, {
+      id: 'breakpoint-3',
+      location: {path: FILENAME, line: 5},
+      condition: 'n === 10',
+      action: 'LOG',
+      expressions: ['o'],
+      logMessageFormat: 'o is: $0',
+      stackFrames: [],
+      evaluatedExpressions: [],
+      variableTable: []
+    });
+
+    // Check that the breakpoint was set, and then wait for the log to be
+    // written to
+
+    assert.ok(breakpoint, 'should have set a breakpoint');
+    assert.ok(breakpoint.id, 'breakpoint should have an id');
+    assert.ok(breakpoint.location, 'breakpoint should have a location');
+    assert.strictEqual(breakpoint.location!.path, FILENAME);
+
+    console.log('-- waiting before checking if the log was written');
+    await Promise.all([breakpoint, delay(10 * 1000)]);
+
+    // If no throttling occurs, we expect ~20 logs since we are logging
+    // 2x per second over a 10 second period.
+    children.forEach((child) => {
+      const logCount = (child.transcript.match(
+                            /LOGPOINT: o is: \{"a":\[1,"hi",true\]\}/g) ||
+                        []).length;
+      // A log count of greater than 10 indicates that we did not
+      // successfully pause when the rate of `maxLogsPerSecond` was
+      // reached.
+      assert(logCount <= 10, 'log count is greater than 10: ' + logCount);
+      // A log count of less than 3 indicates that we did not successfully
+      // resume logging after `logDelaySeconds` have passed.
+      assert(
+          logCount > 2, 'log count is not greater than 2: ' + logCount);
+    });
+
+    await api.deleteBreakpoint(debuggeeId!, breakpoint.id);
+    console.log('-- test passed');
   });
 });
