@@ -114,7 +114,7 @@ For more information see [Selecting Source Code Manually][selecting-source].
 
 ## Debugger Agent Settings
 
-You can customize the behaviour of the automatic debugger agent. See [the agent configuration][config-ts] for a list of possible configuration options. These options can be passed in the `options` object passed to the `start` function.
+You can customize the behaviour of the automatic debugger agent. See [the agent configuration][config-docs] for a list of possible configuration options. These options can be passed in the `options` object passed to the `start` function.
 
 ```js
 require('@google-cloud/debug-agent').start({
@@ -226,5 +226,5 @@ exports.myFunc = (event) => {
 [debugger-api]: https://console.cloud.google.com/apis/api/clouddebugger.googleapis.com/overview
 [snyk-image]: https://snyk.io/test/github/GoogleCloudPlatform/cloud-debug-nodejs/badge.svg
 [snyk-url]: https://snyk.io/test/github/GoogleCloudPlatform/cloud-debug-nodejs
-[config-ts]: https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/blob/master/src/agent/config.ts
+[config-docs]: ./docs/interfaces/_agent_config_.resolveddebugagentconfig.html
 [configuration-object]: https://googlecloudplatform.github.io/google-cloud-node/#/docs/google-cloud/0.45.0/google-cloud
