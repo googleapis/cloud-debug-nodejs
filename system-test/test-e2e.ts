@@ -138,161 +138,153 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     });
   });
 
-  it('should set breakpoints correctly', function() {
-    this.timeout(90 * 1000);
-    // Kick off promise chain by getting a list of debuggees
-    return api.listDebuggees(projectId!, true)
-        .then(debuggees => {
-          // Check that the debuggee created in this test is among the list of
-          // debuggees, then list its breakpoints
+  async function verifyDebuggeeFound() {
+    const debuggees = await api.listDebuggees(projectId!, true);
+    // Check that the debuggee created in this test is among the list of
+    // debuggees, then list its breakpoints
 
-          console.log(
-              '-- List of debuggees\n', util.inspect(debuggees, {depth: null}));
-          assert.ok(debuggees, 'should get a valid ListDebuggees response');
-          const result = _.find(debuggees, (d: Debuggee) => {
-            return d.id === debuggeeId;
-          });
-          assert.ok(result, 'should find the debuggee we just registered');
-          return api.listBreakpoints(debuggeeId!, {});
-        })
-        .then(breakpoints => {
-          // Delete every breakpoint
-          console.log('-- List of breakpoints\n', breakpoints);
+    console.log(
+        '-- List of debuggees\n', util.inspect(debuggees, {depth: null}));
+    assert.ok(debuggees, 'should get a valid ListDebuggees response');
+    const result = _.find(debuggees, (d: Debuggee) => {
+      return d.id === debuggeeId;
+    });
+    assert.ok(result, 'should find the debuggee we just registered');
+  }
 
-          const promises =
-              breakpoints.map(breakpoint => {
-                return api.deleteBreakpoint(debuggeeId!, breakpoint.id);
-              });
+  async function verifyDeleteBreakpoints(breakpoints: stackdriver.Breakpoint[]) {
+    // Delete every breakpoint
+    console.log('-- List of breakpoints\n', breakpoints);
 
-          return Promise.all(promises);
-        })
-        .then(() => {
-          return api.listBreakpoints(debuggeeId!, {});
-        })
-        .then(breakpoints => {
-          // Set a breakpoint at which the debugger should write to a log
-
-          assert.strictEqual(breakpoints.length, 0);
-          console.log('-- deleted');
-
-          console.log('-- setting a logpoint');
-          return api.setBreakpoint(debuggeeId!, {
-            id: 'breakpoint-1',
-            location: {path: FILENAME, line: 5},
-            condition: 'n === 10',
-            action: 'LOG',
-            expressions: ['o'],
-            logMessageFormat: 'o is: $0',
-            stackFrames: [],
-            evaluatedExpressions: [],
-            variableTable: []
-          });
-        })
-        .then(breakpoint => {
-          // Check that the breakpoint was set, and then wait for the log to be
-          // written to
-          assert.ok(breakpoint, 'should have set a breakpoint');
-          assert.ok(breakpoint.id, 'breakpoint should have an id');
-          assert.ok(breakpoint.location, 'breakpoint should have a location');
-          assert.strictEqual(breakpoint.location!.path, FILENAME);
-
-          console.log('-- waiting before checking if the log was written');
-          return Promise.all([breakpoint, delay(10 * 1000)]);
-        })
-        .then(() => {
-          // Check the contents of the log, but keep the original breakpoint.
-          children.forEach((child, index) => {
-            assert(
-                child.transcript.indexOf('o is: {"a":[1,"hi",true]}') !== -1,
-                'transcript in child ' + index +
-                    ' should contain value of o: ' + child.transcript);
-          });
-          return Promise.resolve();
-        })
-        .then(() => {
-          // Set another breakpoint at the same location
-
-          console.log('-- setting a breakpoint');
-          return api.setBreakpoint(debuggeeId!, {
-            id: 'breakpoint-2',
-            location: {path: FILENAME, line: 5},
-            expressions: ['process'],  // Process for large variable
-            condition: 'n === 10',
-            stackFrames: [],
-            evaluatedExpressions: [],
-            variableTable: []
-          });
-        })
-        .then(breakpoint => {
-          // Check that the breakpoint was set, and then wait for the breakpoint
-          // to be hit
-
-          console.log('-- resolution of setBreakpoint', breakpoint);
-          assert.ok(breakpoint, 'should have set a breakpoint');
-          assert.ok(breakpoint.id, 'breakpoint should have an id');
-          assert.ok(breakpoint.location, 'breakpoint should have a location');
-          assert.strictEqual(breakpoint.location!.path, FILENAME);
-
-          console.log('-- waiting before checking if breakpoint was hit');
-          return Promise.all([breakpoint, delay(10 * 1000)]);
-        })
-        .then(result => {
-          // Get the breakpoint
-
-          const breakpoint = result[0];
-
-          console.log('-- now checking if the breakpoint was hit');
-          return api.getBreakpoint(debuggeeId!, breakpoint.id);
-        })
-        .then(breakpoint => {
-          // Check that the breakpoint was hit and contains the correct
-          // information, which ends the test
-
-          let arg;
-          console.log('-- results of get breakpoint\n', breakpoint);
-          assert.ok(breakpoint, 'should have a breakpoint in the response');
-          assert.ok(breakpoint.isFinalState, 'breakpoint should have been hit');
-          assert.ok(
-              Array.isArray(breakpoint.stackFrames), 'should have stack ');
-          const top = breakpoint.stackFrames[0];
-          assert.ok(top, 'should have a top entry');
-          assert.ok(top.function, 'frame should have a function property');
-          assert.strictEqual(top.function, 'fib');
-
-          if (utils.satisfies(process.version, '>=4.0')) {
-            arg = _.find(top.locals, {name: 'n'});
-          } else {
-            arg = _.find(top.arguments, {name: 'n'});
-          }
-          assert.ok(arg, 'should find the n argument');
-          assert.strictEqual(arg!.value, '10');
-          console.log('-- checking log point was hit again');
-          children.forEach((child) => {
-            const count = (child.transcript.match(
-                               /LOGPOINT: o is: \{"a":\[1,"hi",true\]\}/g) ||
-                           []).length;
-            assert.ok(count > 4);
-          });
-
+    const promises =
+        breakpoints.map(breakpoint => {
           return api.deleteBreakpoint(debuggeeId!, breakpoint.id);
-        })
-        .then(() => {
-          // wait for 60 seconds
-          console.log('-- waiting for 60 seconds');
-          return delay(60 * 1000);
-        })
-        .then(() => {
-          // Make sure the log point is continuing to be hit.
-          console.log('-- checking log point was hit again');
-          children.forEach((child) => {
-            const count = (child.transcript.match(
-                               /LOGPOINT: o is: \{"a":\[1,"hi",true\]\}/g) ||
-                           []).length;
-            assert.ok(count > 60);
-          });
-          console.log('-- test passed');
-          return Promise.resolve();
         });
+
+    await Promise.all(promises);
+    const breakpointsAfterDelete = await api.listBreakpoints(debuggeeId!, {});
+    assert.strictEqual(breakpointsAfterDelete.length, 0);
+    console.log('-- deleted');
+  }
+
+  async function verifySetLogpoint() {
+    // Set a breakpoint at which the debugger should write to a log
+    console.log('-- setting a logpoint');
+    const breakpoint = await api.setBreakpoint(debuggeeId!, {
+      id: 'breakpoint-1',
+      location: {path: FILENAME, line: 5},
+      condition: 'n === 10',
+      action: 'LOG',
+      expressions: ['o'],
+      logMessageFormat: 'o is: $0',
+      stackFrames: [],
+      evaluatedExpressions: [],
+      variableTable: []
+    });
+
+    // Check that the breakpoint was set, and then wait for the log to be
+    // written to
+    assert.ok(breakpoint, 'should have set a breakpoint');
+    assert.ok(breakpoint.id, 'breakpoint should have an id');
+    assert.ok(breakpoint.location, 'breakpoint should have a location');
+    assert.strictEqual(breakpoint.location!.path, FILENAME);
+
+    console.log('-- waiting before checking if the log was written');
+    await Promise.all([breakpoint, delay(10 * 1000)]);
+
+    // Check the contents of the log, but keep the original breakpoint.
+    children.forEach((child, index) => {
+      assert(
+          child.transcript.indexOf('o is: {"a":[1,"hi",true]}') !== -1,
+          'transcript in child ' + index +
+              ' should contain value of o: ' + child.transcript);
+    });
+  }
+
+  async function verifySetDuplicateBreakpoint() {
+    // Set another breakpoint at the same location
+    console.log('-- setting a breakpoint');
+    const breakpoint = await api.setBreakpoint(debuggeeId!, {
+      id: 'breakpoint-2',
+      location: {path: FILENAME, line: 5},
+      expressions: ['process'],  // Process for large variable
+      condition: 'n === 10',
+      stackFrames: [],
+      evaluatedExpressions: [],
+      variableTable: []
+    });
+
+    // Check that the breakpoint was set, and then wait for the breakpoint
+    // to be hit
+
+    console.log('-- resolution of setBreakpoint', breakpoint);
+    assert.ok(breakpoint, 'should have set a breakpoint');
+    assert.ok(breakpoint.id, 'breakpoint should have an id');
+    assert.ok(breakpoint.location, 'breakpoint should have a location');
+    assert.strictEqual(breakpoint.location!.path, FILENAME);
+
+    console.log('-- waiting before checking if breakpoint was hit');
+    await Promise.all([breakpoint, delay(10 * 1000)]);
+
+    console.log('-- now checking if the breakpoint was hit');
+    const foundBreakpoint = await api.getBreakpoint(debuggeeId!, breakpoint.id);
+
+    // Check that the breakpoint was hit and contains the correct
+    // information, which ends the test
+
+    let arg;
+    console.log('-- results of get breakpoint\n', foundBreakpoint);
+    assert.ok(foundBreakpoint, 'should have a breakpoint in the response');
+    assert.ok(foundBreakpoint.isFinalState, 'breakpoint should have been hit');
+    assert.ok(
+        Array.isArray(foundBreakpoint.stackFrames), 'should have stack ');
+    const top = foundBreakpoint.stackFrames[0];
+    assert.ok(top, 'should have a top entry');
+    assert.ok(top.function, 'frame should have a function property');
+    assert.strictEqual(top.function, 'fib');
+
+    if (utils.satisfies(process.version, '>=4.0')) {
+      arg = _.find(top.locals, {name: 'n'});
+    } else {
+      arg = _.find(top.arguments, {name: 'n'});
+    }
+    assert.ok(arg, 'should find the n argument');
+    assert.strictEqual(arg!.value, '10');
+    console.log('-- checking log point was hit again');
+    children.forEach((child) => {
+      const count = (child.transcript.match(
+                          /LOGPOINT: o is: \{"a":\[1,"hi",true\]\}/g) ||
+                      []).length;
+      assert.ok(count > 4);
+    });
+
+    await api.deleteBreakpoint(debuggeeId!, foundBreakpoint.id);
+  }
+
+  async function verifyHitLogpoint() {
+    // wait for 60 seconds
+    console.log('-- waiting for 60 seconds');
+    await delay(60 * 1000);
+
+    // Make sure the log point is continuing to be hit.
+    console.log('-- checking log point was hit again');
+    children.forEach((child) => {
+      const count = (child.transcript.match(
+                         /LOGPOINT: o is: \{"a":\[1,"hi",true\]\}/g) ||
+                     []).length;
+      assert.ok(count > 60);
+    });
+    console.log('-- test passed');
+  }
+
+  it('should set breakpoints correctly', async function() {
+    this.timeout(90 * 1000);
+    await verifyDebuggeeFound();
+    const breakpoints = await api.listBreakpoints(debuggeeId!, {});
+    await verifyDeleteBreakpoints(breakpoints);
+    await verifySetLogpoint();
+    await verifySetDuplicateBreakpoint();
+    await verifyHitLogpoint();
   });
 
   it('should throttle logs correctly', function() {
