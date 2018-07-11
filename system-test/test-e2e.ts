@@ -139,15 +139,17 @@ describe('@google-cloud/debug end-to-end behavior', () => {
 
   async function verifyDebuggeeFound() {
     const debuggees = await api.listDebuggees(projectId!, true);
+
     // Check that the debuggee created in this test is among the list of
     // debuggees, then list its breakpoints
-
     console.log(
         '-- List of debuggees\n', util.inspect(debuggees, {depth: null}));
     assert.ok(debuggees, 'should get a valid ListDebuggees response');
+
     const result = _.find(debuggees, (d: Debuggee) => {
       return d.id === debuggeeId;
     });
+
     assert.ok(result, 'should find the debuggee we just registered');
   }
 
@@ -159,8 +161,8 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     const promises = breakpoints.map(breakpoint => {
       return api.deleteBreakpoint(debuggeeId!, breakpoint.id);
     });
-
     await Promise.all(promises);
+
     const breakpointsAfterDelete = await api.listBreakpoints(debuggeeId!, {});
     assert.strictEqual(breakpointsAfterDelete.length, 0);
     console.log('-- deleted');
@@ -215,7 +217,6 @@ describe('@google-cloud/debug end-to-end behavior', () => {
 
     // Check that the breakpoint was set, and then wait for the breakpoint
     // to be hit
-
     console.log('-- resolution of setBreakpoint', breakpoint);
     assert.ok(breakpoint, 'should have set a breakpoint');
     assert.ok(breakpoint.id, 'breakpoint should have an id');
@@ -292,20 +293,19 @@ describe('@google-cloud/debug end-to-end behavior', () => {
 
     // Check that the debuggee created in this test is among the list of
     // debuggees, then list its breakpoints
-
     console.log(
         '-- List of debuggees\n', util.inspect(debuggees, {depth: null}));
     assert.ok(debuggees, 'should get a valid ListDebuggees response');
+
     const result = _.find(debuggees, (d: Debuggee) => {
       return d.id === debuggeeId;
     });
     assert.ok(result, 'should find the debuggee we just registered');
 
     const breakpoints = await api.listBreakpoints(debuggeeId!, {});
-    // Delete every breakpoint
-
     console.log('-- List of breakpoints\n', breakpoints);
 
+    // Delete every breakpoint
     const promises = breakpoints.map((breakpoint: stackdriver.Breakpoint) => {
       return api.deleteBreakpoint(debuggeeId!, breakpoint.id);
     });
@@ -313,12 +313,10 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     await Promise.all(promises);
 
     const foundBreakpoints = await api.listBreakpoints(debuggeeId!, {});
-
-    // Set a breakpoint at which the debugger should write to a log
-
     assert.strictEqual(foundBreakpoints.length, 0);
     console.log('-- deleted');
 
+    // Set a breakpoint at which the debugger should write to a log
     console.log('-- setting a logpoint');
     const breakpoint = await api.setBreakpoint(debuggeeId!, {
       id: 'breakpoint-3',
@@ -334,7 +332,6 @@ describe('@google-cloud/debug end-to-end behavior', () => {
 
     // Check that the breakpoint was set, and then wait for the log to be
     // written to
-
     assert.ok(breakpoint, 'should have set a breakpoint');
     assert.ok(breakpoint.id, 'breakpoint should have an id');
     assert.ok(breakpoint.location, 'breakpoint should have a location');
