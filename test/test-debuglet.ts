@@ -810,16 +810,9 @@ describe('Debuglet', () => {
       const debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials},
           packageInfo);
-      const old = Debuglet.prototype.getSourceContext_;
-      Debuglet.prototype.getSourceContext_ = (cb) => {
-        setImmediate(() => {
-          // TODO: Determine if 5 should be converted to a string or if the
-          //       the object literal should allow keys with values that are
-          //       numbers.
-          // TODO: The `cb` expects the first argument to not be null.
-          //       Determine if the first argument can be null.
-          cb(null!, {a: 5 as {} as string});
-        });
+      const old = Debuglet.getSourceContextFromFile;
+      Debuglet.getSourceContextFromFile = async function() {
+        return {a: 5 as {} as string};
       };
       const debuglet = new Debuglet(debug, defaultConfig);
 
@@ -833,7 +826,7 @@ describe('Debuglet', () => {
                         .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
       debuglet.once('registered', (id: string) => {
-        Debuglet.prototype.getSourceContext_ = old;
+        Debuglet.getSourceContextFromFile = old;
         assert.equal(id, DEBUGGEE_ID);
         debuglet.stop();
         scope.done();

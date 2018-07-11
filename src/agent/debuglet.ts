@@ -21,6 +21,7 @@ import * as crypto from 'crypto';
 import {EventEmitter} from 'events';
 import extend from 'extend';
 import * as fs from 'fs';
+import * as pify from 'pify';
 
 import * as metadata from 'gcp-metadata';
 
@@ -31,7 +32,7 @@ import * as utils from './util/utils';
 import * as http from 'http';
 
 import {Controller} from './controller';
-import {Debuggee} from '../debuggee';
+import {Debuggee, DebuggeeProperties} from '../debuggee';
 import {StatusMessage} from '../client/stackdriver/status-message';
 
 import {defaultConfig} from './config';
@@ -49,6 +50,8 @@ import {DebugApi} from './v8/debugapi';
 
 const promisify = require('util.promisify');
 
+const readFilep = promisify(fs.readFile);
+
 const ALLOW_EXPRESSIONS_MESSAGE = 'Expressions and conditions are not allowed' +
     ' by default. Please set the allowExpressions configuration option to true.' +
     ' See the debug agent documentation at https://goo.gl/ShSm6r.';
@@ -64,6 +67,10 @@ const BREAKPOINT_ACTION_MESSAGE =
 // the average of Stackdriver debugger hanging get duration (40s) and TCP
 // time-out on GCF (540s).
 const PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS = (40 + 540) / 2 * 1000;
+
+interface SourceContext {
+  [key: string]: string;
+}
 
 /**
  * Formats a breakpoint object prefixed with a provided message as a string
@@ -370,33 +377,36 @@ export class Debuglet extends EventEmitter {
         }
       }
 
-      that.getSourceContext_((err5, sourceContext) => {
-        if (err5) {
-          that.logger.warn('Unable to discover source context', err5);
-          // This is ignorable.
-        }
+      let sourceContext;
+      try {
+        sourceContext = await Debuglet.getSourceContextFromFile();
+      } catch (err5) {
+        that.logger.warn('Unable to discover source context', err5);
+        // This is ignorable.
+      }
 
-        if (utils.satisfies(process.version, '5.2 || <4')) {
-          // Using an unsupported version. We report an error
-          // message about the Node.js version, but we keep on
-          // running. The idea is that the user may miss the error
-          // message on the console. This way we can report the
-          // error when the user tries to set a breakpoint.
-          that.logger.error(NODE_VERSION_MESSAGE);
-        }
+      // TODO: This code can be removed now that we support only Node 6+.
+      if (utils.satisfies(process.version, '5.2 || <4')) {
+        // Using an unsupported version. We report an error
+        // message about the Node.js version, but we keep on
+        // running. The idea is that the user may miss the error
+        // message on the console. This way we can report the
+        // error when the user tries to set a breakpoint.
+        that.logger.error(NODE_VERSION_MESSAGE);
+      }
 
-        // We can register as a debuggee now.
-        that.logger.debug('Starting debuggee, project', project);
-        that.running = true;
-        // TODO: Address the case where `project` is `undefined`.
-        that.project = project;
-        that.debuggee = Debuglet.createDebuggee(
-            // TODO: Address the case when `id` is `undefined`.
-            project, id as string, that.config.serviceContext, sourceContext,
-            onGCP, that.debug.packageInfo, that.config.description, undefined);
-        that.scheduleRegistration_(0 /* immediately */);
-        that.emit('started');
-      });
+      // We can register as a debuggee now.
+      that.logger.debug('Starting debuggee, project', project);
+      that.running = true;
+
+      // TODO: Address the case where `project` is `undefined`.
+      that.project = project;
+      that.debuggee = Debuglet.createDebuggee(
+          // TODO: Address the case when `id` is `undefined`.
+          project, id as string, that.config.serviceContext, sourceContext,
+          onGCP, that.debug.packageInfo, that.config.description, undefined);
+      that.scheduleRegistration_(0 /* immediately */);
+      that.emit('started');
     });
   }
 
@@ -430,7 +440,7 @@ export class Debuglet extends EventEmitter {
       projectId: string, uid: string,
       serviceContext:
           {service?: string, version?: string, minorVersion_?: string},
-      sourceContext: {[key: string]: string}, onGCP: boolean,
+      sourceContext: {[key: string]: string}|undefined, onGCP: boolean,
       packageInfo: PackageInfo, description?: string,
       errorMessage?: string): Debuggee {
     const cwd = process.cwd();
@@ -485,16 +495,18 @@ export class Debuglet extends EventEmitter {
         new StatusMessage(StatusMessage.UNSPECIFIED, errorMessage, true) :
         undefined;
 
-    const properties = {
+    const properties : DebuggeeProperties = {
       project: projectId,
       uniquifier,
       description: desc,
       agentVersion: version,
       labels,
       statusMessage,
-      sourceContexts: [sourceContext],
       packageInfo
     };
+    if (sourceContext) {
+      properties.sourceContexts = [sourceContext];
+    }
     return new Debuggee(properties);
   }
 
@@ -521,23 +533,14 @@ export class Debuglet extends EventEmitter {
     return (await metadata.instance('attributes/cluster-name')).data as string;
   }
 
-  getSourceContext_(
-      callback:
-          (err: Error|string, sourceContext: {[key: string]: string}) => void):
-      void {
-    fs.readFile('source-context.json', 'utf8', (err: string|Error, data) => {
-      let sourceContext;
-      if (!err) {
-        try {
-          sourceContext = JSON.parse(data);
-        } catch (e) {
-          // TODO: Fix casting `err` from an ErrnoException to a string
-          err = 'Malformed source-context.json file: ' + e;
-        }
-      }
-      // We keep on going even if there are errors.
-      return callback(err, sourceContext);
-    });
+  static async getSourceContextFromFile(): Promise<SourceContext> {
+    // If read errors, the error gets thrown to the caller.
+    let contents = await readFilep('source-context.json', 'utf8');
+    try {
+      return JSON.parse(contents);
+    } catch (e) {
+      throw new Error('Malformed source-context.json file: ' + e);
+    }
   }
 
   /**
@@ -1020,7 +1023,7 @@ export class Debuglet extends EventEmitter {
 
   static _createUniquifier(
       desc: string, version: string, uid: string,
-      sourceContext: {[key: string]: {}},
+      sourceContext: {[key: string]: {}}|undefined,
       labels: {[key: string]: string}): string {
     const uniquifier = desc + version + uid + JSON.stringify(sourceContext) +
         JSON.stringify(labels);
