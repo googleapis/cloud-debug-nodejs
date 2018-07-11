@@ -28,7 +28,6 @@ import * as utils from '../src/agent/util/utils';
 
 const CLUSTER_WORKERS = 3;
 
-// TODO: Determine if this path should contain 'build'
 const FILENAME = 'build/test/fixtures/fib.js';
 
 const delay = (delayTimeMS: number): Promise<void> => {
@@ -142,8 +141,6 @@ describe('@google-cloud/debug end-to-end behavior', () => {
   it('should set breakpoints correctly', function() {
     this.timeout(90 * 1000);
     // Kick off promise chain by getting a list of debuggees
-    // TODO: Determine how to properly specify the signature of listDebuggees
-    // TODO: Determine if this is the correct signature for `then`
     return api.listDebuggees(projectId!, true)
         .then(debuggees => {
           // Check that the debuggee created in this test is among the list of
@@ -156,10 +153,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
             return d.id === debuggeeId;
           });
           assert.ok(result, 'should find the debuggee we just registered');
-          // TODO: Determine how to properly specify the signature of
-          // listBreakpoints
           return api.listBreakpoints(debuggeeId!, {});
-          // TODO: Determine if this type signature is correct.
         })
         .then(breakpoints => {
           // Delete every breakpoint
@@ -167,13 +161,10 @@ describe('@google-cloud/debug end-to-end behavior', () => {
 
           const promises =
               breakpoints.map(breakpoint => {
-                // TODO: Determine how to properly specify the signature of
-                // deleteBreakpoint
                 return api.deleteBreakpoint(debuggeeId!, breakpoint.id);
               });
 
           return Promise.all(promises);
-          // TODO: Determine if this type signature is correct
         })
         .then(() => {
           return api.listBreakpoints(debuggeeId!, {});
@@ -185,8 +176,6 @@ describe('@google-cloud/debug end-to-end behavior', () => {
           console.log('-- deleted');
 
           console.log('-- setting a logpoint');
-          // TODO: Determine how to properly specify the signature of
-          // setBreakpoint
           return api.setBreakpoint(debuggeeId!, {
             id: 'breakpoint-1',
             location: {path: FILENAME, line: 5},
@@ -198,7 +187,6 @@ describe('@google-cloud/debug end-to-end behavior', () => {
             evaluatedExpressions: [],
             variableTable: []
           });
-          // TODO: Determine if this type signature is correct.
         })
         .then(breakpoint => {
           // Check that the breakpoint was set, and then wait for the log to be
@@ -206,19 +194,13 @@ describe('@google-cloud/debug end-to-end behavior', () => {
           assert.ok(breakpoint, 'should have set a breakpoint');
           assert.ok(breakpoint.id, 'breakpoint should have an id');
           assert.ok(breakpoint.location, 'breakpoint should have a location');
-          // TODO: Handle the case when breakpoint.location is undefined
           assert.strictEqual(breakpoint.location!.path, FILENAME);
 
           console.log('-- waiting before checking if the log was written');
           return Promise.all([breakpoint, delay(10 * 1000)]);
-          // TODO: Determine if the results parameter should be used.
         })
         .then(() => {
           // Check the contents of the log, but keep the original breakpoint.
-
-          // TODO: This is never used.  Determine if it should be used.
-          // const breakpoint = results[0];
-
           children.forEach((child, index) => {
             assert(
                 child.transcript.indexOf('o is: {"a":[1,"hi",true]}') !== -1,
@@ -231,8 +213,6 @@ describe('@google-cloud/debug end-to-end behavior', () => {
           // Set another breakpoint at the same location
 
           console.log('-- setting a breakpoint');
-          // TODO: Determine how to properly specify the signature of
-          // setBreakpoint
           return api.setBreakpoint(debuggeeId!, {
             id: 'breakpoint-2',
             location: {path: FILENAME, line: 5},
@@ -251,7 +231,6 @@ describe('@google-cloud/debug end-to-end behavior', () => {
           assert.ok(breakpoint, 'should have set a breakpoint');
           assert.ok(breakpoint.id, 'breakpoint should have an id');
           assert.ok(breakpoint.location, 'breakpoint should have a location');
-          // TODO: Handle the case when breakpoint.location is undefined
           assert.strictEqual(breakpoint.location!.path, FILENAME);
 
           console.log('-- waiting before checking if breakpoint was hit');
@@ -263,8 +242,6 @@ describe('@google-cloud/debug end-to-end behavior', () => {
           const breakpoint = result[0];
 
           console.log('-- now checking if the breakpoint was hit');
-          // TODO: Determine how to properly specify the signature of
-          // getBreakpoint
           return api.getBreakpoint(debuggeeId!, breakpoint.id);
         })
         .then(breakpoint => {
@@ -288,7 +265,6 @@ describe('@google-cloud/debug end-to-end behavior', () => {
             arg = _.find(top.arguments, {name: 'n'});
           }
           assert.ok(arg, 'should find the n argument');
-          // TODO: Handle the case when arg is undefined
           assert.strictEqual(arg!.value, '10');
           console.log('-- checking log point was hit again');
           children.forEach((child) => {
@@ -298,8 +274,6 @@ describe('@google-cloud/debug end-to-end behavior', () => {
             assert.ok(count > 4);
           });
 
-          // TODO: Determine how to properly specify the signature of
-          // deleteBreakpoint
           return api.deleteBreakpoint(debuggeeId!, breakpoint.id);
         })
         .then(() => {
@@ -324,8 +298,6 @@ describe('@google-cloud/debug end-to-end behavior', () => {
   it('should throttle logs correctly', function() {
     this.timeout(15 * 1000);
     // Kick off promise chain by getting a list of debuggees
-    // TODO: Determine how to properly specify the signature of listDebuggees
-    // TODO: Determine if this is the correct signature for then
     return api.listDebuggees(projectId!, true)
         .then(debuggees => {
           // Check that the debuggee created in this test is among the list of
@@ -338,10 +310,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
             return d.id === debuggeeId;
           });
           assert.ok(result, 'should find the debuggee we just registered');
-          // TODO: Determine how to properly specify the signature of
-          // listBreakpoints
           return api.listBreakpoints(debuggeeId!, {});
-          // TODO: Determine if this type signature is correct.
         })
         .then(breakpoints => {
           // Delete every breakpoint
@@ -350,13 +319,10 @@ describe('@google-cloud/debug end-to-end behavior', () => {
 
           const promises =
               breakpoints.map((breakpoint: stackdriver.Breakpoint) => {
-                // TODO: Determine how to properly specify the signature of
-                // deleteBreakpoint
                 return api.deleteBreakpoint(debuggeeId!, breakpoint.id);
               });
 
           return Promise.all(promises);
-          // TODO: Determine if this type signature is correct
         })
         .then(() => {
           return api.listBreakpoints(debuggeeId!, {});
@@ -368,8 +334,6 @@ describe('@google-cloud/debug end-to-end behavior', () => {
           console.log('-- deleted');
 
           console.log('-- setting a logpoint');
-          // TODO: Determine how to properly specify the signature of
-          // setBreakpoint
           return api.setBreakpoint(debuggeeId!, {
             id: 'breakpoint-3',
             location: {path: FILENAME, line: 5},
@@ -381,7 +345,6 @@ describe('@google-cloud/debug end-to-end behavior', () => {
             evaluatedExpressions: [],
             variableTable: []
           });
-          // TODO: Determine if this type signature is correct.
         })
         .then(breakpoint => {
           // Check that the breakpoint was set, and then wait for the log to be
@@ -390,7 +353,6 @@ describe('@google-cloud/debug end-to-end behavior', () => {
           assert.ok(breakpoint, 'should have set a breakpoint');
           assert.ok(breakpoint.id, 'breakpoint should have an id');
           assert.ok(breakpoint.location, 'breakpoint should have a location');
-          // TODO: Handle the case when breakpoint.location is undefined
           assert.strictEqual(breakpoint.location!.path, FILENAME);
 
           console.log('-- waiting before checking if the log was written');
@@ -417,8 +379,6 @@ describe('@google-cloud/debug end-to-end behavior', () => {
                 logCount > 2, 'log count is not greater than 2: ' + logCount);
           });
 
-          // TODO: Determine how to properly specify the signature of
-          // deleteBreakpoint
           return api.deleteBreakpoint(debuggeeId!, breakpoint.id);
         })
         .then(() => {
