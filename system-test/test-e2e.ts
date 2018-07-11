@@ -19,12 +19,11 @@ import * as cp from 'child_process';
 import * as _ from 'lodash';  // for _.find. Can't use ES6 yet.
 import * as util from 'util';
 
-import * as stackdriver from '../src/types/stackdriver';
-
+import * as utils from '../src/agent/util/utils';
 import {Debug} from '../src/client/stackdriver/debug';
 import {Debuggee} from '../src/debuggee';
+import * as stackdriver from '../src/types/stackdriver';
 import {Debugger} from '../test/debugger';
-import * as utils from '../src/agent/util/utils';
 
 const CLUSTER_WORKERS = 3;
 
@@ -152,14 +151,14 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     assert.ok(result, 'should find the debuggee we just registered');
   }
 
-  async function verifyDeleteBreakpoints(breakpoints: stackdriver.Breakpoint[]) {
+  async function verifyDeleteBreakpoints(
+      breakpoints: stackdriver.Breakpoint[]) {
     // Delete every breakpoint
     console.log('-- List of breakpoints\n', breakpoints);
 
-    const promises =
-        breakpoints.map(breakpoint => {
-          return api.deleteBreakpoint(debuggeeId!, breakpoint.id);
-        });
+    const promises = breakpoints.map(breakpoint => {
+      return api.deleteBreakpoint(debuggeeId!, breakpoint.id);
+    });
 
     await Promise.all(promises);
     const breakpointsAfterDelete = await api.listBreakpoints(debuggeeId!, {});
@@ -236,8 +235,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     console.log('-- results of get breakpoint\n', foundBreakpoint);
     assert.ok(foundBreakpoint, 'should have a breakpoint in the response');
     assert.ok(foundBreakpoint.isFinalState, 'breakpoint should have been hit');
-    assert.ok(
-        Array.isArray(foundBreakpoint.stackFrames), 'should have stack ');
+    assert.ok(Array.isArray(foundBreakpoint.stackFrames), 'should have stack ');
     const top = foundBreakpoint.stackFrames[0];
     assert.ok(top, 'should have a top entry');
     assert.ok(top.function, 'frame should have a function property');
@@ -252,9 +250,9 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     assert.strictEqual(arg!.value, '10');
     console.log('-- checking log point was hit again');
     children.forEach((child) => {
-      const count = (child.transcript.match(
-                          /LOGPOINT: o is: \{"a":\[1,"hi",true\]\}/g) ||
-                      []).length;
+      const count =
+          (child.transcript.match(/LOGPOINT: o is: \{"a":\[1,"hi",true\]\}/g) ||
+           []).length;
       assert.ok(count > 4);
     });
 
@@ -269,9 +267,9 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     // Make sure the log point is continuing to be hit.
     console.log('-- checking log point was hit again');
     children.forEach((child) => {
-      const count = (child.transcript.match(
-                         /LOGPOINT: o is: \{"a":\[1,"hi",true\]\}/g) ||
-                     []).length;
+      const count =
+          (child.transcript.match(/LOGPOINT: o is: \{"a":\[1,"hi",true\]\}/g) ||
+           []).length;
       assert.ok(count > 60);
     });
     console.log('-- test passed');
@@ -296,7 +294,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     // debuggees, then list its breakpoints
 
     console.log(
-      '-- List of debuggees\n', util.inspect(debuggees, {depth: null}));
+        '-- List of debuggees\n', util.inspect(debuggees, {depth: null}));
     assert.ok(debuggees, 'should get a valid ListDebuggees response');
     const result = _.find(debuggees, (d: Debuggee) => {
       return d.id === debuggeeId;
@@ -308,10 +306,9 @@ describe('@google-cloud/debug end-to-end behavior', () => {
 
     console.log('-- List of breakpoints\n', breakpoints);
 
-    const promises =
-        breakpoints.map((breakpoint: stackdriver.Breakpoint) => {
-          return api.deleteBreakpoint(debuggeeId!, breakpoint.id);
-        });
+    const promises = breakpoints.map((breakpoint: stackdriver.Breakpoint) => {
+      return api.deleteBreakpoint(debuggeeId!, breakpoint.id);
+    });
 
     await Promise.all(promises);
 
@@ -349,17 +346,16 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     // If no throttling occurs, we expect ~20 logs since we are logging
     // 2x per second over a 10 second period.
     children.forEach((child) => {
-      const logCount = (child.transcript.match(
-                            /LOGPOINT: o is: \{"a":\[1,"hi",true\]\}/g) ||
-                        []).length;
+      const logCount =
+          (child.transcript.match(/LOGPOINT: o is: \{"a":\[1,"hi",true\]\}/g) ||
+           []).length;
       // A log count of greater than 10 indicates that we did not
       // successfully pause when the rate of `maxLogsPerSecond` was
       // reached.
       assert(logCount <= 10, 'log count is greater than 10: ' + logCount);
       // A log count of less than 3 indicates that we did not successfully
       // resume logging after `logDelaySeconds` have passed.
-      assert(
-          logCount > 2, 'log count is not greater than 2: ' + logCount);
+      assert(logCount > 2, 'log count is not greater than 2: ' + logCount);
     });
 
     await api.deleteBreakpoint(debuggeeId!, breakpoint.id);

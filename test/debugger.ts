@@ -92,7 +92,7 @@ export class Debugger extends common.ServiceObject {
         }
       });
     });
- }
+  }
 
   /**
    * Gets a list of breakpoints in a given debuggee.
@@ -111,14 +111,15 @@ export class Debugger extends common.ServiceObject {
    *     object if an error occurred in obtaining it.
    */
   listBreakpoints(debuggeeId: string, options: {
-        includeAllUsers?: boolean;
-        includeInactive?: boolean;
-        action?: stackdriver.Action;
-      }) {
+    includeAllUsers?: boolean;
+    includeInactive?: boolean;
+    action?: stackdriver.Action;
+  }) {
     return new Promise<stackdriver.Breakpoint[]>((resolve, reject) => {
       // TODO: Remove this cast as `any`
       const query: {
-        clientVersion: string; includeAllUsers: boolean; includeInactive: boolean;
+        clientVersion: string; includeAllUsers: boolean;
+        includeInactive: boolean;
         action?: {value: stackdriver.Action};
         waitToken?: string;
       } = {
@@ -135,7 +136,7 @@ export class Debugger extends common.ServiceObject {
       }
 
       const uri = API + '/debuggees/' + encodeURIComponent(debuggeeId) +
-        '/breakpoints?' + qs.stringify(query);
+          '/breakpoints?' + qs.stringify(query);
       this.request({uri, json: true}, (err, body, response) => {
         if (err) {
           reject(err);
@@ -143,7 +144,8 @@ export class Debugger extends common.ServiceObject {
           reject(new Error('unknown error - request response missing'));
         } else if (response.statusCode !== 200) {
           reject(new Error(
-              'unable to list breakpoints, status code ' + response.statusCode));
+              'unable to list breakpoints, status code ' +
+              response.statusCode));
         } else if (!body) {
           reject(new Error('invalid response body from server'));
         } else {
@@ -260,7 +262,8 @@ export class Debugger extends common.ServiceObject {
           reject(new Error('unknown error - request response missing'));
         } else if (response.statusCode !== 200) {
           reject(new Error(
-              'unable to delete breakpoint, status code ' + response.statusCode));
+              'unable to delete breakpoint, status code ' +
+              response.statusCode));
         } else if (Object.keys(body).length > 0) {
           reject(new Error('response body is non-empty'));
         } else {
