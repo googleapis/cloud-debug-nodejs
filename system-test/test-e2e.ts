@@ -175,12 +175,13 @@ describe('@google-cloud/debug end-to-end behavior', () => {
           return Promise.all(promises);
           // TODO: Determine if this type signature is correct
         })
-        .then(results => {
+        .then(() => {
+          return api.listBreakpoints(debuggeeId!, {});
+        })
+        .then(breakpoints => {
           // Set a breakpoint at which the debugger should write to a log
 
-          results.map(result => {
-            assert.equal(result, '');
-          });
+          assert.strictEqual(breakpoints.length, 0);
           console.log('-- deleted');
 
           console.log('-- setting a logpoint');
@@ -357,12 +358,13 @@ describe('@google-cloud/debug end-to-end behavior', () => {
           return Promise.all(promises);
           // TODO: Determine if this type signature is correct
         })
-        .then(results => {
+        .then(() => {
+          return api.listBreakpoints(debuggeeId!, {});
+        })
+        .then(breakpoints => {
           // Set a breakpoint at which the debugger should write to a log
 
-          results.map(result => {
-            assert.equal(result, '');
-          });
+          assert.strictEqual(breakpoints.length, 0);
           console.log('-- deleted');
 
           console.log('-- setting a logpoint');
