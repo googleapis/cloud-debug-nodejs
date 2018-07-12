@@ -21,7 +21,6 @@ import * as util from 'util';
 
 import {Debug} from '../src/client/stackdriver/debug';
 import {Debuggee} from '../src/debuggee';
-import * as stackdriver from '../src/types/stackdriver';
 import {Debugger} from '../test/debugger';
 
 const CLUSTER_WORKERS = 3;
@@ -281,28 +280,12 @@ describe('@google-cloud/debug end-to-end behavior', () => {
   it('should throttle logs correctly', async function() {
     this.timeout(15 * 1000);
 
-    const debuggees = await api.listDebuggees(projectId!, true);
-
-    // Check that the debuggee created in this test is among the list of
-    // debuggees, then list its breakpoints
-    console.log(
-        '-- List of debuggees\n', util.inspect(debuggees, {depth: null}));
-    assert.ok(debuggees, 'should get a valid ListDebuggees response');
-
-    const result = _.find(debuggees, (d: Debuggee) => {
-      return d.id === debuggeeId;
-    });
-    assert.ok(result, 'should find the debuggee we just registered');
+    await verifyDebuggeeFound();
 
     const breakpoints = await api.listBreakpoints(debuggeeId!, {});
     console.log('-- List of breakpoints\n', breakpoints);
 
-    // Delete every breakpoint
-    const promises = breakpoints.map((breakpoint: stackdriver.Breakpoint) => {
-      return api.deleteBreakpoint(debuggeeId!, breakpoint.id);
-    });
-
-    await Promise.all(promises);
+    await verifyDeleteBreakpoints();
 
     const foundBreakpoints = await api.listBreakpoints(debuggeeId!, {});
     assert.strictEqual(foundBreakpoints.length, 0);
