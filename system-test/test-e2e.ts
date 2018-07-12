@@ -19,6 +19,7 @@ import * as cp from 'child_process';
 import * as _ from 'lodash';  // for _.find. Can't use ES6 yet.
 import * as util from 'util';
 
+import * as stackdriver from '../src/types/stackdriver';
 import {Debug} from '../src/client/stackdriver/debug';
 import {Debuggee} from '../src/debuggee';
 import {Debugger} from '../test/debugger';
@@ -166,10 +167,26 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     console.log('-- deleted');
   }
 
-  async function verifySetLogpoint() {
+  async function verifySetBreakpoint(breakpt: stackdriver.Breakpoint) {
     // Set a breakpoint at which the debugger should write to a log
+    const breakpoint = await api.setBreakpoint(debuggeeId!, breakpt);
+
+    // Check that the breakpoint was set, and then wait for the log to be
+    // written to
+    assert.ok(breakpoint, 'should have set a breakpoint');
+    assert.ok(breakpoint.id, 'breakpoint should have an id');
+    assert.ok(breakpoint.location, 'breakpoint should have a location');
+    assert.strictEqual(breakpoint.location!.path, FILENAME);
+
+    console.log('-- waiting for the breakpoint/logpoint to hit');
+    await delay(10 * 1000);
+
+    return breakpoint;
+  }
+
+  async function verifySetLogpoint() {
     console.log('-- setting a logpoint');
-    const breakpoint = await api.setBreakpoint(debuggeeId!, {
+    await verifySetBreakpoint({
       id: 'breakpoint-1',
       location: {path: FILENAME, line: 5},
       condition: 'n === 10',
@@ -180,16 +197,6 @@ describe('@google-cloud/debug end-to-end behavior', () => {
       evaluatedExpressions: [],
       variableTable: []
     });
-
-    // Check that the breakpoint was set, and then wait for the log to be
-    // written to
-    assert.ok(breakpoint, 'should have set a breakpoint');
-    assert.ok(breakpoint.id, 'breakpoint should have an id');
-    assert.ok(breakpoint.location, 'breakpoint should have a location');
-    assert.strictEqual(breakpoint.location!.path, FILENAME);
-
-    console.log('-- waiting before checking if the log was written');
-    await delay(10 * 1000);
 
     // Check the contents of the log, but keep the original breakpoint.
     children.forEach((child, index) => {
@@ -203,7 +210,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
   async function verifySetDuplicateBreakpoint() {
     // Set another breakpoint at the same location
     console.log('-- setting a breakpoint');
-    const breakpoint = await api.setBreakpoint(debuggeeId!, {
+    const breakpoint = await verifySetBreakpoint({
       id: 'breakpoint-2',
       location: {path: FILENAME, line: 5},
       expressions: ['process'],  // Process for large variable
@@ -212,17 +219,6 @@ describe('@google-cloud/debug end-to-end behavior', () => {
       evaluatedExpressions: [],
       variableTable: []
     });
-
-    // Check that the breakpoint was set, and then wait for the breakpoint
-    // to be hit
-    console.log('-- resolution of setBreakpoint', breakpoint);
-    assert.ok(breakpoint, 'should have set a breakpoint');
-    assert.ok(breakpoint.id, 'breakpoint should have an id');
-    assert.ok(breakpoint.location, 'breakpoint should have a location');
-    assert.strictEqual(breakpoint.location!.path, FILENAME);
-
-    console.log('-- waiting before checking if breakpoint was hit');
-    await delay(10 * 1000);
 
     console.log('-- now checking if the breakpoint was hit');
     const foundBreakpoint = await api.getBreakpoint(debuggeeId!, breakpoint.id);
@@ -293,7 +289,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
 
     // Set a breakpoint at which the debugger should write to a log
     console.log('-- setting a logpoint');
-    const breakpoint = await api.setBreakpoint(debuggeeId!, {
+    const breakpoint = await verifySetBreakpoint({
       id: 'breakpoint-3',
       location: {path: FILENAME, line: 5},
       condition: 'n === 10',
@@ -304,16 +300,6 @@ describe('@google-cloud/debug end-to-end behavior', () => {
       evaluatedExpressions: [],
       variableTable: []
     });
-
-    // Check that the breakpoint was set, and then wait for the log to be
-    // written to
-    assert.ok(breakpoint, 'should have set a breakpoint');
-    assert.ok(breakpoint.id, 'breakpoint should have an id');
-    assert.ok(breakpoint.location, 'breakpoint should have a location');
-    assert.strictEqual(breakpoint.location!.path, FILENAME);
-
-    console.log('-- waiting before checking if the log was written');
-    await delay(10 * 1000);
 
     // If no throttling occurs, we expect ~20 logs since we are logging
     // 2x per second over a 10 second period.
