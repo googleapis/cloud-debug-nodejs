@@ -190,7 +190,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     assert.strictEqual(breakpoint.location!.path, FILENAME);
 
     console.log('-- waiting before checking if the log was written');
-    await Promise.all([breakpoint, delay(10 * 1000)]);
+    await delay(10 * 1000);
 
     // Check the contents of the log, but keep the original breakpoint.
     children.forEach((child, index) => {
@@ -223,7 +223,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     assert.strictEqual(breakpoint.location!.path, FILENAME);
 
     console.log('-- waiting before checking if breakpoint was hit');
-    await Promise.all([breakpoint, delay(10 * 1000)]);
+    await delay(10 * 1000);
 
     console.log('-- now checking if the breakpoint was hit');
     const foundBreakpoint = await api.getBreakpoint(debuggeeId!, breakpoint.id);
@@ -330,7 +330,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     assert.strictEqual(breakpoint.location!.path, FILENAME);
 
     console.log('-- waiting before checking if the log was written');
-    await Promise.all([breakpoint, delay(10 * 1000)]);
+    await delay(10 * 1000);
 
     // If no throttling occurs, we expect ~20 logs since we are logging
     // 2x per second over a 10 second period.
