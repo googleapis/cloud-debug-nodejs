@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import assert from 'assert';
-import extend from 'extend';
-import nock from 'nock';
+import * as assert from 'assert';
+import * as extend from 'extend';
+import * as nock from 'nock';
 import * as path from 'path';
 
 import * as config from '../src/agent/config';

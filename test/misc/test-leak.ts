@@ -2,7 +2,7 @@
 
 const v8debugapi = require('../src/v8debugapi.js');
 const config = require('../config.js').default;
-import assert from 'assert';
+import * as assert from 'assert';
 import * as util from 'util';
 
 // tslint:disable:variable-name
