@@ -20,16 +20,12 @@ import * as _ from 'lodash';  // for _.find. Can't use ES6 yet.
 import * as util from 'util';
 
 import * as stackdriver from '../src/types/stackdriver';
-
-const promisifyAll = require('@google-cloud/common').util.promisifyAll;
 import {Debug} from '../src/client/stackdriver/debug';
 import {Debuggee} from '../src/debuggee';
 import {Debugger} from '../test/debugger';
-import * as utils from '../src/agent/util/utils';
 
 const CLUSTER_WORKERS = 3;
 
-// TODO: Determine if this path should contain 'build'
 const FILENAME = 'build/test/fixtures/fib.js';
 
 const delay = (delayTimeMS: number): Promise<void> => {
@@ -52,7 +48,6 @@ describe('@google-cloud/debug end-to-end behavior', () => {
   let children: Child[] = [];
 
   before(() => {
-    promisifyAll(Debugger);
     const packageInfo = {name: 'Some name', version: 'Some version'};
     api = new Debugger(new Debug({}, packageInfo));
   });
@@ -141,307 +136,187 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     });
   });
 
-  it('should set breakpoints correctly', function() {
+  async function verifyDebuggeeFound() {
+    const debuggees = await api.listDebuggees(projectId!, true);
+
+    // Check that the debuggee created in this test is among the list of
+    // debuggees, then list its breakpoints
+    console.log(
+        '-- List of debuggees\n', util.inspect(debuggees, {depth: null}));
+    assert.ok(debuggees, 'should get a valid ListDebuggees response');
+
+    const result = _.find(debuggees, (d: Debuggee) => {
+      return d.id === debuggeeId;
+    });
+
+    assert.ok(result, 'should find the debuggee we just registered');
+  }
+
+  async function verifyDeleteBreakpoints() {
+    // Delete every breakpoint
+    const breakpoints = await api.listBreakpoints(debuggeeId!, {});
+    console.log('-- List of breakpoints\n', breakpoints);
+
+    const promises = breakpoints.map(breakpoint => {
+      return api.deleteBreakpoint(debuggeeId!, breakpoint.id);
+    });
+    await Promise.all(promises);
+
+    const breakpointsAfterDelete = await api.listBreakpoints(debuggeeId!, {});
+    assert.strictEqual(breakpointsAfterDelete.length, 0);
+    console.log('-- deleted');
+  }
+
+  async function verifySetBreakpoint(breakpt: stackdriver.Breakpoint) {
+    // Set a breakpoint at which the debugger should write to a log
+    const breakpoint = await api.setBreakpoint(debuggeeId!, breakpt);
+
+    // Check that the breakpoint was set, and then wait for the log to be
+    // written to
+    assert.ok(breakpoint, 'should have set a breakpoint');
+    assert.ok(breakpoint.id, 'breakpoint should have an id');
+    assert.ok(breakpoint.location, 'breakpoint should have a location');
+    assert.strictEqual(breakpoint.location!.path, FILENAME);
+
+    console.log('-- waiting for the breakpoint/logpoint to hit');
+    await delay(10 * 1000);
+
+    return breakpoint;
+  }
+
+  async function verifySetLogpoint() {
+    console.log('-- setting a logpoint');
+    await verifySetBreakpoint({
+      id: 'breakpoint-1',
+      location: {path: FILENAME, line: 5},
+      condition: 'n === 10',
+      action: 'LOG',
+      expressions: ['o'],
+      logMessageFormat: 'o is: $0',
+      stackFrames: [],
+      evaluatedExpressions: [],
+      variableTable: []
+    });
+
+    // Check the contents of the log, but keep the original breakpoint.
+    children.forEach((child, index) => {
+      assert(
+          child.transcript.indexOf('o is: {"a":[1,"hi",true]}') !== -1,
+          'transcript in child ' + index +
+              ' should contain value of o: ' + child.transcript);
+    });
+  }
+
+  async function verifySetDuplicateBreakpoint() {
+    // Set another breakpoint at the same location
+    console.log('-- setting a breakpoint');
+    const breakpoint = await verifySetBreakpoint({
+      id: 'breakpoint-2',
+      location: {path: FILENAME, line: 5},
+      expressions: ['process'],  // Process for large variable
+      condition: 'n === 10',
+      stackFrames: [],
+      evaluatedExpressions: [],
+      variableTable: []
+    });
+
+    console.log('-- now checking if the breakpoint was hit');
+    const foundBreakpoint = await api.getBreakpoint(debuggeeId!, breakpoint.id);
+
+    // Check that the breakpoint was hit and contains the correct
+    // information, which ends the test
+    console.log('-- results of get breakpoint\n', foundBreakpoint);
+    assert.ok(foundBreakpoint, 'should have a breakpoint in the response');
+    assert.ok(foundBreakpoint.isFinalState, 'breakpoint should have been hit');
+    assert.ok(Array.isArray(foundBreakpoint.stackFrames), 'should have stack ');
+    const top = foundBreakpoint.stackFrames[0];
+    assert.ok(top, 'should have a top entry');
+    assert.ok(top.function, 'frame should have a function property');
+    assert.strictEqual(top.function, 'fib');
+
+    const arg = _.find(top.locals, {name: 'n'});
+    assert.ok(arg, 'should find the n argument');
+    assert.strictEqual(arg!.value, '10');
+    console.log('-- checking log point was hit again');
+    children.forEach((child) => {
+      const count =
+          (child.transcript.match(/LOGPOINT: o is: \{"a":\[1,"hi",true\]\}/g) ||
+           []).length;
+      assert.ok(count > 4);
+    });
+
+    await api.deleteBreakpoint(debuggeeId!, foundBreakpoint.id);
+  }
+
+  async function verifyHitLogpoint() {
+    // wait for 60 seconds
+    console.log('-- waiting for 60 seconds');
+    await delay(60 * 1000);
+
+    // Make sure the log point is continuing to be hit.
+    console.log('-- checking log point was hit again');
+    children.forEach((child) => {
+      const count =
+          (child.transcript.match(/LOGPOINT: o is: \{"a":\[1,"hi",true\]\}/g) ||
+           []).length;
+      assert.ok(count > 60);
+    });
+    console.log('-- test passed');
+  }
+
+  it('should set breakpoints correctly', async function() {
     this.timeout(90 * 1000);
-    // Kick off promise chain by getting a list of debuggees
-    // TODO: Determine how to properly specify the signature of listDebuggees
-    // TODO: Determine if this is the correct signature for `then`
-    return (api as {listDebuggees: Function})
-        .listDebuggees(projectId)
-        .then((results: {[index: number]: Debuggee[]}) => {
-          // Check that the debuggee created in this test is among the list of
-          // debuggees, then list its breakpoints
-
-          const debuggees: Debuggee[] = results[0];
-
-          console.log(
-              '-- List of debuggees\n', util.inspect(debuggees, {depth: null}));
-          assert.ok(debuggees, 'should get a valid ListDebuggees response');
-          const result = _.find(debuggees, (d: Debuggee) => {
-            return d.id === debuggeeId;
-          });
-          assert.ok(result, 'should find the debuggee we just registered');
-          // TODO: Determine how to properly specify the signature of
-          // listBreakpoints
-          return (api as {listBreakpoints: Function})
-              .listBreakpoints(debuggeeId);
-          // TODO: Determine if this type signature is correct.
-        })
-        .then((results: {[index: number]: stackdriver.Breakpoint[]}) => {
-          // Delete every breakpoint
-
-          const breakpoints: stackdriver.Breakpoint[] = results[0];
-
-          console.log('-- List of breakpoints\n', breakpoints);
-
-          const promises =
-              breakpoints.map((breakpoint: stackdriver.Breakpoint) => {
-                // TODO: Determine how to properly specify the signature of
-                // deleteBreakpoint
-                return (api as {deleteBreakpoint: Function})
-                    .deleteBreakpoint(debuggeeId, breakpoint.id);
-              });
-
-          return Promise.all(promises);
-          // TODO: Determine if this type signature is correct
-        })
-        .then((results: stackdriver.Breakpoint[]) => {
-          // Set a breakpoint at which the debugger should write to a log
-
-          results.map((result: stackdriver.Breakpoint) => {
-            assert.equal(result, '');
-          });
-          console.log('-- deleted');
-
-          console.log('-- setting a logpoint');
-          // TODO: Determine how to properly specify the signature of
-          // setBreakpoint
-          return (api as {setBreakpoint: Function}).setBreakpoint(debuggeeId, {
-            id: 'breakpoint-1',
-            location: {path: FILENAME, line: 5},
-            condition: 'n === 10',
-            action: 'LOG',
-            expressions: ['o'],
-            log_message_format: 'o is: $0'
-          });
-          // TODO: Determine if this type signature is correct.
-        })
-        .then((results: stackdriver.Breakpoint[]) => {
-          // Check that the breakpoint was set, and then wait for the log to be
-          // written to
-
-          const breakpoint = results[0];
-
-          assert.ok(breakpoint, 'should have set a breakpoint');
-          assert.ok(breakpoint.id, 'breakpoint should have an id');
-          assert.ok(breakpoint.location, 'breakpoint should have a location');
-          // TODO: Handle the case when breakpoint.location is undefined
-          assert.strictEqual(breakpoint.location!.path, FILENAME);
-
-          console.log('-- waiting before checking if the log was written');
-          return Promise.all([breakpoint, delay(10 * 1000)]);
-          // TODO: Determine if the results parameter should be used.
-        })
-        .then((results: stackdriver.Breakpoint[]) => {
-          // Check the contents of the log, but keep the original breakpoint.
-
-          // TODO: This is never used.  Determine if it should be used.
-          // const breakpoint = results[0];
-
-          children.forEach((child, index) => {
-            assert(
-                child.transcript.indexOf('o is: {"a":[1,"hi",true]}') !== -1,
-                'transcript in child ' + index +
-                    ' should contain value of o: ' + child.transcript);
-          });
-          return Promise.resolve();
-        })
-        .then(() => {
-          // Set another breakpoint at the same location
-
-          console.log('-- setting a breakpoint');
-          // TODO: Determine how to properly specify the signature of
-          // setBreakpoint
-          return (api as {setBreakpoint: Function}).setBreakpoint(debuggeeId, {
-            id: 'breakpoint-2',
-            location: {path: FILENAME, line: 5},
-            expressions: ['process'],  // Process for large variable
-            condition: 'n === 10'
-          });
-        })
-        .then((results: stackdriver.Breakpoint[]) => {
-          // Check that the breakpoint was set, and then wait for the breakpoint
-          // to be hit
-
-          const breakpoint = results[0];
-
-          console.log('-- resolution of setBreakpoint', breakpoint);
-          assert.ok(breakpoint, 'should have set a breakpoint');
-          assert.ok(breakpoint.id, 'breakpoint should have an id');
-          assert.ok(breakpoint.location, 'breakpoint should have a location');
-          // TODO: Handle the case when breakpoint.location is undefined
-          assert.strictEqual(breakpoint.location!.path, FILENAME);
-
-          console.log('-- waiting before checking if breakpoint was hit');
-          return Promise.all([breakpoint, delay(10 * 1000)]);
-        })
-        .then((results: stackdriver.Breakpoint[]) => {
-          // Get the breakpoint
-
-          const breakpoint = results[0];
-
-          console.log('-- now checking if the breakpoint was hit');
-          // TODO: Determine how to properly specify the signature of
-          // getBreakpoint
-          return (api as {getBreakpoint: Function})
-              .getBreakpoint(debuggeeId, breakpoint.id);
-        })
-        .then((results: stackdriver.Breakpoint[]) => {
-          // Check that the breakpoint was hit and contains the correct
-          // information, which ends the test
-
-          const breakpoint = results[0];
-
-          let arg;
-          console.log('-- results of get breakpoint\n', breakpoint);
-          assert.ok(breakpoint, 'should have a breakpoint in the response');
-          assert.ok(breakpoint.isFinalState, 'breakpoint should have been hit');
-          assert.ok(
-              Array.isArray(breakpoint.stackFrames), 'should have stack ');
-          const top = breakpoint.stackFrames[0];
-          assert.ok(top, 'should have a top entry');
-          assert.ok(top.function, 'frame should have a function property');
-          assert.strictEqual(top.function, 'fib');
-
-          if (utils.satisfies(process.version, '>=4.0')) {
-            arg = _.find(top.locals, {name: 'n'});
-          } else {
-            arg = _.find(top.arguments, {name: 'n'});
-          }
-          assert.ok(arg, 'should find the n argument');
-          // TODO: Handle the case when arg is undefined
-          assert.strictEqual(arg!.value, '10');
-          console.log('-- checking log point was hit again');
-          children.forEach((child) => {
-            const count = (child.transcript.match(
-                               /LOGPOINT: o is: \{"a":\[1,"hi",true\]\}/g) ||
-                           []).length;
-            assert.ok(count > 4);
-          });
-
-          // TODO: Determine how to properly specify the signature of
-          // deleteBreakpoint
-          return (api as {deleteBreakpoint: Function})
-              .deleteBreakpoint(debuggeeId, breakpoint.id);
-        })
-        .then(() => {
-          // wait for 60 seconds
-          console.log('-- waiting for 60 seconds');
-          return delay(60 * 1000);
-        })
-        .then(() => {
-          // Make sure the log point is continuing to be hit.
-          console.log('-- checking log point was hit again');
-          children.forEach((child) => {
-            const count = (child.transcript.match(
-                               /LOGPOINT: o is: \{"a":\[1,"hi",true\]\}/g) ||
-                           []).length;
-            assert.ok(count > 60);
-          });
-          console.log('-- test passed');
-          return Promise.resolve();
-        });
+    await verifyDebuggeeFound();
+    await verifyDeleteBreakpoints();
+    await verifySetLogpoint();
+    await verifySetDuplicateBreakpoint();
+    await verifyHitLogpoint();
   });
 
-  it('should throttle logs correctly', function() {
+  it('should throttle logs correctly', async function() {
     this.timeout(15 * 1000);
-    // Kick off promise chain by getting a list of debuggees
-    // TODO: Determine how to properly specify the signature of listDebuggees
-    // TODO: Determine if this is the correct signature for then
-    return (api as {listDebuggees: Function})
-        .listDebuggees(projectId)
-        .then((results: {[index: number]: Debuggee[]}) => {
-          // Check that the debuggee created in this test is among the list of
-          // debuggees, then list its breakpoints
 
-          const debuggees: Debuggee[] = results[0];
+    await verifyDebuggeeFound();
 
-          console.log(
-              '-- List of debuggees\n', util.inspect(debuggees, {depth: null}));
-          assert.ok(debuggees, 'should get a valid ListDebuggees response');
-          const result = _.find(debuggees, (d: Debuggee) => {
-            return d.id === debuggeeId;
-          });
-          assert.ok(result, 'should find the debuggee we just registered');
-          // TODO: Determine how to properly specify the signature of
-          // listBreakpoints
-          return (api as {listBreakpoints: Function})
-              .listBreakpoints(debuggeeId);
-          // TODO: Determine if this type signature is correct.
-        })
-        .then((results: {[index: number]: stackdriver.Breakpoint[]}) => {
-          // Delete every breakpoint
+    const breakpoints = await api.listBreakpoints(debuggeeId!, {});
+    console.log('-- List of breakpoints\n', breakpoints);
 
-          const breakpoints: stackdriver.Breakpoint[] = results[0];
+    await verifyDeleteBreakpoints();
 
-          console.log('-- List of breakpoints\n', breakpoints);
+    const foundBreakpoints = await api.listBreakpoints(debuggeeId!, {});
+    assert.strictEqual(foundBreakpoints.length, 0);
+    console.log('-- deleted');
 
-          const promises =
-              breakpoints.map((breakpoint: stackdriver.Breakpoint) => {
-                // TODO: Determine how to properly specify the signature of
-                // deleteBreakpoint
-                return (api as {deleteBreakpoint: Function})
-                    .deleteBreakpoint(debuggeeId, breakpoint.id);
-              });
+    // Set a breakpoint at which the debugger should write to a log
+    console.log('-- setting a logpoint');
+    const breakpoint = await verifySetBreakpoint({
+      id: 'breakpoint-3',
+      location: {path: FILENAME, line: 5},
+      condition: 'n === 10',
+      action: 'LOG',
+      expressions: ['o'],
+      logMessageFormat: 'o is: $0',
+      stackFrames: [],
+      evaluatedExpressions: [],
+      variableTable: []
+    });
 
-          return Promise.all(promises);
-          // TODO: Determine if this type signature is correct
-        })
-        .then((results: stackdriver.Breakpoint[]) => {
-          // Set a breakpoint at which the debugger should write to a log
+    // If no throttling occurs, we expect ~20 logs since we are logging
+    // 2x per second over a 10 second period.
+    children.forEach((child) => {
+      const logCount =
+          (child.transcript.match(/LOGPOINT: o is: \{"a":\[1,"hi",true\]\}/g) ||
+           []).length;
+      // A log count of greater than 10 indicates that we did not
+      // successfully pause when the rate of `maxLogsPerSecond` was
+      // reached.
+      assert(logCount <= 10, 'log count is greater than 10: ' + logCount);
+      // A log count of less than 3 indicates that we did not successfully
+      // resume logging after `logDelaySeconds` have passed.
+      assert(logCount > 2, 'log count is not greater than 2: ' + logCount);
+    });
 
-          results.map((result: stackdriver.Breakpoint) => {
-            assert.equal(result, '');
-          });
-          console.log('-- deleted');
-
-          console.log('-- setting a logpoint');
-          // TODO: Determine how to properly specify the signature of
-          // setBreakpoint
-          return (api as {setBreakpoint: Function}).setBreakpoint(debuggeeId, {
-            id: 'breakpoint-3',
-            location: {path: FILENAME, line: 5},
-            condition: 'n === 10',
-            action: 'LOG',
-            expressions: ['o'],
-            log_message_format: 'o is: $0'
-          });
-          // TODO: Determine if this type signature is correct.
-        })
-        .then((results: stackdriver.Breakpoint[]) => {
-          // Check that the breakpoint was set, and then wait for the log to be
-          // written to
-
-          const breakpoint = results[0];
-
-          assert.ok(breakpoint, 'should have set a breakpoint');
-          assert.ok(breakpoint.id, 'breakpoint should have an id');
-          assert.ok(breakpoint.location, 'breakpoint should have a location');
-          // TODO: Handle the case when breakpoint.location is undefined
-          assert.strictEqual(breakpoint.location!.path, FILENAME);
-
-          console.log('-- waiting before checking if the log was written');
-          return Promise.all([breakpoint, delay(10 * 1000)]);
-        })
-        .then((results: stackdriver.Breakpoint[]) => {
-          // Check that the contents of the log is correct
-
-          const breakpoint = results[0];
-
-          // If no throttling occurs, we expect ~20 logs since we are logging
-          // 2x per second over a 10 second period.
-          children.forEach((child) => {
-            const logCount = (child.transcript.match(
-                                  /LOGPOINT: o is: \{"a":\[1,"hi",true\]\}/g) ||
-                              []).length;
-            // A log count of greater than 10 indicates that we did not
-            // successfully pause when the rate of `maxLogsPerSecond` was
-            // reached.
-            assert(logCount <= 10, 'log count is greater than 10: ' + logCount);
-            // A log count of less than 3 indicates that we did not successfully
-            // resume logging after `logDelaySeconds` have passed.
-            assert(
-                logCount > 2, 'log count is not greater than 2: ' + logCount);
-          });
-
-          // TODO: Determine how to properly specify the signature of
-          // deleteBreakpoint
-          return (api as {deleteBreakpoint: Function})
-              .deleteBreakpoint(debuggeeId, breakpoint.id);
-        })
-        .then(() => {
-          console.log('-- test passed');
-          return Promise.resolve();
-        });
+    await api.deleteBreakpoint(debuggeeId!, breakpoint.id);
+    console.log('-- test passed');
   });
 });
