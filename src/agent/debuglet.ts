@@ -331,83 +331,79 @@ export class Debuglet extends EventEmitter {
       return;
     }
 
-    SourceMapper.create(findResults.mapFiles, async (err3, sourcemapper) => {
-      if (err3) {
-        that.logger.error('Error processing the sourcemaps.', err3);
-        that.emit('initError', err3);
-        return;
-      }
+    let mapper;
+    try {
+      mapper = await SourceMapper.create(findResults.mapFiles);
+    } catch (err3) {
+      that.logger.error('Error processing the sourcemaps.', err3);
+      that.emit('initError', err3);
+      return;
+    }
+    that.v8debug =
+        debugapi.create(that.logger, that.config, findResults.jsStats, mapper);
 
-      // At this point err3 being falsy implies sourcemapper is defined
-      const mapper = sourcemapper as SourceMapper.SourceMapper;
+    id = id || findResults.hash;
 
-      that.v8debug = debugapi.create(
-          that.logger, that.config, findResults.jsStats, mapper);
+    that.logger.info('Unique ID for this Application: ' + id);
 
-      id = id || findResults.hash;
+    const onGCP = await Debuglet.runningOnGCP();
+    let project: string;
+    try {
+      project = await Debuglet.getProjectId(that.debug.options);
+    } catch (err) {
+      that.logger.error(
+          'The project ID could not be determined: ' + err.message);
+      that.emit('initError', err);
+      return;
+    }
 
-      that.logger.info('Unique ID for this Application: ' + id);
-
-      const onGCP = await Debuglet.runningOnGCP();
-      let project: string;
+    if (onGCP &&
+        (!that.config.serviceContext || !that.config.serviceContext.service)) {
+      // If on GCP, check if the clusterName instance attribute is availble.
+      // Use this as the service context for better service identification on
+      // GKE.
       try {
-        project = await Debuglet.getProjectId(that.debug.options);
+        const clusterName = await Debuglet.getClusterNameFromMetadata();
+        that.config.serviceContext = {
+          service: clusterName,
+          version: 'unversioned',
+          minorVersion_: undefined
+        };
       } catch (err) {
-        that.logger.error(
-            'The project ID could not be determined: ' + err.message);
-        that.emit('initError', err);
-        return;
+        /* we are not running on GKE - Ignore error. */
       }
+    }
 
-      if (onGCP &&
-          (!that.config.serviceContext ||
-           !that.config.serviceContext.service)) {
-        // If on GCP, check if the clusterName instance attribute is availble.
-        // Use this as the service context for better service identification on
-        // GKE.
-        try {
-          const clusterName = await Debuglet.getClusterNameFromMetadata();
-          that.config.serviceContext = {
-            service: clusterName,
-            version: 'unversioned',
-            minorVersion_: undefined
-          };
-        } catch (err) {
-          /* we are not running on GKE - Ignore error. */
-        }
-      }
+    let sourceContext;
+    try {
+      sourceContext = await Debuglet.getSourceContextFromFile();
+    } catch (err5) {
+      that.logger.warn('Unable to discover source context', err5);
+      // This is ignorable.
+    }
 
-      let sourceContext;
-      try {
-        sourceContext = await Debuglet.getSourceContextFromFile();
-      } catch (err5) {
-        that.logger.warn('Unable to discover source context', err5);
-        // This is ignorable.
-      }
+    // TODO: This code can be removed now that we support only Node 6+.
+    if (utils.satisfies(process.version, '5.2 || <4')) {
+      // Using an unsupported version. We report an error
+      // message about the Node.js version, but we keep on
+      // running. The idea is that the user may miss the error
+      // message on the console. This way we can report the
+      // error when the user tries to set a breakpoint.
+      that.logger.error(NODE_VERSION_MESSAGE);
+    }
 
-      // TODO: This code can be removed now that we support only Node 6+.
-      if (utils.satisfies(process.version, '5.2 || <4')) {
-        // Using an unsupported version. We report an error
-        // message about the Node.js version, but we keep on
-        // running. The idea is that the user may miss the error
-        // message on the console. This way we can report the
-        // error when the user tries to set a breakpoint.
-        that.logger.error(NODE_VERSION_MESSAGE);
-      }
+    // We can register as a debuggee now.
+    that.logger.debug('Starting debuggee, project', project);
+    that.running = true;
 
-      // We can register as a debuggee now.
-      that.logger.debug('Starting debuggee, project', project);
-      that.running = true;
-
-      // TODO: Address the case where `project` is `undefined`.
-      that.project = project;
-      that.debuggee = Debuglet.createDebuggee(
-          // TODO: Address the case when `id` is `undefined`.
-          project, id as string, that.config.serviceContext, sourceContext,
-          onGCP, that.debug.packageInfo, that.config.description, undefined);
-      that.scheduleRegistration_(0 /* immediately */);
-      that.emit('started');
-    });
+    // TODO: Address the case where `project` is `undefined`.
+    that.project = project;
+    that.debuggee = Debuglet.createDebuggee(
+        // TODO: Address the case when `id` is `undefined`.
+        project, id as string, that.config.serviceContext, sourceContext, onGCP,
+        that.debug.packageInfo, that.config.description, undefined);
+    that.scheduleRegistration_(0 /* immediately */);
+    that.emit('started');
   }
 
   /**
@@ -495,7 +491,7 @@ export class Debuglet extends EventEmitter {
         new StatusMessage(StatusMessage.UNSPECIFIED, errorMessage, true) :
         undefined;
 
-    const properties : DebuggeeProperties = {
+    const properties: DebuggeeProperties = {
       project: projectId,
       uniquifier,
       description: desc,

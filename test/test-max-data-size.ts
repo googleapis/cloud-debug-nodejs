@@ -44,21 +44,19 @@ describe('maxDataSize', () => {
       //       with this change, the tests fail.  Resolve this.
       const logger = new common.logger(
           {levelLevel: config.logLevel} as {} as LoggerOptions);
-      scanner.scan(true, config.workingDirectory, /.js$/).then((fileStats) => {
-        assert.strictEqual(fileStats.errors().size, 0);
-        const jsStats = fileStats.selectStats(/.js$/);
-        const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
-        SourceMapper.create(mapFiles, (err, mapper) => {
-          assert(!err);
-
-          // TODO: Handle the case when mapper is undefined
-          // TODO: Handle the case when v8debugapi.create returns null
-          api = debugapi.create(
-                    logger, config, jsStats,
-                    mapper as SourceMapper.SourceMapper) as debugapi.DebugApi;
-          done();
-        });
-      });
+      scanner.scan(true, config.workingDirectory, /.js$/)
+          .then(async (fileStats) => {
+            assert.strictEqual(fileStats.errors().size, 0);
+            const jsStats = fileStats.selectStats(/.js$/);
+            const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
+            const mapper = await SourceMapper.create(mapFiles);
+            // TODO: Handle the case when mapper is undefined
+            // TODO: Handle the case when v8debugapi.create returns null
+            api = debugapi.create(
+                      logger, config, jsStats,
+                      mapper as SourceMapper.SourceMapper) as debugapi.DebugApi;
+            done();
+          });
     } else {
       done();
     }

@@ -42,16 +42,15 @@ describe('evaluating expressions', () => {
       level: common.logger.LEVELS[config.logLevel],
       tag: 'test-expression-side-effect'
     });
-    scanner.scan(true, config.workingDirectory, /\.js$/).then(fileStats => {
-      const jsStats = fileStats.selectStats(/\.js$/);
-      const mapFiles = fileStats.selectFiles(/\.map$/, process.cwd());
-      SourceMapper.create(mapFiles, (err, mapper) => {
-        assert(!err);
-        assert(mapper);
-        api = debugapi.create(logger, config, jsStats, mapper!);
-        done();
-      });
-    });
+    scanner.scan(true, config.workingDirectory, /\.js$/)
+        .then(async fileStats => {
+          const jsStats = fileStats.selectStats(/\.js$/);
+          const mapFiles = fileStats.selectFiles(/\.map$/, process.cwd());
+          const mapper = await SourceMapper.create(mapFiles);
+          assert(mapper);
+          api = debugapi.create(logger, config, jsStats, mapper!);
+          done();
+        });
   });
 
   itWithInspector(

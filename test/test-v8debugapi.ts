@@ -160,28 +160,25 @@ describe('debugapi selection', () => {
   it('should use the correct debugapi and have appropriate warning', (done) => {
     let api: DebugApi;
     scanner.scan(true, config.workingDirectory, /.js$|.js.map$/)
-        .then((fileStats) => {
+        .then(async (fileStats) => {
           assert.strictEqual(fileStats.errors().size, 0);
           const jsStats = fileStats.selectStats(/.js$/);
           const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
-          SourceMapper.create(mapFiles, (err, mapper) => {
-            assert(!err);
-            // TODO(dominickramer): Handle the case when mapper is undefined.
-            // TODO(dominickramer): Handle the case when v8debugapi.create
-            // returns null
-            api = debugapi.create(
-                      logger, config, jsStats,
-                      mapper as SourceMapper.SourceMapper) as DebugApi;
-            if (debugapi.willUseInspector()) {
-              const inspectorapi =
-                  require('../src/agent/v8/inspector-debugapi');
-              assert.ok(api instanceof inspectorapi.InspectorDebugApi);
-            } else {
-              const v8debugapi = require('../src/agent/v8/legacy-debugapi');
-              assert.ok(api instanceof v8debugapi.V8DebugApi);
-            }
-            done();
-          });
+          const mapper = await SourceMapper.create(mapFiles);
+          // TODO(dominickramer): Handle the case when mapper is undefined.
+          // TODO(dominickramer): Handle the case when v8debugapi.create
+          // returns null
+          api = debugapi.create(
+                    logger, config, jsStats,
+                    mapper as SourceMapper.SourceMapper) as DebugApi;
+          if (debugapi.willUseInspector()) {
+            const inspectorapi = require('../src/agent/v8/inspector-debugapi');
+            assert.ok(api instanceof inspectorapi.InspectorDebugApi);
+          } else {
+            const v8debugapi = require('../src/agent/v8/legacy-debugapi');
+            assert.ok(api instanceof v8debugapi.V8DebugApi);
+          }
+          done();
         });
   });
 });
@@ -202,18 +199,16 @@ describeFn('debugapi selection on Node >=10', () => {
   it('should always use the inspector api', (done) => {
     let api: DebugApi;
     scanner.scan(true, config.workingDirectory, /.js$|.js.map$/)
-        .then((fileStats) => {
+        .then(async (fileStats) => {
           assert.strictEqual(fileStats.errors().size, 0);
           const jsStats = fileStats.selectStats(/.js$/);
           const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
-          SourceMapper.create(mapFiles, (err, mapper) => {
-            assert(!err);
-            assert(mapper);
-            api = debugapi.create(logger, config, jsStats, mapper!);
-            const inspectorapi = require('../src/agent/v8/inspector-debugapi');
-            assert.ok(api instanceof inspectorapi.InspectorDebugApi);
-            done();
-          });
+          const mapper = await SourceMapper.create(mapFiles);
+          assert(mapper);
+          api = debugapi.create(logger, config, jsStats, mapper!);
+          const inspectorapi = require('../src/agent/v8/inspector-debugapi');
+          assert.ok(api instanceof inspectorapi.InspectorDebugApi);
+          done();
         });
   });
 });
@@ -231,31 +226,29 @@ describe('v8debugapi', () => {
   beforeEach((done) => {
     if (!api) {
       scanner.scan(true, config.workingDirectory, /.js$|.js.map$/)
-          .then((fileStats) => {
+          .then(async (fileStats) => {
             assert.strictEqual(fileStats.errors().size, 0);
             const jsStats = fileStats.selectStats(/.js$/);
             const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
-            SourceMapper.create(mapFiles, (err1, mapper) => {
-              assert(!err1);
+            const mapper = await SourceMapper.create(mapFiles);
 
-              // TODO(dominickramer): Handle the case when mapper is undefined.
-              // TODO(dominickramer): Handle the case when v8debugapi.create
-              // returns null
-              api = debugapi.create(
-                        logger, config, jsStats,
-                        mapper as SourceMapper.SourceMapper) as DebugApi;
-              assert.ok(api, 'should be able to create the api');
+            // TODO(dominickramer): Handle the case when mapper is undefined.
+            // TODO(dominickramer): Handle the case when v8debugapi.create
+            // returns null
+            api = debugapi.create(
+                      logger, config, jsStats,
+                      mapper as SourceMapper.SourceMapper) as DebugApi;
+            assert.ok(api, 'should be able to create the api');
 
-              // monkey-patch wait to add validation of the breakpoints.
-              const origWait = api.wait.bind(api);
-              api.wait = (bp, callback) => {
-                origWait(bp, (err2?: Error) => {
-                  validateBreakpoint(bp);
-                  callback(err2);
-                });
-              };
-              done();
-            });
+            // monkey-patch wait to add validation of the breakpoints.
+            const origWait = api.wait.bind(api);
+            api.wait = (bp, callback) => {
+              origWait(bp, (err2?: Error) => {
+                validateBreakpoint(bp);
+                callback(err2);
+              });
+            };
+            done();
           });
     } else {
       assert(stateIsClean(api));
