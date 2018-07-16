@@ -21,7 +21,6 @@ import * as crypto from 'crypto';
 import {EventEmitter} from 'events';
 import extend from 'extend';
 import * as fs from 'fs';
-import * as pify from 'pify';
 
 import * as metadata from 'gcp-metadata';
 
