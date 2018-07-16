@@ -16,7 +16,7 @@
 
 import * as fs from 'fs';
 import * as _ from 'lodash';
-import pLimit from 'p-limit';
+import pLimit = require('p-limit');
 import * as path from 'path';
 import * as sourceMap from 'source-map';
 
