@@ -53,3 +53,12 @@ export function projectId(reply: string): nock.Scope {
       .once()
       .reply(200, reply);
 }
+
+export function metadataIsAvailable(responseCode: number = 200): nock.Scope {
+  return nock('http://metadata.google.internal')
+      .get('/computeMetadata/v1/instance')
+      .once()
+      .reply(responseCode, 'Hello world!', {
+        'metadata-flavor': 'Google'
+      });
+}

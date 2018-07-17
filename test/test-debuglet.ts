@@ -218,6 +218,7 @@ describe('Debuglet', () => {
     });
 
     it('should not start when projectId is not available', (done) => {
+      nocks.metadataIsAvailable(404);
       const savedGetProjectId = Debuglet.getProjectId;
       Debuglet.getProjectId = () => {
         return Promise.reject(new Error('no project id'));
@@ -240,6 +241,7 @@ describe('Debuglet', () => {
 
     it('should give a useful error message when projectId is not available',
        (done) => {
+         nocks.metadataIsAvailable(404);
          const savedGetProjectId = Debuglet.getProjectId;
          Debuglet.getProjectId = () => {
            return Promise.reject(new Error('no project id'));
@@ -269,6 +271,7 @@ describe('Debuglet', () => {
        });
 
     it('should not crash without project num', (done) => {
+      nocks.metadataIsAvailable(404);
       const savedGetProjectId = Debuglet.getProjectId;
       Debuglet.getProjectId = () => {
         return Promise.reject(new Error('no project id'));
