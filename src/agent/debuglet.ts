@@ -375,7 +375,8 @@ export class Debuglet extends EventEmitter {
 
     let sourceContext;
     try {
-      sourceContext = await Debuglet.getSourceContextFromFile();
+      sourceContext = that.config.sourceContext as {} as SourceContext ||
+          await Debuglet.getSourceContextFromFile();
     } catch (err5) {
       that.logger.warn('Unable to discover source context', err5);
       // This is ignorable.
@@ -435,7 +436,7 @@ export class Debuglet extends EventEmitter {
       projectId: string, uid: string,
       serviceContext:
           {service?: string, version?: string, minorVersion_?: string},
-      sourceContext: {[key: string]: string}|undefined, onGCP: boolean,
+      sourceContext: SourceContext|undefined, onGCP: boolean,
       packageInfo: PackageInfo, description?: string,
       errorMessage?: string): Debuggee {
     const cwd = process.cwd();
@@ -1018,7 +1019,7 @@ export class Debuglet extends EventEmitter {
 
   static _createUniquifier(
       desc: string, version: string, uid: string,
-      sourceContext: {[key: string]: {}}|undefined,
+      sourceContext: SourceContext|undefined,
       labels: {[key: string]: string}): string {
     const uniquifier = desc + version + uid + JSON.stringify(sourceContext) +
         JSON.stringify(labels);

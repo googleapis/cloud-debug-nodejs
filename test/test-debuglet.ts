@@ -806,6 +806,39 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
+    it('should pass config source context to api', done => {
+      const REPO_URL =
+          'https://github.com/non-existent-users/non-existend-repo';
+      const REVISION_ID = '5';
+
+      const debug = new Debug(
+          {projectId: 'fake-project', credentials: fakeCredentials},
+          packageInfo);
+      const config = extend(
+          {}, defaultConfig,
+          {sourceContext: {url: REPO_URL, revisionId: REVISION_ID}});
+      const debuglet = new Debuglet(debug, config);
+
+      const scope = nock(API)
+                        .post(
+                            REGISTER_PATH,
+                            (body: {debuggee: Debuggee}) => {
+                              const context = body.debuggee.sourceContexts![0];
+                              return context && context.url === REPO_URL &&
+                                  context.revisionId === REVISION_ID;
+                            })
+                        .reply(200, {debuggee: {id: DEBUGGEE_ID}});
+
+      debuglet.once('registered', (id: string) => {
+        assert.equal(id, DEBUGGEE_ID);
+        debuglet.stop();
+        scope.done();
+        done();
+      });
+
+      debuglet.start();
+    });
+
     it('should pass source context to api if present', (done) => {
       const debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials},
@@ -820,8 +853,46 @@ describe('Debuglet', () => {
                         .post(
                             REGISTER_PATH,
                             (body: {debuggee: Debuggee}) => {
-                              return body.debuggee.sourceContexts![0] &&
-                                  body.debuggee.sourceContexts![0].a === 5;
+                              const context = body.debuggee.sourceContexts![0];
+                              return context && context.a === 5;
+                            })
+                        .reply(200, {debuggee: {id: DEBUGGEE_ID}});
+
+      debuglet.once('registered', (id: string) => {
+        Debuglet.getSourceContextFromFile = old;
+        assert.equal(id, DEBUGGEE_ID);
+        debuglet.stop();
+        scope.done();
+        done();
+      });
+
+      debuglet.start();
+    });
+
+    it('should prefer config source context to file', done => {
+      const REPO_URL =
+          'https://github.com/non-existent-users/non-existend-repo';
+      const REVISION_ID = '5';
+
+      const debug = new Debug(
+          {projectId: 'fake-project', credentials: fakeCredentials},
+          packageInfo);
+      const config = extend(
+          {}, defaultConfig,
+          {sourceContext: {url: REPO_URL, revisionId: REVISION_ID}});
+      const old = Debuglet.getSourceContextFromFile;
+      Debuglet.getSourceContextFromFile = async () => {
+        return {a: 5 as {} as string};
+      };
+      const debuglet = new Debuglet(debug, config);
+
+      const scope = nock(API)
+                        .post(
+                            REGISTER_PATH,
+                            (body: {debuggee: Debuggee}) => {
+                              const context = body.debuggee.sourceContexts![0];
+                              return context && context.url === REPO_URL &&
+                                  context.revisionId === REVISION_ID;
                             })
                         .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
