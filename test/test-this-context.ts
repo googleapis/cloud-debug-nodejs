@@ -28,9 +28,9 @@ import * as scanner from '../src/agent/io/scanner';
 const code = require('./test-this-context-code.js');
 
 function stateIsClean(api: debugapi.DebugApi): boolean {
-  assert.equal(
+  assert.strictEqual(
       api.numBreakpoints_(), 0, 'there should be no breakpoints active');
-  assert.equal(api.numListeners_(), 0, 'there should be no listeners active');
+  assert.strictEqual(api.numListeners_(), 0, 'there should be no listeners active');
   return true;
 }
 
@@ -88,8 +88,8 @@ describe(__filename, () => {
             ctxMembers!.length, 1,
             'There should be one member in the context variable value');
         assert.deepEqual(ctxMembers![0], {name: 'a', value: '10'});
-        assert.equal(args.length, 0, 'There should be zero arguments');
-        assert.equal(locals.length, 2, 'There should be two locals');
+        assert.strictEqual(args.length, 0, 'There should be zero arguments');
+        assert.strictEqual(locals.length, 2, 'There should be two locals');
         assert.deepEqual(locals[0], {name: 'b', value: '1'});
         assert.deepEqual(locals[1].name, 'context');
         api.clear(brk, (err3) => {
@@ -113,8 +113,8 @@ describe(__filename, () => {
         const frame = brk.stackFrames[0];
         const args = frame.arguments;
         const locals = frame.locals;
-        assert.equal(args.length, 0, 'There should be zero arguments');
-        assert.equal(locals.length, 1, 'There should be one local');
+        assert.strictEqual(args.length, 0, 'There should be zero arguments');
+        assert.strictEqual(locals.length, 1, 'There should be one local');
         assert.deepEqual(locals[0], {name: 'j', value: '1'});
         api.clear(brk, (err3) => {
           assert.ifError(err3);

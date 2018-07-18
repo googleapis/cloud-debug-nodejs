@@ -531,7 +531,7 @@ class StateResolver {
 
 // This function is used by unit tests to make sure assertions are enabled.
 export function testAssert(): void {
-  assert.equal(0, 1);
+  assert.strictEqual(0, 1);
 }
 
 /**

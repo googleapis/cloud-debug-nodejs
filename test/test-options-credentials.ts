@@ -39,7 +39,7 @@ describe('test-options-credentials', () => {
 
   beforeEach(() => {
     delete process.env.GCLOUD_PROJECT;
-    assert.equal(debuglet, null);
+    assert.strictEqual(debuglet, null);
   });
 
   afterEach(() => {
@@ -57,9 +57,9 @@ describe('test-options-credentials', () => {
     });
     const debug = new Debug(options, packageInfo);
     const scope = nocks.oauth2((body) => {
-      assert.equal(body.client_id, credentials.client_id);
-      assert.equal(body.client_secret, credentials.client_secret);
-      assert.equal(body.refresh_token, credentials.refresh_token);
+      assert.strictEqual(body.client_id, credentials.client_id);
+      assert.strictEqual(body.client_secret, credentials.client_secret);
+      assert.strictEqual(body.refresh_token, credentials.refresh_token);
       return true;
     });
     // Since we have to get an auth token, this always gets intercepted second.
@@ -81,9 +81,9 @@ describe('test-options-credentials', () => {
     });
     const debug = new Debug(options, packageInfo);
     const scope = nocks.oauth2((body) => {
-      assert.equal(body.client_id, options.credentials.client_id);
-      assert.equal(body.client_secret, options.credentials.client_secret);
-      assert.equal(body.refresh_token, options.credentials.refresh_token);
+      assert.strictEqual(body.client_id, options.credentials.client_id);
+      assert.strictEqual(body.client_secret, options.credentials.client_secret);
+      assert.strictEqual(body.refresh_token, options.credentials.refresh_token);
       return true;
     });
     // Since we have to get an auth token, this always gets intercepted second.
@@ -113,9 +113,9 @@ describe('test-options-credentials', () => {
     });
     const debug = new Debug(options, packageInfo);
     const scope = nocks.oauth2((body) => {
-      assert.equal(body.client_id, credentials.client_id);
-      assert.equal(body.client_secret, credentials.client_secret);
-      assert.equal(body.refresh_token, credentials.refresh_token);
+      assert.strictEqual(body.client_id, credentials.client_id);
+      assert.strictEqual(body.client_secret, credentials.client_secret);
+      assert.strictEqual(body.refresh_token, credentials.refresh_token);
       return true;
     });
     // Since we have to get an auth token, this always gets intercepted second.

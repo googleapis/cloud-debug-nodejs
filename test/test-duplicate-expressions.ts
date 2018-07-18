@@ -34,9 +34,9 @@ const foo = require('./test-duplicate-expressions-code.js');
 
 // TODO: Determine why this must be named `stateIsClean1`.
 function stateIsClean1(api: debugapi.DebugApi): boolean {
-  assert.equal(
+  assert.strictEqual(
       api.numBreakpoints_(), 0, 'there should be no breakpoints active');
-  assert.equal(api.numListeners_(), 0, 'there should be no listeners active');
+  assert.strictEqual(api.numListeners_(), 0, 'there should be no listeners active');
   return true;
 }
 
@@ -85,7 +85,7 @@ describe(__filename, () => {
         const varTableIndicesSeen: number[] = [];
         exprs.forEach((expr) => {
           // TODO: Handle the case when expr.varTableIndex is undefined
-          assert.equal(
+          assert.strictEqual(
               varTableIndicesSeen.indexOf(expr.varTableIndex as number), -1);
           varTableIndicesSeen.push(expr.varTableIndex as number);
         });

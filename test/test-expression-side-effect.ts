@@ -72,7 +72,7 @@ describe('evaluating expressions', () => {
           api.wait(bp, err => {
             assert.ifError(err);
             const watch = bp.evaluatedExpressions[0];
-            assert.equal((watch as {value: string}).value, '2');
+            assert.strictEqual((watch as {value: string}).value, '2');
             api.clear(bp, err => {
               assert.ifError(err);
               done();

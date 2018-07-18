@@ -60,7 +60,7 @@ function testTool(
     it('for tool ' + tool +
            ' it states that it has mapping info for files it knows about',
        (done) => {
-         assert.equal(sourcemapper.hasMappingInfo(inputFilePath), true);
+         assert.strictEqual(sourcemapper.hasMappingInfo(inputFilePath), true);
          done();
        });
 
@@ -68,10 +68,10 @@ function testTool(
            ' it states that it has mapping info for files with a path' +
            ' similar to a path it knows about',
        (done) => {
-         assert.equal(sourcemapper.hasMappingInfo(relativeInputFilePath), true);
+         assert.strictEqual(sourcemapper.hasMappingInfo(relativeInputFilePath), true);
          const movedPath =
              path.join('/some/other/base/dir/', relativeInputFilePath);
-         assert.equal(sourcemapper.hasMappingInfo(movedPath), true);
+         assert.strictEqual(sourcemapper.hasMappingInfo(movedPath), true);
          done();
        });
 
@@ -79,7 +79,7 @@ function testTool(
            ' it states that it does not have mapping info for a file it ' +
            'doesn\'t recognize',
        (done) => {
-         assert.equal(
+         assert.strictEqual(
              sourcemapper.hasMappingInfo(inputFilePath + '_INVALID'), false);
          done();
        });
@@ -89,8 +89,8 @@ function testTool(
       assert.notEqual(
           info, null,
           'The mapping info for file ' + inputFilePath + ' must be non-null');
-      assert.equal(info!.file, outputFilePath);
-      assert.equal(
+      assert.strictEqual(info!.file, outputFilePath);
+      assert.strictEqual(
           info!.line, expectedOutputLine,
           ' invalid mapping for input line ' + inputLine);
     };

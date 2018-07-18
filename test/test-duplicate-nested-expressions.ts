@@ -29,9 +29,9 @@ const foo = require('./test-duplicate-nested-expressions-code.js');
 
 // TODO: Determine why this must be named `_stateIsClean`.
 function stateIsClean2(api: debugapi.DebugApi): boolean {
-  assert.equal(
+  assert.strictEqual(
       api.numBreakpoints_(), 0, 'there should be no breakpoints active');
-  assert.equal(api.numListeners_(), 0, 'there should be no listeners active');
+  assert.strictEqual(api.numListeners_(), 0, 'there should be no listeners active');
   return true;
 }
 
@@ -81,8 +81,8 @@ describe(__filename, () => {
         const frame = brk.stackFrames[0];
         const args = frame.arguments;
         const locals = frame.locals;
-        assert.equal(args.length, 0, 'There should be zero arguments');
-        assert.equal(locals.length, 1, 'There should be one locals');
+        assert.strictEqual(args.length, 0, 'There should be zero arguments');
+        assert.strictEqual(locals.length, 1, 'There should be one locals');
         assert.deepEqual(locals[0], {name: 'a', value: 'test'});
         api.clear(brk, (err3) => {
           assert.ifError(err3);
@@ -106,8 +106,8 @@ describe(__filename, () => {
         const frame = brk.stackFrames[0];
         const args = frame.arguments;
         const locals = frame.locals;
-        assert.equal(args.length, 0, 'There should be zero arguments');
-        assert.equal(locals.length, 1, 'There should be one local');
+        assert.strictEqual(args.length, 0, 'There should be zero arguments');
+        assert.strictEqual(locals.length, 1, 'There should be one local');
         assert.deepEqual(locals[0], {name: 'a', value: '10'});
         api.clear(brk, (err3) => {
           assert.ifError(err3);
@@ -131,8 +131,8 @@ describe(__filename, () => {
         const frame = brk.stackFrames[0];
         const args = frame.arguments;
         const locals = frame.locals;
-        assert.equal(args.length, 0, 'There should be zero arguments');
-        assert.equal(locals.length, 1, 'There should be one local');
+        assert.strictEqual(args.length, 0, 'There should be zero arguments');
+        assert.strictEqual(locals.length, 1, 'There should be one local');
         assert.deepEqual(locals[0], {name: 'a', value: '11'});
         api.clear(brk, (err3) => {
           assert.ifError(err3);
@@ -158,8 +158,8 @@ describe(__filename, () => {
            const frame = brk.stackFrames[0];
            const args = frame.arguments;
            const locals = frame.locals;
-           assert.equal(args.length, 0, 'There should be zero arguments');
-           assert.equal(locals.length, 2, 'There should be two locals');
+           assert.strictEqual(args.length, 0, 'There should be zero arguments');
+           assert.strictEqual(locals.length, 2, 'There should be two locals');
            assert.deepEqual(locals[0], {name: 'b', value: 'undefined'});
            assert.deepEqual(locals[1], {name: 'a', value: 'true'});
            api.clear(brk, (err3) => {

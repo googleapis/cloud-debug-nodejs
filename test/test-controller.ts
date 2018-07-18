@@ -56,7 +56,7 @@ describe('Controller API', () => {
       controller.register(debuggee, (err, result) => {
         assert(!err, 'not expecting an error');
         assert.ok(result);
-        assert.equal(result!.debuggee.id, 'fake-debuggee');
+        assert.strictEqual(result!.debuggee.id, 'fake-debuggee');
         scope.done();
         done();
       });
@@ -78,7 +78,7 @@ describe('Controller API', () => {
         // TODO: Fix this incorrect method signature.
         (assert as {ifError: Function}).ifError(err, 'not expecting an error');
         assert.ok(result);
-        assert.equal(result!.debuggee.id, 'fake-debuggee');
+        assert.strictEqual(result!.debuggee.id, 'fake-debuggee');
         assert.ok(result!.debuggee.isDisabled);
         scope.done();
         done();
@@ -257,7 +257,7 @@ describe('Controller API', () => {
       controller.updateBreakpoint(
           debuggee as Debuggee, breakpoint, (err, result) => {
             assert(!err, 'not expecting an error');
-            assert.equal(
+            assert.strictEqual(
                 (result as {kind: {}}).kind,
                 'debugletcontroller#updateActiveBreakpointResponse');
             scope.done();
