@@ -19,7 +19,7 @@ const common: Common = require('@google-cloud/common');
 
 import * as crypto from 'crypto';
 import {EventEmitter} from 'events';
-import extend from 'extend';
+import * as extend from 'extend';
 import * as fs from 'fs';
 
 import * as metadata from 'gcp-metadata';
@@ -39,7 +39,7 @@ import * as scanner from './io/scanner';
 import * as SourceMapper from './io/sourcemapper';
 import * as debugapi from './v8/debugapi';
 
-import assert from 'assert';
+import * as assert from 'assert';
 
 import * as stackdriver from '../types/stackdriver';
 import {DebugAgentConfig, ResolvedDebugAgentConfig} from './config';

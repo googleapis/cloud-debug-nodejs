@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import nock from 'nock';
+import * as nock from 'nock';
 
 // In the future _=>true.
 function accept(): true {

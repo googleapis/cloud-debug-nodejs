@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import assert from 'assert';
+import * as assert from 'assert';
 
 assert.ok(
     process.env.GCLOUD_PROJECT,
