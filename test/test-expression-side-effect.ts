@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import assert from 'assert';
-import extend from 'extend';
+import * as assert from 'assert';
+import * as extend from 'extend';
 
 import {defaultConfig} from '../src/agent/config';
 import * as scanner from '../src/agent/io/scanner';

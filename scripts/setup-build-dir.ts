@@ -15,9 +15,9 @@
  */
 
 import * as path from 'path';
-import pify from 'pify';
-import rawMkdirp from 'mkdirp';
-import rawNcp from 'ncp';
+import * as pify from 'pify';
+import * as rawMkdirp from 'mkdirp';
+import * as rawNcp from 'ncp';
 
 const mkdirp = pify(rawMkdirp);
 const ncp = pify(rawNcp);

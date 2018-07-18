@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import assert from 'assert';
+import * as assert from 'assert';
 const m: NodeModule&{start: Function} = require('../..');
-import nock from 'nock';
+import * as nock from 'nock';
 import * as nocks from './nocks';
 
 nock.disableNetConnect();
