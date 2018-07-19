@@ -66,7 +66,7 @@
     "coffeescript": "^2.0.0",
     "extend": "^3.0.1",
     "findit2": "^2.2.3",
-    "gcp-metadata": "^0.6.3",
+    "gcp-metadata": "^0.7.0",
     "lodash": "^4.12.0",
     "p-limit": "^2.0.0",
     "semver": "^5.5.0",
