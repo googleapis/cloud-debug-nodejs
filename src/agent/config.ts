@@ -20,6 +20,52 @@ export type DebugAgentConfig = {
   [K in keyof ResolvedDebugAgentConfig]?: Partial<ResolvedDebugAgentConfig[K]>
 };
 
+export interface ProjectRepoId {
+  projectId: string;
+  repoName: string;
+}
+
+export interface RepoId {
+  projectRepoId: ProjectRepoId;
+  uid: string;
+}
+
+export interface AliasContext {
+  kind: 'ANY'|'FIXED'|'MOVABLE'|'OTHER';
+  name: string;
+}
+
+export interface CloudRepoSourceContext {
+  repoId: RepoId;
+  revisionId: string;
+  aliasName?: string;
+  aliasContext: AliasContext;
+}
+
+export interface CloudWorkspaceId {
+  repoId: RepoId;
+  name: string;
+}
+
+export interface CloudWorkspaceSourceContext {
+  workspaceId: CloudWorkspaceId;
+  snapshotId: string;
+}
+
+export interface GerritSourceContext {
+  hostUri: string;
+  gerritProject: string;
+  // one of:
+  revisionId?: string;
+  aliasName?: string;
+  aliasContext?: AliasContext;
+}
+
+export interface GitSourceContext {
+  url: string;
+  revisionId: string;
+}
+
 export interface ResolvedDebugAgentConfig extends common.AuthenticationConfig {
   /**
    * Specifies the working directory of the application being
@@ -82,6 +128,21 @@ export interface ResolvedDebugAgentConfig extends common.AuthenticationConfig {
      */
     minorVersion_?: string;
   };
+
+  /**
+   * A SourceContext is a reference to a tree of files. A SourceContext together
+   * with a path point to a unique version of a single file or directory.
+   * Managed environments such as AppEngine generate a source-contexts.json file
+   * at deployment time. The agent can load the SourceContext from that file if
+   * it exists. In other environments, e.g. locally, GKE, GCE, AWS, etc., users
+   * can either generate the source context file, or pass the context as part of
+   * the agent configuration.
+   *
+   * @link
+   * https://cloud.google.com/debugger/api/reference/rest/v2/Debuggee#SourceContext
+   */
+  sourceContext?: CloudRepoSourceContext|CloudWorkspaceSourceContext|
+      GerritSourceContext|GitSourceContext;
 
   /**
    * The path within your repository to the directory

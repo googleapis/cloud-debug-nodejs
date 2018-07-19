@@ -19,9 +19,9 @@ import * as cp from 'child_process';
 import * as _ from 'lodash';  // for _.find. Can't use ES6 yet.
 import * as util from 'util';
 
-import * as stackdriver from '../src/types/stackdriver';
 import {Debug} from '../src/client/stackdriver/debug';
 import {Debuggee} from '../src/debuggee';
+import * as stackdriver from '../src/types/stackdriver';
 import {Debugger} from '../test/debugger';
 
 const CLUSTER_WORKERS = 3;
