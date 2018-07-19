@@ -350,7 +350,7 @@ export class Debuglet extends EventEmitter {
       onGCP = await Debuglet.runningOnGCP();
     } catch (err) {
       that.logger.warn(
-        'Unexpected error detecting GCE metadata service: ' + err.message);
+          'Unexpected error detecting GCE metadata service: ' + err.message);
       // Continue, assuming not on GCP.
       onGCP = false;
     }
