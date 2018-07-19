@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import assert from 'assert';
+import * as assert from 'assert';
 import * as http from 'http';
-import nock from 'nock';
+import * as nock from 'nock';
 
 import {Debug} from '../src/client/stackdriver/debug';
 import {Debuggee} from '../src/debuggee';

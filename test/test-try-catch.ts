@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import assert from 'assert';
-import extend from 'extend';
+import * as assert from 'assert';
+import * as extend from 'extend';
 
 import * as debugapi from '../src/agent/v8/debugapi';
 import {Common, LoggerOptions} from '../src/types/common';
