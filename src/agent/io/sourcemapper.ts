@@ -32,7 +32,7 @@ const readFilep = promisify(fs.readFile);
 export interface MapInfoInput {
   outputFile: string;
   mapFile: string;
-  mapConsumer: sourceMap.RawSourceMap;
+  mapConsumer: sourceMap.BasicSourceMapConsumer;
 }
 
 export interface MapInfoOutput {
@@ -64,7 +64,7 @@ async function processSourcemap(
     throw new Error('Could not read sourcemap file ' + mapPath + ': ' + e);
   }
 
-  let consumer: sourceMap.RawSourceMap;
+  let consumer: sourceMap.BasicSourceMapConsumer;
   try {
     // TODO: Determine how to reconsile the type conflict where `consumer`
     //       is constructed as a SourceMapConsumer but is used as a
@@ -72,9 +72,7 @@ async function processSourcemap(
     // TODO: Resolve the cast of `contents as any` (This is needed because the
     //       type is expected to be of `RawSourceMap` but the existing
     //       working code uses a string.)
-    consumer = new sourceMap.SourceMapConsumer(
-                   contents as {} as sourceMap.RawSourceMap) as {} as
-        sourceMap.RawSourceMap;
+    consumer = await (new sourceMap.SourceMapConsumer(contents));
   } catch (e) {
     throw new Error(
         'An error occurred while reading the ' +
@@ -253,7 +251,7 @@ export async function create(sourcemapPaths: string[]): Promise<SourceMapper> {
     await Promise.all(promises);
   } catch (err) {
     throw new Error(
-        'An error occurred while processing the sourcemap files' + err);
+        'An error occurred while processing the sourcemap files: ' + err);
   }
   return mapper;
 }
