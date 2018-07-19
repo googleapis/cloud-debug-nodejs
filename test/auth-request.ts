@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import request from 'request';
+import * as request from 'request';
 
 // TODO: Make the type of `options` more precise
 export const authRequest =

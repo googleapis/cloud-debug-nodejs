@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import assert from 'assert';
+import * as assert from 'assert';
 import * as events from 'events';
 import * as fs from 'fs';
 import * as path from 'path';
-import proxyquire from 'proxyquire';
+import * as proxyquire from 'proxyquire';
 import * as stream from 'stream';
 
 const fixtureDir = path.join(__dirname, './fixtures');

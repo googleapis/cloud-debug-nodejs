@@ -30,8 +30,8 @@ const MAX_INT = 2147483647;  // Max signed int32.
 
 import {Common, Logger, LoggerOptions} from '../src/types/common';
 
-import assert from 'assert';
-import extend from 'extend';
+import * as assert from 'assert';
+import * as extend from 'extend';
 import * as debugapi from '../src/agent/v8/debugapi';
 const common: Common = require('@google-cloud/common');
 import {defaultConfig, DebugAgentConfig} from '../src/agent/config';

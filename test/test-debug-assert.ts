@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import realAssert from 'assert';
+import * as realAssert from 'assert';
 import {debugAssert} from '../src/agent/util/debug-assert';
 
 describe('debug-assert', () => {

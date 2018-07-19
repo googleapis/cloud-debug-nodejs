@@ -16,13 +16,13 @@
 
 import * as fs from 'fs';
 import * as _ from 'lodash';
-import pLimit from 'p-limit';
 import * as path from 'path';
 import * as sourceMap from 'source-map';
 
 import {findScriptsFuzzy} from '../util/utils';
 
 const promisify = require('util.promisify');
+const pLimit = require('p-limit');
 
 const CONCURRENCY = 10;
 const readFilep = promisify(fs.readFile);

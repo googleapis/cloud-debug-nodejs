@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import assert from 'assert';
+import * as assert from 'assert';
 import * as fs from 'fs';
 import * as _ from 'lodash';
 import * as path from 'path';
-import proxyquire from 'proxyquire';
+import * as proxyquire from 'proxyquire';
 
 import {DebugAgentConfig} from '../src/agent/config';
 import {defaultConfig as DEFAULT_CONFIG} from '../src/agent/config';
@@ -29,7 +29,7 @@ DEFAULT_CONFIG.allowExpressions = true;
 DEFAULT_CONFIG.workingDirectory = path.join(__dirname, '..', '..');
 import {Debuglet, CachedPromise, FindFilesResult} from '../src/agent/debuglet';
 import {ScanResults} from '../src/agent/io/scanner';
-import extend from 'extend';
+import * as extend from 'extend';
 
 import {Debug} from '../src/client/stackdriver/debug';
 
@@ -47,7 +47,7 @@ const packageInfo = {
   version: 'Some version'
 };
 
-import nock from 'nock';
+import * as nock from 'nock';
 import * as nocks from './nocks';
 nock.disableNetConnect();
 
