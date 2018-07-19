@@ -68,7 +68,8 @@ function testTool(
            ' it states that it has mapping info for files with a path' +
            ' similar to a path it knows about',
        (done) => {
-         assert.strictEqual(sourcemapper.hasMappingInfo(relativeInputFilePath), true);
+         assert.strictEqual(
+             sourcemapper.hasMappingInfo(relativeInputFilePath), true);
          const movedPath =
              path.join('/some/other/base/dir/', relativeInputFilePath);
          assert.strictEqual(sourcemapper.hasMappingInfo(movedPath), true);

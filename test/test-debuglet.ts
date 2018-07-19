@@ -394,7 +394,8 @@ describe('Debuglet', () => {
 
         debuglet.once('registered', (id: string) => {
           assert.strictEqual(id, DEBUGGEE_ID);
-          assert.strictEqual(debuglet.debuggee!.project, process.env.GCLOUD_PROJECT);
+          assert.strictEqual(
+              debuglet.debuggee!.project, process.env.GCLOUD_PROJECT);
           debuglet.stop();
           scope.done();
           done();
@@ -418,7 +419,8 @@ describe('Debuglet', () => {
 
            debuglet.once('registered', (id: string) => {
              assert.strictEqual(id, DEBUGGEE_ID);
-             assert.strictEqual(debuglet.debuggee!.project, 'project-via-options');
+             assert.strictEqual(
+                 debuglet.debuggee!.project, 'project-via-options');
              debuglet.stop();
              scope.done();
              done();

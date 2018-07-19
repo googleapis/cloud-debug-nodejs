@@ -36,7 +36,8 @@ const foo = require('./test-duplicate-expressions-code.js');
 function stateIsClean1(api: debugapi.DebugApi): boolean {
   assert.strictEqual(
       api.numBreakpoints_(), 0, 'there should be no breakpoints active');
-  assert.strictEqual(api.numListeners_(), 0, 'there should be no listeners active');
+  assert.strictEqual(
+      api.numListeners_(), 0, 'there should be no listeners active');
   return true;
 }
 

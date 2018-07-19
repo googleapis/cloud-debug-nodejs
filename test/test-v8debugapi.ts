@@ -48,7 +48,8 @@ import {dist} from './test-v8debugapi-ts-code';
 function stateIsClean(api: DebugApi): boolean {
   assert.strictEqual(
       api.numBreakpoints_(), 0, 'there should be no breakpoints active');
-  assert.strictEqual(api.numListeners_(), 0, 'there should be no listeners active');
+  assert.strictEqual(
+      api.numListeners_(), 0, 'there should be no listeners active');
   return true;
 }
 
@@ -671,7 +672,8 @@ describe('v8debugapi', () => {
            assert.ifError(err1);
            api.wait(bp, (err2) => {
              assert.ifError(err2);
-             assert.strictEqual((bp.location as stackdriver.SourceLocation).line, 5);
+             assert.strictEqual(
+                 (bp.location as stackdriver.SourceLocation).line, 5);
              api.clear(bp, (err3) => {
                assert.ifError(err3);
                done();
@@ -1001,7 +1003,7 @@ describe('v8debugapi', () => {
           envVal!.members!.forEach(member => {
             if (member.name === 'length') {
               assert(!member.varTableIndex);
-              assert.strictEqual(member.value, 3);
+              assert.strictEqual(Number(member.value), 3);
               found = true;
             }
           });
