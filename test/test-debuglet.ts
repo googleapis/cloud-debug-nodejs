@@ -299,9 +299,9 @@ describe('Debuglet', () => {
       });
 
       debuglet.once('registered', (id: string) => {
-        assert.equal(id, DEBUGGEE_ID);
+        assert.strictEqual(id, DEBUGGEE_ID);
         // TODO: Handle the case where debuglet.debuggee is undefined
-        assert.equal((debuglet.debuggee as Debuggee).project, projectId);
+        assert.strictEqual((debuglet.debuggee as Debuggee).project, projectId);
         debuglet.stop();
         scope.done();
         done();
@@ -393,8 +393,9 @@ describe('Debuglet', () => {
         });
 
         debuglet.once('registered', (id: string) => {
-          assert.equal(id, DEBUGGEE_ID);
-          assert.equal(debuglet.debuggee!.project, process.env.GCLOUD_PROJECT);
+          assert.strictEqual(id, DEBUGGEE_ID);
+          assert.strictEqual(
+              debuglet.debuggee!.project, process.env.GCLOUD_PROJECT);
           debuglet.stop();
           scope.done();
           done();
@@ -417,8 +418,9 @@ describe('Debuglet', () => {
            });
 
            debuglet.once('registered', (id: string) => {
-             assert.equal(id, DEBUGGEE_ID);
-             assert.equal(debuglet.debuggee!.project, 'project-via-options');
+             assert.strictEqual(id, DEBUGGEE_ID);
+             assert.strictEqual(
+                 debuglet.debuggee!.project, 'project-via-options');
              debuglet.stop();
              scope.done();
              done();
@@ -610,7 +612,7 @@ describe('Debuglet', () => {
                         .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
       debuglet.once('registered', (id: string) => {
-        assert.equal(id, DEBUGGEE_ID);
+        assert.strictEqual(id, DEBUGGEE_ID);
         debuglet.stop();
         scope.done();
         done();
@@ -764,7 +766,7 @@ describe('Debuglet', () => {
       });
 
       debuglet.once('registered', (id: string) => {
-        assert.equal(id, DEBUGGEE_ID);
+        assert.strictEqual(id, DEBUGGEE_ID);
         debuglet.stop();
         scope.done();
         done();
@@ -795,7 +797,7 @@ describe('Debuglet', () => {
       });
 
       debuglet.once('registered', (id: string) => {
-        assert.equal(id, DEBUGGEE_ID);
+        assert.strictEqual(id, DEBUGGEE_ID);
         debuglet.stop();
         clusterScope.done();
         scope.done();
@@ -860,7 +862,7 @@ describe('Debuglet', () => {
 
       debuglet.once('registered', (id: string) => {
         Debuglet.getSourceContextFromFile = old;
-        assert.equal(id, DEBUGGEE_ID);
+        assert.strictEqual(id, DEBUGGEE_ID);
         debuglet.stop();
         scope.done();
         done();
@@ -951,7 +953,7 @@ describe('Debuglet', () => {
 
       debuglet.once('registered', (id: string) => {
         assert.ok(gotDisabled);
-        assert.equal(id, DEBUGGEE_ID);
+        assert.strictEqual(id, DEBUGGEE_ID);
         debuglet.stop();
         scope.done();
         done();
@@ -975,9 +977,9 @@ describe('Debuglet', () => {
                         .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
       debuglet.once('registered', (id1: string) => {
-        assert.equal(id1, DEBUGGEE_ID);
+        assert.strictEqual(id1, DEBUGGEE_ID);
         debuglet.once('registered', (id2: string) => {
-          assert.equal(id2, DEBUGGEE_ID);
+          assert.strictEqual(id2, DEBUGGEE_ID);
           debuglet.stop();
           scope.done();
           done();
@@ -1001,7 +1003,7 @@ describe('Debuglet', () => {
                         .reply(200, {breakpoints: [bp]});
 
       debuglet.once('registered', function reg(id: string) {
-        assert.equal(id, DEBUGGEE_ID);
+        assert.strictEqual(id, DEBUGGEE_ID);
         setTimeout(() => {
           assert.deepEqual(debuglet.activeBreakpointMap.test, bp);
           debuglet.stop();
@@ -1101,7 +1103,7 @@ describe('Debuglet', () => {
                  .reply(200);
 
          debuglet.once('registered', function reg(id: string) {
-           assert.equal(id, DEBUGGEE_ID);
+           assert.strictEqual(id, DEBUGGEE_ID);
            setTimeout(() => {
              assert.ok(!debuglet.activeBreakpointMap.test);
              debuglet.stop();
@@ -1142,7 +1144,7 @@ describe('Debuglet', () => {
                  .reply(200);
 
          debuglet.once('registered', function reg(id: string) {
-           assert.equal(id, DEBUGGEE_ID);
+           assert.strictEqual(id, DEBUGGEE_ID);
            setTimeout(() => {
              assert.ok(!debuglet.activeBreakpointMap.test);
              debuglet.stop();
@@ -1185,7 +1187,7 @@ describe('Debuglet', () => {
                         .reply(200);
 
       debuglet.once('registered', function reg(id: string) {
-        assert.equal(id, DEBUGGEE_ID);
+        assert.strictEqual(id, DEBUGGEE_ID);
         setTimeout(() => {
           assert.deepEqual(debuglet.activeBreakpointMap.test, bp);
           assert(!debuglet.activeBreakpointMap.testLog);
@@ -1224,7 +1226,7 @@ describe('Debuglet', () => {
 
       const debuglet = new Debuglet(debug, config);
       debuglet.once('registered', (id: string) => {
-        assert.equal(id, DEBUGGEE_ID);
+        assert.strictEqual(id, DEBUGGEE_ID);
         setTimeout(() => {
           assert.deepEqual(debuglet.activeBreakpointMap.test, bp);
           setTimeout(() => {
@@ -1276,7 +1278,7 @@ describe('Debuglet', () => {
 
       const debuglet = new Debuglet(debug, config);
       debuglet.once('registered', (id: string) => {
-        assert.equal(id, DEBUGGEE_ID);
+        assert.strictEqual(id, DEBUGGEE_ID);
         setTimeout(() => {
           assert.deepEqual(debuglet.activeBreakpointMap.test, bp);
           setTimeout(() => {

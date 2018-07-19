@@ -46,9 +46,10 @@ const code = require('./test-v8debugapi-code.js');
 import {dist} from './test-v8debugapi-ts-code';
 
 function stateIsClean(api: DebugApi): boolean {
-  assert.equal(
+  assert.strictEqual(
       api.numBreakpoints_(), 0, 'there should be no breakpoints active');
-  assert.equal(api.numListeners_(), 0, 'there should be no listeners active');
+  assert.strictEqual(
+      api.numListeners_(), 0, 'there should be no listeners active');
   return true;
 }
 
@@ -56,13 +57,13 @@ function validateVariable(variable: stackdriver.Variable|null): void {
   assert.ok(variable);
   if (variable) {
     if (variable.name) {
-      assert.equal(typeof variable.name, 'string');
+      assert.strictEqual(typeof variable.name, 'string');
     }
     if (variable.value) {
-      assert.equal(typeof variable.value, 'string');
+      assert.strictEqual(typeof variable.value, 'string');
     }
     if (variable.type) {
-      assert.equal(typeof variable.type, 'string');
+      assert.strictEqual(typeof variable.type, 'string');
     }
     if (variable.members) {
       variable.members.forEach(validateVariable);
@@ -77,7 +78,7 @@ function validateVariable(variable: stackdriver.Variable|null): void {
 
 function validateSourceLocation(location: stackdriver.SourceLocation): void {
   if (location.path) {
-    assert.equal(typeof location.path, 'string');
+    assert.strictEqual(typeof location.path, 'string');
   }
   if (location.line) {
     assert.ok(
@@ -88,7 +89,7 @@ function validateSourceLocation(location: stackdriver.SourceLocation): void {
 
 function validateStackFrame(frame: stackdriver.StackFrame): void {
   if (frame['function']) {
-    assert.equal(typeof frame['function'], 'string');
+    assert.strictEqual(typeof frame['function'], 'string');
   }
   if (frame.location) {
     validateSourceLocation(frame.location);
@@ -268,7 +269,7 @@ describe('v8debugapi', () => {
     } as stackdriver.Breakpoint;
     api.set(bp, (err1) => {
       assert.ifError(err1);
-      assert.equal(api.numBreakpoints_(), 1);
+      assert.strictEqual(api.numBreakpoints_(), 1);
       api.clear(bp, (err2) => {
         assert.ifError(err2);
         done();
@@ -301,7 +302,7 @@ describe('v8debugapi', () => {
       assert.ok(err, 'should return an error');
       assert.ok(bp.status);
       assert.ok(bp.status instanceof StatusMessage);
-      assert.equal(bp.status!.refersTo, 'BREAKPOINT_SOURCE_LOCATION');
+      assert.strictEqual(bp.status!.refersTo, 'BREAKPOINT_SOURCE_LOCATION');
       assert.ok(bp.status!.isError);
       done();
     });
@@ -626,7 +627,7 @@ describe('v8debugapi', () => {
         }, 100);
         setTimeout(() => {
           completed = true;
-          assert.equal(transcript, 'catcat');
+          assert.strictEqual(transcript, 'catcat');
           assert(runCount > 12);
           clearInterval(interval);
           api.clear(bp, (err2) => {
@@ -671,7 +672,8 @@ describe('v8debugapi', () => {
            assert.ifError(err1);
            api.wait(bp, (err2) => {
              assert.ifError(err2);
-             assert.equal((bp.location as stackdriver.SourceLocation).line, 5);
+             assert.strictEqual(
+                 (bp.location as stackdriver.SourceLocation).line, 5);
              api.clear(bp, (err3) => {
                assert.ifError(err3);
                done();
@@ -697,7 +699,7 @@ describe('v8debugapi', () => {
            api.wait(bp, (err2) => {
              assert.ifError(err2);
              assert(bp.location);
-             assert.equal(bp.location!.line, 10);
+             assert.strictEqual(bp.location!.line, 10);
              api.clear(bp, (err3) => {
                assert.ifError(err3);
                done();
@@ -728,7 +730,7 @@ describe('v8debugapi', () => {
           assert.ifError(err2);
           setTimeout(() => {
             logger.warn = oldWarn;
-            assert.equal(logCount, 0);
+            assert.strictEqual(logCount, 0);
             api.clear(bp, (err3) => {
               assert.ifError(err3);
               done();
@@ -784,11 +786,11 @@ describe('v8debugapi', () => {
 
           const topFrame = bp.stackFrames[0];
           assert.ok(topFrame);
-          assert.equal(topFrame['function'], 'foo');
-          assert.equal(topFrame.locals[0].name, 'n');
-          assert.equal(topFrame.locals[0].value, '2');
-          assert.equal(topFrame.locals[1].name, 'A');
-          assert.equal(topFrame.locals[2].name, 'B');
+          assert.strictEqual(topFrame['function'], 'foo');
+          assert.strictEqual(topFrame.locals[0].name, 'n');
+          assert.strictEqual(topFrame.locals[0].value, '2');
+          assert.strictEqual(topFrame.locals[1].name, 'A');
+          assert.strictEqual(topFrame.locals[2].name, 'B');
           api.clear(bp, (err3) => {
             assert.ifError(err3);
             done();
@@ -817,8 +819,8 @@ describe('v8debugapi', () => {
           assert.ok(bp.variableTable);
           const topFrame = bp.stackFrames[0];
           assert.ok(topFrame);
-          assert.equal(topFrame['function'], 'foo');
-          assert.equal(topFrame.arguments.length, 1);
+          assert.strictEqual(topFrame['function'], 'foo');
+          assert.strictEqual(topFrame.arguments.length, 1);
           // TODO(dominickramer): Handle the case when
           // topFrame.arguments[0].varTableIndex
           //       is undefined.
@@ -827,7 +829,7 @@ describe('v8debugapi', () => {
           assert(argsVal!.status!.isError);
           assert(argsVal!.status!.description.format.match(
               'Locals and arguments are only displayed.*config.capture.maxExpandFrames=0'));
-          assert.equal(topFrame.locals.length, 1);
+          assert.strictEqual(topFrame.locals.length, 1);
           // TODO(dominickramer): Handle the case when
           // topFrame.locals[0].varTableIndex is
           //       undefined.
@@ -862,12 +864,12 @@ describe('v8debugapi', () => {
         api.wait(bp, (err2) => {
           assert.ifError(err2);
           assert.ok(bp.stackFrames);
-          assert.equal(bp.stackFrames.length, config.capture.maxFrames);
+          assert.strictEqual(bp.stackFrames.length, config.capture.maxFrames);
           const topFrame = bp.stackFrames[0];
           assert.ok(topFrame);
-          assert.equal(topFrame['function'], 'foo');
-          assert.equal(topFrame.locals[0].name, 'n');
-          assert.equal(topFrame.locals[0].value, '2');
+          assert.strictEqual(topFrame['function'], 'foo');
+          assert.strictEqual(topFrame.locals[0].name, 'n');
+          assert.strictEqual(topFrame.locals[0].value, '2');
           api.clear(bp, (err3) => {
             config.capture.maxFrames = oldMax;
             assert.ifError(err3);
@@ -901,12 +903,12 @@ describe('v8debugapi', () => {
           assert.ok(bp.evaluatedExpressions);
 
           const topFrame = bp.stackFrames[0];
-          assert.equal(topFrame['function'], 'foo');
-          assert.equal(topFrame.locals[0].name, 'n');
-          assert.equal(topFrame.locals[0].value, '3');
+          assert.strictEqual(topFrame['function'], 'foo');
+          assert.strictEqual(topFrame.locals[0].name, 'n');
+          assert.strictEqual(topFrame.locals[0].value, '3');
 
           const watch = bp.evaluatedExpressions[0];
-          assert.equal(watch!.name, 'process');
+          assert.strictEqual(watch!.name, 'process');
           assert.ok(watch!.varTableIndex);
 
           // Make sure the process object looks sensible.
@@ -950,7 +952,7 @@ describe('v8debugapi', () => {
           assert.ifError(err2);
 
           const procEnv = bp.evaluatedExpressions[0];
-          assert.equal(procEnv!.name, 'process.env');
+          assert.strictEqual(procEnv!.name, 'process.env');
           const envVal = bp.variableTable[procEnv!.varTableIndex!];
           envVal!.members!.forEach((member: stackdriver.Variable) => {
             if (member.hasOwnProperty('varTableIndex')) {
@@ -995,13 +997,13 @@ describe('v8debugapi', () => {
           assert.ifError(err2);
 
           const arrEnv = bp.evaluatedExpressions[0];
-          assert.equal(arrEnv!.name, 'A');
+          assert.strictEqual(arrEnv!.name, 'A');
           const envVal = bp.variableTable[arrEnv!.varTableIndex!];
           let found = false;
           envVal!.members!.forEach(member => {
             if (member.name === 'length') {
               assert(!member.varTableIndex);
-              assert.equal(member.value, 3);
+              assert.strictEqual(Number(member.value), 3);
               found = true;
             }
           });
@@ -1080,7 +1082,7 @@ describe('v8debugapi', () => {
           });
           const aVal = bp.variableTable[aResults[0].varTableIndex!];
           // should have 1 element + truncation message.
-          assert.equal(aVal!.members!.length, 2);
+          assert.strictEqual(aVal!.members!.length, 2);
           assert(aVal!.members![1].name!.match(
               'Only first.*config.capture.maxProperties=1'));
 
@@ -1116,7 +1118,7 @@ describe('v8debugapi', () => {
           });
           const bVal = bp.variableTable[bResults[0].varTableIndex!];
           // should have 1 element + truncation message
-          assert.equal(bVal!.members!.length, 2);
+          assert.strictEqual(bVal!.members!.length, 2);
           assert(bVal!.members![1].name!.match(
               'Only first.*config.capture.maxProperties=1'));
 
@@ -1195,7 +1197,7 @@ describe('v8debugapi', () => {
              const foo = bp.evaluatedExpressions[0];
              const fooVal = bp.variableTable[foo!.varTableIndex!];
              // '1', '2', '3', and 'length'
-             assert.equal(fooVal!.members!.length, 4);
+             assert.strictEqual(fooVal!.members!.length, 4);
              assert.strictEqual(foo!.status, undefined);
 
              api.clear(bp, (err3) => {
@@ -1232,7 +1234,7 @@ describe('v8debugapi', () => {
              assert.ifError(err2);
              const foo = bp.evaluatedExpressions[0];
              const fooVal = bp.variableTable[foo!.varTableIndex!];
-             assert.equal(fooVal!.members!.length, 3);
+             assert.strictEqual(fooVal!.members!.length, 3);
              assert.strictEqual(foo!.status, undefined);
 
              api.clear(bp, (err3) => {
@@ -1420,8 +1422,8 @@ describe('v8debugapi', () => {
           assert.ok(bp.stackFrames);
 
           const topFrame = bp.stackFrames[0];
-          assert.equal(topFrame.locals[0].name, 'n');
-          assert.equal(topFrame.locals[0].value, '5');
+          assert.strictEqual(topFrame.locals[0].name, 'n');
+          assert.strictEqual(topFrame.locals[0].value, '5');
           api.clear(bp, (err3) => {
             assert.ifError(err3);
             done();
@@ -1456,9 +1458,9 @@ describe('v8debugapi', () => {
              assert.ok(bp.stackFrames);
 
              const topFrame = bp.stackFrames[0];
-             assert.equal(topFrame['function'], 'foo');
-             assert.equal(topFrame.locals[0].name, 'n');
-             assert.equal(topFrame.locals[0].value, '3');
+             assert.strictEqual(topFrame['function'], 'foo');
+             assert.strictEqual(topFrame.locals[0].name, 'n');
+             assert.strictEqual(topFrame.locals[0].value, '3');
              api.clear(bp, (err3) => {
                assert.ifError(err3);
                done();
@@ -1484,7 +1486,7 @@ describe('v8debugapi', () => {
       } as {} as stackdriver.Breakpoint;
       api.set(bp, (err) => {
         assert(err);
-        assert.equal(err!.message, 'Error compiling condition.');
+        assert.strictEqual(err!.message, 'Error compiling condition.');
         done();
       });
     });
@@ -1510,9 +1512,9 @@ describe('v8debugapi', () => {
              assert.ok(bp.stackFrames);
 
              const topFrame = bp.stackFrames[0];
-             assert.equal(topFrame.locals[0].name, 'j');
-             assert.equal(topFrame.locals[0].value, '2');
-             assert.equal(topFrame['function'], 'foo');
+             assert.strictEqual(topFrame.locals[0].name, 'j');
+             assert.strictEqual(topFrame.locals[0].value, '2');
+             assert.strictEqual(topFrame['function'], 'foo');
              api.clear(bp, (err3) => {
                assert.ifError(err3);
                done();
@@ -1598,7 +1600,7 @@ describe('v8debugapi', () => {
                assert(status.isError);
                if (expr.name === ':)' || expr.name === 'process=this' ||
                    expr.name === 'return' || expr.name === '((x) -> x x) n') {
-                 assert.equal(
+                 assert.strictEqual(
                      status.description.format, 'Error Compiling Expression');
                } else {
                  assert(
@@ -1660,13 +1662,13 @@ describe('v8debugapi', () => {
         assert.ifError(err1);
         api.set(bp2, (err2) => {
           assert.ifError(err2);
-          assert.equal(api.numBreakpoints_(), 2);
+          assert.strictEqual(api.numBreakpoints_(), 2);
           api.clear(bp1, (err3) => {
             assert.ifError(err3);
-            assert.equal(api.numBreakpoints_(), 1);
+            assert.strictEqual(api.numBreakpoints_(), 1);
             api.clear(bp2, (err4) => {
               assert.ifError(err4);
-              assert.equal(api.numBreakpoints_(), 0);
+              assert.strictEqual(api.numBreakpoints_(), 0);
               done();
             });
           });
@@ -1703,12 +1705,12 @@ describe('v8debugapi', () => {
       const message = 'This exception should not be silenced';
       // Remove the mocha listener.
       const listeners = process.listeners('uncaughtException');
-      assert.equal(listeners.length, 1);
+      assert.strictEqual(listeners.length, 1);
       const originalListener = listeners[0];
       process.removeListener('uncaughtException', originalListener);
       process.once('uncaughtException', (err: Error) => {
         assert.ok(err);
-        assert.equal(err.message, message);
+        assert.strictEqual(err.message, message);
         // Restore the mocha listener.
         process.on('uncaughtException', originalListener);
         done();

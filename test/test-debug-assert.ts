@@ -21,7 +21,7 @@ describe('debug-assert', () => {
   it('should fire assertions when enabled', () => {
     realAssert.throws(() => {
       const assert = debugAssert(true);
-      assert.equal(1, 2);
+      assert.strictEqual(1, 2);
     });
   });
 
@@ -29,12 +29,12 @@ describe('debug-assert', () => {
     const assert = debugAssert(false);
 
     it('should not fire assertions when disabled', () => {
-      assert.equal(1, 2);
+      assert.strictEqual(1, 2);
     });
 
     it('should cover the full assert API', () => {
       Object.keys(realAssert).forEach((key) => {
-        realAssert.equal(
+        realAssert.strictEqual(
             typeof (assert as {} as {[key: string]: Function})[key],
             'function');
       });
