@@ -345,7 +345,16 @@ export class Debuglet extends EventEmitter {
 
     that.logger.info('Unique ID for this Application: ' + id);
 
-    const onGCP = await Debuglet.runningOnGCP();
+    let onGCP: boolean;
+    try {
+      onGCP = await Debuglet.runningOnGCP();
+    } catch (err) {
+      that.logger.warn(
+        'Unexpected error detecting GCE metadata service: ' + err.message);
+      // Continue, assuming not on GCP.
+      onGCP = false;
+    }
+
     let project: string;
     try {
       project = await Debuglet.getProjectId(that.debug.options);
