@@ -15,11 +15,12 @@
  */
 
 import {ResolvedDebugAgentConfig} from '../src/agent/config';
+import {Debuglet} from '../src/agent/debuglet';
 import {DebugApi} from '../src/agent/v8/debugapi';
 import {ConsoleLogLevel} from '../src/types/console-log-level';
 import * as stackdriver from '../src/types/stackdriver';
-import { Debuglet } from '../src/agent/debuglet';
-const consoleLogLevel : ConsoleLogLevel = require('console-log-level');
+
+const consoleLogLevel: ConsoleLogLevel = require('console-log-level');
 
 // TODO(dominickramer): Have this actually implement Breakpoint
 const breakpointInFoo: stackdriver.Breakpoint = {
@@ -152,9 +153,8 @@ describe(
 describe('debugapi selection', () => {
   const config: ResolvedDebugAgentConfig = extend(
       {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
-  const logger = consoleLogLevel({
-    level: Debuglet.logLevelToName(config.logLevel)
-  });
+  const logger =
+      consoleLogLevel({level: Debuglet.logLevelToName(config.logLevel)});
   let logText = '';
   logger.warn = (s: string) => {
     logText += s;
@@ -190,9 +190,8 @@ const describeFn =
 describeFn('debugapi selection on Node >=10', () => {
   const config: ResolvedDebugAgentConfig = extend(
       {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
-  const logger = consoleLogLevel({
-    level: Debuglet.logLevelToName(config.logLevel)
-  });
+  const logger =
+      consoleLogLevel({level: Debuglet.logLevelToName(config.logLevel)});
 
   let logText = '';
   logger.warn = (s: string) => {
@@ -219,9 +218,8 @@ describeFn('debugapi selection on Node >=10', () => {
 describe('v8debugapi', () => {
   const config: ResolvedDebugAgentConfig = extend(
       {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
-  const logger = consoleLogLevel({
-    level: Debuglet.logLevelToName(config.logLevel)
-  });
+  const logger =
+      consoleLogLevel({level: Debuglet.logLevelToName(config.logLevel)});
   let api: DebugApi;
 
   beforeEach((done) => {

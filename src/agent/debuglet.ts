@@ -14,40 +14,35 @@
  * limitations under the License.
  */
 
-import {AuthenticationConfig} from '../types/common';
-import {ConsoleLogLevel, ConsoleLogLevelLog} from '../types/console-log-level';
-
+import * as assert from 'assert';
 import * as crypto from 'crypto';
 import {EventEmitter} from 'events';
 import * as extend from 'extend';
 import * as fs from 'fs';
-
 import * as metadata from 'gcp-metadata';
-
+import * as http from 'http';
 import * as _ from 'lodash';
 import * as path from 'path';
 import * as util from 'util';
-import * as utils from './util/utils';
-import * as http from 'http';
 
-import {Controller} from './controller';
-import {Debuggee, DebuggeeProperties} from '../debuggee';
+import {Debug, PackageInfo} from '../client/stackdriver/debug';
 import {StatusMessage} from '../client/stackdriver/status-message';
+import {Debuggee, DebuggeeProperties} from '../debuggee';
+import {AuthenticationConfig} from '../types/common';
+import {ConsoleLogLevel, ConsoleLogLevelLog, LogLevels} from '../types/console-log-level';
+import * as stackdriver from '../types/stackdriver';
 
 import {defaultConfig} from './config';
+import {DebugAgentConfig, ResolvedDebugAgentConfig} from './config';
+import {Controller} from './controller';
 import * as scanner from './io/scanner';
 import * as SourceMapper from './io/sourcemapper';
+import * as utils from './util/utils';
 import * as debugapi from './v8/debugapi';
-
-import * as assert from 'assert';
-
-import * as stackdriver from '../types/stackdriver';
-import {DebugAgentConfig, ResolvedDebugAgentConfig} from './config';
-import {Debug, PackageInfo} from '../client/stackdriver/debug';
 import {DebugApi} from './v8/debugapi';
 
 const promisify = require('util.promisify');
-const consoleLogLevel : ConsoleLogLevel = require('console-log-level');
+const consoleLogLevel: ConsoleLogLevel = require('console-log-level');
 
 const readFilep = promisify(fs.readFile);
 
@@ -256,11 +251,13 @@ export class Debuglet extends EventEmitter {
     this.debuggeeRegistered = new CachedPromise();
   }
 
-  //                     0        1        2       3       4        5
-  static LEVELNAMES = [ 'fatal', 'error', 'warn', 'info', 'debug', 'trace'];
-  static logLevelToName(level: number): string {
+  static LEVELNAMES = [
+    LogLevels.fatal, LogLevels.error, LogLevels.warn, LogLevels.info,
+    LogLevels.debug, LogLevels.trace
+  ];
+  static logLevelToName(level: number): LogLevels {
     if (typeof level === 'string') {
-      level = parseInt(level, 10);
+      level = Number(level);
     }
     if (typeof level !== 'number') {
       level = defaultConfig.logLevel;

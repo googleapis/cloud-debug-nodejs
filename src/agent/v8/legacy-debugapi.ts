@@ -60,8 +60,8 @@ export class V8DebugApi implements debugapi.DebugApi {
   numBreakpoints = 0;
 
   constructor(
-      logger: ConsoleLogLevelLog, config: ResolvedDebugAgentConfig, jsFiles: ScanStats,
-      sourcemapper: SourceMapper) {
+      logger: ConsoleLogLevelLog, config: ResolvedDebugAgentConfig,
+      jsFiles: ScanStats, sourcemapper: SourceMapper) {
     this.sourcemapper = sourcemapper;
     this.v8 = vm.runInDebugContext('Debug');
     this.config = config;

@@ -24,10 +24,10 @@ import * as extend from 'extend';
 import * as debugapi from '../src/agent/v8/debugapi';
 import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as scanner from '../src/agent/io/scanner';
-import { Debuglet } from '../src/agent/debuglet';
+import {Debuglet} from '../src/agent/debuglet';
 import {defaultConfig} from '../src/agent/config';
 const foo = require('./test-max-data-size-code.js');
-const consoleLogLevel : ConsoleLogLevel = require('console-log-level');
+const consoleLogLevel: ConsoleLogLevel = require('console-log-level');
 let api: debugapi.DebugApi;
 
 // TODO: Have this actually implement Breakpoint
@@ -41,9 +41,8 @@ describe('maxDataSize', () => {
 
   before((done) => {
     if (!api) {
-      const logger = consoleLogLevel({
-        level: Debuglet.logLevelToName(config.logLevel)
-      });
+      const logger =
+          consoleLogLevel({level: Debuglet.logLevelToName(config.logLevel)});
       scanner.scan(true, config.workingDirectory, /.js$/)
           .then(async (fileStats) => {
             assert.strictEqual(fileStats.errors().size, 0);

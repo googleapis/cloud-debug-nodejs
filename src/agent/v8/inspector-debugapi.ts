@@ -60,8 +60,8 @@ export class InspectorDebugApi implements debugapi.DebugApi {
   numBreakpoints = 0;
   v8Inspector: V8Inspector;
   constructor(
-      logger: ConsoleLogLevelLog, config: ResolvedDebugAgentConfig, jsFiles: ScanStats,
-      sourcemapper: SourceMapper) {
+      logger: ConsoleLogLevelLog, config: ResolvedDebugAgentConfig,
+      jsFiles: ScanStats, sourcemapper: SourceMapper) {
     this.logger = logger;
     this.config = config;
     this.fileStats = jsFiles;

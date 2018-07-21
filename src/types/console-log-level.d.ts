@@ -1,5 +1,14 @@
+export enum LogLevels {
+  trace = 'trace',
+  debug = 'debug',
+  info = 'info',
+  warn = 'warn',
+  error = 'error',
+  fatal = 'fatal'
+}
+
 export interface ConsoleLogLevelOptions {
-  level?: string;
+  level?: LogLevels;
   stderr?: boolean;
   prefix?: string | Function;
 }

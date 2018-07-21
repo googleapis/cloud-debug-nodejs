@@ -17,15 +17,15 @@
 import * as assert from 'assert';
 import * as extend from 'extend';
 
+import {defaultConfig} from '../src/agent/config';
+import {Debuglet} from '../src/agent/debuglet';
+import * as scanner from '../src/agent/io/scanner';
+import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as debugapi from '../src/agent/v8/debugapi';
 import {ConsoleLogLevel} from '../src/types/console-log-level';
-import { Debuglet } from '../src/agent/debuglet';
 import * as stackdriver from '../src/types/stackdriver';
 
-import {defaultConfig} from '../src/agent/config';
-import * as SourceMapper from '../src/agent/io/sourcemapper';
-import * as scanner from '../src/agent/io/scanner';
-const consoleLogLevel : ConsoleLogLevel = require('console-log-level');
+const consoleLogLevel: ConsoleLogLevel = require('console-log-level');
 
 process.env.GCLOUD_PROJECT = '0';
 
@@ -40,9 +40,8 @@ function stateIsClean(api: debugapi.DebugApi): boolean {
 describe(__filename, () => {
   const config = extend(
       {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
-  const logger = consoleLogLevel({
-    level: Debuglet.logLevelToName(config.logLevel)
-  });
+  const logger =
+      consoleLogLevel({level: Debuglet.logLevelToName(config.logLevel)});
   let api: debugapi.DebugApi;
   let foo: () => number;
   before(() => {

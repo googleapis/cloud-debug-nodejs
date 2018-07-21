@@ -29,9 +29,9 @@ import * as debugapi from '../src/agent/v8/debugapi';
 import {defaultConfig} from '../src/agent/config';
 import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as scanner from '../src/agent/io/scanner';
-import { Debuglet } from '../src/agent/debuglet';
+import {Debuglet} from '../src/agent/debuglet';
 const foo = require('./test-duplicate-expressions-code.js');
-const consoleLogLevel : ConsoleLogLevel = require('console-log-level');
+const consoleLogLevel: ConsoleLogLevel = require('console-log-level');
 
 // TODO: Determine why this must be named `stateIsClean1`.
 function stateIsClean1(api: debugapi.DebugApi): boolean {
@@ -45,9 +45,8 @@ function stateIsClean1(api: debugapi.DebugApi): boolean {
 describe(__filename, () => {
   const config = extend(
       {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
-  const logger = consoleLogLevel({
-    level: Debuglet.logLevelToName(config.logLevel)
-  });
+  const logger =
+      consoleLogLevel({level: Debuglet.logLevelToName(config.logLevel)});
   let api: debugapi.DebugApi;
 
   beforeEach((done) => {
