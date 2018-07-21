@@ -440,20 +440,20 @@ describe('Debuglet', () => {
           debuggee: {id: DEBUGGEE_ID}
         });
 
+        let buffer = '';
+        const oldConsoleError = console.error;
+        console.error = (str) => {
+          buffer += str;
+        };
+
         debuglet.once('registered', () => {
           const logger = debuglet.logger;
           const STRING1 = 'jjjjjjjjjjjjjjjjjfjfjfjf';
           const STRING2 = 'kkkkkkkfkfkfkfkfkkffkkkk';
 
-          let buffer = '';
-          const oldLog = console.log;
-
-          console.log = (str) => {
-            buffer += str;
-          };
           logger.info(STRING1);
           logger.debug(STRING2);
-          console.log = oldLog;
+          console.error = oldConsoleError;
 
           assert(buffer.indexOf(STRING1) !== -1);
           assert(buffer.indexOf(STRING2) === -1);

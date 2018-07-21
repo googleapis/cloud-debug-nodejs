@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Logger} from '../../types/common';
+import {ConsoleLogLevelLog} from '../../types/console-log-level';
 import * as stackdriver from '../../types/stackdriver';
 import {DebugAgentConfig} from '../config';
 import {ScanStats} from '../io/scanner';
@@ -36,7 +36,7 @@ export interface DebugApi {
 }
 
 interface DebugApiConstructor {
-  new(logger: Logger, config: DebugAgentConfig, jsFiles: ScanStats,
+  new(logger: ConsoleLogLevelLog, config: DebugAgentConfig, jsFiles: ScanStats,
       sourcemapper: SourceMapper): DebugApi;
 }
 
@@ -61,7 +61,7 @@ export const MODULE_WRAP_PREFIX_LENGTH =
 let singleton: DebugApi;
 
 export function create(
-    logger: Logger, config: DebugAgentConfig, jsFiles: ScanStats,
+    logger: ConsoleLogLevelLog, config: DebugAgentConfig, jsFiles: ScanStats,
     sourcemapper: SourceMapper): DebugApi {
   if (singleton && !config.forceNewAgent_) {
     return singleton;

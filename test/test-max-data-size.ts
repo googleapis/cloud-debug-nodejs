@@ -16,17 +16,18 @@
 
 process.env.GCLOUD_DIAGNOSTICS_CONFIG = 'test/fixtures/test-config.js';
 
-import {Common, LoggerOptions} from '../src/types/common';
+import {ConsoleLogLevel} from '../src/types/console-log-level';
 import * as stackdriver from '../src/types/stackdriver';
 
 import * as assert from 'assert';
 import * as extend from 'extend';
-const common: Common = require('@google-cloud/common');
 import * as debugapi from '../src/agent/v8/debugapi';
 import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as scanner from '../src/agent/io/scanner';
+import { Debuglet } from '../src/agent/debuglet';
 import {defaultConfig} from '../src/agent/config';
 const foo = require('./test-max-data-size-code.js');
+const consoleLogLevel : ConsoleLogLevel = require('console-log-level');
 let api: debugapi.DebugApi;
 
 // TODO: Have this actually implement Breakpoint
@@ -40,10 +41,9 @@ describe('maxDataSize', () => {
 
   before((done) => {
     if (!api) {
-      // TODO: It appears `logLevel` is a typo and should be `level`.  However,
-      //       with this change, the tests fail.  Resolve this.
-      const logger = new common.logger(
-          {levelLevel: config.logLevel} as {} as LoggerOptions);
+      const logger = consoleLogLevel({
+        level: Debuglet.logLevelToName(config.logLevel)
+      });
       scanner.scan(true, config.workingDirectory, /.js$/)
           .then(async (fileStats) => {
             assert.strictEqual(fileStats.errors().size, 0);

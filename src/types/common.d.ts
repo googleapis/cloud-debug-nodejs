@@ -71,22 +71,6 @@ export interface ServiceObjectConfig {
   methods?: any;
 }
 
-export interface LoggerOptions {
-  level?: string;
-  levels?: string[];
-  tag: string;
-}
-
-export interface Logger {
-  new(options?: string|LoggerOptions): Logger;
-  LEVELS: string[];
-  // TODO: Determine the correct signatures for these members
-  error: (message: any, ...args: any[]) => void;
-  warn: (message: any, ...args: any[]) => void;
-  info: (message: any, ...args: any[]) => void;
-  debug: (message: any, ...args: any[]) => void;
-}
-
 export interface Service {
   new(config: ServiceConfig, options: AuthenticationConfig): Service;
 }
@@ -103,7 +87,6 @@ export interface ServiceObject {
 export interface Common {
   Service: Service;
   ServiceObject: ServiceObject;
-  logger: Logger;
   util: {
     // TODO: Make this more precise.
     normalizeArguments: (globalContext: any, localConfig: any, options?: any) =>

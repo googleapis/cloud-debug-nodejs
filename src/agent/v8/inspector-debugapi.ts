@@ -20,7 +20,7 @@ import * as inspector from 'inspector';
 import * as path from 'path';
 
 import {StatusMessage} from '../../client/stackdriver/status-message';
-import {Logger} from '../../types/common';
+import {ConsoleLogLevelLog} from '../../types/console-log-level';
 import * as stackdriver from '../../types/stackdriver';
 import {ResolvedDebugAgentConfig} from '../config';
 import {FileStats, ScanStats} from '../io/scanner';
@@ -40,7 +40,7 @@ export class BreakpointData {
 }
 
 export class InspectorDebugApi implements debugapi.DebugApi {
-  logger: Logger;
+  logger: ConsoleLogLevelLog;
   config: ResolvedDebugAgentConfig;
   fileStats: ScanStats;
   breakpoints: {[id: string]: BreakpointData} = {};
@@ -60,7 +60,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
   numBreakpoints = 0;
   v8Inspector: V8Inspector;
   constructor(
-      logger: Logger, config: ResolvedDebugAgentConfig, jsFiles: ScanStats,
+      logger: ConsoleLogLevelLog, config: ResolvedDebugAgentConfig, jsFiles: ScanStats,
       sourcemapper: SourceMapper) {
     this.logger = logger;
     this.config = config;

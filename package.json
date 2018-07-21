@@ -64,6 +64,7 @@
     "@google-cloud/common": "^0.17.0",
     "acorn": "^5.0.3",
     "coffeescript": "^2.0.0",
+    "console-log-level": "^1.4.0",
     "extend": "^3.0.1",
     "findit2": "^2.2.3",
     "gcp-metadata": "^0.7.0",

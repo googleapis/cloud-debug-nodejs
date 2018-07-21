@@ -22,12 +22,13 @@ import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as utils from '../src/agent/util/utils';
 import * as debugapi from '../src/agent/v8/debugapi';
 import {StatusMessage} from '../src/client/stackdriver/status-message';
-import {Common} from '../src/types/common';
+import {ConsoleLogLevel} from '../src/types/console-log-level';
 import * as stackdriver from '../src/types/stackdriver';
+import { Debuglet } from '../src/agent/debuglet';
 
 const code = require('./test-expression-side-effect-code.js');
 
-const common: Common = require('@google-cloud/common');
+const consoleLogLevel : ConsoleLogLevel = require('console-log-level');
 
 // the inspector protocol is only used on Node >= 10 and thus isn't
 // tested on earlier versions
@@ -38,9 +39,8 @@ describe('evaluating expressions', () => {
   const config = extend({}, defaultConfig, {forceNewAgent_: true});
 
   before(done => {
-    const logger = new common.logger({
-      level: common.logger.LEVELS[config.logLevel],
-      tag: 'test-expression-side-effect'
+    const logger = consoleLogLevel({
+      level: Debuglet.logLevelToName(config.logLevel)
     });
     scanner.scan(true, config.workingDirectory, /\.js$/)
         .then(async fileStats => {

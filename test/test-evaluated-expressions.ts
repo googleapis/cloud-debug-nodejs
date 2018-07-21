@@ -21,10 +21,11 @@ import {defaultConfig} from '../src/agent/config';
 import * as scanner from '../src/agent/io/scanner';
 import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as debugapi from '../src/agent/v8/debugapi';
-import {Common} from '../src/types/common';
+import {ConsoleLogLevel} from '../src/types/console-log-level';
 import * as stackdriver from '../src/types/stackdriver';
+import { Debuglet } from '../src/agent/debuglet';
 
-const common: Common = require('@google-cloud/common');
+const consoleLogLevel : ConsoleLogLevel = require('console-log-level');
 
 const code = require('./test-evaluated-expressions-code.js');
 
@@ -34,9 +35,8 @@ describe('debugger provides useful information', () => {
       extend({}, defaultConfig, {allowExpressions: true, forceNewAgent_: true});
 
   before(done => {
-    const logger = new common.logger({
-      level: common.logger.LEVELS[config.logLevel],
-      tag: 'test-evaluated-expressions'
+    const logger = consoleLogLevel({
+      level: Debuglet.logLevelToName(config.logLevel)
     });
     scanner.scan(true, config.workingDirectory, /\.js$/)
         .then(async fileStats => {

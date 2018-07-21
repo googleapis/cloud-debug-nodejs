@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Common, LoggerOptions} from '../src/types/common';
+import {ConsoleLogLevel} from '../src/types/console-log-level';
 import * as stackdriver from '../src/types/stackdriver';
 
 // TODO: Have this actually implement Breakpoint
@@ -26,11 +26,12 @@ const breakpointInFoo: stackdriver.Breakpoint = {
 import * as assert from 'assert';
 import * as extend from 'extend';
 import * as debugapi from '../src/agent/v8/debugapi';
-const common: Common = require('@google-cloud/common');
 import {defaultConfig} from '../src/agent/config';
 import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as scanner from '../src/agent/io/scanner';
+import { Debuglet } from '../src/agent/debuglet';
 const foo = require('./test-duplicate-expressions-code.js');
+const consoleLogLevel : ConsoleLogLevel = require('console-log-level');
 
 // TODO: Determine why this must be named `stateIsClean1`.
 function stateIsClean1(api: debugapi.DebugApi): boolean {
@@ -44,10 +45,9 @@ function stateIsClean1(api: debugapi.DebugApi): boolean {
 describe(__filename, () => {
   const config = extend(
       {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
-  // TODO: It appears `logLevel` is a typo and should be `level`.  However,
-  //       with this change, the tests fail.  Resolve this.
-  const logger =
-      new common.logger({logLevel: config.logLevel} as {} as LoggerOptions);
+  const logger = consoleLogLevel({
+    level: Debuglet.logLevelToName(config.logLevel)
+  });
   let api: debugapi.DebugApi;
 
   beforeEach((done) => {

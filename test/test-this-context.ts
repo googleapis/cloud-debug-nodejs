@@ -18,13 +18,14 @@ import * as assert from 'assert';
 import * as extend from 'extend';
 
 import * as debugapi from '../src/agent/v8/debugapi';
-import {Common, LoggerOptions} from '../src/types/common';
+import {ConsoleLogLevel} from '../src/types/console-log-level';
 import * as stackdriver from '../src/types/stackdriver';
+import { Debuglet } from '../src/agent/debuglet';
 
-const common: Common = require('@google-cloud/common');
 import {defaultConfig} from '../src/agent/config';
 import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as scanner from '../src/agent/io/scanner';
+const consoleLogLevel : ConsoleLogLevel = require('console-log-level');
 const code = require('./test-this-context-code.js');
 
 function stateIsClean(api: debugapi.DebugApi): boolean {
@@ -38,10 +39,9 @@ function stateIsClean(api: debugapi.DebugApi): boolean {
 describe(__filename, () => {
   const config = extend(
       {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
-  // TODO: It appears `logLevel` is a typo and should be `level`.  However,
-  //       with this change, the tests fail.  Resolve this.
-  const logger =
-      new common.logger({levelLevel: config.logLevel} as {} as LoggerOptions);
+  const logger = consoleLogLevel({
+    level: Debuglet.logLevelToName(config.logLevel)
+  });
   let api: debugapi.DebugApi;
 
   beforeEach((done) => {
