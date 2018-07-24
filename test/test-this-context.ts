@@ -22,10 +22,9 @@ import {Debuglet} from '../src/agent/debuglet';
 import * as scanner from '../src/agent/io/scanner';
 import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as debugapi from '../src/agent/v8/debugapi';
-import {ConsoleLogLevel} from '../src/types/console-log-level';
+import consoleLogLevel = require('console-log-level');
 import * as stackdriver from '../src/types/stackdriver';
 
-const consoleLogLevel: ConsoleLogLevel = require('console-log-level');
 const code = require('./test-this-context-code.js');
 
 function stateIsClean(api: debugapi.DebugApi): boolean {

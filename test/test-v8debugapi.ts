@@ -17,10 +17,9 @@
 import {ResolvedDebugAgentConfig} from '../src/agent/config';
 import {Debuglet} from '../src/agent/debuglet';
 import {DebugApi} from '../src/agent/v8/debugapi';
-import {ConsoleLogLevel} from '../src/types/console-log-level';
+import consoleLogLevel = require('console-log-level');
 import * as stackdriver from '../src/types/stackdriver';
 
-const consoleLogLevel: ConsoleLogLevel = require('console-log-level');
 
 // TODO(dominickramer): Have this actually implement Breakpoint
 const breakpointInFoo: stackdriver.Breakpoint = {

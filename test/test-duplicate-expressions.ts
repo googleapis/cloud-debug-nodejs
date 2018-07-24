@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ConsoleLogLevel} from '../src/types/console-log-level';
+import consoleLogLevel = require('console-log-level');
 import * as stackdriver from '../src/types/stackdriver';
 
 // TODO: Have this actually implement Breakpoint
@@ -31,7 +31,6 @@ import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as scanner from '../src/agent/io/scanner';
 import {Debuglet} from '../src/agent/debuglet';
 const foo = require('./test-duplicate-expressions-code.js');
-const consoleLogLevel: ConsoleLogLevel = require('console-log-level');
 
 // TODO: Determine why this must be named `stateIsClean1`.
 function stateIsClean1(api: debugapi.DebugApi): boolean {

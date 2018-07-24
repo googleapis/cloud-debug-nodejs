@@ -16,7 +16,7 @@
 
 process.env.GCLOUD_DIAGNOSTICS_CONFIG = 'test/fixtures/test-config.js';
 
-import {ConsoleLogLevel} from '../src/types/console-log-level';
+import consoleLogLevel = require('console-log-level');
 import * as stackdriver from '../src/types/stackdriver';
 
 import * as assert from 'assert';
@@ -27,7 +27,6 @@ import * as scanner from '../src/agent/io/scanner';
 import {Debuglet} from '../src/agent/debuglet';
 import {defaultConfig} from '../src/agent/config';
 const foo = require('./test-max-data-size-code.js');
-const consoleLogLevel: ConsoleLogLevel = require('console-log-level');
 let api: debugapi.DebugApi;
 
 // TODO: Have this actually implement Breakpoint

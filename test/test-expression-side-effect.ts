@@ -23,12 +23,11 @@ import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as utils from '../src/agent/util/utils';
 import * as debugapi from '../src/agent/v8/debugapi';
 import {StatusMessage} from '../src/client/stackdriver/status-message';
-import {ConsoleLogLevel} from '../src/types/console-log-level';
+import consoleLogLevel = require('console-log-level');
 import * as stackdriver from '../src/types/stackdriver';
 
 const code = require('./test-expression-side-effect-code.js');
 
-const consoleLogLevel: ConsoleLogLevel = require('console-log-level');
 
 // the inspector protocol is only used on Node >= 10 and thus isn't
 // tested on earlier versions

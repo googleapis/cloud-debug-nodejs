@@ -29,7 +29,6 @@ import {Debug, PackageInfo} from '../client/stackdriver/debug';
 import {StatusMessage} from '../client/stackdriver/status-message';
 import {Debuggee, DebuggeeProperties} from '../debuggee';
 import {AuthenticationConfig} from '../types/common';
-import {ConsoleLogLevel, ConsoleLogLevelLog, LogLevels} from '../types/console-log-level';
 import * as stackdriver from '../types/stackdriver';
 
 import {defaultConfig} from './config';
@@ -40,9 +39,9 @@ import * as SourceMapper from './io/sourcemapper';
 import * as utils from './util/utils';
 import * as debugapi from './v8/debugapi';
 import {DebugApi} from './v8/debugapi';
+import consoleLogLevel = require('console-log-level');
 
 const promisify = require('util.promisify');
-const consoleLogLevel: ConsoleLogLevel = require('console-log-level');
 
 const readFilep = promisify(fs.readFile);
 
@@ -187,7 +186,7 @@ export class Debuglet extends EventEmitter {
   // Exposed for testing
   config: ResolvedDebugAgentConfig;
   fetcherActive: boolean;
-  logger: ConsoleLogLevelLog;
+  logger: consoleLogLevel.Logger;
   debuggee: Debuggee|null;
   activeBreakpointMap: {[key: string]: stackdriver.Breakpoint};
 
@@ -251,11 +250,10 @@ export class Debuglet extends EventEmitter {
     this.debuggeeRegistered = new CachedPromise();
   }
 
-  static LEVELNAMES = [
-    LogLevels.fatal, LogLevels.error, LogLevels.warn, LogLevels.info,
-    LogLevels.debug, LogLevels.trace
+  static LEVELNAMES: consoleLogLevel.LogLevelNames[] = [
+    'fatal', 'error', 'warn', 'info', 'debug', 'trace'
   ];
-  static logLevelToName(level: number): LogLevels {
+  static logLevelToName(level: number): consoleLogLevel.LogLevelNames {
     if (typeof level === 'string') {
       level = Number(level);
     }

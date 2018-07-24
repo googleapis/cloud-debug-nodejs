@@ -22,11 +22,10 @@ import {Debuglet} from '../src/agent/debuglet';
 import * as scanner from '../src/agent/io/scanner';
 import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as debugapi from '../src/agent/v8/debugapi';
-import {ConsoleLogLevel} from '../src/types/console-log-level';
+import consoleLogLevel = require('console-log-level');
 import * as stackdriver from '../src/types/stackdriver';
 
 const foo = require('./test-duplicate-nested-expressions-code.js');
-const consoleLogLevel: ConsoleLogLevel = require('console-log-level');
 
 // TODO: Determine why this must be named `_stateIsClean`.
 function stateIsClean2(api: debugapi.DebugApi): boolean {
