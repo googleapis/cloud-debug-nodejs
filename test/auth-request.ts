@@ -16,15 +16,18 @@
 
 import * as request from 'request';
 
-// TODO: Make the type of `options` more precise
-export const authRequest =
-    (options: (request.UriOptions&request.CoreOptions)|
-     (request.UrlOptions & request.CoreOptions),
-     callback: (err: Error, body: {}, response: request.RequestResponse) =>
-         void) => {
-      request(
-          options,
-          (err: Error, response: request.RequestResponse, body: {}) => {
-            callback(err, body, response);
-          });
-    };
+export async function authRequest(options: (request.UriOptions&request.CoreOptions)|
+  (request.UrlOptions & request.CoreOptions)): Promise<request.Response> {
+  return new Promise<request.Response>((resolve, reject) => {
+    request(
+        options,
+        (err: Error, response: request.RequestResponse) => {
+          if (err) {
+            reject(err);
+          }
+          else {
+            resolve(response);
+          }
+      });
+  });
+}
