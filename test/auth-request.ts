@@ -16,9 +16,8 @@
 
 import * as request from 'request';
 
-export async function authRequest(
-    options: (request.UriOptions&request.CoreOptions)|
-    (request.UrlOptions & request.CoreOptions)): Promise<request.Response> {
+export function authRequest(options: (request.UriOptions&request.CoreOptions)|(
+    request.UrlOptions & request.CoreOptions)): Promise<request.Response> {
   return new Promise<request.Response>((resolve, reject) => {
     request(options, (err: Error, response: request.RequestResponse) => {
       if (err) {
