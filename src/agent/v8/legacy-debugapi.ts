@@ -22,7 +22,7 @@ import * as semver from 'semver';
 import * as vm from 'vm';
 
 import {StatusMessage} from '../../client/stackdriver/status-message';
-import {Logger} from '../../types/common';
+import consoleLogLevel = require('console-log-level');
 import * as stackdriver from '../../types/stackdriver';
 import * as v8 from '../../types/v8';
 import {ResolvedDebugAgentConfig} from '../config';
@@ -52,7 +52,7 @@ export class V8DebugApi implements debugapi.DebugApi {
   listeners: {[id: string]: utils.Listener} = {};
   v8Version: RegExpExecArray|null;
   usePermanentListener: boolean;
-  logger: Logger;
+  logger: consoleLogLevel.Logger;
   handleDebugEvents:
       (evt: v8.DebugEvent, execState: v8.ExecutionState,
        eventData: v8.BreakEvent) => void;
@@ -60,8 +60,8 @@ export class V8DebugApi implements debugapi.DebugApi {
   numBreakpoints = 0;
 
   constructor(
-      logger: Logger, config: ResolvedDebugAgentConfig, jsFiles: ScanStats,
-      sourcemapper: SourceMapper) {
+      logger: consoleLogLevel.Logger, config: ResolvedDebugAgentConfig,
+      jsFiles: ScanStats, sourcemapper: SourceMapper) {
     this.sourcemapper = sourcemapper;
     this.v8 = vm.runInDebugContext('Debug');
     this.config = config;

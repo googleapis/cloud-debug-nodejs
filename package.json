@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@types/acorn": "^4.0.2",
+    "@types/console-log-level": "^1.4.0",
     "@types/estree": "0.0.39",
     "@types/extend": "^3.0.0",
     "@types/glob": "^5.0.33",
@@ -64,6 +65,7 @@
     "@google-cloud/common": "^0.20.3",
     "acorn": "^5.0.3",
     "coffeescript": "^2.0.0",
+    "console-log-level": "^1.4.0",
     "extend": "^3.0.1",
     "findit2": "^2.2.3",
     "gcp-metadata": "^0.7.0",

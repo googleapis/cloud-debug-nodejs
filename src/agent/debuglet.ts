@@ -14,38 +14,32 @@
  * limitations under the License.
  */
 
-import {AuthenticationConfig, Common} from '../types/common';
-const common: Common = require('@google-cloud/common');
-
+import * as assert from 'assert';
 import * as crypto from 'crypto';
 import {EventEmitter} from 'events';
 import * as extend from 'extend';
 import * as fs from 'fs';
-
 import * as metadata from 'gcp-metadata';
-
+import * as http from 'http';
 import * as _ from 'lodash';
 import * as path from 'path';
 import * as util from 'util';
-import * as utils from './util/utils';
-import * as http from 'http';
 
-import {Controller} from './controller';
-import {Debuggee, DebuggeeProperties} from '../debuggee';
+import {Debug, PackageInfo} from '../client/stackdriver/debug';
 import {StatusMessage} from '../client/stackdriver/status-message';
+import {Debuggee, DebuggeeProperties} from '../debuggee';
+import {AuthenticationConfig} from '../types/common';
+import * as stackdriver from '../types/stackdriver';
 
 import {defaultConfig} from './config';
+import {DebugAgentConfig, ResolvedDebugAgentConfig} from './config';
+import {Controller} from './controller';
 import * as scanner from './io/scanner';
 import * as SourceMapper from './io/sourcemapper';
+import * as utils from './util/utils';
 import * as debugapi from './v8/debugapi';
-
-import * as assert from 'assert';
-
-import * as stackdriver from '../types/stackdriver';
-import {DebugAgentConfig, ResolvedDebugAgentConfig} from './config';
-import {Debug, PackageInfo} from '../client/stackdriver/debug';
-import {Logger} from '../types/common';
 import {DebugApi} from './v8/debugapi';
+import consoleLogLevel = require('console-log-level');
 
 const promisify = require('util.promisify');
 
@@ -192,7 +186,7 @@ export class Debuglet extends EventEmitter {
   // Exposed for testing
   config: ResolvedDebugAgentConfig;
   fetcherActive: boolean;
-  logger: Logger;
+  logger: consoleLogLevel.Logger;
   debuggee: Debuggee|null;
   activeBreakpointMap: {[key: string]: stackdriver.Breakpoint};
 
@@ -232,10 +226,11 @@ export class Debuglet extends EventEmitter {
     /** @private {boolean} */
     this.fetcherActive = false;
 
-    /** @private {common.logger} */
-    this.logger = new common.logger({
-      level: common.logger.LEVELS[this.config.logLevel],
-      tag: this.debug.packageInfo.name
+    /** @private */
+    this.logger = consoleLogLevel({
+      stderr: true,
+      prefix: this.debug.packageInfo.name,
+      level: Debuglet.logLevelToName(this.config.logLevel)
     });
 
     /** @private {DebugletApi} */
@@ -253,6 +248,21 @@ export class Debuglet extends EventEmitter {
     this.breakpointFetched = null;
     this.breakpointFetchedTimestamp = -Infinity;
     this.debuggeeRegistered = new CachedPromise();
+  }
+
+  static LEVELNAMES: consoleLogLevel.LogLevelNames[] = [
+    'fatal', 'error', 'warn', 'info', 'debug', 'trace'
+  ];
+  static logLevelToName(level: number): consoleLogLevel.LogLevelNames {
+    if (typeof level === 'string') {
+      level = Number(level);
+    }
+    if (typeof level !== 'number') {
+      level = defaultConfig.logLevel;
+    }
+    if (level < 0) level = 0;
+    if (level > 4) level = 4;
+    return Debuglet.LEVELNAMES[level];
   }
 
   static normalizeConfig_(config: DebugAgentConfig): ResolvedDebugAgentConfig {
