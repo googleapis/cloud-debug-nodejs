@@ -1,5 +1,3 @@
-import {GoogleAuthOptions} from '../../node_modules/google-auth-library';
-
 /**
  * Copyright 2015 Google Inc. All Rights Reserved.
  *
@@ -15,6 +13,8 @@ import {GoogleAuthOptions} from '../../node_modules/google-auth-library';
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import {GoogleAuthOptions} from '@google-cloud/common';
 
 export type DebugAgentConfig = GoogleAuthOptions&{
   [K in keyof ResolvedDebugAgentConfig]?: Partial<ResolvedDebugAgentConfig[K]>

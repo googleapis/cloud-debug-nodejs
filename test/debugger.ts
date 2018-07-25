@@ -19,7 +19,6 @@
  */
 
 import {ServiceObject} from '@google-cloud/common';
-
 import {Debug} from '../src/client/stackdriver/debug';
 import {Debuggee} from '../src/debuggee';
 import * as stackdriver from '../src/types/stackdriver';
