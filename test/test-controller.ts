@@ -120,8 +120,7 @@ describe('Controller API', () => {
       // TODO: Determine if the response parameter should be used.
       controller.listBreakpoints(
           debuggee as Debuggee,
-          (err: Error|null, response?: http.ServerResponse,
-           result?: stackdriver.ListBreakpointsResponse) => {
+          (err, response, result?: stackdriver.ListBreakpointsResponse) => {
             assert(!err, 'not expecting an error');
             // TODO: Handle the case where result is undefined
             assert(
@@ -148,8 +147,7 @@ describe('Controller API', () => {
           // TODO: Determine if the response parameter should be used.
           controller.listBreakpoints(
               debuggee as Debuggee,
-              (err: Error|null, response?: http.ServerResponse,
-               result?: stackdriver.ListBreakpointsResponse) => {
+              (err, response, result?: stackdriver.ListBreakpointsResponse) => {
                 assert(!err, 'not expecting an error');
                 // TODO: Handle the case where result is undefined
                 assert(

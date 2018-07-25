@@ -1,3 +1,5 @@
+import {GoogleAuthOptions} from '../../node_modules/google-auth-library';
+
 /**
  * Copyright 2015 Google Inc. All Rights Reserved.
  *
@@ -14,9 +16,7 @@
  * limitations under the License.
  */
 
-import * as common from '../types/common';
-
-export type DebugAgentConfig = {
+export type DebugAgentConfig = GoogleAuthOptions&{
   [K in keyof ResolvedDebugAgentConfig]?: Partial<ResolvedDebugAgentConfig[K]>
 };
 
@@ -66,7 +66,7 @@ export interface GitSourceContext {
   revisionId: string;
 }
 
-export interface ResolvedDebugAgentConfig extends common.AuthenticationConfig {
+export interface ResolvedDebugAgentConfig extends GoogleAuthOptions {
   /**
    * Specifies the working directory of the application being
    * debugged. That is, the directory containing the application's
@@ -249,7 +249,7 @@ export interface ResolvedDebugAgentConfig extends common.AuthenticationConfig {
   testMode_: boolean;
 }
 
-export interface StackdriverConfig extends common.AuthenticationConfig {
+export interface StackdriverConfig extends GoogleAuthOptions {
   debug?: DebugAgentConfig;
 }
 

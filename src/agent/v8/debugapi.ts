@@ -36,8 +36,8 @@ export interface DebugApi {
 }
 
 interface DebugApiConstructor {
-  new(logger: consoleLogLevel.Logger, config: DebugAgentConfig, jsFiles: ScanStats,
-      sourcemapper: SourceMapper): DebugApi;
+  new(logger: consoleLogLevel.Logger, config: DebugAgentConfig,
+      jsFiles: ScanStats, sourcemapper: SourceMapper): DebugApi;
 }
 
 let debugApiConstructor: DebugApiConstructor;
@@ -61,8 +61,8 @@ export const MODULE_WRAP_PREFIX_LENGTH =
 let singleton: DebugApi;
 
 export function create(
-    logger: consoleLogLevel.Logger, config: DebugAgentConfig, jsFiles: ScanStats,
-    sourcemapper: SourceMapper): DebugApi {
+    logger: consoleLogLevel.Logger, config: DebugAgentConfig,
+    jsFiles: ScanStats, sourcemapper: SourceMapper): DebugApi {
   if (singleton && !config.forceNewAgent_) {
     return singleton;
   } else if (singleton) {
