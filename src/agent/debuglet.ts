@@ -20,7 +20,6 @@ import {EventEmitter} from 'events';
 import * as extend from 'extend';
 import * as fs from 'fs';
 import * as metadata from 'gcp-metadata';
-import * as http from 'http';
 import * as _ from 'lodash';
 import * as path from 'path';
 import * as util from 'util';
@@ -28,7 +27,6 @@ import * as util from 'util';
 import {Debug, PackageInfo} from '../client/stackdriver/debug';
 import {StatusMessage} from '../client/stackdriver/status-message';
 import {Debuggee, DebuggeeProperties} from '../debuggee';
-import {AuthenticationConfig} from '../types/common';
 import * as stackdriver from '../types/stackdriver';
 
 import {defaultConfig} from './config';
@@ -40,6 +38,7 @@ import * as utils from './util/utils';
 import * as debugapi from './v8/debugapi';
 import {DebugApi} from './v8/debugapi';
 import consoleLogLevel = require('console-log-level');
+import {GoogleAuthOptions} from '@google-cloud/common';
 
 const promisify = require('util.promisify');
 
@@ -250,9 +249,8 @@ export class Debuglet extends EventEmitter {
     this.debuggeeRegistered = new CachedPromise();
   }
 
-  static LEVELNAMES: consoleLogLevel.LogLevelNames[] = [
-    'fatal', 'error', 'warn', 'info', 'debug', 'trace'
-  ];
+  static LEVELNAMES: consoleLogLevel.LogLevelNames[] =
+      ['fatal', 'error', 'warn', 'info', 'debug', 'trace'];
   static logLevelToName(level: number): consoleLogLevel.LogLevelNames {
     if (typeof level === 'string') {
       level = Number(level);
@@ -525,7 +523,7 @@ export class Debuglet extends EventEmitter {
     return new Debuggee(properties);
   }
 
-  static async getProjectId(options: AuthenticationConfig): Promise<string> {
+  static async getProjectId(options: GoogleAuthOptions): Promise<string> {
     const project = options.projectId || process.env.GCLOUD_PROJECT ||
         await this.getProjectIdFromMetadata();
     if (!project) {
@@ -654,7 +652,7 @@ export class Debuglet extends EventEmitter {
               return;
             }
             // TODO: Address the case where `response` is `undefined`.
-            switch ((response as http.ServerResponse).statusCode) {
+            switch (response!.statusCode) {
               case 404:
                 // Registration expired. Deactivate the fetcher and queue
                 // re-registration, which will re-active breakpoint fetching.
@@ -666,9 +664,7 @@ export class Debuglet extends EventEmitter {
 
               default:
                 // TODO: Address the case where `response` is `undefined`.
-                that.logger.info(
-                    '\t' + (response as http.ServerResponse).statusCode +
-                    ' completed.');
+                that.logger.info('\t' + response!.statusCode + ' completed.');
                 if (!body) {
                   that.logger.error('\tinvalid list response: empty body');
                   that.scheduleBreakpointFetch_(

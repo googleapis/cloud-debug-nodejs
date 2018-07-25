@@ -18,12 +18,11 @@
  * @module debug/debugger
  */
 
+import {ServiceObject} from '@google-cloud/common';
 import {Debug} from '../src/client/stackdriver/debug';
 import {Debuggee} from '../src/debuggee';
-import * as commonTypes from '../src/types/common';
 import * as stackdriver from '../src/types/stackdriver';
 
-export const common: commonTypes.Common = require('@google-cloud/common');
 // TODO: Verify these types are correct.
 const qs: {
   parse: (
@@ -36,7 +35,7 @@ const qs: {
 /** @const {string} Cloud Debug API endpoint */
 const API = 'https://clouddebugger.googleapis.com/v2/debugger';
 
-export class Debugger extends common.ServiceObject {
+export class Debugger extends ServiceObject {
   private nextWaitToken: string|null;
   private clientVersion: string;
 
