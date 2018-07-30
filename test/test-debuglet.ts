@@ -214,7 +214,7 @@ describe('Debuglet', () => {
       // The actual config should be exactly defaultConfig with only
       // maxExpandFrames adjusted.
       compareConfig.capture.maxExpandFrames = testValue;
-      assert.deepEqual(mergedConfig, compareConfig);
+      assert.deepStrictEqual(mergedConfig, compareConfig);
     });
 
     it('should not start when projectId is not available', (done) => {
@@ -1005,7 +1005,7 @@ describe('Debuglet', () => {
       debuglet.once('registered', function reg(id: string) {
         assert.strictEqual(id, DEBUGGEE_ID);
         setTimeout(() => {
-          assert.deepEqual(debuglet.activeBreakpointMap.test, bp);
+          assert.deepStrictEqual(debuglet.activeBreakpointMap.test, bp);
           debuglet.stop();
           scope.done();
           done();
@@ -1041,7 +1041,7 @@ describe('Debuglet', () => {
              // Once debugPromise is resolved, debuggee must be registered.
              assert(debuglet.debuggee);
              setTimeout(() => {
-               assert.deepEqual(debuglet.activeBreakpointMap.test1, breakpoint);
+               assert.deepStrictEqual(debuglet.activeBreakpointMap.test1, breakpoint);
                debuglet.activeBreakpointMap = {};
                debuglet.stop();
                scope.done();
@@ -1189,7 +1189,7 @@ describe('Debuglet', () => {
       debuglet.once('registered', function reg(id: string) {
         assert.strictEqual(id, DEBUGGEE_ID);
         setTimeout(() => {
-          assert.deepEqual(debuglet.activeBreakpointMap.test, bp);
+          assert.deepStrictEqual(debuglet.activeBreakpointMap.test, bp);
           assert(!debuglet.activeBreakpointMap.testLog);
           debuglet.stop();
           scope.done();
@@ -1228,7 +1228,7 @@ describe('Debuglet', () => {
       debuglet.once('registered', (id: string) => {
         assert.strictEqual(id, DEBUGGEE_ID);
         setTimeout(() => {
-          assert.deepEqual(debuglet.activeBreakpointMap.test, bp);
+          assert.deepStrictEqual(debuglet.activeBreakpointMap.test, bp);
           setTimeout(() => {
             assert(!debuglet.activeBreakpointMap.test);
             debuglet.stop();
@@ -1280,7 +1280,7 @@ describe('Debuglet', () => {
       debuglet.once('registered', (id: string) => {
         assert.strictEqual(id, DEBUGGEE_ID);
         setTimeout(() => {
-          assert.deepEqual(debuglet.activeBreakpointMap.test, bp);
+          assert.deepStrictEqual(debuglet.activeBreakpointMap.test, bp);
           setTimeout(() => {
             assert(!debuglet.activeBreakpointMap.test);
             // Fetcher disables if we re-update since endpoint isn't mocked
@@ -1301,10 +1301,10 @@ describe('Debuglet', () => {
     it('should be correct', () => {
       const a = {a: 1, b: 2};
       const b = {a: 1};
-      assert.deepEqual(Debuglet.mapSubtract(a, b), [2]);
-      assert.deepEqual(Debuglet.mapSubtract(b, a), []);
-      assert.deepEqual(Debuglet.mapSubtract(a, {}), [1, 2]);
-      assert.deepEqual(Debuglet.mapSubtract({}, b), []);
+      assert.deepStrictEqual(Debuglet.mapSubtract(a, b), [2]);
+      assert.deepStrictEqual(Debuglet.mapSubtract(b, a), []);
+      assert.deepStrictEqual(Debuglet.mapSubtract(a, {}), [1, 2]);
+      assert.deepStrictEqual(Debuglet.mapSubtract({}, b), []);
     });
   });
 
@@ -1312,23 +1312,23 @@ describe('Debuglet', () => {
     it('should be correct', () => {
       // TODO: Determine if Debuglet.format() should allow a number[]
       //       or if only string[] should be allowed.
-      assert.deepEqual(Debuglet.format('hi', [5] as {} as string[]), 'hi');
-      assert.deepEqual(Debuglet.format('hi $0', [5] as {} as string[]), 'hi 5');
-      assert.deepEqual(
+      assert.deepStrictEqual(Debuglet.format('hi', [5] as {} as string[]), 'hi');
+      assert.deepStrictEqual(Debuglet.format('hi $0', [5] as {} as string[]), 'hi 5');
+      assert.deepStrictEqual(
           Debuglet.format('hi $0 $1', [5, 'there'] as {} as string[]),
           'hi 5 there');
-      assert.deepEqual(
+      assert.deepStrictEqual(
           Debuglet.format('hi $0 $1', [5] as {} as string[]), 'hi 5 $1');
-      assert.deepEqual(
+      assert.deepStrictEqual(
           Debuglet.format('hi $0 $1 $0', [5] as {} as string[]), 'hi 5 $1 5');
-      assert.deepEqual(Debuglet.format('hi $$', [5] as {} as string[]), 'hi $');
-      assert.deepEqual(
+      assert.deepStrictEqual(Debuglet.format('hi $$', [5] as {} as string[]), 'hi $');
+      assert.deepStrictEqual(
           Debuglet.format('hi $$0', [5] as {} as string[]), 'hi $0');
-      assert.deepEqual(
+      assert.deepStrictEqual(
           Debuglet.format('hi $00', [5] as {} as string[]), 'hi 50');
-      assert.deepEqual(
+      assert.deepStrictEqual(
           Debuglet.format('hi $0', ['$1', 5] as {} as string[]), 'hi $1');
-      assert.deepEqual(
+      assert.deepStrictEqual(
           Debuglet.format(
               'hi $11',
               [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd'] as {} as
