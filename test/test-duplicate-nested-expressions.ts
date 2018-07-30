@@ -82,7 +82,7 @@ describe(__filename, () => {
         const locals = frame.locals;
         assert.strictEqual(args.length, 0, 'There should be zero arguments');
         assert.strictEqual(locals.length, 1, 'There should be one locals');
-        assert.deepEqual(locals[0], {name: 'a', value: 'test'});
+        assert.deepStrictEqual(locals[0], {name: 'a', value: 'test'});
         api.clear(brk, (err3) => {
           assert.ifError(err3);
           done();
@@ -107,7 +107,7 @@ describe(__filename, () => {
         const locals = frame.locals;
         assert.strictEqual(args.length, 0, 'There should be zero arguments');
         assert.strictEqual(locals.length, 1, 'There should be one local');
-        assert.deepEqual(locals[0], {name: 'a', value: '10'});
+        assert.deepStrictEqual(locals[0], {name: 'a', value: '10'});
         api.clear(brk, (err3) => {
           assert.ifError(err3);
           done();
@@ -132,7 +132,7 @@ describe(__filename, () => {
         const locals = frame.locals;
         assert.strictEqual(args.length, 0, 'There should be zero arguments');
         assert.strictEqual(locals.length, 1, 'There should be one local');
-        assert.deepEqual(locals[0], {name: 'a', value: '11'});
+        assert.deepStrictEqual(locals[0], {name: 'a', value: '11'});
         api.clear(brk, (err3) => {
           assert.ifError(err3);
           done();
@@ -159,8 +159,8 @@ describe(__filename, () => {
            const locals = frame.locals;
            assert.strictEqual(args.length, 0, 'There should be zero arguments');
            assert.strictEqual(locals.length, 2, 'There should be two locals');
-           assert.deepEqual(locals[0], {name: 'b', value: 'undefined'});
-           assert.deepEqual(locals[1], {name: 'a', value: 'true'});
+           assert.deepStrictEqual(locals[0], {name: 'b', value: 'undefined'});
+           assert.deepStrictEqual(locals[1], {name: 'a', value: 'true'});
            api.clear(brk, (err3) => {
              assert.ifError(err3);
              done();
