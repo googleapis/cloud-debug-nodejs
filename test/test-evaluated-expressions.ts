@@ -113,7 +113,7 @@ describe('debugger provides useful information', () => {
           expected, undefined,
           'Each expected member must have its value specified');
       const actual = memberMap.get(rawName!);
-      assert.deepEqual(
+      assert.deepStrictEqual(
           actual, expected,
           `Expected ${rawName} to have value ${expected} but found ${actual}`);
     }
