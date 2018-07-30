@@ -83,14 +83,14 @@ describe(__filename, () => {
         // TODO: Determine how to remove these casts to any.
         ctxMembers =
             brk.variableTable.slice(brk.variableTable.length - 1)[0]!.members;
-        assert.deepEqual(
+        assert.deepStrictEqual(
             ctxMembers!.length, 1,
             'There should be one member in the context variable value');
-        assert.deepEqual(ctxMembers![0], {name: 'a', value: '10'});
+        assert.deepStrictEqual(ctxMembers![0], {name: 'a', value: '10'});
         assert.strictEqual(args.length, 0, 'There should be zero arguments');
         assert.strictEqual(locals.length, 2, 'There should be two locals');
-        assert.deepEqual(locals[0], {name: 'b', value: '1'});
-        assert.deepEqual(locals[1].name, 'context');
+        assert.deepStrictEqual(locals[0], {name: 'b', value: '1'});
+        assert.deepStrictEqual(locals[1].name, 'context');
         api.clear(brk, (err3) => {
           assert.ifError(err3);
           done();
@@ -114,7 +114,7 @@ describe(__filename, () => {
         const locals = frame.locals;
         assert.strictEqual(args.length, 0, 'There should be zero arguments');
         assert.strictEqual(locals.length, 1, 'There should be one local');
-        assert.deepEqual(locals[0], {name: 'j', value: '1'});
+        assert.deepStrictEqual(locals[0], {name: 'j', value: '1'});
         api.clear(brk, (err3) => {
           assert.ifError(err3);
           done();
