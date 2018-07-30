@@ -1788,7 +1788,7 @@ describe('v8debugapi.findScripts', () => {
     };
     const scriptPath = '/my/project/root/test/fixtures/a/hello.js';
     const result = utils.findScripts(scriptPath, config, fakeFileStats);
-    assert.deepEqual(
+    assert.deepStrictEqual(
         result, ['/some/strange/directory/test/fixtures/a/hello.js']);
   });
 });
@@ -1797,7 +1797,7 @@ describe('v8debugapi.findScriptsFuzzy', () => {
   const fuzzy = utils.findScriptsFuzzy;
 
   it('should not confuse . as a regexp pattern', () => {
-    assert.deepEqual(fuzzy('foo.js', ['/fooXjs']), []);
+    assert.deepStrictEqual(fuzzy('foo.js', ['/fooXjs']), []);
   });
 
   it('should do suffix matches correctly', () => {
@@ -1834,7 +1834,7 @@ describe('v8debugapi.findScriptsFuzzy', () => {
       const scriptPath = path.normalize(test.scriptPath);
       const fileList = test.fileList.map(path.normalize);
       const result = test.result.map(path.normalize);
-      assert.deepEqual(fuzzy(scriptPath, fileList), result);
+      assert.deepStrictEqual(fuzzy(scriptPath, fileList), result);
     });
   });
 });
