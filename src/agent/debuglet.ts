@@ -30,14 +30,14 @@ import {Debuggee, DebuggeeProperties} from '../debuggee';
 import * as stackdriver from '../types/stackdriver';
 
 import {defaultConfig} from './config';
-import {DebugAgentConfig, ResolvedDebugAgentConfig} from './config';
+import {DebugAgentConfig, ResolvedDebugAgentConfig, LogLevel, Logger} from './config';
 import {Controller} from './controller';
 import * as scanner from './io/scanner';
 import * as SourceMapper from './io/sourcemapper';
 import * as utils from './util/utils';
 import * as debugapi from './v8/debugapi';
 import {DebugApi} from './v8/debugapi';
-import consoleLogLevel = require('console-log-level');
+import * as consoleLogLevel from 'console-log-level';
 import {GoogleAuthOptions} from '@google-cloud/common';
 
 const promisify = require('util.promisify');
@@ -185,7 +185,7 @@ export class Debuglet extends EventEmitter {
   // Exposed for testing
   config: ResolvedDebugAgentConfig;
   fetcherActive: boolean;
-  logger: consoleLogLevel.Logger;
+  logger: Logger;
   debuggee: Debuggee|null;
   activeBreakpointMap: {[key: string]: stackdriver.Breakpoint};
 
@@ -249,9 +249,14 @@ export class Debuglet extends EventEmitter {
     this.debuggeeRegistered = new CachedPromise();
   }
 
-  static LEVELNAMES: consoleLogLevel.LogLevelNames[] =
+  static LEVELNAMES: LogLevel[] =
       ['fatal', 'error', 'warn', 'info', 'debug', 'trace'];
-  static logLevelToName(level: number): consoleLogLevel.LogLevelNames {
+  // The return type `LogLevel` is used instead of
+  // `consoleLogLevel.LogLevelNames` because, otherwise,
+  // the `consoleLogLevel.LogLevelNames` type is exposed to
+  // users of the debug agent, requiring them to have
+  // @types/console-log-level installed to compile their code.
+  static logLevelToName(level: number): LogLevel {
     if (typeof level === 'string') {
       level = Number(level);
     }
