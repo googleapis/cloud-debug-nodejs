@@ -20,7 +20,7 @@ export type DebugAgentConfig = GoogleAuthOptions&{
   [K in keyof ResolvedDebugAgentConfig]?: Partial<ResolvedDebugAgentConfig[K]>
 };
 
-export type LogLevel = "error" | "trace" | "debug" | "info" | "warn" | "fatal" | undefined;
+export type LogLevel = 'error'|'trace'|'debug'|'info'|'warn'|'fatal'|undefined;
 export interface Logger {
   error(...args: Array<{}>): void;
   trace(...args: Array<{}>): void;

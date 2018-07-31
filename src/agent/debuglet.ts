@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
+import {GoogleAuthOptions} from '@google-cloud/common';
 import * as assert from 'assert';
+import * as consoleLogLevel from 'console-log-level';
 import * as crypto from 'crypto';
 import {EventEmitter} from 'events';
 import * as extend from 'extend';
@@ -30,15 +32,13 @@ import {Debuggee, DebuggeeProperties} from '../debuggee';
 import * as stackdriver from '../types/stackdriver';
 
 import {defaultConfig} from './config';
-import {DebugAgentConfig, ResolvedDebugAgentConfig, LogLevel, Logger} from './config';
+import {DebugAgentConfig, Logger, LogLevel, ResolvedDebugAgentConfig} from './config';
 import {Controller} from './controller';
 import * as scanner from './io/scanner';
 import * as SourceMapper from './io/sourcemapper';
 import * as utils from './util/utils';
 import * as debugapi from './v8/debugapi';
 import {DebugApi} from './v8/debugapi';
-import * as consoleLogLevel from 'console-log-level';
-import {GoogleAuthOptions} from '@google-cloud/common';
 
 const promisify = require('util.promisify');
 
