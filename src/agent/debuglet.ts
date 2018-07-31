@@ -370,7 +370,7 @@ export class Debuglet extends EventEmitter {
 
     let project: string;
     try {
-      project = await Debuglet.getProjectId(that.debug.options);
+      project = await that.debug.authClient.getProjectId();
     } catch (err) {
       that.logger.error(
           'The project ID could not be determined: ' + err.message);
@@ -528,23 +528,8 @@ export class Debuglet extends EventEmitter {
     return new Debuggee(properties);
   }
 
-  static async getProjectId(options: GoogleAuthOptions): Promise<string> {
-    const project = options.projectId || process.env.GCLOUD_PROJECT ||
-        await this.getProjectIdFromMetadata();
-    if (!project) {
-      const msg = 'Unable to discover projectId. Please provide the ' +
-          'projectId to be able to use the Debug agent';
-      throw new Error(msg);
-    }
-    return project;
-  }
-
   static runningOnGCP(): Promise<boolean> {
     return metadata.isAvailable();
-  }
-
-  static async getProjectIdFromMetadata(): Promise<string> {
-    return (await metadata.project('project-id')).data as string;
   }
 
   static async getClusterNameFromMetadata(): Promise<string> {

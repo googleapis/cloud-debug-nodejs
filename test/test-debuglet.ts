@@ -111,78 +111,6 @@ describe('Debuglet', () => {
     });
   });
 
-  describe('getProjectId', () => {
-    let savedGetProjectIdFromMetadata: () => Promise<string>;
-
-    beforeEach(() => {
-      savedGetProjectIdFromMetadata = Debuglet.getProjectIdFromMetadata;
-    });
-
-    afterEach(() => {
-      Debuglet.getProjectIdFromMetadata = savedGetProjectIdFromMetadata;
-    });
-
-    it('should not query metadata if local config.projectId is set', (done) => {
-      Debuglet.getProjectIdFromMetadata = () => {
-        const failureMessage = 'getProjectIdFromMetadata should not be called';
-        assert.fail(failureMessage);
-        return Promise.reject(failureMessage);
-      };
-      Debuglet.getProjectId({projectId: 'from-config'}).then((projectId) => {
-        assert.strictEqual(projectId, 'from-config');
-        done();
-      });
-    });
-
-    it('should not query metadata if env. var. is set', (done) => {
-      const envs = process.env;
-      process.env = {};
-      process.env.GCLOUD_PROJECT = 'from-env-var';
-
-      Debuglet.getProjectIdFromMetadata = () => {
-        const failureMessage = 'getProjectIdFromMetadata should not be called';
-        assert.fail(failureMessage);
-        return Promise.reject(failureMessage);
-      };
-      Debuglet.getProjectId({}).then((projectId) => {
-        assert.strictEqual(projectId, 'from-env-var');
-        // restore environment variables.
-        process.env = envs;
-        done();
-      });
-    });
-
-    it('should query the project from metadata', (done) => {
-      const envs = process.env;
-      process.env = {};
-
-      Debuglet.getProjectIdFromMetadata = () => {
-        return Promise.resolve('from-metadata');
-      };
-      Debuglet.getProjectId({}).then((projectId) => {
-        assert.strictEqual(projectId, 'from-metadata');
-        // restore environment variables.
-        process.env = envs;
-        done();
-      });
-    });
-
-    it('should reject on error', (done) => {
-      const envs = process.env;
-      process.env = {};
-
-      Debuglet.getProjectIdFromMetadata = () => {
-        return Promise.reject(new Error('rejection'));
-      };
-      // TODO: Determine if the err parameter should be used.
-      Debuglet.getProjectId({}).catch((err) => {
-        // restore environment variables.
-        process.env = envs;
-        done();
-      });
-    });
-  });
-
   describe('setup', () => {
     before(() => {
       oldGP = process.env.GCLOUD_PROJECT;
@@ -218,18 +146,19 @@ describe('Debuglet', () => {
     });
 
     it('should not start when projectId is not available', (done) => {
-      const savedGetProjectId = Debuglet.getProjectId;
-      Debuglet.getProjectId = () => {
+      const debug = new Debug({}, packageInfo);
+
+      const savedGetProjectId = debug.authClient.getProjectId;
+      debug.authClient.getProjectId = () => {
         return Promise.reject(new Error('no project id'));
       };
 
-      const debug = new Debug({}, packageInfo);
       const debuglet = new Debuglet(debug, defaultConfig);
 
       debuglet.once('initError', (err: Error) => {
         assert.ok(err);
         // no need to stop the debuggee.
-        Debuglet.getProjectId = savedGetProjectId;
+        debug.authClient.getProjectId = savedGetProjectId;
         done();
       });
       debuglet.once('started', () => {
@@ -240,12 +169,13 @@ describe('Debuglet', () => {
 
     it('should give a useful error message when projectId is not available',
        (done) => {
-         const savedGetProjectId = Debuglet.getProjectId;
-         Debuglet.getProjectId = () => {
+         const debug = new Debug({}, packageInfo);
+
+         const savedGetProjectId = debug.authClient.getProjectId;
+         debug.authClient.getProjectId = () => {
            return Promise.reject(new Error('no project id'));
          };
 
-         const debug = new Debug({}, packageInfo);
          const debuglet = new Debuglet(debug, defaultConfig);
 
          let message = '';
@@ -255,7 +185,7 @@ describe('Debuglet', () => {
          };
 
          debuglet.once('initError', (err) => {
-           Debuglet.getProjectId = savedGetProjectId;
+           debug.authClient.getProjectId = savedGetProjectId;
            debuglet.logger.error = savedLoggerError;
            assert.ok(err);
            assert(
@@ -269,19 +199,20 @@ describe('Debuglet', () => {
        });
 
     it('should not crash without project num', (done) => {
-      const savedGetProjectId = Debuglet.getProjectId;
-      Debuglet.getProjectId = () => {
+      const debug = new Debug({}, packageInfo);
+
+      const savedGetProjectId = debug.authClient.getProjectId;
+      debug.authClient.getProjectId = () => {
         return Promise.reject(new Error('no project id'));
       };
 
-      const debug = new Debug({}, packageInfo);
       const debuglet = new Debuglet(debug, defaultConfig);
 
       debuglet.once('started', () => {
         assert.fail('The debuglet should not have started');
       });
       debuglet.once('initError', () => {
-        Debuglet.getProjectId = savedGetProjectId;
+        debug.authClient.getProjectId = savedGetProjectId;
         done();
       });
       debuglet.start();
