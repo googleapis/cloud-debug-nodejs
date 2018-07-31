@@ -54,6 +54,7 @@
     "ncp": "^2.0.0",
     "nock": "^9.0.0",
     "once": "^1.4.0",
+    "post-install-check": "0.0.1",
     "proxyquire": "^2.0.0",
     "request": "^2.81.0",
     "rimraf": "^2.6.2",
