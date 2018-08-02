@@ -660,16 +660,18 @@ describe('Debuglet', () => {
                    });
                  };
 
-         // Act like the debuglet can get a project id
-         mockedDebuglet.Debuglet.getProjectId = () => 'some-project-id';
-
-         // No need to restore `findFiles` and `getProjectId` because we are
-         // modifying a mocked version of `Debuglet` not `Debuglet` itself.
+         // No need to restore `findFiles` because we are modifying a
+         // mocked version of `Debuglet` not `Debuglet` itself.
 
          const config = extend(
              {}, defaultConfig,
              {workingDirectory: root, allowRootAsWorkingDirectory: true});
+
          const debug = new Debug({}, packageInfo);
+
+         // Act like the debuglet can get a project id
+         debug.authClient.getProjectId = async () => 'some-project-id';
+
          const debuglet = new mockedDebuglet.Debuglet(debug, config);
 
          debuglet.on('initError', (err: Error) => {
