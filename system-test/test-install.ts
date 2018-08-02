@@ -45,7 +45,8 @@ debug.start({
     service: 'Some service'
   }
 });`,
-    description: 'imports the module and starts with a partial `serviceContext`',
+    description:
+        'imports the module and starts with a partial `serviceContext`',
     dependencies: [],
     devDependencies: []
   },
@@ -99,6 +100,4 @@ const JS_CODE_ARRAY: check.CodeSample[] = [
   }
 ];
 
-check.testInstallation(TS_CODE_ARRAY, JS_CODE_ARRAY, {
-  timeout: 2*60*1000
-});
+check.testInstallation(TS_CODE_ARRAY, JS_CODE_ARRAY, {timeout: 2 * 60 * 1000});

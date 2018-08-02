@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
+import {GoogleAuthOptions} from '@google-cloud/common';
 import * as assert from 'assert';
+import * as consoleLogLevel from 'console-log-level';
 import * as crypto from 'crypto';
 import {EventEmitter} from 'events';
 import * as extend from 'extend';
@@ -30,15 +32,13 @@ import {Debuggee, DebuggeeProperties} from '../debuggee';
 import * as stackdriver from '../types/stackdriver';
 
 import {defaultConfig} from './config';
-import {DebugAgentConfig, ResolvedDebugAgentConfig, LogLevel, Logger} from './config';
+import {DebugAgentConfig, Logger, LogLevel, ResolvedDebugAgentConfig} from './config';
 import {Controller} from './controller';
 import * as scanner from './io/scanner';
 import * as SourceMapper from './io/sourcemapper';
 import * as utils from './util/utils';
 import * as debugapi from './v8/debugapi';
 import {DebugApi} from './v8/debugapi';
-import * as consoleLogLevel from 'console-log-level';
-import {GoogleAuthOptions} from '@google-cloud/common';
 
 const promisify = require('util.promisify');
 
@@ -370,7 +370,7 @@ export class Debuglet extends EventEmitter {
 
     let project: string;
     try {
-      project = await Debuglet.getProjectId(that.debug.options);
+      project = await that.debug.authClient.getProjectId();
     } catch (err) {
       that.logger.error(
           'The project ID could not be determined: ' + err.message);
@@ -528,23 +528,8 @@ export class Debuglet extends EventEmitter {
     return new Debuggee(properties);
   }
 
-  static async getProjectId(options: GoogleAuthOptions): Promise<string> {
-    const project = options.projectId || process.env.GCLOUD_PROJECT ||
-        await this.getProjectIdFromMetadata();
-    if (!project) {
-      const msg = 'Unable to discover projectId. Please provide the ' +
-          'projectId to be able to use the Debug agent';
-      throw new Error(msg);
-    }
-    return project;
-  }
-
   static runningOnGCP(): Promise<boolean> {
     return metadata.isAvailable();
-  }
-
-  static async getProjectIdFromMetadata(): Promise<string> {
-    return (await metadata.project('project-id')).data as string;
   }
 
   static async getClusterNameFromMetadata(): Promise<string> {
