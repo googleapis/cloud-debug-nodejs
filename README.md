@@ -6,7 +6,6 @@
 [![Dependency Status][david-image]][david-url]
 [![devDependency Status][david-dev-image]][david-dev-url]
 [![Known Vulnerabilities][snyk-image]][snyk-url]
-[![Greenkeeper badge](https://badges.greenkeeper.io/GoogleCloudPlatform/cloud-debug-nodejs.svg)](https://greenkeeper.io/)
 
 > **Beta**. *This is a Beta release of the Stackdriver Debugger agent for Node.js. These libraries might be changed in backward-incompatible ways and are not subject to any SLA or deprecation policy.*
 
