@@ -226,7 +226,7 @@ describe('Controller API', () => {
               assert.ok(result);
               assert(result!.breakpoints, 'should have a breakpoints property');
               const bps = result!.breakpoints;
-              assert.deepEqual(bps, breakpoints, 'breakpoints mismatch');
+              assert.deepStrictEqual(bps, breakpoints, 'breakpoints mismatch');
               scope.done();
               done();
             });

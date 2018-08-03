@@ -109,7 +109,7 @@ describe(__filename, () => {
         const locals = frame.locals;
         assert.strictEqual(args.length, 0, 'There should be zero arguments');
         assert.strictEqual(locals.length, 1, 'There should be one local');
-        assert.deepEqual(locals[0], {name: 'e', value: '2'});
+        assert.deepStrictEqual(locals[0], {name: 'e', value: '2'});
         assert.strictEqual(args.length, 0, 'There should be zero arguments');
         api.clear(brk, (err3) => {
           assert.ifError(err3);

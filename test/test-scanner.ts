@@ -110,7 +110,7 @@ describe('scanner', () => {
         const files1 = Object.keys(fileStats1.all());
         scanner.scan(true, process.cwd(), /.js$/).then((fileStats2) => {
           const files2 = Object.keys(fileStats2.all());
-          assert.deepEqual(files1.sort(), files2.sort());
+          assert.deepStrictEqual(files1.sort(), files2.sort());
           assert.strictEqual(fileStats1.hash, fileStats2.hash);
           done();
         });
@@ -154,7 +154,7 @@ describe('scanner', () => {
              const files2 = Object.keys(fileStats2.all());
              assert.ok(fileStats2.hash);
              assert.notStrictEqual(fileStats1.hash, fileStats2.hash);
-             assert.deepEqual(files1.sort(), files2.sort());
+             assert.deepStrictEqual(files1.sort(), files2.sort());
              fs.unlinkSync(fixture('tmp.js'));
              done();
            });
@@ -176,7 +176,7 @@ describe('scanner', () => {
             const files3 = Object.keys(fileStats3.all());
             assert.ok(fileStats2.hash);
             assert.strictEqual(fileStats1.hash, fileStats3.hash);
-            assert.deepEqual(files1.sort(), files3.sort());
+            assert.deepStrictEqual(files1.sort(), files3.sort());
             done();
           });
         });
