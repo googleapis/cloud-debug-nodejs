@@ -6,3 +6,4 @@ npm-debug.log
 .vscode
 yarn.lock
 google-cloud-debug-agent-*.tgz
+package-lock.json
