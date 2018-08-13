@@ -276,7 +276,7 @@ export class V8DebugApi implements debugapi.DebugApi {
         mapInfo ? mapInfo.file :
                   path.normalize(
                       (breakpoint.location as stackdriver.SourceLocation).path),
-        this.config, this.fileStats);
+        this.config, this.fileStats, this.logger);
     if (scripts.length === 0) {
       return utils.setErrorStatusAndCallback(
           cb, breakpoint, StatusMessage.BREAKPOINT_SOURCE_LOCATION,
