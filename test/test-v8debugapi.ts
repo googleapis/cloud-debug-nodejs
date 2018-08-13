@@ -1766,7 +1766,7 @@ describe('v8debugapi', () => {
   it('should be possible to set deferred breakpoints');
 });
 
-describe.only('v8debugapi.findScripts', () => {
+describe('v8debugapi.findScripts', () => {
   it('should properly handle appPathRelativeToRepository', () => {
     const config = extend(true, {}, undefined!, {
       workingDirectory: '/some/strange/directory',
