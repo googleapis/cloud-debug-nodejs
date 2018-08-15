@@ -974,7 +974,8 @@ describe('Debuglet', () => {
              // Once debugPromise is resolved, debuggee must be registered.
              assert(debuglet.debuggee);
              setTimeout(() => {
-               assert.deepStrictEqual(debuglet.activeBreakpointMap.test1, breakpoint);
+               assert.deepStrictEqual(
+                   debuglet.activeBreakpointMap.test1, breakpoint);
                debuglet.activeBreakpointMap = {};
                debuglet.stop();
                scope.done();
@@ -1245,8 +1246,10 @@ describe('Debuglet', () => {
     it('should be correct', () => {
       // TODO: Determine if Debuglet.format() should allow a number[]
       //       or if only string[] should be allowed.
-      assert.deepStrictEqual(Debuglet.format('hi', [5] as {} as string[]), 'hi');
-      assert.deepStrictEqual(Debuglet.format('hi $0', [5] as {} as string[]), 'hi 5');
+      assert.deepStrictEqual(
+          Debuglet.format('hi', [5] as {} as string[]), 'hi');
+      assert.deepStrictEqual(
+          Debuglet.format('hi $0', [5] as {} as string[]), 'hi 5');
       assert.deepStrictEqual(
           Debuglet.format('hi $0 $1', [5, 'there'] as {} as string[]),
           'hi 5 there');
@@ -1254,7 +1257,8 @@ describe('Debuglet', () => {
           Debuglet.format('hi $0 $1', [5] as {} as string[]), 'hi 5 $1');
       assert.deepStrictEqual(
           Debuglet.format('hi $0 $1 $0', [5] as {} as string[]), 'hi 5 $1 5');
-      assert.deepStrictEqual(Debuglet.format('hi $$', [5] as {} as string[]), 'hi $');
+      assert.deepStrictEqual(
+          Debuglet.format('hi $$', [5] as {} as string[]), 'hi $');
       assert.deepStrictEqual(
           Debuglet.format('hi $$0', [5] as {} as string[]), 'hi $0');
       assert.deepStrictEqual(

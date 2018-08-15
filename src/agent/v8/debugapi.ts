@@ -44,13 +44,18 @@ let debugApiConstructor: DebugApiConstructor;
 
 export function willUseInspector(nodeVersion?: string) {
   const version = nodeVersion != null ? nodeVersion : process.version;
-  return utils.satisfies(version, '>=10');
+  const ret = utils.satisfies(version, '>=10');
+  console.log(`willUseInspector(${nodeVersion}) => ${ret}`);
+  return ret;
 }
 
 if (willUseInspector()) {
+  console.log(
+      `loading inspector-debugapi. process.version is ${process.version}`);
   const inspectorapi = require('./inspector-debugapi');
   debugApiConstructor = inspectorapi.InspectorDebugApi;
 } else {
+  console.log(`loading legacy-debugapi. process.version is ${process.version}`);
   const v8debugapi = require('./legacy-debugapi');
   debugApiConstructor = v8debugapi.V8DebugApi;
 }
