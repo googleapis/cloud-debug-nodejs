@@ -257,6 +257,11 @@ export interface ResolvedDebugAgentConfig extends GoogleAuthOptions {
    * Uses by tests to cause the start() function to return the debuglet.
    */
   testMode_: boolean;
+
+  /**
+   * used by tests that nock to isolate nocks to their own scopes.
+   */
+  apiUrl?: string;
 }
 
 export interface StackdriverConfig extends GoogleAuthOptions {

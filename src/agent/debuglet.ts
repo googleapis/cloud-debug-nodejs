@@ -233,7 +233,7 @@ export class Debuglet extends EventEmitter {
     });
 
     /** @private {DebugletApi} */
-    this.controller = new Controller(this.debug);
+    this.controller = new Controller(this.debug, {apiUrl: config.apiUrl});
 
     /** @private {Debuggee} */
     this.debuggee = null;
