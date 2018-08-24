@@ -20,9 +20,8 @@
 
 import {ServiceObject} from '@google-cloud/common';
 import * as assert from 'assert';
-import * as http from 'http';
 import * as qs from 'querystring';
-import {Response} from 'request';
+import * as request from 'request';
 
 import {Debug} from '../client/stackdriver/debug';
 import {Debuggee} from '../debuggee';
@@ -38,7 +37,11 @@ export class Controller extends ServiceObject {
    * @constructor
    */
   constructor(debug: Debug) {
-    super({parent: debug, baseUrl: '/controller'});
+    super({
+      requestModule: request,
+      parent: debug,
+      baseUrl: '/controller'
+    });
 
     /** @private {string} */
     this.nextWaitToken = null;
@@ -83,7 +86,7 @@ export class Controller extends ServiceObject {
   listBreakpoints(
       debuggee: Debuggee,
       callback:
-          (err: Error|null, response?: Response,
+          (err: Error|null, response?: request.Response,
            body?: stackdriver.ListBreakpointsResponse) => void): void {
     const that = this;
     assert(debuggee.id, 'should have a registered debuggee');
