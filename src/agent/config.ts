@@ -259,7 +259,7 @@ export interface ResolvedDebugAgentConfig extends GoogleAuthOptions {
   testMode_: boolean;
 
   /**
-   * used by tests that nock to isolate nocks to their own scopes.
+   * used to set a default api url
    */
   apiUrl?: string;
 }
