@@ -21,6 +21,7 @@
 import {ServiceObject} from '@google-cloud/common';
 import * as assert from 'assert';
 import * as qs from 'querystring';
+import {URL} from 'url';
 import * as request from 'request';
 
 import {Debug} from '../client/stackdriver/debug';
@@ -33,10 +34,13 @@ const API = 'https://clouddebugger.googleapis.com/v2/controller';
 export class Controller extends ServiceObject {
   private nextWaitToken: string|null;
 
+  apiUrl: string;
+
   /**
    * @constructor
    */
-  constructor(debug: Debug) {
+
+  constructor(debug: Debug, config?: {apiUrl?: string}) {
     super({
       requestModule: request,
       parent: debug,
@@ -45,6 +49,12 @@ export class Controller extends ServiceObject {
 
     /** @private {string} */
     this.nextWaitToken = null;
+
+    this.apiUrl = API;
+
+    if (config && config.apiUrl) {
+      this.apiUrl = config.apiUrl + new URL(API).pathname;
+    }
   }
 
   /**
@@ -57,7 +67,7 @@ export class Controller extends ServiceObject {
                                  debuggee: Debuggee
                                }) => void): void {
     const options = {
-      uri: API + '/debuggees/register',
+      uri: this.apiUrl + '/debuggees/register',
       method: 'POST',
       json: true,
       body: {debuggee}
@@ -95,7 +105,7 @@ export class Controller extends ServiceObject {
       query.waitToken = that.nextWaitToken;
     }
 
-    const uri = API + '/debuggees/' + encodeURIComponent(debuggee.id) +
+    const uri = this.apiUrl + '/debuggees/' + encodeURIComponent(debuggee.id) +
         '/breakpoints?' + qs.stringify(query);
     that.request(
         {uri, json: true},
@@ -136,7 +146,7 @@ export class Controller extends ServiceObject {
     breakpoint.action = 'CAPTURE';
     breakpoint.isFinalState = true;
     const options = {
-      uri: API + '/debuggees/' + encodeURIComponent(debuggee.id) +
+      uri: this.apiUrl + '/debuggees/' + encodeURIComponent(debuggee.id) +
           // TODO: Address the case where `breakpoint.id` is `undefined`.
           '/breakpoints/' + encodeURIComponent(breakpoint.id as string),
       json: true,

@@ -20,7 +20,7 @@ import * as _ from 'lodash';
 import * as path from 'path';
 import * as proxyquire from 'proxyquire';
 
-import {DebugAgentConfig} from '../src/agent/config';
+import {DebugAgentConfig, ResolvedDebugAgentConfig} from '../src/agent/config';
 import {defaultConfig as DEFAULT_CONFIG} from '../src/agent/config';
 import {Debuggee} from '../src/debuggee';
 import * as stackdriver from '../src/types/stackdriver';
@@ -30,11 +30,9 @@ DEFAULT_CONFIG.workingDirectory = path.join(__dirname, '..', '..');
 import {Debuglet, CachedPromise, FindFilesResult} from '../src/agent/debuglet';
 import {ScanResults} from '../src/agent/io/scanner';
 import * as extend from 'extend';
-
 import {Debug} from '../src/client/stackdriver/debug';
 
 const DEBUGGEE_ID = 'bar';
-const API = 'https://clouddebugger.googleapis.com';
 const REGISTER_PATH = '/v2/controller/debuggees/register';
 const BPS_PATH = '/v2/controller/debuggees/' + DEBUGGEE_ID + '/breakpoints';
 const EXPRESSIONS_REGEX =
@@ -74,6 +72,7 @@ function verifyBreakpointRejection(
   const hasCorrectDescription = status!.description.format.match(re);
   return status!.isError && hasCorrectDescription;
 }
+
 
 describe('CachedPromise', () => {
   it('CachedPromise.get() will resolve after CachedPromise.resolve()',
@@ -119,6 +118,7 @@ describe('Debuglet', () => {
     after(() => {
       process.env.GCLOUD_PROJECT = oldGP;
     });
+
     beforeEach(() => {
       delete process.env.GCLOUD_PROJECT;
       nocks.oauth2();
@@ -222,10 +222,12 @@ describe('Debuglet', () => {
       const projectId = '11020304f2934-a';
       const debug =
           new Debug({projectId, credentials: fakeCredentials}, packageInfo);
-      const debuglet = new Debuglet(debug, defaultConfig);
 
       nocks.projectId('project-via-metadata');
-      const scope = nock(API).post(REGISTER_PATH).reply(200, {
+
+      const config = debugletConfig();
+      const debuglet = new Debuglet(debug, config);
+      const scope = nock(config.apiUrl).post(REGISTER_PATH).reply(200, {
         debuggee: {id: DEBUGGEE_ID}
       });
 
@@ -316,10 +318,12 @@ describe('Debuglet', () => {
       it('should use GCLOUD_PROJECT in lieu of config.projectId', (done) => {
         process.env.GCLOUD_PROJECT = '11020304f2934-b';
         const debug = new Debug({credentials: fakeCredentials}, packageInfo);
-        const debuglet = new Debuglet(debug, defaultConfig);
 
         nocks.projectId('project-via-metadata');
-        const scope = nock(API).post(REGISTER_PATH).reply(200, {
+
+        const config = debugletConfig();
+        const debuglet = new Debuglet(debug, config);
+        const scope = nock(config.apiUrl).post(REGISTER_PATH).reply(200, {
           debuggee: {id: DEBUGGEE_ID}
         });
 
@@ -341,10 +345,12 @@ describe('Debuglet', () => {
            const debug = new Debug(
                {projectId: 'project-via-options', credentials: fakeCredentials},
                packageInfo);
-           const debuglet = new Debuglet(debug, defaultConfig);
 
            nocks.projectId('project-via-metadata');
-           const scope = nock(API).post(REGISTER_PATH).reply(200, {
+
+           const config = debugletConfig();
+           const debuglet = new Debuglet(debug, config);
+           const scope = nock(config.apiUrl).post(REGISTER_PATH).reply(200, {
              debuggee: {id: DEBUGGEE_ID}
            });
 
@@ -364,10 +370,12 @@ describe('Debuglet', () => {
         process.env.GCLOUD_PROJECT = '11020304f2934';
         process.env.GCLOUD_DEBUG_LOGLEVEL = '3';
         const debug = new Debug({credentials: fakeCredentials}, packageInfo);
-        const debuglet = new Debuglet(debug, defaultConfig);
 
         nocks.projectId('project-via-metadata');
-        const scope = nock(API).post(REGISTER_PATH).reply(200, {
+
+        const config = debugletConfig();
+        const debuglet = new Debuglet(debug, config);
+        const scope = nock(config.apiUrl).post(REGISTER_PATH).reply(200, {
           debuggee: {id: DEBUGGEE_ID}
         });
 
@@ -504,9 +512,10 @@ describe('Debuglet', () => {
            const debug = new Debug(
                {projectId: 'fake-project', credentials: fakeCredentials},
                packageInfo);
-           const debuglet = new Debuglet(debug, defaultConfig);
 
-           const scope = nock(API)
+           const config = debugletConfig();
+           const debuglet = new Debuglet(debug, config);
+           const scope = nock(config.apiUrl)
                              .post(
                                  REGISTER_PATH,
                                  (body: {debuggee: Debuggee}) => {
@@ -532,9 +541,10 @@ describe('Debuglet', () => {
       const debug = new Debug(
           {projectId: '11020304f2934', credentials: fakeCredentials},
           packageInfo);
-      const debuglet = new Debuglet(debug, defaultConfig);
 
-      const scope = nock(API)
+      const config = debugletConfig();
+      const debuglet = new Debuglet(debug, config);
+      const scope = nock(config.apiUrl)
                         .post(REGISTER_PATH)
                         .reply(404)
                         .post(REGISTER_PATH)
@@ -691,10 +701,12 @@ describe('Debuglet', () => {
       const debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials},
           packageInfo);
-      const debuglet = new Debuglet(debug, defaultConfig);
 
       nocks.oauth2();
-      const scope = nock(API).post(REGISTER_PATH).reply(200, {
+
+      const config = debugletConfig();
+      const debuglet = new Debuglet(debug, config);
+      const scope = nock(config.apiUrl).post(REGISTER_PATH).reply(200, {
         debuggee: {id: DEBUGGEE_ID}
       });
 
@@ -722,10 +734,12 @@ describe('Debuglet', () => {
       const debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials},
           packageInfo);
-      const debuglet = new Debuglet(debug, defaultConfig);
 
       nocks.oauth2();
-      const scope = nock(API).post(REGISTER_PATH).reply(200, {
+
+      const config = debugletConfig();
+      const debuglet = new Debuglet(debug, config);
+      const scope = nock(config.apiUrl).post(REGISTER_PATH).reply(200, {
         debuggee: {id: DEBUGGEE_ID}
       });
 
@@ -749,12 +763,11 @@ describe('Debuglet', () => {
       const debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials},
           packageInfo);
-      const config = extend(
-          {}, defaultConfig,
+
+      const config = debugletConfig(
           {sourceContext: {url: REPO_URL, revisionId: REVISION_ID}});
       const debuglet = new Debuglet(debug, config);
-
-      const scope = nock(API)
+      const scope = nock(config.apiUrl)
                         .post(
                             REGISTER_PATH,
                             (body: {debuggee: Debuggee}) => {
@@ -782,9 +795,10 @@ describe('Debuglet', () => {
       Debuglet.getSourceContextFromFile = async () => {
         return {a: 5 as {} as string};
       };
-      const debuglet = new Debuglet(debug, defaultConfig);
 
-      const scope = nock(API)
+      const config = debugletConfig();
+      const debuglet = new Debuglet(debug, config);
+      const scope = nock(config.apiUrl)
                         .post(
                             REGISTER_PATH,
                             (body: {debuggee: Debuggee}) => {
@@ -812,16 +826,16 @@ describe('Debuglet', () => {
       const debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials},
           packageInfo);
-      const config = extend(
-          {}, defaultConfig,
-          {sourceContext: {url: REPO_URL, revisionId: REVISION_ID}});
+
       const old = Debuglet.getSourceContextFromFile;
       Debuglet.getSourceContextFromFile = async () => {
         return {a: 5 as {} as string};
       };
-      const debuglet = new Debuglet(debug, config);
 
-      const scope = nock(API)
+      const config = debugletConfig(
+          {sourceContext: {url: REPO_URL, revisionId: REVISION_ID}});
+      const debuglet = new Debuglet(debug, config);
+      const scope = nock(config.apiUrl)
                         .post(
                             REGISTER_PATH,
                             (body: {debuggee: Debuggee}) => {
@@ -848,9 +862,10 @@ describe('Debuglet', () => {
          const debug = new Debug(
              {projectId: 'fake-project', credentials: fakeCredentials},
              packageInfo);
-         const debuglet = new Debuglet(debug, defaultConfig);
 
-         const scope = nock(API).post(REGISTER_PATH).reply(200, {
+         const config = debugletConfig();
+         const debuglet = new Debuglet(debug, config);
+         const scope = nock(config.apiUrl).post(REGISTER_PATH).reply(200, {
            debuggee: {id: DEBUGGEE_ID, isDisabled: true}
          });
 
@@ -869,10 +884,11 @@ describe('Debuglet', () => {
       const debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials},
           packageInfo);
-      const debuglet = new Debuglet(debug, defaultConfig);
 
+      const config = debugletConfig();
+      const debuglet = new Debuglet(debug, config);
       const scope =
-          nock(API)
+          nock(config.apiUrl)
               .post(REGISTER_PATH)
               .reply(200, {debuggee: {id: DEBUGGEE_ID, isDisabled: true}})
               .post(REGISTER_PATH)
@@ -899,9 +915,9 @@ describe('Debuglet', () => {
       const debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials},
           packageInfo);
-      const debuglet = new Debuglet(debug, defaultConfig);
-
-      const scope = nock(API)
+      const config = debugletConfig();
+      const debuglet = new Debuglet(debug, config);
+      const scope = nock(config.apiUrl)
                         .post(REGISTER_PATH)
                         .reply(200, {debuggee: {id: DEBUGGEE_ID}})
                         .get(BPS_PATH + '?successOnTimeout=true')
@@ -927,9 +943,9 @@ describe('Debuglet', () => {
       const debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials},
           packageInfo);
-      const debuglet = new Debuglet(debug, defaultConfig);
-
-      const scope = nock(API)
+      const config = debugletConfig();
+      const debuglet = new Debuglet(debug, config);
+      const scope = nock(config.apiUrl)
                         .post(REGISTER_PATH)
                         .reply(200, {debuggee: {id: DEBUGGEE_ID}})
                         .get(BPS_PATH + '?successOnTimeout=true')
@@ -960,9 +976,10 @@ describe('Debuglet', () => {
          const debug = new Debug(
              {projectId: 'fake-project', credentials: fakeCredentials},
              packageInfo);
-         const debuglet = new Debuglet(debug, defaultConfig);
 
-         const scope = nock(API)
+         const config = debugletConfig();
+         const debuglet = new Debuglet(debug, config);
+         const scope = nock(config.apiUrl)
                            .post(REGISTER_PATH)
                            .reply(200, {debuggee: {id: DEBUGGEE_ID}})
                            .get(BPS_PATH + '?successOnTimeout=true')
@@ -974,7 +991,8 @@ describe('Debuglet', () => {
              // Once debugPromise is resolved, debuggee must be registered.
              assert(debuglet.debuggee);
              setTimeout(() => {
-               assert.deepStrictEqual(debuglet.activeBreakpointMap.test1, breakpoint);
+               assert.deepStrictEqual(
+                   debuglet.activeBreakpointMap.test1, breakpoint);
                debuglet.activeBreakpointMap = {};
                debuglet.stop();
                scope.done();
@@ -991,9 +1009,13 @@ describe('Debuglet', () => {
          const debug = new Debug(
              {projectId: 'fake-project', credentials: fakeCredentials},
              packageInfo);
-         const debuglet = new Debuglet(debug, defaultConfig);
 
-         const scope = nock(API)
+         // const debuglet = new Debuglet(debug, defaultConfig);
+         // const scope = nock(API)
+         /// this change to a unique scope per test causes
+         const config = debugletConfig();
+         const debuglet = new Debuglet(debug, config);
+         const scope = nock(config.apiUrl)
                            .post(REGISTER_PATH)
                            .reply(200, {debuggee: {id: DEBUGGEE_ID}})
                            .get(BPS_PATH + '?successOnTimeout=true')
@@ -1014,11 +1036,11 @@ describe('Debuglet', () => {
          const debug = new Debug(
              {projectId: 'fake-project', credentials: fakeCredentials},
              packageInfo);
-         const debuglet = new Debuglet(debug, defaultConfig);
-         debuglet.config.allowExpressions = false;
 
+         const config = debugletConfig({allowExpressions: false});
+         const debuglet = new Debuglet(debug, config);
          const scope =
-             nock(API)
+             nock(config.apiUrl)
                  .post(REGISTER_PATH)
                  .reply(200, {debuggee: {id: DEBUGGEE_ID}})
                  .get(BPS_PATH + '?successOnTimeout=true')
@@ -1055,11 +1077,11 @@ describe('Debuglet', () => {
          const debug = new Debug(
              {projectId: 'fake-project', credentials: fakeCredentials},
              packageInfo);
-         const debuglet = new Debuglet(debug, defaultConfig);
-         debuglet.config.allowExpressions = false;
 
+         const config = debugletConfig({allowExpressions: false});
+         const debuglet = new Debuglet(debug, config);
          const scope =
-             nock(API)
+             nock(config.apiUrl)
                  .post(REGISTER_PATH)
                  .reply(200, {debuggee: {id: DEBUGGEE_ID}})
                  .get(BPS_PATH + '?successOnTimeout=true')
@@ -1096,9 +1118,10 @@ describe('Debuglet', () => {
       const debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials},
           packageInfo);
-      const debuglet = new Debuglet(debug, defaultConfig);
 
-      const scope = nock(API)
+      const config = debugletConfig();
+      const debuglet = new Debuglet(debug, config);
+      const scope = nock(config.apiUrl)
                         .post(REGISTER_PATH)
                         .reply(200, {debuggee: {id: DEBUGGEE_ID}})
                         .post(REGISTER_PATH)
@@ -1137,12 +1160,13 @@ describe('Debuglet', () => {
       const debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials},
           packageInfo);
-      const config = extend(
-          {}, defaultConfig,
-          {breakpointExpirationSec: 1, forceNewAgent_: true});
+
       this.timeout(6000);
 
-      const scope = nock(API)
+      const config =
+          debugletConfig({breakpointExpirationSec: 1, forceNewAgent_: true});
+      const debuglet = new Debuglet(debug, config);
+      const scope = nock(config.apiUrl)
                         .post(REGISTER_PATH)
                         .reply(200, {debuggee: {id: DEBUGGEE_ID}})
                         .get(BPS_PATH + '?successOnTimeout=true')
@@ -1157,7 +1181,6 @@ describe('Debuglet', () => {
                             })
                         .reply(200);
 
-      const debuglet = new Debuglet(debug, config);
       debuglet.once('registered', (id: string) => {
         assert.strictEqual(id, DEBUGGEE_ID);
         setTimeout(() => {
@@ -1185,15 +1208,17 @@ describe('Debuglet', () => {
       const debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials},
           packageInfo);
-      const config = extend({}, defaultConfig, {
+
+      this.timeout(6000);
+
+      const config = debugletConfig({
         breakpointExpirationSec: 1,
         breakpointUpdateIntervalSec: 1,
         forceNewAgent_: true
       });
-      this.timeout(6000);
-
+      const debuglet = new Debuglet(debug, config);
       const scope =
-          nock(API)
+          nock(config.apiUrl)
               .post(REGISTER_PATH)
               .reply(200, {debuggee: {id: DEBUGGEE_ID}})
               .get(BPS_PATH + '?successOnTimeout=true')
@@ -1209,7 +1234,6 @@ describe('Debuglet', () => {
               .times(4)
               .reply(200, {breakpoints: [bp]});
 
-      const debuglet = new Debuglet(debug, config);
       debuglet.once('registered', (id: string) => {
         assert.strictEqual(id, DEBUGGEE_ID);
         setTimeout(() => {
@@ -1245,8 +1269,10 @@ describe('Debuglet', () => {
     it('should be correct', () => {
       // TODO: Determine if Debuglet.format() should allow a number[]
       //       or if only string[] should be allowed.
-      assert.deepStrictEqual(Debuglet.format('hi', [5] as {} as string[]), 'hi');
-      assert.deepStrictEqual(Debuglet.format('hi $0', [5] as {} as string[]), 'hi 5');
+      assert.deepStrictEqual(
+          Debuglet.format('hi', [5] as {} as string[]), 'hi');
+      assert.deepStrictEqual(
+          Debuglet.format('hi $0', [5] as {} as string[]), 'hi 5');
       assert.deepStrictEqual(
           Debuglet.format('hi $0 $1', [5, 'there'] as {} as string[]),
           'hi 5 there');
@@ -1254,7 +1280,8 @@ describe('Debuglet', () => {
           Debuglet.format('hi $0 $1', [5] as {} as string[]), 'hi 5 $1');
       assert.deepStrictEqual(
           Debuglet.format('hi $0 $1 $0', [5] as {} as string[]), 'hi 5 $1 5');
-      assert.deepStrictEqual(Debuglet.format('hi $$', [5] as {} as string[]), 'hi $');
+      assert.deepStrictEqual(
+          Debuglet.format('hi $$', [5] as {} as string[]), 'hi $');
       assert.deepStrictEqual(
           Debuglet.format('hi $$0', [5] as {} as string[]), 'hi $0');
       assert.deepStrictEqual(
@@ -1333,3 +1360,19 @@ describe('Debuglet', () => {
     });
   });
 });
+
+// a counter for unique test urls.
+let apiUrlInc = 0;
+
+/**
+ * returns a new config object to be passed to debuglet. always has apiUrl
+ * @param conf custom config values
+ */
+function debugletConfig(conf?: {}): (ResolvedDebugAgentConfig&
+                                     {apiUrl: string}) {
+  const apiUrl = 'https://clouddebugger.googleapis.com' + (++apiUrlInc);
+  const c = Object.assign({}, DEFAULT_CONFIG, conf) as (
+                ResolvedDebugAgentConfig & {apiUrl: string});
+  c.apiUrl = apiUrl;
+  return c;
+}
