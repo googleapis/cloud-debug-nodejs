@@ -20,7 +20,6 @@
 
 import {ServiceObject} from '@google-cloud/common';
 import * as assert from 'assert';
-import * as http from 'http';
 import * as qs from 'querystring';
 import {Response} from 'request';
 import {URL} from 'url';
