@@ -30,11 +30,9 @@ DEFAULT_CONFIG.workingDirectory = path.join(__dirname, '..', '..');
 import {Debuglet, CachedPromise, FindFilesResult} from '../src/agent/debuglet';
 import {ScanResults} from '../src/agent/io/scanner';
 import * as extend from 'extend';
-
 import {Debug} from '../src/client/stackdriver/debug';
 
 const DEBUGGEE_ID = 'bar';
-const API = 'https://clouddebugger.googleapis.com';
 const REGISTER_PATH = '/v2/controller/debuggees/register';
 const BPS_PATH = '/v2/controller/debuggees/' + DEBUGGEE_ID + '/breakpoints';
 const EXPRESSIONS_REGEX =
@@ -1371,7 +1369,7 @@ let apiUrlInc = 0;
  * @param conf custom config values
  */
 function debugletConfig(conf?: {}): (ResolvedDebugAgentConfig & {apiUrl:string}) {
-  const apiUrl = API + (++apiUrlInc);
+  const apiUrl = 'https://clouddebugger.googleapis.com' + (++apiUrlInc);
   const c = Object.assign({}, DEFAULT_CONFIG, conf) as (ResolvedDebugAgentConfig & {apiUrl:string});
   c.apiUrl = apiUrl;
   return c;
