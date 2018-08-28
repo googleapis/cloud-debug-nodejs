@@ -326,8 +326,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
 
     // TODO: Address the case where `breakpoint.location` is `null`.
     // TODO: Address the case where `fileStats[matchingScript]` is `null`.
-    if ((breakpoint.location as stackdriver.SourceLocation).line >=
-        (this.fileStats[matchingScript] as FileStats).lines) {
+    if (line >= (this.fileStats[matchingScript] as FileStats).lines) {
       return utils.setErrorStatusAndCallback(
           cb, breakpoint, StatusMessage.BREAKPOINT_SOURCE_LOCATION,
           utils.messages.INVALID_LINE_NUMBER + matchingScript + ':' +
