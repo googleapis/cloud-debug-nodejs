@@ -715,7 +715,13 @@ describe('v8debugapi', () => {
            id: 'fake-id-shorter-transpiled',
            location: {
              path: path.join('build', 'test', 'fixtures', 'transpiled-shorter', 'in.coffee'),
-             line: 42
+             // Note: The file `./fixtures/transpiled-shorter/in.js` was generated from
+             //       transpiling `./fixtures/transpiled-shorter/in.coffee`, and `in.js`
+             //       only has 44 lines.  The purpose of this test is to ensure that if
+             //       the line number specified below is larger than the number of lines
+             //       in `in.js` but less than or equal to the number of lines in `in.coffee`,
+             //       the breakpoint will still hit correctly.
+             line: 60
            }
          } as stackdriver.Breakpoint;
          api.set(bp, (err1) => {
@@ -723,7 +729,7 @@ describe('v8debugapi', () => {
            api.wait(bp, (err2) => {
              assert.ifError(err2);
              assert(bp.location);
-             assert.strictEqual(bp.location!.line, 42);
+             assert.strictEqual(bp.location!.line, 60);
              api.clear(bp, (err3) => {
                assert.ifError(err3);
                done();
