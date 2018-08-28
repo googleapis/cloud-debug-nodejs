@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import {GoogleAuthOptions} from '@google-cloud/common';
 import * as assert from 'assert';
 import * as consoleLogLevel from 'console-log-level';
 import * as crypto from 'crypto';

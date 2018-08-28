@@ -21,7 +21,9 @@
 import {ServiceObject} from '@google-cloud/common';
 import * as assert from 'assert';
 import * as qs from 'querystring';
-import * as request from 'request';
+import * as request from 'request';  // Only for type declarations.
+import {teenyRequest} from 'teeny-request';
+
 import {URL} from 'url';
 
 import {Debug} from '../client/stackdriver/debug';
@@ -41,7 +43,11 @@ export class Controller extends ServiceObject {
    */
 
   constructor(debug: Debug, config?: {apiUrl?: string}) {
-    super({requestModule: request, parent: debug, baseUrl: '/controller'});
+    super({
+      requestModule: teenyRequest as typeof request,
+      parent: debug,
+      baseUrl: '/controller'
+    });
 
     /** @private {string} */
     this.nextWaitToken = null;
