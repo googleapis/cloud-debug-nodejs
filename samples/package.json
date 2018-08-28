@@ -1,0 +1,19 @@
+{
+  "description": "Samples for the GoogleCloudPlatform/cloud-debug-nodejs npm module.",
+  "license": "Apache-2.0",
+  "author": "Google LLC",
+  "engines": {
+    "node": ">=8"
+  },
+  "repository": "GoogleCloudPlatform/cloud-debug-nodejs",
+  "private": true,
+  "scripts": {
+    "test": "mocha system-test"
+  },
+  "dependencies": {
+    "@google-cloud/debug-agent": "*"
+  },
+  "devDependencies": {
+    "mocha": "^5.2.0"
+  }
+}
