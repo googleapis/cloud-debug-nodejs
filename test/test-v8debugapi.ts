@@ -708,6 +708,31 @@ describe('v8debugapi', () => {
          });
        });
 
+     it('should hit breakpoints in shorter transpiled files',
+       (done) => {
+         const someFunction = require('./fixtures/transpiled-shorter/in.js');
+         const bp: stackdriver.Breakpoint = {
+           id: 'fake-id-shorter-transpiled',
+           location: {
+             path: path.join('build', 'test', 'fixtures', 'transpiled-shorter', 'in.coffee'),
+             line: 42
+           }
+         } as stackdriver.Breakpoint;
+         api.set(bp, (err1) => {
+           assert.ifError(err1);
+           api.wait(bp, (err2) => {
+             assert.ifError(err2);
+             assert(bp.location);
+             assert.strictEqual(bp.location!.line, 42);
+             api.clear(bp, (err3) => {
+               assert.ifError(err3);
+               done();
+             });
+           });
+           process.nextTick(someFunction);
+         });
+       });
+
     it('should work with multiply hit breakpoints', (done) => {
       const oldWarn = logger.warn;
       let logCount = 0;
