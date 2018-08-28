@@ -435,7 +435,16 @@ class StateResolver {
       data.value =
           'function ' + (name === '' ? '(anonymous function)' : name + '()');
     } else if (this.isObject_(object.type)) {
-      data.varTableIndex = this.getVariableIndex_(object);
+      if (object.value) {
+        data.varTableIndex = this.getVariableIndex_(object);
+      } else {
+        // A falsey object.value indicates that the object could not be
+        // serialized, most likely because it contains a circular reference.
+        // Don't use getVariableIndex_, as it is essentially treated as a k-v
+        // store using object.value as the key.
+        // TODO: This is avoidable, but requires deeper investigation.
+        data.value = '[circular]';
+      }
     } else {
       data.value = 'unknown type';
     }
@@ -462,10 +471,11 @@ class StateResolver {
     return type === 'function';
   }
 
-  getVariableIndex_(value: inspector.Runtime.RemoteObject): number {
-    let idx = this.rawVariableTable.indexOf(value);
+  getVariableIndex_(remoteObject: inspector.Runtime.RemoteObject): number {
+    let idx = this.rawVariableTable.findIndex(
+        rawVar => !!rawVar && rawVar.value === remoteObject.value);
     if (idx === -1) {
-      idx = this.storeObjectToVariableTable_(value);
+      idx = this.storeObjectToVariableTable_(remoteObject);
     }
     return idx;
   }

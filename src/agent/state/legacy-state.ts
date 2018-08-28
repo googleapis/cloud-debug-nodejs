@@ -491,10 +491,11 @@ class StateResolver {
     return data;
   }
 
-  getVariableIndex_(value: v8.ValueMirror): number {
-    let idx = this.rawVariableTable.indexOf(value);
+  getVariableIndex_(valueMirror: v8.ValueMirror): number {
+    let idx = this.rawVariableTable.findIndex(
+        rawVar => !!rawVar && rawVar.value() === valueMirror.value());
     if (idx === -1) {
-      idx = this.storeObjectToVariableTable_(value);
+      idx = this.storeObjectToVariableTable_(valueMirror);
     }
     return idx;
   }
