@@ -43,6 +43,7 @@
     "@types/tmp": "0.0.33",
     "changelog-maker": "^2.2.2",
     "closure-npc": "*",
+    "codecov": "^3.0.4",
     "coveralls": "^3.0.0",
     "glob": "^7.1.2",
     "gts": "^0.8.0",
