@@ -290,19 +290,6 @@ export class V8DebugApi implements debugapi.DebugApi {
           utils.messages.SOURCE_FILE_AMBIGUOUS);
     }
 
-    // TODO: Address the case where `fileStats[matchingScript]` is `null`.
-    if ((breakpoint.location as stackdriver.SourceLocation).line >=
-        (this.fileStats[matchingScript] as FileStats).lines) {
-      return utils.setErrorStatusAndCallback(
-          cb, breakpoint, StatusMessage.BREAKPOINT_SOURCE_LOCATION,
-          utils.messages.INVALID_LINE_NUMBER + matchingScript + ':' +
-              (breakpoint.location as stackdriver.SourceLocation).line +
-              '. Loaded script contained ' +
-              (this.fileStats[matchingScript] as FileStats).lines +
-              ' lines. Please ensure' +
-              ' that the snapshot was set in the same code version as the' +
-              ' deployed source.');
-    }
     // The breakpoint protobuf message presently doesn't have a column property
     // but it may have one in the future.
     // TODO: Address the case where `breakpoint.location` is `null`.
@@ -318,6 +305,19 @@ export class V8DebugApi implements debugapi.DebugApi {
     // to deal with that.
     if (line === 1) {
       column += debugapi.MODULE_WRAP_PREFIX_LENGTH - 1;
+    }
+
+    // TODO: Address the case where `fileStats[matchingScript]` is `null`.
+    if (line >= (this.fileStats[matchingScript] as FileStats).lines) {
+      return utils.setErrorStatusAndCallback(
+          cb, breakpoint, StatusMessage.BREAKPOINT_SOURCE_LOCATION,
+          utils.messages.INVALID_LINE_NUMBER + matchingScript + ':' +
+              (breakpoint.location as stackdriver.SourceLocation).line +
+              '. Loaded script contained ' +
+              (this.fileStats[matchingScript] as FileStats).lines +
+              ' lines. Please ensure' +
+              ' that the snapshot was set in the same code version as the' +
+              ' deployed source.');
     }
 
     const v8bp = this.setByRegExp(matchingScript, line, column);
