@@ -43,6 +43,7 @@
     "@types/tmp": "0.0.33",
     "changelog-maker": "^2.2.2",
     "closure-npc": "*",
+    "codecov": "^3.0.4",
     "coveralls": "^3.0.0",
     "glob": "^7.1.2",
     "gts": "^0.8.0",
@@ -82,7 +83,8 @@
     "changelog": "npm run compile && ./bin/run-changelog.sh",
     "coverage": "npm run compile && ./bin/run-test.sh -c",
     "prepare": "npm run compile",
-    "system-test": "npm run compile && ./bin/run-system-test.sh",
+    "presystem-test": "npm run compile",
+    "system-test": "mocha build/system-test",
     "test": "./bin/run-test.sh",
     "check": "gts check",
     "clean": "gts clean",
@@ -93,7 +95,10 @@
     "pretest": "npm run compile",
     "posttest": "npm run check && npm run license-check",
     "prepack": "npm run compile",
-    "license-check": "jsgl --local ."
+    "license-check": "jsgl --local .",
+    "lint": "npm run check",
+    "docs": "echo no docs available 👻",
+    "samples-test": "mocha samples/system-test"
   },
   "files": [
     "CHANGELOG.md",
