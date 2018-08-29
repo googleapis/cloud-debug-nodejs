@@ -311,8 +311,8 @@ export class V8DebugApi implements debugapi.DebugApi {
     if (line >= (this.fileStats[matchingScript] as FileStats).lines) {
       return utils.setErrorStatusAndCallback(
           cb, breakpoint, StatusMessage.BREAKPOINT_SOURCE_LOCATION,
-          utils.messages.INVALID_LINE_NUMBER + matchingScript + ':' +
-              line + '. Loaded script contained ' +
+          utils.messages.INVALID_LINE_NUMBER + matchingScript + ':' + line +
+              '. Loaded script contained ' +
               (this.fileStats[matchingScript] as FileStats).lines +
               ' lines. Please ensure' +
               ' that the snapshot was set in the same code version as the' +
