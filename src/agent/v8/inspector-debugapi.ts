@@ -330,8 +330,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       return utils.setErrorStatusAndCallback(
           cb, breakpoint, StatusMessage.BREAKPOINT_SOURCE_LOCATION,
           utils.messages.INVALID_LINE_NUMBER + matchingScript + ':' +
-              (breakpoint.location as stackdriver.SourceLocation).line +
-              '. Loaded script contained ' +
+              line + '. Loaded script contained ' +
               (this.fileStats[matchingScript] as FileStats).lines +
               ' lines. Please ensure' +
               ' that the snapshot was set in the same code version as the' +
