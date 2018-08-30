@@ -31,7 +31,7 @@ const code = require('./test-circular-code.js');
 
 // the inspector protocol is only used on Node >= 10 and thus isn't
 // tested on earlier versions
-const useInspector = utils.satisfies(process.version, '>=10');
+const skipIfInspector = utils.satisfies(process.version, '>=10') ? it.skip : it;
 
 function stateIsClean(api: debugapi.DebugApi): boolean {
   assert.strictEqual(
@@ -70,55 +70,40 @@ describe(__filename, () => {
   afterEach(() => {
     assert(stateIsClean(api));
   });
-  it('Should be able to read the argument and the context', (done) => {
-    // TODO: Have this actually implement Breakpoint
-    const brk: stackdriver.Breakpoint = {
-      id: 'fake-id-123',
-      location: {path: 'test-circular-code.js', line: 7}
-    } as stackdriver.Breakpoint;
-    api.set(brk, (err1) => {
-      assert.ifError(err1);
-      api.wait(brk, (err2) => {
-        assert.ifError(err2);
-        assert.ok(brk.stackFrames.length >= 1);
-        const locals = brk.stackFrames[0].locals;
-        const nonStatusVars =
-            brk.variableTable.filter(entry => entry && !!entry.members) as
-            Variable[];
-        assert.strictEqual(locals.length, 2);
-        assert.strictEqual(locals[0].name, 'a');
-        assert.strictEqual(locals[1].name, 'b');
-        // The legacy and inspector APIs have differing behavior here.
-        if (useInspector) {
-          // The inspector API requires that an object value be serializable
-          // in order to transmit its value.
-          // See the TODO in inspector-state.ts for more details.
-          assert.strictEqual(
-              nonStatusVars.length, 0,
-              'There should be no non-status variables in brk.variableTable');
-          assert.strictEqual(locals[0].value, '[circular]');
-          assert.strictEqual(locals[1].value, '[circular]');
-        } else {
-          // The legacy API has no such limitation.
-          const nonStatusVars =
-              brk.variableTable.filter(entry => entry && !!entry.members) as
-              Variable[];
-          assert.strictEqual(
-              nonStatusVars.length, 2,
-              'There should be two non-status variables in brk.variableTable');
-          assert.ok(nonStatusVars[0].members);  // a
-          assert.ok(nonStatusVars[0].members!.find(
-              entry => entry.name === 'b'));    // a.b = b
-          assert.ok(nonStatusVars[1].members);  // b
-          assert.ok(nonStatusVars[1].members!.find(
-              entry => entry.name === 'a'));  // b.a = a
-        }
-        api.clear(brk, (err3) => {
-          assert.ifError(err3);
-          done();
+  skipIfInspector(
+      'Should be able to read the argument and the context', (done) => {
+        // TODO: Have this actually implement Breakpoint
+        const brk: stackdriver.Breakpoint = {
+          id: 'fake-id-123',
+          location: {path: 'test-circular-code.js', line: 7}
+        } as stackdriver.Breakpoint;
+        api.set(brk, (err1) => {
+          assert.ifError(err1);
+          api.wait(brk, (err2) => {
+            assert.ifError(err2);
+            assert.ok(brk.stackFrames.length >= 1);
+            const locals = brk.stackFrames[0].locals;
+            const nonStatusVars =
+                brk.variableTable.filter(entry => entry && !!entry.members) as
+                Variable[];
+            assert.strictEqual(locals.length, 2);
+            assert.strictEqual(locals[0].name, 'a');
+            assert.strictEqual(locals[1].name, 'b');
+            assert.strictEqual(
+                nonStatusVars.length, 2,
+                'There should be two non-status variables in brk.variableTable');
+            assert.ok(nonStatusVars[0].members);  // a
+            assert.ok(nonStatusVars[0].members!.find(
+                entry => entry.name === 'b'));    // a.b = b
+            assert.ok(nonStatusVars[1].members);  // b
+            assert.ok(nonStatusVars[1].members!.find(
+                entry => entry.name === 'a'));  // b.a = a
+            api.clear(brk, (err3) => {
+              assert.ifError(err3);
+              done();
+            });
+          });
+          process.nextTick(code.foo);
         });
       });
-      process.nextTick(code.foo);
-    });
-  });
 });
