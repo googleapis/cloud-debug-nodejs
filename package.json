@@ -43,6 +43,7 @@
     "@types/tmp": "0.0.33",
     "changelog-maker": "^2.2.2",
     "closure-npc": "*",
+    "codecov": "^3.0.4",
     "coveralls": "^3.0.0",
     "glob": "^7.1.2",
     "gts": "^0.8.0",
@@ -57,7 +58,8 @@
     "pify": "^4.0.0",
     "post-install-check": "0.0.1",
     "proxyquire": "^2.0.0",
-    "request": "^2.81.0",
+    "request": "^2.88.0",
+    "require-inject": "^1.4.3",
     "rimraf": "^2.6.2",
     "source-map-support": "^0.5.6",
     "tmp": "0.0.33",
@@ -65,7 +67,7 @@
     "typescript": "~3.0.0"
   },
   "dependencies": {
-    "@google-cloud/common": "^0.20.3",
+    "@google-cloud/common": "^0.23.0",
     "acorn": "^5.0.3",
     "coffeescript": "^2.0.0",
     "console-log-level": "^1.4.0",
@@ -77,13 +79,15 @@
     "semver": "^5.5.0",
     "source-map": "^0.6.1",
     "split": "^1.0.0",
+    "teeny-request": "^3.6.0",
     "util.promisify": "^1.0.0"
   },
   "scripts": {
     "changelog": "npm run compile && ./bin/run-changelog.sh",
     "coverage": "npm run compile && ./bin/run-test.sh -c",
     "prepare": "npm run compile",
-    "system-test": "npm run compile && ./bin/run-system-test.sh",
+    "presystem-test": "npm run compile",
+    "system-test": "mocha build/system-test",
     "test": "./bin/run-test.sh",
     "check": "gts check",
     "clean": "gts clean",
@@ -94,7 +98,10 @@
     "pretest": "npm run compile",
     "posttest": "npm run check && npm run license-check",
     "prepack": "npm run compile",
-    "license-check": "jsgl --local ."
+    "license-check": "jsgl --local .",
+    "lint": "npm run check",
+    "docs": "echo no docs available 👻",
+    "samples-test": "mocha samples/system-test"
   },
   "files": [
     "CHANGELOG.md",

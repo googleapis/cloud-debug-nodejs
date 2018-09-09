@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import {GoogleAuthOptions} from '@google-cloud/common';
 import * as assert from 'assert';
 import * as consoleLogLevel from 'console-log-level';
 import * as crypto from 'crypto';
@@ -233,7 +232,7 @@ export class Debuglet extends EventEmitter {
     });
 
     /** @private {DebugletApi} */
-    this.controller = new Controller(this.debug);
+    this.controller = new Controller(this.debug, {apiUrl: config.apiUrl});
 
     /** @private {Debuggee} */
     this.debuggee = null;
