@@ -5,7 +5,7 @@
   "description": "Stackdriver Debug Agent for Node.js",
   "main": "./build/src/index",
   "types": "./build/src/index.d.ts",
-  "repository": "googlecloudplatform/cloud-debug-nodejs",
+  "repository": "googleapis/cloud-debug-nodejs",
   "keywords": [
     "google",
     "debugger",
