@@ -44,7 +44,7 @@ describe('evaluating expressions', () => {
         .then(async fileStats => {
           const jsStats = fileStats.selectStats(/\.js$/);
           const mapFiles = fileStats.selectFiles(/\.map$/, process.cwd());
-          const mapper = await SourceMapper.create(mapFiles);
+          const mapper = await SourceMapper.create(undefined, mapFiles);
           assert(mapper);
           api = debugapi.create(logger, config, jsStats, mapper!);
           done();
