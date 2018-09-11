@@ -1822,7 +1822,8 @@ describe('v8debugapi.findScripts', () => {
 
   it('should invoke pathResolver if provided', () => {
     const config = extend(true, {}, undefined!, {
-      pathResolver(scriptPath: string, knownFiles: string[], resolved: string[]) {
+      pathResolver(
+          scriptPath: string, knownFiles: string[], resolved: string[]) {
         return [`/build/${scriptPath}`];
       },
     });
@@ -1856,29 +1857,32 @@ describe('v8debugapi.findScripts', () => {
     assert.strictEqual(logger.allCalls().length, 0);
   });
 
-  it('should use default resolved paths if pathResolver returns undefined', () => {
-    const config = extend(true, {}, undefined!, {
-      pathResolver(scriptPath: string, knownFiles: string[], resolved: string[]) {
-        return undefined;
-      },
-    });
+  it('should use default resolved paths if pathResolver returns undefined',
+     () => {
+       const config = extend(true, {}, undefined!, {
+         pathResolver(
+             scriptPath: string, knownFiles: string[], resolved: string[]) {
+           return undefined;
+         },
+       });
 
-    const fakeFileStats = {
-      '/build/index.js': {hash: 'fake', lines: 5},
-      '/build/some/subdir/index.js': {hash: 'fake', lines: 5},
-    };
+       const fakeFileStats = {
+         '/build/index.js': {hash: 'fake', lines: 5},
+         '/build/some/subdir/index.js': {hash: 'fake', lines: 5},
+       };
 
-    const logger = new MockLogger();
+       const logger = new MockLogger();
 
-    assert.deepEqual(
-        utils.findScripts('index.js', config, fakeFileStats, logger),
-        ['/build/index.js', '/build/some/subdir/index.js']);
-    assert.strictEqual(logger.allCalls().length, 0);
-  });
+       assert.deepEqual(
+           utils.findScripts('index.js', config, fakeFileStats, logger),
+           ['/build/index.js', '/build/some/subdir/index.js']);
+       assert.strictEqual(logger.allCalls().length, 0);
+     });
 
   it('should warn if pathResolver returns a path unknown to the agent', () => {
     const config = extend(true, {}, undefined!, {
-      pathResolver(scriptPath: string, knownFiles: string[], resolved: string[]) {
+      pathResolver(
+          scriptPath: string, knownFiles: string[], resolved: string[]) {
         return ['/some/unknown/path'];
       },
     });
@@ -1899,16 +1903,16 @@ describe('v8debugapi.findScripts', () => {
     assert.strictEqual(logger.warns.length, 1);
     const message = logger.warns[0].args[0];
     assert.notStrictEqual(message.indexOf('/some/unknown/path'), -1);
-    assert.notStrictEqual(message.indexOf('not in the list of paths known to the debug agent'), -1);
+    assert.notStrictEqual(
+        message.indexOf('not in the list of paths known to the debug agent'),
+        -1);
   });
 
   it('should warn if pathResolver returns an invalid return type', () => {
     const config = extend(true, {}, undefined!, {
-      pathResolver(scriptPath: string, knownFiles: string[], resolved: string[]) {
-        return {
-          x: 'some value',
-          y: 'some other value'
-        };
+      pathResolver(
+          scriptPath: string, knownFiles: string[], resolved: string[]) {
+        return {x: 'some value', y: 'some other value'};
       },
     });
 
@@ -1926,40 +1930,43 @@ describe('v8debugapi.findScripts', () => {
     assert.strictEqual(logger.allCalls().length, 1);
     assert.strictEqual(logger.warns.length, 1);
     const message = logger.warns[0].args[0];
-    assert.notStrictEqual(message.indexOf('returned a value other than \'undefined\' or an array of strings'), -1);
+    assert.notStrictEqual(
+        message.indexOf(
+            'returned a value other than \'undefined\' or an array of strings'),
+        -1);
   });
 
-  it('should warn if pathResolver returns an array containing a non-string', () => {
-    const config = extend(true, {}, undefined!, {
-      pathResolver(scriptPath: string, knownFiles: string[], resolved: string[]) {
-        return [{
-          x: 'some value',
-          y: 'some other value'
-        }];
-      },
-    });
+  it('should warn if pathResolver returns an array containing a non-string',
+     () => {
+       const config = extend(true, {}, undefined!, {
+         pathResolver(
+             scriptPath: string, knownFiles: string[], resolved: string[]) {
+           return [{x: 'some value', y: 'some other value'}];
+         },
+       });
 
-    const fakeFileStats = {
-      '/build/index.js': {hash: 'fake', lines: 5},
-      '/build/some/subdir/index.js': {hash: 'fake', lines: 5},
-    };
+       const fakeFileStats = {
+         '/build/index.js': {hash: 'fake', lines: 5},
+         '/build/some/subdir/index.js': {hash: 'fake', lines: 5},
+       };
 
-    const logger = new MockLogger();
+       const logger = new MockLogger();
 
-    // The default resolved files should be used in this case.
-    assert.deepEqual(
-        utils.findScripts('index.js', config, fakeFileStats, logger),
-        ['/build/index.js', '/build/some/subdir/index.js']);
-    assert.strictEqual(logger.allCalls().length, 1);
-    assert.strictEqual(logger.warns.length, 1);
-    const message = logger.warns[0].args[0];
-    assert.notStrictEqual(message.indexOf('that is not in the list of paths known to the debug agent'), -1);
-  });
+       // The default resolved files should be used in this case.
+       assert.deepEqual(
+           utils.findScripts('index.js', config, fakeFileStats, logger),
+           ['/build/index.js', '/build/some/subdir/index.js']);
+       assert.strictEqual(logger.allCalls().length, 1);
+       assert.strictEqual(logger.warns.length, 1);
+       const message = logger.warns[0].args[0];
+       assert.notStrictEqual(
+           message.indexOf(
+               'that is not in the list of paths known to the debug agent'),
+           -1);
+     });
 
   it('should warn if pathResolver is not a function', () => {
-    const config = extend(true, {}, undefined!, {
-      pathResolver: 'some value'
-    });
+    const config = extend(true, {}, undefined!, {pathResolver: 'some value'});
 
     const fakeFileStats = {
       '/build/index.js': {hash: 'fake', lines: 5},
@@ -1975,7 +1982,8 @@ describe('v8debugapi.findScripts', () => {
     assert.strictEqual(logger.allCalls().length, 1);
     assert.strictEqual(logger.warns.length, 1);
     const message = logger.warns[0].args[0];
-    assert.notStrictEqual(message.indexOf('The \'pathResolver\' config must be a function'), -1);
+    assert.notStrictEqual(
+        message.indexOf('The \'pathResolver\' config must be a function'), -1);
   });
 });
 

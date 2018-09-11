@@ -212,7 +212,9 @@ export interface ResolvedDebugAgentConfig extends GoogleAuthOptions {
    * for example, the debug agent would know to set the breakpoint in
    * the `/x/y/src/index.js` file.
    */
-  pathResolver?: (scriptPath: string, knownFiles: string[], resolved: string[]) => string[]|undefined;
+  pathResolver?:
+      (scriptPath: string, knownFiles: string[],
+       resolved: string[]) => string[] | undefined;
 
   /**
    * agent log level 0-disabled, 1-error, 2-warn, 3-info, 4-debug

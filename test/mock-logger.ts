@@ -30,49 +30,32 @@ export class MockLogger implements consoleLogLevel.Logger {
   errors: Call[] = [];
   fatals: Call[] = [];
 
-  allCalls()  {
-    return this.traces.concat(this.debugs, this.infos, this.warns, this.errors, this.fatals);
+  allCalls() {
+    return this.traces.concat(
+        this.debugs, this.infos, this.warns, this.errors, this.fatals);
   }
 
   trace(...args: Arguments) {
-    this.traces.push({
-      type: 'trace',
-      args
-    });
+    this.traces.push({type: 'trace', args});
   }
 
   debug(...args: Arguments) {
-    this.debugs.push({
-      type: 'debug',
-      args
-    });
+    this.debugs.push({type: 'debug', args});
   }
 
   info(...args: Arguments) {
-    this.infos.push({
-      type: 'info',
-      args
-    });
+    this.infos.push({type: 'info', args});
   }
 
   warn(...args: Arguments) {
-    this.warns.push({
-      type: 'warn',
-      args
-    });
+    this.warns.push({type: 'warn', args});
   }
 
   error(...args: Arguments) {
-    this.errors.push({
-      type: 'error',
-      args
-    });
+    this.errors.push({type: 'error', args});
   }
 
   fatal(...args: Arguments) {
-    this.fatals.push({
-      type: 'fatal',
-      args
-    });
+    this.fatals.push({type: 'fatal', args});
   }
 }

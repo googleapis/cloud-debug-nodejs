@@ -1,9 +1,10 @@
+import * as _ from 'lodash';
 import * as path from 'path';
 import * as semver from 'semver';
-import * as _ from 'lodash';
 
 import {StatusMessage} from '../../client/stackdriver/status-message';
 import * as stackdriver from '../../types/stackdriver';
+
 import consoleLogLevel = require('console-log-level');
 
 import {ResolvedDebugAgentConfig} from '../config';
@@ -36,37 +37,42 @@ export interface Listener {
 }
 // Exposed for unit testing.
 export function findScripts(
-  scriptPath: string, config: ResolvedDebugAgentConfig,
-  fileStats: ScanStats, logger: consoleLogLevel.Logger): string[] {
+    scriptPath: string, config: ResolvedDebugAgentConfig, fileStats: ScanStats,
+    logger: consoleLogLevel.Logger): string[] {
   // (path: string, knownFiles: string[], resolved: string[]) => string[]
   const resolved = _findScripts(scriptPath, config, fileStats);
   if (config.pathResolver) {
     if (!_.isFunction(config.pathResolver)) {
-      logger.warn(`The 'pathResolver' config must be a function.  Continuing ` +
-        `with the agent's default behavior.`);
+      logger.warn(
+          `The 'pathResolver' config must be a function.  Continuing ` +
+          `with the agent's default behavior.`);
       return resolved;
     }
 
     const knownFiles = Object.keys(fileStats);
-    const calculatedPaths = config.pathResolver(scriptPath, knownFiles, resolved);
+    const calculatedPaths =
+        config.pathResolver(scriptPath, knownFiles, resolved);
     if (calculatedPaths === undefined) {
       return resolved;
     }
 
     if (!calculatedPaths || !Array.isArray(calculatedPaths)) {
-      logger.warn(`The 'pathResolver' config function returned a value ` +
-        `other than 'undefined' or an array of strings. Continuing with ` +
-        `the agent's default behavior.`);
+      logger.warn(
+          `The 'pathResolver' config function returned a value ` +
+          `other than 'undefined' or an array of strings. Continuing with ` +
+          `the agent's default behavior.`);
       return resolved;
     }
 
     for (const path of calculatedPaths) {
       if (knownFiles.indexOf(path) === -1) {
-        logger.warn(`The 'pathResolver' config function returned a path '${path}' ` +
-                    `that is not in the list of paths known to the debug agent ` +
-                    JSON.stringify(knownFiles, null, 2)) +
-                    ` only known paths can be returend. Continuing with the` +
-                    `agent's default behavior.`;
+        // tslint:disable-next-line:no-unused-expression
+        logger.warn(
+            `The 'pathResolver' config function returned a path '${path}' ` +
+            `that is not in the list of paths known to the debug agent ` +
+            JSON.stringify(knownFiles, null, 2)) +
+            ` only known paths can be returend. Continuing with the` +
+            `agent's default behavior.`;
         return resolved;
       }
     }
