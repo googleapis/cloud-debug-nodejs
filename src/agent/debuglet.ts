@@ -47,7 +47,7 @@ const ALLOW_EXPRESSIONS_MESSAGE = 'Expressions and conditions are not allowed' +
     ' See the debug agent documentation at https://goo.gl/ShSm6r.';
 const NODE_VERSION_MESSAGE =
     'Node.js version not supported. Node.js 5.2.0 and ' +
-    ' versions older than 0.12 are not supported.';
+    'versions older than 0.12 are not supported.';
 const NODE_10_CIRC_REF_MESSAGE =
     'capture.maxDataSize=0 is not recommended on Node 10+. See ' +
     'https://github.com/googleapis/cloud-debug-nodejs/issues/516' +
@@ -323,7 +323,7 @@ export class Debuglet extends EventEmitter {
         path.join(workingDir, '..') === workingDir) {
       const message = 'The working directory is a root directory. Disabling ' +
           'to avoid a scan of the entire filesystem for JavaScript files. ' +
-          'Use config \allowRootAsWorkingDirectory` if you really want to ' +
+          'Use config `allowRootAsWorkingDirectory` if you really want to ' +
           'do this.';
       that.logger.error(message);
       that.emit('initError', new Error(message));
