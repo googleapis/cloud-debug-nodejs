@@ -29,9 +29,7 @@ import * as v8 from '../../types/v8';
 import * as stackdriver from '../../types/stackdriver';
 import {ResolvedDebugAgentConfig} from '../config';
 
-// TODO: Determine if `ScopeType` should be named `scopeType`.
-// tslint:disable-next-line:variable-name
-const ScopeType = vm.runInDebugContext('ScopeType');
+
 const assert = debugAssert(!!process.env.CLOUD_DEBUG_ASSERTIONS);
 
 // Error message indices into the resolved variable table.
@@ -79,7 +77,7 @@ class StateResolver {
   private messageTable: stackdriver.Variable[];
   private resolvedVariableTable: stackdriver.Variable[];
   private rawVariableTable: Array<v8.ValueMirror|null>;
-
+  private scopeType: {Global: {}, Script: {}, Closure: {}, Local: {}};
   /**
    * @param {!Object} execState
    * @param {Array<string>} expressions
@@ -127,6 +125,8 @@ class StateResolver {
     this.rawVariableTable = this.messageTable.map(() => {
       return null;
     });
+
+    this.scopeType = vm.runInDebugContext('ScopeType');
   }
 
 
@@ -382,17 +382,17 @@ class StateResolver {
     // For top-level breakpoints: [local, script, global]
     // Other: [..., closure (module IIFE), script, global]
     assert.ok(count >= 3);
-    assert.strictEqual(allScopes[count - 1].scopeType(), ScopeType.Global);
-    assert.strictEqual(allScopes[count - 2].scopeType(), ScopeType.Script);
+    assert.strictEqual(allScopes[count - 1].scopeType(), self.scopeType.Global);
+    assert.strictEqual(allScopes[count - 2].scopeType(), self.scopeType.Script);
 
     // We find the top-level (module global) variable pollute the local
     // variables we omit them by default, unless the breakpoint itself is
     // top-level. The last two scopes are always omitted.
     let scopes: v8.ScopeMirror[];
-    if (allScopes[count - 3].scopeType() === ScopeType.Closure) {
+    if (allScopes[count - 3].scopeType() === self.scopeType.Closure) {
       scopes = allScopes.slice(0, -3);
     } else {
-      assert.ok(allScopes[count - 3].scopeType() === ScopeType.Local);
+      assert.ok(allScopes[count - 3].scopeType() === self.scopeType.Local);
       scopes = allScopes.slice(0, -2);
     }
 
@@ -491,10 +491,11 @@ class StateResolver {
     return data;
   }
 
-  getVariableIndex_(value: v8.ValueMirror): number {
-    let idx = this.rawVariableTable.indexOf(value);
+  getVariableIndex_(valueMirror: v8.ValueMirror): number {
+    let idx = this.rawVariableTable.findIndex(
+        rawVar => !!rawVar && rawVar.value() === valueMirror.value());
     if (idx === -1) {
-      idx = this.storeObjectToVariableTable_(value);
+      idx = this.storeObjectToVariableTable_(valueMirror);
     }
     return idx;
   }

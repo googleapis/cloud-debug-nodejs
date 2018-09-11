@@ -307,6 +307,11 @@ export interface ResolvedDebugAgentConfig extends GoogleAuthOptions {
    * Uses by tests to cause the start() function to return the debuglet.
    */
   testMode_: boolean;
+
+  /**
+   * used to set a default api url
+   */
+  apiUrl?: string;
 }
 
 export interface StackdriverConfig extends GoogleAuthOptions {
