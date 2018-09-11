@@ -29,6 +29,7 @@ import {Variable} from '../src/types/stackdriver';
 
 const code = require('./test-circular-code.js');
 
+// TODO(kjin): When stableObjectId is added to Node 10, remove this check.
 // the inspector protocol is only used on Node >= 10 and thus isn't
 // tested on earlier versions
 const skipIfInspector = utils.satisfies(process.version, '>=10') ? it.skip : it;

@@ -48,6 +48,10 @@ const ALLOW_EXPRESSIONS_MESSAGE = 'Expressions and conditions are not allowed' +
 const NODE_VERSION_MESSAGE =
     'Node.js version not supported. Node.js 5.2.0 and ' +
     ' versions older than 0.12 are not supported.';
+const NODE_10_CIRC_REF_MESSAGE =
+    'capture.maxDataSize=0 is not recommended on Node 10+. See ' +
+    'https://github.com/googleapis/cloud-debug-nodejs/issues/516' +
+    ' for more information.';
 const BREAKPOINT_ACTION_MESSAGE =
     'The only currently supported breakpoint actions' +
     ' are CAPTURE and LOG.';
@@ -401,6 +405,14 @@ export class Debuglet extends EventEmitter {
     } catch (err5) {
       that.logger.warn('Unable to discover source context', err5);
       // This is ignorable.
+    }
+
+    // TODO(kjin): When stableObjectId is added to Node 10, narrow the range
+    // of Node versions for which this warning applies.
+    if (utils.satisfies(process.version, '>=10')) {
+      if (this.config.capture && this.config.capture.maxDataSize === 0) {
+        that.logger.warn(NODE_10_CIRC_REF_MESSAGE);
+      }
     }
 
     // We can register as a debuggee now.
