@@ -165,6 +165,58 @@ export interface ResolvedDebugAgentConfig extends GoogleAuthOptions {
   appPathRelativeToRepository?: string;
 
   /**
+   * A function which takes the path of a source file in your repository,
+   * a list of your project's Javascript files known to the debugger,
+   * and the file(s) in your project that the debugger thinks is identified
+   * by the given path.
+   *
+   * This function should return the file(s) that is/are identified by the
+   * given path or `undefined` to specify that the files(s) that the agent
+   * thinks are associated with the file should be used.
+   *
+   * Note that the list of paths must be a subset of the files in `knownFiles`
+   * and the debug agent can set a breakpoint for the input path if and only
+   * if there is a unique file that this function returns (an array with
+   * exactly one entry).
+   *
+   * This configuration option is usually unecessary, but can be useful in
+   * situations where the debug agent cannot not identify the file in your
+   * application associated with a path.
+   *
+   * This could occur if your application uses a structure that the debug
+   * agent does not understand, or if more than one file in your application
+   * has the same name.
+   *
+   * For example, if your running application (either locally or in the cloud)
+   * has the Javascript files:
+   *    /x/y/src/index.js
+   *    /x/y/src/someDir/index.js
+   *    /x/y/src/util.js
+   * and a breakpoint is set in the `/x/y/src/index.js` through the cloud
+   * console, the `appResolver` function would be invoked with the following
+   * arguments:
+   *    scriptPath: 'index.js'
+   *    knownFiles: ['/x/y/src/index.js',
+   *                 '/x/y/src/someDir/index.js',
+   *                 '/x/y/src/util.js']
+   *    resolved: ['/x/y/src/index.js',
+   *               '/x/y/src/someDir/index.js']
+   * This is because out of the known files, the files, '/x/y/src/index.js'
+   * and '/x/y/src/someDir/index.js' end with 'index.js'.
+   *
+   * If the array `['/x/y/src/index.js', '/x/y/src/someDir/index.js']` or
+   * equivalently `undefined` is returned by the `pathResolver` function, the
+   * debug agent will not be able to set the breakpoint.
+   *
+   * If, however, the `pathResolver` function returned `['/x/y/src/index.js']`,
+   * for example, the debug agent would know to set the breakpoint in
+   * the `/x/y/src/index.js` file.
+   */
+  pathResolver?:
+      (scriptPath: string, knownFiles: string[],
+       resolved: string[]) => string[] | undefined;
+
+  /**
    * agent log level 0-disabled, 1-error, 2-warn, 3-info, 4-debug
    */
   logLevel: number;
@@ -282,6 +334,7 @@ export const defaultConfig: ResolvedDebugAgentConfig = {
       {service: undefined, version: undefined, minorVersion_: undefined},
 
   appPathRelativeToRepository: undefined,
+  pathResolver: undefined,
   logLevel: 1,
   breakpointUpdateIntervalSec: 10,
   breakpointExpirationSec: 60 * 60 * 24,  // 24 hours

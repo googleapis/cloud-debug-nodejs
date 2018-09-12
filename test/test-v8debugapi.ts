@@ -19,7 +19,7 @@ import {Debuglet} from '../src/agent/debuglet';
 import {DebugApi} from '../src/agent/v8/debugapi';
 import consoleLogLevel = require('console-log-level');
 import * as stackdriver from '../src/types/stackdriver';
-
+import {MockLogger} from './mock-logger';
 
 // TODO(dominickramer): Have this actually implement Breakpoint
 const breakpointInFoo: stackdriver.Breakpoint = {
@@ -1801,18 +1801,12 @@ describe('v8debugapi', () => {
 
 describe('v8debugapi.findScripts', () => {
   it('should properly handle appPathRelativeToRepository', () => {
-    // TODO(dominickramer): `config` was used before it was defined and passed
-    // as the third
-    //       parameter below.  This was a Typescript compile error.  The
-    //       value of `undefined` should be functionally equivalent.
-    //       Make sure that is the case.
-    // TODO(dominickramer): The third argument should be of type Object (not
-    // undefined).
-    //       Fix this.
     const config = extend(true, {}, undefined!, {
       workingDirectory: '/some/strange/directory',
       appPathRelativeToRepository: '/my/project/root'
     });
+
+    const logger = new MockLogger();
 
     const fakeFileStats = {
       '/some/strange/directory/test/fixtures/a/hello.js':
@@ -1820,9 +1814,176 @@ describe('v8debugapi.findScripts', () => {
       '/my/project/root/test/fixtures/a/hello.js': {hash: 'fake', lines: 50}
     };
     const scriptPath = '/my/project/root/test/fixtures/a/hello.js';
-    const result = utils.findScripts(scriptPath, config, fakeFileStats);
+    const result = utils.findScripts(scriptPath, config, fakeFileStats, logger);
     assert.deepStrictEqual(
         result, ['/some/strange/directory/test/fixtures/a/hello.js']);
+    assert.strictEqual(logger.allCalls().length, 0);
+  });
+
+  it('should invoke pathResolver if provided', () => {
+    const config = extend(true, {}, undefined!, {
+      pathResolver(
+          scriptPath: string, knownFiles: string[], resolved: string[]) {
+        return [`/build/${scriptPath}`];
+      },
+    });
+
+    const fakeFileStats = {
+      '/build/index.js': {hash: 'fake', lines: 5},
+      '/build/some/subdir/index.js': {hash: 'fake', lines: 5},
+    };
+
+    const logger = new MockLogger();
+
+    assert.deepEqual(
+        utils.findScripts('index.js', config, fakeFileStats, logger),
+        ['/build/index.js']);
+    assert.strictEqual(logger.allCalls().length, 0);
+  });
+
+  it('should not invoke pathResolver if not provided', () => {
+    const config = extend(true, {}, undefined!);
+
+    const fakeFileStats = {
+      '/build/index.js': {hash: 'fake', lines: 5},
+      '/build/some/subdir/index.js': {hash: 'fake', lines: 5},
+    };
+
+    const logger = new MockLogger();
+
+    assert.deepEqual(
+        utils.findScripts('index.js', config, fakeFileStats, logger),
+        ['/build/index.js', '/build/some/subdir/index.js']);
+    assert.strictEqual(logger.allCalls().length, 0);
+  });
+
+  it('should use default resolved paths if pathResolver returns undefined',
+     () => {
+       const config = extend(true, {}, undefined!, {
+         pathResolver(
+             scriptPath: string, knownFiles: string[], resolved: string[]) {
+           return undefined;
+         },
+       });
+
+       const fakeFileStats = {
+         '/build/index.js': {hash: 'fake', lines: 5},
+         '/build/some/subdir/index.js': {hash: 'fake', lines: 5},
+       };
+
+       const logger = new MockLogger();
+
+       assert.deepEqual(
+           utils.findScripts('index.js', config, fakeFileStats, logger),
+           ['/build/index.js', '/build/some/subdir/index.js']);
+       assert.strictEqual(logger.allCalls().length, 0);
+     });
+
+  it('should warn if pathResolver returns a path unknown to the agent', () => {
+    const config = extend(true, {}, undefined!, {
+      pathResolver(
+          scriptPath: string, knownFiles: string[], resolved: string[]) {
+        return ['/some/unknown/path'];
+      },
+    });
+
+    const fakeFileStats = {
+      '/build/index.js': {hash: 'fake', lines: 5},
+      '/build/some/subdir/index.js': {hash: 'fake', lines: 5},
+    };
+
+    const logger = new MockLogger();
+
+    // The default resolved files should be used if the path resolver
+    // returns a path unknown to the debug agent.
+    assert.deepEqual(
+        utils.findScripts('index.js', config, fakeFileStats, logger),
+        ['/build/index.js', '/build/some/subdir/index.js']);
+    assert.strictEqual(logger.allCalls().length, 1);
+    assert.strictEqual(logger.warns.length, 1);
+    const message = logger.warns[0].args[0];
+    assert.notStrictEqual(message.indexOf('/some/unknown/path'), -1);
+    assert.notStrictEqual(
+        message.indexOf('not in the list of paths known to the debug agent'),
+        -1);
+  });
+
+  it('should warn if pathResolver returns an invalid return type', () => {
+    const config = extend(true, {}, undefined!, {
+      pathResolver(
+          scriptPath: string, knownFiles: string[], resolved: string[]) {
+        return {x: 'some value', y: 'some other value'};
+      },
+    });
+
+    const fakeFileStats = {
+      '/build/index.js': {hash: 'fake', lines: 5},
+      '/build/some/subdir/index.js': {hash: 'fake', lines: 5},
+    };
+
+    const logger = new MockLogger();
+
+    // The default resolved files should be used in this case.
+    assert.deepEqual(
+        utils.findScripts('index.js', config, fakeFileStats, logger),
+        ['/build/index.js', '/build/some/subdir/index.js']);
+    assert.strictEqual(logger.allCalls().length, 1);
+    assert.strictEqual(logger.warns.length, 1);
+    const message = logger.warns[0].args[0];
+    assert.notStrictEqual(
+        message.indexOf(
+            'returned a value other than \'undefined\' or an array of strings'),
+        -1);
+  });
+
+  it('should warn if pathResolver returns an array containing a non-string',
+     () => {
+       const config = extend(true, {}, undefined!, {
+         pathResolver(
+             scriptPath: string, knownFiles: string[], resolved: string[]) {
+           return [{x: 'some value', y: 'some other value'}];
+         },
+       });
+
+       const fakeFileStats = {
+         '/build/index.js': {hash: 'fake', lines: 5},
+         '/build/some/subdir/index.js': {hash: 'fake', lines: 5},
+       };
+
+       const logger = new MockLogger();
+
+       // The default resolved files should be used in this case.
+       assert.deepEqual(
+           utils.findScripts('index.js', config, fakeFileStats, logger),
+           ['/build/index.js', '/build/some/subdir/index.js']);
+       assert.strictEqual(logger.allCalls().length, 1);
+       assert.strictEqual(logger.warns.length, 1);
+       const message = logger.warns[0].args[0];
+       assert.notStrictEqual(
+           message.indexOf(
+               'that is not in the list of paths known to the debug agent'),
+           -1);
+     });
+
+  it('should warn if pathResolver is not a function', () => {
+    const config = extend(true, {}, undefined!, {pathResolver: 'some value'});
+
+    const fakeFileStats = {
+      '/build/index.js': {hash: 'fake', lines: 5},
+      '/build/some/subdir/index.js': {hash: 'fake', lines: 5},
+    };
+
+    const logger = new MockLogger();
+
+    // The default resolved files should be used in this case.
+    assert.deepEqual(
+        utils.findScripts('index.js', config, fakeFileStats, logger),
+        ['/build/index.js', '/build/some/subdir/index.js']);
+    assert.strictEqual(logger.allCalls().length, 1);
+    assert.strictEqual(logger.warns.length, 1);
+    const message = logger.warns[0].args[0];
+    assert.notStrictEqual(
+        message.indexOf('The \'pathResolver\' config must be a function'), -1);
   });
 });
 
