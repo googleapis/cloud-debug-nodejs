@@ -66,13 +66,12 @@ export function findScripts(
 
     for (const path of calculatedPaths) {
       if (knownFiles.indexOf(path) === -1) {
-        // tslint:disable-next-line:no-unused-expression
         logger.warn(
-            `The 'pathResolver' config function returned a path '${path}' ` +
-            `that is not in the list of paths known to the debug agent ` +
-            JSON.stringify(knownFiles, null, 2)) +
-            ` only known paths can be returend. Continuing with the` +
-            `agent's default behavior.`;
+            `The 'pathResolver' config function returned a path ` +
+            `'${path}' that is not in the list of paths known to the debug agent ` +
+            JSON.stringify(knownFiles, null, 2) +
+            ` only known paths can be returned. Continuing with the agent's ` +
+            `default behavior.`);
         return resolved;
       }
     }
