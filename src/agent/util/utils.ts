@@ -40,7 +40,7 @@ export function findScripts(
     scriptPath: string, config: ResolvedDebugAgentConfig, fileStats: ScanStats,
     logger: consoleLogLevel.Logger): string[] {
   // (path: string, knownFiles: string[], resolved: string[]) => string[]
-  const resolved = _findScripts(scriptPath, config, fileStats);
+  const resolved = resolveScripts(scriptPath, config, fileStats);
   if (config.pathResolver) {
     if (!_.isFunction(config.pathResolver)) {
       logger.warn(
@@ -81,7 +81,7 @@ export function findScripts(
   return resolved;
 }
 
-export function _findScripts(
+function resolveScripts(
     scriptPath: string, config: ResolvedDebugAgentConfig,
     fileStats: ScanStats): string[] {
   // Use repository relative mapping if present.
