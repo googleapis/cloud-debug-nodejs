@@ -75,7 +75,7 @@ describe(__filename, () => {
         // TODO: Have this actually implement Breakpoint
         const brk: stackdriver.Breakpoint = {
           id: 'fake-id-123',
-          location: {path: 'test-circular-code.js', line: 7}
+          location: {path: 'test-circular-code.js', line: 9}
         } as stackdriver.Breakpoint;
         api.set(brk, (err1) => {
           assert.ifError(err1);
@@ -86,24 +86,36 @@ describe(__filename, () => {
             const nonStatusVars =
                 brk.variableTable.filter(entry => entry && !!entry.members) as
                 Variable[];
-            assert.strictEqual(locals.length, 2);
-            assert.strictEqual(locals[0].name, 'a');
-            assert.strictEqual(locals[1].name, 'b');
-            assert.strictEqual(
-                nonStatusVars.length, 2,
-                'There should be two non-status variables in brk.variableTable');
-            assert.ok(nonStatusVars[0].members);  // a
-            assert.ok(nonStatusVars[0].members!.find(
-                entry => entry.name === 'b'));    // a.b = b
-            assert.ok(nonStatusVars[1].members);  // b
-            assert.ok(nonStatusVars[1].members!.find(
-                entry => entry.name === 'a'));  // b.a = a
+            assert.strictEqual(locals.length, 3);
+            // Three locals: a, b, and this (named context here).
+            assert.deepStrictEqual(locals[0], {name: 'a', varTableIndex: 4});
+            assert.deepStrictEqual(locals[1], {name: 'b', varTableIndex: 5});
+            assert.deepStrictEqual(
+                locals[2], {name: 'context', varTableIndex: 6});
+            // All three non-status entries in the varTable correspond to each
+            // of the locals, respectively.
+            assert.strictEqual(nonStatusVars.length, 3);
+            // Every entry has a truthy members field.
+            assert.ok(!nonStatusVars.some(e => !e.members));
+            assert.strictEqual(nonStatusVars[0].members!.length, 1);  // a
+            assert.deepStrictEqual(
+                nonStatusVars[0].members![0], {name: 'b', varTableIndex: 5});
+            assert.strictEqual(nonStatusVars[1].members!.length, 2);  // b
+            assert.deepStrictEqual(
+                nonStatusVars[1].members![0], {name: 'a', varTableIndex: 4});
+            assert.deepStrictEqual(
+                nonStatusVars[1].members![1], {name: 'c', varTableIndex: 6});
+            assert.strictEqual(nonStatusVars[2].members!.length, 2);  // context
+            assert.deepStrictEqual(
+                nonStatusVars[2].members![0], {name: 'x', varTableIndex: 6});
+            assert.deepStrictEqual(
+                nonStatusVars[2].members![1], {name: 'y', varTableIndex: 4});
             api.clear(brk, (err3) => {
               assert.ifError(err3);
               done();
             });
           });
-          process.nextTick(code.foo);
+          process.nextTick(code.foo.bind({}));
         });
       });
 });
