@@ -42,7 +42,7 @@ describeFn('state', () => {
 
   it('should not throw if vm is not an object', () => {
     // test for
-    // https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/issues/503
+    // https://github.com/googleapis/cloud-debug-nodejs/issues/503
     const inject = require('require-inject');
     const state = inject('../src/agent/state/legacy-state', {vm: false});
     assert.ok(state);

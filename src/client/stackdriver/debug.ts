@@ -73,7 +73,7 @@ export class Debug extends Service {
     // FIXME(ofrobots): We need our own copy of options because Service may
     // default to '{{projectId}}' when options doesn't contain the `projectId`.
     // property. This breaks the SSOT principle. Remove this when
-    // https://github.com/GoogleCloudPlatform/google-cloud-node/issues/1891
+    // https://github.com/googleapis/google-cloud-node/issues/1891
     // is resolved.
     this.options = options;
 

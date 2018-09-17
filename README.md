@@ -133,17 +133,17 @@ require('@google-cloud/debug-agent').start({
 
 Once your application is running (deployed, or elsewhere), you should be able to use the [Debug UI][debug-tab] in your Cloud [developer console][dev-console]. You can find the Debug UI in the 'STACKDRIVER -> Debug' section in the navigation panel, or by simply searching for 'Debug' in the cloud console.
 
-<img src="https://raw.githubusercontent.com/GoogleCloudPlatform/cloud-debug-nodejs/master/doc/images/debug-ui.png" alt="Debug UI" />
+<img src="https://raw.githubusercontent.com/googleapis/cloud-debug-nodejs/master/doc/images/debug-ui.png" alt="Debug UI" />
 
 If your source is hosted in a [cloud source repository](https://cloud.google.com/tools/cloud-repositories/docs/), Stackdriver Debugger will display the source code of your application automatically. Alternatively, you can also point the debugger to local files, a GitHub or Bitbucket repository, through a Source Capture, or you can simply type in a filename and line number. More details are on source options are [available here](https://cloud.google.com/debugger/docs/source-options).
 
 If you have the source available, you can set a snapshot by clicking in the gutter (line number area). Once you set a snapshot, the debug agent will insert a momentary breakpoint at the code location in the running instances of the application.
 
-<img src="https://raw.githubusercontent.com/GoogleCloudPlatform/cloud-debug-nodejs/master/doc/images/breakpoint-set.png" alt="Breakpoint Set" />
+<img src="https://raw.githubusercontent.com/googleapis/cloud-debug-nodejs/master/doc/images/breakpoint-set.png" alt="Breakpoint Set" />
 
 As soon as that line of code is reached in any of the running instances of your application, the stack traces, local variables, and watch expressions are captured, and your application continues.
 
-<img src="https://raw.githubusercontent.com/GoogleCloudPlatform/cloud-debug-nodejs/master/doc/images/breakpoint-hit.png" alt="Breakpoint Hit" />
+<img src="https://raw.githubusercontent.com/googleapis/cloud-debug-nodejs/master/doc/images/breakpoint-hit.png" alt="Breakpoint Hit" />
 
 **Note:** The directory layout of the code that is being debugged does not have to exactly match the source code specified in the Debug UI.  This is because the debug agent resolves a snapshot filename by searching for a file with the longest matching path suffix. If a unique match is found, that file will be used to set the snapshot.
 
@@ -214,16 +214,16 @@ exports.myFunc = (event) => {
 [debugger-roles]: https://cloud.google.com/debugger/docs/iam#roles
 [npm-image]: https://img.shields.io/npm/v/@google-cloud/debug-agent.svg
 [npm-url]: https://npmjs.org/package/@google-cloud/debug-agent
-[travis-image]: https://travis-ci.org/GoogleCloudPlatform/cloud-debug-nodejs.svg?branch=master
-[travis-url]: https://travis-ci.org/GoogleCloudPlatform/cloud-debug-nodejs
-[coveralls-image]: https://img.shields.io/coveralls/GoogleCloudPlatform/cloud-debug-nodejs/master.svg
-[coveralls-url]: https://coveralls.io/r/GoogleCloudPlatform/cloud-debug-nodejs?branch=master
-[david-image]: https://david-dm.org/GoogleCloudPlatform/cloud-debug-nodejs.svg
-[david-url]: https://david-dm.org/GoogleCloudPlatform/cloud-debug-nodejs
-[david-dev-image]: https://david-dm.org/GoogleCloudPlatform/cloud-debug-nodejs/dev-status.svg
-[david-dev-url]: https://david-dm.org/GoogleCloudPlatform/cloud-debug-nodejs?type=dev
+[travis-image]: https://travis-ci.org/googleapis/cloud-debug-nodejs.svg?branch=master
+[travis-url]: https://travis-ci.org/googleapis/cloud-debug-nodejs
+[coveralls-image]: https://img.shields.io/coveralls/googleapis/cloud-debug-nodejs/master.svg
+[coveralls-url]: https://coveralls.io/r/googleapis/cloud-debug-nodejs?branch=master
+[david-image]: https://david-dm.org/googleapis/cloud-debug-nodejs.svg
+[david-url]: https://david-dm.org/googleapis/cloud-debug-nodejs
+[david-dev-image]: https://david-dm.org/googleapis/cloud-debug-nodejs/dev-status.svg
+[david-dev-url]: https://david-dm.org/googleapis/cloud-debug-nodejs?type=dev
 [debugger-api]: https://console.cloud.google.com/apis/api/clouddebugger.googleapis.com/overview
-[snyk-image]: https://snyk.io/test/github/GoogleCloudPlatform/cloud-debug-nodejs/badge.svg
-[snyk-url]: https://snyk.io/test/github/GoogleCloudPlatform/cloud-debug-nodejs
-[config-ts]: https://github.com/GoogleCloudPlatform/cloud-debug-nodejs/blob/master/src/agent/config.ts
-[configuration-object]: https://googlecloudplatform.github.io/google-cloud-node/#/docs/google-cloud/0.45.0/google-cloud
+[snyk-image]: https://snyk.io/test/github/googleapis/cloud-debug-nodejs/badge.svg
+[snyk-url]: https://snyk.io/test/github/googleapis/cloud-debug-nodejs
+[config-ts]: https://github.com/googleapis/cloud-debug-nodejs/blob/master/src/agent/config.ts
+[configuration-object]: https://googleapis.github.io/google-cloud-node/#/docs/google-cloud/0.45.0/google-cloud
