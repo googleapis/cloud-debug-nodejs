@@ -36,6 +36,15 @@ const ARG_LOCAL_LIMIT_MESSAGE_INDEX = 3;
 
 const FILE_PROTOCOL = 'file://';
 
+const STABLE_OBJECT_ID_PROPERTY = '[[StableObjectId]]';
+const NO_STABLE_OBJECT_ID = -1;
+
+interface RawVariableTableEntry {
+  objectId?: string;
+  description?: string;
+  stableObjectId: number;
+}
+
 /**
  * Checks that the provided expressions will not have side effects and
  * then evaluates the expression in the current execution context.
@@ -76,7 +85,7 @@ class StateResolver {
   private totalSize: number;
   private messageTable: stackdriver.Variable[];
   private resolvedVariableTable: stackdriver.Variable[];
-  private rawVariableTable: Array<inspector.Runtime.RemoteObject|null>;
+  private rawVariableTable: Array<RawVariableTableEntry|null>;
 
   /**
    * @param {Array<!Object>} callFrames
@@ -469,7 +478,35 @@ class StateResolver {
     return type === 'function';
   }
 
+  /**
+   * Gets the stable object ID for a given object, or NO_STABLE_OBJECT_ID
+   * if it can't be obtained.
+   * @param remoteObject The object whose stable object ID should be retrieved.
+   */
+  private getStableObjectId(remoteObject: inspector.Runtime.RemoteObject):
+      number {
+    if (remoteObject.objectId === undefined) {
+      // Unexpected... but since this is required to obtain the stable object
+      // ID, return a value that specifies that it is not available.
+      return NO_STABLE_OBJECT_ID;
+    }
+    const properties =
+        this.v8Inspector.getProperties({objectId: remoteObject.objectId});
+    if (properties.error || !properties.response ||
+        !properties.response.internalProperties) {
+      return NO_STABLE_OBJECT_ID;
+    }
+    const stableObjectIdProperty = properties.response.internalProperties.find(
+        property => property.name === STABLE_OBJECT_ID_PROPERTY);
+    if (!stableObjectIdProperty || !stableObjectIdProperty.value ||
+        stableObjectIdProperty.value.value === undefined) {
+      return NO_STABLE_OBJECT_ID;
+    }
+    return stableObjectIdProperty.value.value;
+  }
+
   getVariableIndex_(value: inspector.Runtime.RemoteObject): number {
+    const stableObjectId = this.getStableObjectId(value);
     let idx = this.rawVariableTable.findIndex(rawVar => {
       if (rawVar) {
         // stableObjectId was introduced in Node 10.x.y as a more reliable way
@@ -479,11 +516,8 @@ class StateResolver {
         // TODO(kjin): When stableObjectId is added to Node 10:
         // 1. Fill in x.y with the appropriate versions.
         // 2. Update DT Node inspector versions, and remove `any` casts here.
-        if (value.hasOwnProperty('stableObjectId')) {
-          // tslint:disable:no-any
-          return (rawVar as any).stableObjectId ===
-              (value as any).stableObjectId;
-          // tslint:enable:no-any
+        if (stableObjectId !== NO_STABLE_OBJECT_ID) {
+          return rawVar.stableObjectId === stableObjectId;
         } else {
           // Fall back to using objectId for old versions of Node. Note that
           // this will cause large data payloads for objects with circular
@@ -495,14 +529,13 @@ class StateResolver {
       return false;
     });
     if (idx === -1) {
-      idx = this.storeObjectToVariableTable_(value);
+      idx = this.rawVariableTable.length;
+      this.rawVariableTable[idx] = {
+        objectId: value.objectId,
+        description: value.description,
+        stableObjectId
+      };
     }
-    return idx;
-  }
-
-  storeObjectToVariableTable_(obj: inspector.Runtime.RemoteObject): number {
-    const idx = this.rawVariableTable.length;
-    this.rawVariableTable[idx] = obj;
     return idx;
   }
 
@@ -510,12 +543,12 @@ class StateResolver {
    * Responsible for recursively resolving the properties on a
    * provided remote object.
    */
-  resolveRemoteObject_(
-      object: inspector.Runtime.RemoteObject,
-      isEvaluated: boolean): stackdriver.Variable {
+  resolveRemoteObject_(object: RawVariableTableEntry, isEvaluated: boolean):
+      stackdriver.Variable {
     const maxProps = this.config.capture.maxProperties;
-    const result =
-        this.v8Inspector.getProperties({objectId: object.objectId as string});
+    // TS: ! is OK since getProperties will populate result.error in the absence
+    // of an object ID.
+    const result = this.v8Inspector.getProperties({objectId: object.objectId!});
     const members: Array<{}> = [];
     if (result.error || !result.response) {
       members.push({
