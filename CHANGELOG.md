@@ -1,5 +1,34 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## 2018-09-18, Version 3.0.0 (Beta), @dominickramer
+
+This version drops support for Node 4, adds the `pathResolver` configuration option to support debugging files that have ambiguous paths, and adds a fix to handle debugging objects with circular references (for Node <10).
+
+### Breaking Changes
+
+* chore: drop support for node.js 4 (#440) `d6318d8`
+
+### Features
+
+* feat: pathResolver to allow arbitrary path mapping on behalf of agent (#461) `a0a27f0`
+* feat: use small HTTP dependency (#510) `ce903bc`
+
+### Fixes
+
+* fix: handle circular refs correctly with legacy debugging API (#515) `8e6cf9b`
+* fix: allow snapshots in shorter transpiled files (#513) `9512bac`
+* fix: move vm.runInDebugContext to constructor (#509) `6b33feb`
+* fix(deps): update @google-cloud/common to ^0.23.0 (#506) `f67d1af`
+* fix: fix the `workingDirectory` root dir test (#492) `dd8e4af`
+* fix: delegate auth logic to google-auth-library (#489) `841609a`
+* fix: fix installation tests (#488) `8356b15`
+* fix(deps): update dependency gcp-metadata to ^0.7.0 (#474) `3a2369d`
+* fix(deps): update dependency coffeescript to v2 (#476) `30747fa`
+* fix: fix package warnings for coffee-script and source-maps (#441) `4a7ee90`
+* fix: stop testing node 4 on appveyor (#444) `9df77ea`
+* fix: clean up the readme (#442) `521aa69`
+
+
 ## 2018-06-12, Version 2.6.0 (Beta), @dominickramer
 
 This release adds side-effect-free evaluation [#335](https://github.com/googleapis/cloud-debug-nodejs/issues/335) and fixes an issue where when a breakpoint is hit in a transpiled file, the line number of the breakpoint incorrectly changes [#436](https://github.com/googleapis/cloud-debug-nodejs/issues/436).
