@@ -373,7 +373,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
           matchingScript;
       const res = this.v8Inspector.setBreakpointByUrl({
         lineNumber: line - 1,
-        url,
+        url: `file://${matchingScript}`,
         columnNumber: column - 1,
         condition: breakpoint.condition || undefined
       });

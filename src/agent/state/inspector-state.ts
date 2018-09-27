@@ -277,7 +277,15 @@ class StateResolver {
     if (this.scriptmapper[scriptId].url === undefined) {
       return '';
     }
-    return this.scriptmapper[scriptId].url;
+    const scriptUrl = this.scriptmapper[scriptId].url;
+    if (scriptUrl.startsWith('file://')) {
+      // In Node 11+, non-internal files are formatted as URLs, so get just the
+      // path.
+      return scriptUrl.slice('file://'.length);
+    } else {
+      // Internal files should be returned as is.
+      return scriptUrl;
+    }
   }
 
   resolveRelativePath_(frame: inspector.Debugger.CallFrame): string {
