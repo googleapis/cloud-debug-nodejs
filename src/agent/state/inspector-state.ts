@@ -38,6 +38,7 @@ const NATIVE_PROPERTY_MESSAGE_INDEX = 1;
 const GETTER_MESSAGE_INDEX = 2;
 const ARG_LOCAL_LIMIT_MESSAGE_INDEX = 3;
 
+const FILE_PROTOCOL = 'file://';
 
 /**
  * Checks that the provided expressions will not have side effects and
@@ -284,18 +285,22 @@ class StateResolver {
     return this.stripCurrentWorkingDirectory_(fullPath);
   }
 
+  stripFileProtocol_(path: string) {
+    return path.toLowerCase().startsWith(FILE_PROTOCOL) ? path.substr(FILE_PROTOCOL.length) : path;
+  }
+
   stripCurrentWorkingDirectory_(path: string): string {
     // Strip 1 extra character to remove the slash.
-    return path.substr((this.config.workingDirectory!).length + 1);
+    return this.stripFileProtocol_(path).substr((this.config.workingDirectory!).length + 1);
   }
 
   isPathInCurrentWorkingDirectory_(path: string): boolean {
     // return true;
-    return path.indexOf(this.config.workingDirectory) === 0;
+    return this.stripFileProtocol_(path).indexOf(this.config.workingDirectory) === 0;
   }
 
   isPathInNodeModulesDirectory_(path: string): boolean {
-    return path.indexOf('node_modules') === 0;
+    return this.stripFileProtocol_(path).indexOf('node_modules') === 0;
   }
 
   resolveFrame_(frame: inspector.Debugger.CallFrame, underFrameCap: boolean):
