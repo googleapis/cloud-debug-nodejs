@@ -286,17 +286,21 @@ class StateResolver {
   }
 
   stripFileProtocol_(path: string) {
-    return path.toLowerCase().startsWith(FILE_PROTOCOL) ? path.substr(FILE_PROTOCOL.length) : path;
+    return path.toLowerCase().startsWith(FILE_PROTOCOL) ?
+        path.substr(FILE_PROTOCOL.length) :
+        path;
   }
 
   stripCurrentWorkingDirectory_(path: string): string {
     // Strip 1 extra character to remove the slash.
-    return this.stripFileProtocol_(path).substr((this.config.workingDirectory!).length + 1);
+    return this.stripFileProtocol_(path).substr(
+        (this.config.workingDirectory!).length + 1);
   }
 
   isPathInCurrentWorkingDirectory_(path: string): boolean {
     // return true;
-    return this.stripFileProtocol_(path).indexOf(this.config.workingDirectory) === 0;
+    return this.stripFileProtocol_(path).indexOf(
+               this.config.workingDirectory) === 0;
   }
 
   isPathInNodeModulesDirectory_(path: string): boolean {

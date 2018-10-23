@@ -368,7 +368,9 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     if (!this.locationMapper[locationStr]) {
       // The first time when a breakpoint was set to this location.
 
-      const url = utils.satisfies(process.version, '>=10.12.0') ? 'file://' + matchingScript : matchingScript;
+      const url = utils.satisfies(process.version, '>=10.12.0') ?
+          'file://' + matchingScript :
+          matchingScript;
       const res = this.v8Inspector.setBreakpointByUrl({
         lineNumber: line - 1,
         url,
