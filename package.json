@@ -26,7 +26,7 @@
     "@types/console-log-level": "^1.4.0",
     "@types/estree": "0.0.39",
     "@types/extend": "^3.0.0",
-    "@types/glob": "^5.0.33",
+    "@types/glob": "^7.0.0",
     "@types/lodash": "^4.14.69",
     "@types/mkdirp": "^0.5.1",
     "@types/mocha": "^5.0.0",
