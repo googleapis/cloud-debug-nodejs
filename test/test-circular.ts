@@ -82,34 +82,49 @@ describe(__filename, () => {
           api.wait(brk, (err2) => {
             assert.ifError(err2);
             assert.ok(brk.stackFrames.length >= 1);
-            const locals = brk.stackFrames[0].locals;
+            const locals = [...brk.stackFrames[0].locals].sort(
+                (a, b) => a.name!.localeCompare(b.name!));
             const nonStatusVars =
-                brk.variableTable.filter(entry => entry && !!entry.members) as
-                Variable[];
-            assert.strictEqual(locals.length, 3);
-            // Three locals: a, b, and this (named context here).
-            assert.deepStrictEqual(locals[0], {name: 'a', varTableIndex: 4});
-            assert.deepStrictEqual(locals[1], {name: 'b', varTableIndex: 5});
-            assert.deepStrictEqual(
-                locals[2], {name: 'context', varTableIndex: 6});
+                (brk.variableTable.filter(entry => entry && !!entry.members) as
+                 Variable[]);
+            const statusVarOffset =
+                brk.variableTable.length - nonStatusVars.length;
+            assert.ok(locals.length >= 3);
+            // At least three locals: a, b, and context (alias for this).
+            // In newer versions of inspector, this appears both as this and
+            // as context.
+            const aLocal = locals[0];
+            const bLocal = locals[1];
+            const contextLocal = locals[2];
+            const thisLocal = locals[3];  // Maybe non-existent
+            assert.ok(aLocal && bLocal && contextLocal);
+            assert.ok(
+                !thisLocal ||
+                thisLocal.varTableIndex === contextLocal.varTableIndex);
             // All three non-status entries in the varTable correspond to each
             // of the locals, respectively.
             assert.strictEqual(nonStatusVars.length, 3);
             // Every entry has a truthy members field.
             assert.ok(!nonStatusVars.some(e => !e.members));
-            assert.strictEqual(nonStatusVars[0].members!.length, 1);  // a
+            const aVar = nonStatusVars[aLocal.varTableIndex! - statusVarOffset];
+            const bVar = nonStatusVars[bLocal.varTableIndex! - statusVarOffset];
+            const thisVar =
+                nonStatusVars[contextLocal.varTableIndex! - statusVarOffset];
+            assert.strictEqual(aVar.members!.length, 1);       // a
+            assert.deepStrictEqual(aVar.members![0], bLocal);  // a.b
+            assert.strictEqual(bVar.members!.length, 2);       // b
+            assert.deepStrictEqual(bVar.members![0], aLocal);  // b.a
             assert.deepStrictEqual(
-                nonStatusVars[0].members![0], {name: 'b', varTableIndex: 5});
-            assert.strictEqual(nonStatusVars[1].members!.length, 2);  // b
+                bVar.members![1],
+                {name: 'c', varTableIndex: contextLocal.varTableIndex});
+            assert.strictEqual(thisVar.members!.length, 2);  // this
+            assert.deepStrictEqual(thisVar.members![0], {
+              name: 'x',
+              varTableIndex: contextLocal.varTableIndex
+            });  // this.x
             assert.deepStrictEqual(
-                nonStatusVars[1].members![0], {name: 'a', varTableIndex: 4});
-            assert.deepStrictEqual(
-                nonStatusVars[1].members![1], {name: 'c', varTableIndex: 6});
-            assert.strictEqual(nonStatusVars[2].members!.length, 2);  // context
-            assert.deepStrictEqual(
-                nonStatusVars[2].members![0], {name: 'x', varTableIndex: 6});
-            assert.deepStrictEqual(
-                nonStatusVars[2].members![1], {name: 'y', varTableIndex: 4});
+                thisVar.members![1],
+                {name: 'y', varTableIndex: aLocal.varTableIndex});  // this.y
             api.clear(brk, (err3) => {
               assert.ifError(err3);
               done();
