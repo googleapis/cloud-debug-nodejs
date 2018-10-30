@@ -24,6 +24,7 @@ import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as debugapi from '../src/agent/v8/debugapi';
 import consoleLogLevel = require('console-log-level');
 import * as stackdriver from '../src/types/stackdriver';
+import * as utils from '../src/agent/util/utils';
 
 const code = require('./test-this-context-code.js');
 
@@ -88,9 +89,16 @@ describe(__filename, () => {
             'There should be one member in the context variable value');
         assert.deepStrictEqual(ctxMembers![0], {name: 'a', value: '10'});
         assert.strictEqual(args.length, 0, 'There should be zero arguments');
-        assert.strictEqual(locals.length, 2, 'There should be two locals');
-        assert.deepStrictEqual(locals[0], {name: 'b', value: '1'});
-        assert.deepStrictEqual(locals[1].name, 'context');
+        if (utils.satisfies(process.version, '>=11')) {
+          assert.strictEqual(locals.length, 3, 'There should be three locals');
+          assert.deepStrictEqual(locals[0].name, 'this');
+          assert.deepStrictEqual(locals[1], {name: 'b', value: '1'});
+          assert.deepStrictEqual(locals[2].name, 'context');
+        } else {
+          assert.strictEqual(locals.length, 2, 'There should be two locals');
+          assert.deepStrictEqual(locals[0], {name: 'b', value: '1'});
+          assert.deepStrictEqual(locals[1].name, 'context');
+        }
         api.clear(brk, (err3) => {
           assert.ifError(err3);
           done();
