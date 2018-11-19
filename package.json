@@ -45,6 +45,7 @@
     "closure-npc": "*",
     "codecov": "^3.0.4",
     "coveralls": "^3.0.0",
+    "cross-env": "^5.2.0",
     "glob": "^7.1.2",
     "gts": "^0.9.0",
     "intelli-espower-loader": "^1.0.1",
@@ -54,6 +55,7 @@
     "mocha": "^5.0.0",
     "ncp": "^2.0.0",
     "nock": "^10.0.0",
+    "nyc": "^13.1.0",
     "once": "^1.4.0",
     "pify": "^4.0.0",
     "post-install-check": "0.0.1",
@@ -84,11 +86,11 @@
   },
   "scripts": {
     "changelog": "npm run compile && ./bin/run-changelog.sh",
-    "coverage": "npm run compile && ./bin/run-test.sh -c",
     "prepare": "npm run compile",
     "presystem-test": "npm run compile",
     "system-test": "mocha build/system-test",
-    "test": "./bin/run-test.sh",
+    "test-no-cover": "cross-env CLOUD_DEBUG_ASSERTIONS=1 mocha build/test --require source-map-support/register --timeout 4000 --R spec",
+    "test": "nyc npm run test-no-cover && nyc report",
     "check": "gts check",
     "clean": "gts clean",
     "precompile": "npm run compile-scripts && node build/scripts/setup-build-dir.js",
@@ -108,5 +110,14 @@
     "LICENSE",
     "README.md",
     "build/src"
-  ]
+  ],
+  "nyc": {
+    "reporter": [
+      "lcov"
+    ],
+    "exclude": [
+      "build/test/*-code.js",
+      "build/test/fixtures/**/*.js"
+    ]
+  }
 }
