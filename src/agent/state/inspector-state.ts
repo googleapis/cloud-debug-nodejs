@@ -278,14 +278,9 @@ class StateResolver {
       return '';
     }
     const scriptUrl = this.scriptmapper[scriptId].url;
-    if (scriptUrl.startsWith('file://')) {
-      // In Node 11+, non-internal files are formatted as URLs, so get just the
-      // path.
-      return scriptUrl.slice('file://'.length);
-    } else {
-      // Internal files should be returned as is.
-      return scriptUrl;
-    }
+    // In Node 11+, non-internal files are formatted as URLs, so get just the
+    // path.
+    return StateResolver.stripFileProtocol_(scriptUrl);
   }
 
   resolveRelativePath_(frame: inspector.Debugger.CallFrame): string {
@@ -306,7 +301,6 @@ class StateResolver {
   }
 
   isPathInCurrentWorkingDirectory_(path: string): boolean {
-    // return true;
     return StateResolver.stripFileProtocol_(path).indexOf(
                this.config.workingDirectory) === 0;
   }
