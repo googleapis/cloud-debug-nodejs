@@ -1802,21 +1802,21 @@ describe('v8debugapi', () => {
 describe('v8debugapi.findScripts', () => {
   it('should properly handle appPathRelativeToRepository', () => {
     const config = extend(true, {}, undefined!, {
-      workingDirectory: '/some/strange/directory',
-      appPathRelativeToRepository: '/my/project/root'
+      workingDirectory: path.join('some', 'strange', 'directory'),
+      appPathRelativeToRepository: path.join('my', 'project', 'root')
     });
 
     const logger = new MockLogger();
 
     const fakeFileStats = {
-      '/some/strange/directory/test/fixtures/a/hello.js':
+      [path.join('some', 'strange', 'directory', 'test', 'fixtures', 'a', 'hello.js')]:
           {hash: 'fake', lines: 5},
-      '/my/project/root/test/fixtures/a/hello.js': {hash: 'fake', lines: 50}
+      [path.join('my', 'project', 'root', 'test', 'fixtures', 'a', 'hello.js')]: {hash: 'fake', lines: 50}
     };
-    const scriptPath = '/my/project/root/test/fixtures/a/hello.js';
+    const scriptPath = path.join('my', 'project', 'root', 'test', 'fixtures', 'a', 'hello.js');
     const result = utils.findScripts(scriptPath, config, fakeFileStats, logger);
     assert.deepStrictEqual(
-        result, ['/some/strange/directory/test/fixtures/a/hello.js']);
+        result, [path.join('some', 'strange', 'directory', 'test', 'fixtures', 'a', 'hello.js')]);
     assert.strictEqual(logger.allCalls().length, 0);
   });
 
@@ -1824,20 +1824,20 @@ describe('v8debugapi.findScripts', () => {
     const config = extend(true, {}, undefined!, {
       pathResolver(
           scriptPath: string, knownFiles: string[], resolved: string[]) {
-        return [`/build/${scriptPath}`];
+        return [path.join('build', scriptPath)];
       },
     });
 
     const fakeFileStats = {
-      '/build/index.js': {hash: 'fake', lines: 5},
-      '/build/some/subdir/index.js': {hash: 'fake', lines: 5},
+      [path.join('build', 'index.js')]: {hash: 'fake', lines: 5},
+      [path.join('build', 'some', 'subdir', 'index.js')]: {hash: 'fake', lines: 5},
     };
 
     const logger = new MockLogger();
 
     assert.deepEqual(
         utils.findScripts('index.js', config, fakeFileStats, logger),
-        ['/build/index.js']);
+        [path.join('build', 'index.js')]);
     assert.strictEqual(logger.allCalls().length, 0);
   });
 
@@ -1845,15 +1845,15 @@ describe('v8debugapi.findScripts', () => {
     const config = extend(true, {}, undefined!);
 
     const fakeFileStats = {
-      '/build/index.js': {hash: 'fake', lines: 5},
-      '/build/some/subdir/index.js': {hash: 'fake', lines: 5},
+      [path.join('build', 'index.js')]: {hash: 'fake', lines: 5},
+      [path.join('build', 'some', 'subdir', 'index.js')]: {hash: 'fake', lines: 5},
     };
 
     const logger = new MockLogger();
 
     assert.deepEqual(
         utils.findScripts('index.js', config, fakeFileStats, logger),
-        ['/build/index.js', '/build/some/subdir/index.js']);
+        [path.join('build', 'index.js'), path.join('build', 'some', 'subdir', 'index.js')]);
     assert.strictEqual(logger.allCalls().length, 0);
   });
 
@@ -1867,15 +1867,15 @@ describe('v8debugapi.findScripts', () => {
        });
 
        const fakeFileStats = {
-         '/build/index.js': {hash: 'fake', lines: 5},
-         '/build/some/subdir/index.js': {hash: 'fake', lines: 5},
+         [path.join('build', 'index.js')]: {hash: 'fake', lines: 5},
+         [path.join('build', 'some', 'subdir', 'index.js')]: {hash: 'fake', lines: 5},
        };
 
        const logger = new MockLogger();
 
        assert.deepEqual(
            utils.findScripts('index.js', config, fakeFileStats, logger),
-           ['/build/index.js', '/build/some/subdir/index.js']);
+           [path.join('build', 'index.js'), path.join('build', 'some', 'subdir', 'index.js')]);
        assert.strictEqual(logger.allCalls().length, 0);
      });
 
@@ -1883,13 +1883,13 @@ describe('v8debugapi.findScripts', () => {
     const config = extend(true, {}, undefined!, {
       pathResolver(
           scriptPath: string, knownFiles: string[], resolved: string[]) {
-        return ['/some/unknown/path'];
+        return [path.join('some', 'unknown', 'path')];
       },
     });
 
     const fakeFileStats = {
-      '/build/index.js': {hash: 'fake', lines: 5},
-      '/build/some/subdir/index.js': {hash: 'fake', lines: 5},
+      [path.join('build', 'index.js')]: {hash: 'fake', lines: 5},
+      [path.join('build', 'some', 'subdir', 'index.js')]: {hash: 'fake', lines: 5},
     };
 
     const logger = new MockLogger();
@@ -1898,11 +1898,11 @@ describe('v8debugapi.findScripts', () => {
     // returns a path unknown to the debug agent.
     assert.deepEqual(
         utils.findScripts('index.js', config, fakeFileStats, logger),
-        ['/build/index.js', '/build/some/subdir/index.js']);
+        [path.join('build', 'index.js'), path.join('build', 'some', 'subdir', 'index.js')]);
     assert.strictEqual(logger.allCalls().length, 1);
     assert.strictEqual(logger.warns.length, 1);
     const message = logger.warns[0].args[0];
-    assert.notStrictEqual(message.indexOf('/some/unknown/path'), -1);
+    assert.notStrictEqual(message.indexOf(path.join('some', 'unknown', 'path')), -1);
     assert.notStrictEqual(
         message.indexOf('not in the list of paths known to the debug agent'),
         -1);
@@ -1917,8 +1917,8 @@ describe('v8debugapi.findScripts', () => {
     });
 
     const fakeFileStats = {
-      '/build/index.js': {hash: 'fake', lines: 5},
-      '/build/some/subdir/index.js': {hash: 'fake', lines: 5},
+      [path.join('build', 'index.js')]: {hash: 'fake', lines: 5},
+      [path.join('build', 'some', 'subdir', 'index.js')]: {hash: 'fake', lines: 5},
     };
 
     const logger = new MockLogger();
@@ -1926,7 +1926,7 @@ describe('v8debugapi.findScripts', () => {
     // The default resolved files should be used in this case.
     assert.deepEqual(
         utils.findScripts('index.js', config, fakeFileStats, logger),
-        ['/build/index.js', '/build/some/subdir/index.js']);
+        [path.join('build', 'index.js'), path.join('build', 'some', 'subdir', 'index.js')]);
     assert.strictEqual(logger.allCalls().length, 1);
     assert.strictEqual(logger.warns.length, 1);
     const message = logger.warns[0].args[0];
@@ -1946,8 +1946,8 @@ describe('v8debugapi.findScripts', () => {
        });
 
        const fakeFileStats = {
-         '/build/index.js': {hash: 'fake', lines: 5},
-         '/build/some/subdir/index.js': {hash: 'fake', lines: 5},
+         [path.join('build', 'index.js')]: {hash: 'fake', lines: 5},
+         [path.join('build', 'some', 'subdir', 'index.js')]: {hash: 'fake', lines: 5},
        };
 
        const logger = new MockLogger();
@@ -1955,7 +1955,7 @@ describe('v8debugapi.findScripts', () => {
        // The default resolved files should be used in this case.
        assert.deepEqual(
            utils.findScripts('index.js', config, fakeFileStats, logger),
-           ['/build/index.js', '/build/some/subdir/index.js']);
+           [path.join('build', 'index.js'), path.join('build', 'some', 'subdir', 'index.js')]);
        assert.strictEqual(logger.allCalls().length, 1);
        assert.strictEqual(logger.warns.length, 1);
        const message = logger.warns[0].args[0];
@@ -1969,8 +1969,8 @@ describe('v8debugapi.findScripts', () => {
     const config = extend(true, {}, undefined!, {pathResolver: 'some value'});
 
     const fakeFileStats = {
-      '/build/index.js': {hash: 'fake', lines: 5},
-      '/build/some/subdir/index.js': {hash: 'fake', lines: 5},
+      [path.join('build', 'index.js')]: {hash: 'fake', lines: 5},
+      [path.join('build', 'some', 'subdir', 'index.js')]: {hash: 'fake', lines: 5},
     };
 
     const logger = new MockLogger();
@@ -1978,7 +1978,7 @@ describe('v8debugapi.findScripts', () => {
     // The default resolved files should be used in this case.
     assert.deepEqual(
         utils.findScripts('index.js', config, fakeFileStats, logger),
-        ['/build/index.js', '/build/some/subdir/index.js']);
+        [path.join('build', 'index.js'), path.join('build', 'some', 'subdir', 'index.js')]);
     assert.strictEqual(logger.allCalls().length, 1);
     assert.strictEqual(logger.warns.length, 1);
     const message = logger.warns[0].args[0];
