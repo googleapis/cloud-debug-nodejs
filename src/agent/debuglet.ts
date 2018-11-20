@@ -23,6 +23,7 @@ import * as fs from 'fs';
 import * as metadata from 'gcp-metadata';
 import * as _ from 'lodash';
 import * as path from 'path';
+import * as promisify from 'pify';
 import * as util from 'util';
 
 import {Debug, PackageInfo} from '../client/stackdriver/debug';
@@ -38,8 +39,6 @@ import * as SourceMapper from './io/sourcemapper';
 import * as utils from './util/utils';
 import * as debugapi from './v8/debugapi';
 import {DebugApi} from './v8/debugapi';
-
-const promisify = require('util.promisify');
 
 const readFilep = promisify(fs.readFile);
 
