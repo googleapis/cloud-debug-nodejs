@@ -17,12 +17,12 @@
 import * as fs from 'fs';
 import * as _ from 'lodash';
 import * as path from 'path';
+import * as promisify from 'pify';
 import * as sourceMap from 'source-map';
 
 import {findScriptsFuzzy} from '../util/utils';
 
-const promisify = require('util.promisify');
-const pLimit = require('p-limit');
+import pLimit = require('p-limit');
 
 const CONCURRENCY = 10;
 const readFilep = promisify(fs.readFile);
