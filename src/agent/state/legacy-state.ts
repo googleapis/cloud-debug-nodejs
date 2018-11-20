@@ -71,11 +71,11 @@ interface ScopeType {
   Global: {};
   Script: {};
   Closure: {};
-  Local: {}
+  Local: {};
 }
 
 interface LegacyVm {
-  runInDebugContext: (context: String) => ScopeType;
+  runInDebugContext: (context: string) => ScopeType;
 }
 
 class StateResolver {
