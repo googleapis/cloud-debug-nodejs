@@ -179,7 +179,7 @@ export function setErrorStatusAndCallback(
     fn: (err: Error|null) => void, breakpoint: stackdriver.Breakpoint,
     refersTo: stackdriver.Reference, message: string): void {
   const error = new Error(message);
-  return setImmediate(() => {
+  setImmediate(() => {
     if (breakpoint && !breakpoint.status) {
       breakpoint.status = new StatusMessage(refersTo, message, true);
     }
