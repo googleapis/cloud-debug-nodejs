@@ -277,7 +277,10 @@ class StateResolver {
     if (this.scriptmapper[scriptId].url === undefined) {
       return '';
     }
-    return this.scriptmapper[scriptId].url;
+    const scriptUrl = this.scriptmapper[scriptId].url;
+    // In Node 11+, non-internal files are formatted as URLs, so get just the
+    // path.
+    return StateResolver.stripFileProtocol_(scriptUrl);
   }
 
   resolveRelativePath_(frame: inspector.Debugger.CallFrame): string {
@@ -298,7 +301,6 @@ class StateResolver {
   }
 
   isPathInCurrentWorkingDirectory_(path: string): boolean {
-    // return true;
     return StateResolver.stripFileProtocol_(path).indexOf(
                this.config.workingDirectory) === 0;
   }

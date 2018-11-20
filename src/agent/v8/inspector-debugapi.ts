@@ -31,6 +31,17 @@ import * as utils from '../util/utils';
 import * as debugapi from './debugapi';
 import {V8Inspector} from './v8inspector';
 
+/**
+ * An interface that describes options that set behavior when interacting with
+ * the V8 Inspector API.
+ */
+interface InspectorOptions {
+  /**
+   * Whether to add a 'file://' prefix to a URL when setting breakpoints.
+   */
+  useWellFormattedUrl: boolean;
+}
+
 export class BreakpointData {
   constructor(
       public id: inspector.Debugger.BreakpointId,
@@ -58,6 +69,8 @@ export class InspectorDebugApi implements debugapi.DebugApi {
   // stackdriver breakpoint id.
   breakpointMapper: {[id: string]: stackdriver.BreakpointId[]} = {};
   numBreakpoints = 0;
+  // Options for behavior when interfacing with the Inspector API.
+  private inspectorOptions: InspectorOptions;
   v8Inspector: V8Inspector;
   constructor(
       logger: consoleLogLevel.Logger, config: ResolvedDebugAgentConfig,
@@ -80,6 +93,10 @@ export class InspectorDebugApi implements debugapi.DebugApi {
         this.logger.error(error);
       }
     });
+    this.inspectorOptions = {
+      // Well-Formatted URL is required in Node 10.11.1+.
+      useWellFormattedUrl: utils.satisfies(process.version, '>10.11.0')
+    };
     this.v8Inspector = new V8Inspector(this.session);
   }
 
@@ -367,9 +384,8 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     let v8BreakpointId;  // v8/inspector breakpoint id
     if (!this.locationMapper[locationStr]) {
       // The first time when a breakpoint was set to this location.
-
-      const url = utils.satisfies(process.version, '>=10.12.0') ?
-          'file://' + matchingScript :
+      const url = this.inspectorOptions.useWellFormattedUrl ?
+          `file://${matchingScript}` :
           matchingScript;
       const res = this.v8Inspector.setBreakpointByUrl({
         lineNumber: line - 1,
