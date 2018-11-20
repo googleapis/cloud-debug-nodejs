@@ -67,6 +67,17 @@ export function evaluate(expression: string, frame: v8.FrameMirror):
   }
 }
 
+interface ScopeType {
+  Global: {};
+  Script: {};
+  Closure: {};
+  Local: {}
+}
+
+interface LegacyVm {
+  runInDebugContext: (context: String) => ScopeType;
+}
+
 class StateResolver {
   private state: v8.ExecutionState;
   private expressions: string[];
@@ -77,7 +88,7 @@ class StateResolver {
   private messageTable: stackdriver.Variable[];
   private resolvedVariableTable: stackdriver.Variable[];
   private rawVariableTable: Array<v8.ValueMirror|null>;
-  private scopeType: {Global: {}, Script: {}, Closure: {}, Local: {}};
+  private scopeType: ScopeType;
   /**
    * @param {!Object} execState
    * @param {Array<string>} expressions
@@ -126,7 +137,9 @@ class StateResolver {
       return null;
     });
 
-    this.scopeType = vm.runInDebugContext('ScopeType');
+    // This constructor is only used in situations where the legacy vm
+    // interface is used that has the `runInDebugContext` method.
+    this.scopeType = (vm as {} as LegacyVm).runInDebugContext('ScopeType');
   }
 
 

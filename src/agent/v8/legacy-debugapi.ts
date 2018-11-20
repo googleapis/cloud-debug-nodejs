@@ -43,6 +43,10 @@ export class V8BreakpointData {
       public compile: null|((src: string) => string)) {}
 }
 
+interface LegacyVm {
+  runInDebugContext: (context: string) => v8.Debug;
+}
+
 export class V8DebugApi implements debugapi.DebugApi {
   breakpoints: {[id: string]: V8BreakpointData} = {};
   sourcemapper: SourceMapper;
@@ -63,7 +67,9 @@ export class V8DebugApi implements debugapi.DebugApi {
       logger: consoleLogLevel.Logger, config: ResolvedDebugAgentConfig,
       jsFiles: ScanStats, sourcemapper: SourceMapper) {
     this.sourcemapper = sourcemapper;
-    this.v8 = vm.runInDebugContext('Debug');
+    // This constructor is only used in situations where the legacy vm
+    // interface is used that has the `runInDebugContext` method.
+    this.v8 = (vm as {} as LegacyVm).runInDebugContext('Debug');
     this.config = config;
     this.fileStats = jsFiles;
     this.v8Version = /(\d+\.\d+\.\d+)\.\d+/.exec(process.versions.v8);
@@ -158,7 +164,7 @@ export class V8DebugApi implements debugapi.DebugApi {
       this.logger.info('deactivating v8 breakpoint listener');
       this.v8.setListener(null);
     }
-    return setImmediate(() => {
+    setImmediate(() => {
       cb(null);
     });
   }
