@@ -19,7 +19,7 @@
  */
 
 import {ServiceObject} from '@google-cloud/common';
-import * as request from 'request';
+import * as request from 'request';  // types only
 
 import {Debug} from '../src/client/stackdriver/debug';
 import {Debuggee} from '../src/debuggee';

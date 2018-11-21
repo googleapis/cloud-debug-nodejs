@@ -16,7 +16,6 @@
 
 import * as acorn from 'acorn';
 import * as estree from 'estree';
-import * as _ from 'lodash';
 import * as path from 'path';
 import * as semver from 'semver';
 import * as vm from 'vm';
@@ -114,7 +113,7 @@ export class V8DebugApi implements debugapi.DebugApi {
     }
     const baseScriptPath = path.normalize(breakpoint.location.path);
     if (!this.sourcemapper.hasMappingInfo(baseScriptPath)) {
-      if (!_.endsWith(baseScriptPath, '.js')) {
+      if (!baseScriptPath.endsWith('.js')) {
         return utils.setErrorStatusAndCallback(
             cb, breakpoint, StatusMessage.BREAKPOINT_SOURCE_LOCATION,
             utils.messages.COULD_NOT_FIND_OUTPUT_FILE);

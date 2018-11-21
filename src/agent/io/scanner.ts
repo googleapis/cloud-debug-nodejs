@@ -15,14 +15,13 @@
  */
 
 import * as crypto from 'crypto';
-
 import * as events from 'events';
+import * as fs from 'fs';
+import * as path from 'path';
+import pickBy = require('lodash.pickby');
+
 // TODO: Make this more precise.
 const findit: (dir: string) => events.EventEmitter = require('findit2');
-
-import * as fs from 'fs';
-import * as _ from 'lodash';
-import * as path from 'path';
 
 // TODO: Make this more precise.
 const split: () => fs.WriteStream = require('split');
@@ -83,9 +82,7 @@ class ScanResultsImpl implements ScanResults {
    *  should be included in the returned results.
    */
   selectStats(regex: RegExp): ScanStats|{} {
-    return _.pickBy(this.stats, (ignore, key) => {
-      return regex.test(key);
-    });
+    return pickBy(this.stats, (_, key) => regex.test(key));
   }
 
   /**

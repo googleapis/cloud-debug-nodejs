@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as request from 'request';
+import * as request from 'request';  // types only
 
 export function authRequest(options: (request.UriOptions&request.CoreOptions)|(
     request.UrlOptions & request.CoreOptions)): Promise<request.Response> {
