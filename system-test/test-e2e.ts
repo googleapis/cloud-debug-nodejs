@@ -227,7 +227,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     assert.ok(top.function, 'frame should have a function property');
     assert.strictEqual(top.function, 'fib');
 
-    const arg = top.locals.find(t => t === {name: 'n'});
+    const arg = top.locals.find(t => t.name === 'n');
     assert.ok(arg, 'should find the n argument');
     assert.strictEqual(arg!.value, '10');
     console.log('-- checking log point was hit again');
