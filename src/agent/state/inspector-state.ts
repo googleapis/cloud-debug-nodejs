@@ -16,18 +16,14 @@
 
 // TODO: Unify some common code with state.ts in future PRs.
 
+import is from '@sindresorhus/is';
 import * as inspector from 'inspector';
-import * as lodash from 'lodash';
 import * as util from 'util';
 
-import {debugAssert} from '../util/debug-assert';
-
-const isEmpty = lodash.isEmpty;
-
 import {StatusMessage} from '../../client/stackdriver/status-message';
-
 import * as stackdriver from '../../types/stackdriver';
 import {ResolvedDebugAgentConfig} from '../config';
+import {debugAssert} from '../util/debug-assert';
 import {V8Inspector} from '../v8/v8inspector';
 
 const assert = debugAssert(!!process.env.CLOUD_DEBUG_ASSERTIONS);
@@ -326,7 +322,7 @@ class StateResolver {
     } else {
       locals = this.resolveLocalsList_(frame);
 
-      if (isEmpty(locals)) {
+      if (is.emptyArray(locals)) {
         locals = [];
       }
     }
@@ -389,7 +385,7 @@ class StateResolver {
       const result = this.v8Inspector.getProperties(
           {objectId: frame.scopeChain[i].object.objectId as string});
       // TODO: Handle when result.error exists.
-      if (result.response && !isEmpty(result.response.result)) {
+      if (result.response && !is.emptyArray(result.response.result)) {
         for (let j = 0; j < result.response.result.length; ++j) {
           if (!usedNames[result.response.result[j].name]) {
             // It's a valid variable that belongs in the locals list

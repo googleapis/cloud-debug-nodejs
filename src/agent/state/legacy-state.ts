@@ -13,21 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as lodash from 'lodash';
+
+import is from '@sindresorhus/is';
 import * as util from 'util';
 import * as vm from 'vm';
 
-import {debugAssert} from '../util/debug-assert';
-
-const transform = lodash.transform;
-const flatten = lodash.flatten;
-const isEmpty = lodash.isEmpty;
-
 import {StatusMessage} from '../../client/stackdriver/status-message';
-
-import * as v8 from '../../types/v8';
 import * as stackdriver from '../../types/stackdriver';
+import * as v8 from '../../types/v8';
 import {ResolvedDebugAgentConfig} from '../config';
+import {debugAssert} from '../util/debug-assert';
 
 
 const assert = debugAssert(!!process.env.CLOUD_DEBUG_ASSERTIONS);
@@ -341,7 +336,7 @@ class StateResolver {
       // in locals which will include any applicable arguments from the
       // invocation.
       locals = this.resolveLocalsList_(frame);
-      if (isEmpty(locals)) {
+      if (is.emptyArray(locals)) {
         locals = [];
       }
     }
@@ -409,27 +404,22 @@ class StateResolver {
       scopes = allScopes.slice(0, -2);
     }
 
-    const fromScopes: stackdriver.Variable[][] =
-        scopes.map((scope: v8.ScopeMirror) => {
-          return transform(
-              // TODO: Update this so that `locals` is not of type `any[]`.
-              scope.details().object(),
-              (locals: stackdriver.Variable[], value, name: string) => {
-                const trg = makeMirror(value);
-                if (!usedNames[name]) {
-                  // It's a valid variable that belongs in the locals list
-                  // and wasn't discovered at a lower-scope
-                  usedNames[name] = true;
-                  // TODO: Determine how to not have an explicit down cast to
-                  // ValueMirror
-                  locals.push(self.resolveVariable_(
-                      name, trg as v8.ValueMirror, false));
-                }  // otherwise another same-named variable occured at a
-                   // lower scope
-                return locals;
-              },
-              []);
-        });
+    const fromScopes = scopes.map((scope: v8.ScopeMirror) => {
+      const obj = scope.details().object();
+      return Object.keys(obj).reduce((acc, name) => {
+        const value = obj[name];
+        const trg = makeMirror(value);
+        if (!usedNames[name]) {
+          // It's a valid variable that belongs in the locals list
+          // and wasn't discovered at a lower-scope
+          usedNames[name] = true;
+          // TODO: Determine how to not have an explicit down cast to
+          // ValueMirror
+          acc.push(self.resolveVariable_(name, trg as v8.ValueMirror, false));
+        }
+        return acc;
+      }, [] as stackdriver.Variable[]);
+    });
 
     function resolveFromReceiver(): stackdriver.Variable[] {
       // The frame receiver is the 'this' context that is present during
@@ -446,7 +436,7 @@ class StateResolver {
       return [];
     }
 
-    return flatten(fromScopes).concat(resolveFromReceiver());
+    return [].concat.apply([], fromScopes).concat(resolveFromReceiver());
   }
 
   /**

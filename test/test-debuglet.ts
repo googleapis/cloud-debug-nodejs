@@ -16,7 +16,6 @@
 
 import * as assert from 'assert';
 import * as fs from 'fs';
-import * as _ from 'lodash';
 import * as path from 'path';
 import * as proxyquire from 'proxyquire';
 
@@ -381,7 +380,7 @@ describe('Debuglet', () => {
 
         let buffer = '';
         const oldConsoleError = console.error;
-        console.error = (str) => {
+        console.error = (str: string) => {
           buffer += str;
         };
 
@@ -497,14 +496,13 @@ describe('Debuglet', () => {
         const debuglet = new Debuglet(debug, defaultConfig);
         assert.ok(debuglet.config);
         assert.ok(debuglet.config.serviceContext);
-        assert.ok(
-            // TODO: IMPORTANT: It appears that this test is incorrect as it
-            //       is.  That is, if minorVersion is replaced with the
-            //       correctly named minorVersion_, then the test fails.
-            //       Resolve this.
-            _.isUndefined((debuglet.config.serviceContext as {
-                            minorVersion: {}
-                          }).minorVersion));
+        // TODO: IMPORTANT: It appears that this test is incorrect as it
+        //       is.  That is, if minorVersion is replaced with the
+        //       correctly named minorVersion_, then the test fails.
+        //       Resolve this.
+        assert.strictEqual(undefined, (debuglet.config.serviceContext as {
+                                        minorVersion: {}
+                                      }).minorVersion);
       });
 
       it('should not provide minorversion upon registration on non flex',
@@ -515,16 +513,17 @@ describe('Debuglet', () => {
 
            const config = debugletConfig();
            const debuglet = new Debuglet(debug, config);
-           const scope = nock(config.apiUrl)
-                             .post(
-                                 REGISTER_PATH,
-                                 (body: {debuggee: Debuggee}) => {
-                                   assert.ok(_.isUndefined(
-                                       body.debuggee.labels!.minorversion));
-                                   return true;
-                                 })
-                             .once()
-                             .reply(200, {debuggee: {id: DEBUGGEE_ID}});
+           const scope =
+               nock(config.apiUrl)
+                   .post(
+                       REGISTER_PATH,
+                       (body: {debuggee: Debuggee}) => {
+                         assert.strictEqual(
+                             undefined, body.debuggee.labels!.minorversion);
+                         return true;
+                       })
+                   .once()
+                   .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
            // TODO: Determine if the id parameter should be used.
            debuglet.once('registered', (id: string) => {

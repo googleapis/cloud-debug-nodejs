@@ -15,7 +15,6 @@
  */
 
 import * as fs from 'fs';
-import * as _ from 'lodash';
 import * as path from 'path';
 import * as promisify from 'pify';
 import * as sourceMap from 'source-map';
@@ -52,7 +51,7 @@ async function processSourcemap(
     infoMap: Map<string, MapInfoInput>, mapPath: string) {
   // this handles the case when the path is undefined, null, or
   // the empty string
-  if (!mapPath || !_.endsWith(mapPath, MAP_EXT)) {
+  if (!mapPath || !mapPath.endsWith(MAP_EXT)) {
     throw new Error(`The path ${mapPath} does not specify a sourcemap file`);
   }
   mapPath = path.normalize(mapPath);

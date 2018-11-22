@@ -16,11 +16,9 @@
 
 import * as assert from 'assert';
 import * as cp from 'child_process';
-import * as _ from 'lodash';  // for _.find. Can't use ES6 yet.
 import * as util from 'util';
 
 import {Debug} from '../src/client/stackdriver/debug';
-import {Debuggee} from '../src/debuggee';
 import * as stackdriver from '../src/types/stackdriver';
 import {Debugger} from '../test/debugger';
 
@@ -29,9 +27,7 @@ const CLUSTER_WORKERS = 3;
 const FILENAME = 'build/test/fixtures/fib.js';
 
 const delay = (delayTimeMS: number): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    setTimeout(resolve, delayTimeMS);
-  });
+  return new Promise(r => setTimeout(r, delayTimeMS));
 };
 
 interface Child {
@@ -145,10 +141,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
         '-- List of debuggees\n', util.inspect(debuggees, {depth: null}));
     assert.ok(debuggees, 'should get a valid ListDebuggees response');
 
-    const result = _.find(debuggees, (d: Debuggee) => {
-      return d.id === debuggeeId;
-    });
-
+    const result = debuggees.find(d => d.id === debuggeeId);
     assert.ok(result, 'should find the debuggee we just registered');
   }
 
@@ -234,7 +227,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     assert.ok(top.function, 'frame should have a function property');
     assert.strictEqual(top.function, 'fib');
 
-    const arg = _.find(top.locals, {name: 'n'});
+    const arg = top.locals.find(t => t.name === 'n');
     assert.ok(arg, 'should find the n argument');
     assert.strictEqual(arg!.value, '10');
     console.log('-- checking log point was hit again');

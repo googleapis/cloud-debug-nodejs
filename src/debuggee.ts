@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as _ from 'lodash';
+import is from '@sindresorhus/is';
 
 import {PackageInfo} from './client/stackdriver/debug';
 import {StatusMessage} from './client/stackdriver/status-message';
@@ -84,13 +84,13 @@ export class Debuggee {
 
     properties = properties || {};
 
-    if (!_.isString(properties.project)) {
+    if (!is.string(properties.project)) {
       throw new Error('properties.project must be a string');
     }
-    if (!_.isString(properties.uniquifier)) {
+    if (!is.string(properties.uniquifier)) {
       throw new Error('properties.uniquifier must be a string');
     }
-    if (!_.isString(properties.description)) {
+    if (!is.string(properties.description)) {
       throw new Error('properties.description must be a string');
     }
 
