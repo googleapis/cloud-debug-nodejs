@@ -29,7 +29,8 @@ const FILENAME = 'build/test/fixtures/fib.js';
 
 const UUID = uuid.v4();
 const LOG_MESSAGE_FORMAT = UUID + ': o is: $0';
-const REGEX = new RegExp(`LOGPOINT: ${UUID}: o is: {"a":\\[1,"hi",true\\]}`, 'g');
+const REGEX =
+    new RegExp(`LOGPOINT: ${UUID}: o is: {"a":\\[1,"hi",true\\]}`, 'g');
 
 const delay = (delayTimeMS: number): Promise<void> => {
   return new Promise(r => setTimeout(r, delayTimeMS));
@@ -238,8 +239,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     assert.strictEqual(arg!.value, '10');
     console.log('-- checking log point was hit again');
     children.forEach((child) => {
-      const count =
-          (child.transcript.match(REGEX) || []).length;
+      const count = (child.transcript.match(REGEX) || []).length;
       assert.ok(count > 4);
     });
 
@@ -254,8 +254,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     // Make sure the log point is continuing to be hit.
     console.log('-- checking log point was hit again');
     children.forEach((child) => {
-      const count =
-          (child.transcript.match(REGEX) || []).length;
+      const count = (child.transcript.match(REGEX) || []).length;
       assert.ok(count > 60);
     });
     console.log('-- test passed');
@@ -301,8 +300,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     // If no throttling occurs, we expect ~20 logs since we are logging
     // 2x per second over a 10 second period.
     children.forEach((child) => {
-      const logCount =
-          (child.transcript.match(REGEX) || []).length;
+      const logCount = (child.transcript.match(REGEX) || []).length;
       // A log count of greater than 10 indicates that we did not
       // successfully pause when the rate of `maxLogsPerSecond` was
       // reached.
