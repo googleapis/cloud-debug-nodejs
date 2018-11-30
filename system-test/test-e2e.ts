@@ -17,6 +17,7 @@
 import * as assert from 'assert';
 import * as cp from 'child_process';
 import * as util from 'util';
+import * as uuid from 'uuid';
 
 import {Debug} from '../src/client/stackdriver/debug';
 import * as stackdriver from '../src/types/stackdriver';
@@ -280,6 +281,8 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     assert.strictEqual(foundBreakpoints.length, 0);
     console.log('-- deleted');
 
+    const uid = uuid.v4();
+
     // Set a breakpoint at which the debugger should write to a log
     console.log('-- setting a logpoint');
     const breakpoint = await verifySetBreakpoint({
@@ -288,18 +291,19 @@ describe('@google-cloud/debug end-to-end behavior', () => {
       condition: 'n === 10',
       action: 'LOG',
       expressions: ['o'],
-      logMessageFormat: 'o is: $0',
+      logMessageFormat: uid + ': o is: $0',
       stackFrames: [],
       evaluatedExpressions: [],
       variableTable: []
     });
 
+    const regex = new RegExp(`LOGPOINT: ${uid}: o is: {"a":\\[1,"hi",true\\]}`, 'g');
+
     // If no throttling occurs, we expect ~20 logs since we are logging
     // 2x per second over a 10 second period.
     children.forEach((child) => {
       const logCount =
-          (child.transcript.match(/LOGPOINT: o is: \{"a":\[1,"hi",true\]\}/g) ||
-           []).length;
+          (child.transcript.match(regex) || []).length;
       // A log count of greater than 10 indicates that we did not
       // successfully pause when the rate of `maxLogsPerSecond` was
       // reached.
