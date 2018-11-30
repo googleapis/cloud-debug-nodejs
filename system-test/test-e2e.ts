@@ -27,6 +27,10 @@ const CLUSTER_WORKERS = 3;
 
 const FILENAME = 'build/test/fixtures/fib.js';
 
+const UUID = uuid.v4();
+const LOG_MESSAGE_FORMAT = UUID + ': o is: $0';
+const REGEX = new RegExp(`LOGPOINT: ${UUID}: o is: {"a":\\[1,"hi",true\\]}`, 'g');
+
 const delay = (delayTimeMS: number): Promise<void> => {
   return new Promise(r => setTimeout(r, delayTimeMS));
 };
@@ -186,7 +190,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
       condition: 'n === 10',
       action: 'LOG',
       expressions: ['o'],
-      logMessageFormat: 'o is: $0',
+      logMessageFormat: LOG_MESSAGE_FORMAT,
       stackFrames: [],
       evaluatedExpressions: [],
       variableTable: []
@@ -195,7 +199,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     // Check the contents of the log, but keep the original breakpoint.
     children.forEach((child, index) => {
       assert(
-          child.transcript.indexOf('o is: {"a":[1,"hi",true]}') !== -1,
+          child.transcript.indexOf(`${UUID}: o is: {"a":[1,"hi",true]}`) !== -1,
           'transcript in child ' + index +
               ' should contain value of o: ' + child.transcript);
     });
@@ -209,6 +213,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
       location: {path: FILENAME, line: 5},
       expressions: ['process'],  // Process for large variable
       condition: 'n === 10',
+      logMessageFormat: LOG_MESSAGE_FORMAT,
       stackFrames: [],
       evaluatedExpressions: [],
       variableTable: []
@@ -234,8 +239,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     console.log('-- checking log point was hit again');
     children.forEach((child) => {
       const count =
-          (child.transcript.match(/LOGPOINT: o is: \{"a":\[1,"hi",true\]\}/g) ||
-           []).length;
+          (child.transcript.match(REGEX) || []).length;
       assert.ok(count > 4);
     });
 
@@ -251,8 +255,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     console.log('-- checking log point was hit again');
     children.forEach((child) => {
       const count =
-          (child.transcript.match(/LOGPOINT: o is: \{"a":\[1,"hi",true\]\}/g) ||
-           []).length;
+          (child.transcript.match(REGEX) || []).length;
       assert.ok(count > 60);
     });
     console.log('-- test passed');
@@ -281,8 +284,6 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     assert.strictEqual(foundBreakpoints.length, 0);
     console.log('-- deleted');
 
-    const uid = uuid.v4();
-
     // Set a breakpoint at which the debugger should write to a log
     console.log('-- setting a logpoint');
     const breakpoint = await verifySetBreakpoint({
@@ -291,19 +292,17 @@ describe('@google-cloud/debug end-to-end behavior', () => {
       condition: 'n === 10',
       action: 'LOG',
       expressions: ['o'],
-      logMessageFormat: uid + ': o is: $0',
+      logMessageFormat: LOG_MESSAGE_FORMAT,
       stackFrames: [],
       evaluatedExpressions: [],
       variableTable: []
     });
 
-    const regex = new RegExp(`LOGPOINT: ${uid}: o is: {"a":\\[1,"hi",true\\]}`, 'g');
-
     // If no throttling occurs, we expect ~20 logs since we are logging
     // 2x per second over a 10 second period.
     children.forEach((child) => {
       const logCount =
-          (child.transcript.match(regex) || []).length;
+          (child.transcript.match(REGEX) || []).length;
       // A log count of greater than 10 indicates that we did not
       // successfully pause when the rate of `maxLogsPerSecond` was
       // reached.
