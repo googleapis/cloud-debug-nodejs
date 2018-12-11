@@ -1,5 +1,61 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## v3.0.1
+
+12-11-2018 14:18 PST
+
+### Implementation Changes
+- fix: use well-formatted URLs when setting breakpoints ([#535](https://github.com/googleapis/cloud-debug-nodejs/pull/535))
+
+### Dependencies
+- chore: update `teeny-request` ([#589](https://github.com/googleapis/cloud-debug-nodejs/pull/589))
+- fix(deps): update dependency @google-cloud/common to ^0.27.0 ([#586](https://github.com/googleapis/cloud-debug-nodejs/pull/586))
+- refactor: drop dependencies on request and lodash ([#585](https://github.com/googleapis/cloud-debug-nodejs/pull/585))
+- chore(deps): update dependency @types/node to ~10.12.0 ([#546](https://github.com/googleapis/cloud-debug-nodejs/pull/546))
+- refactor: remove a few unused dependencies ([#584](https://github.com/googleapis/cloud-debug-nodejs/pull/584))
+- chore: make `npm test` platform independent ([#583](https://github.com/googleapis/cloud-debug-nodejs/pull/583))
+- chore(deps): update dependency gts to ^0.9.0 ([#580](https://github.com/googleapis/cloud-debug-nodejs/pull/580))
+- fix(deps): update dependency @google-cloud/common to ^0.26.0 ([#552](https://github.com/googleapis/cloud-debug-nodejs/pull/552))
+- fix(deps): update dependency gcp-metadata to ^0.9.0 ([#566](https://github.com/googleapis/cloud-debug-nodejs/pull/566))
+- chore: update issue templates ([#565](https://github.com/googleapis/cloud-debug-nodejs/pull/565))
+- fix(deps): update dependency gcp-metadata to ^0.8.0 ([#548](https://github.com/googleapis/cloud-debug-nodejs/pull/548))
+- chore(deps): update dependency @types/glob to v7 ([#549](https://github.com/googleapis/cloud-debug-nodejs/pull/549))
+- chore(deps): update dependency typescript to ~3.1.0 ([#547](https://github.com/googleapis/cloud-debug-nodejs/pull/547))
+- chore(deps): update dependency nock to v10 ([#551](https://github.com/googleapis/cloud-debug-nodejs/pull/551))
+- fix(deps): update dependency @google-cloud/common to ^0.25.0 ([#520](https://github.com/googleapis/cloud-debug-nodejs/pull/520))
+
+### Internal / Testing Changes
+- chore: update nyc and eslint configs ([#607](https://github.com/googleapis/cloud-debug-nodejs/pull/607))
+- chore: fix publish.sh permission +x ([#605](https://github.com/googleapis/cloud-debug-nodejs/pull/605))
+- fix(build): fix Kokoro release script ([#604](https://github.com/googleapis/cloud-debug-nodejs/pull/604))
+- build: add Kokoro configs for autorelease ([#603](https://github.com/googleapis/cloud-debug-nodejs/pull/603))
+- chore: always nyc report before calling codecov ([#600](https://github.com/googleapis/cloud-debug-nodejs/pull/600))
+- chore: nyc ignore build/test by default ([#599](https://github.com/googleapis/cloud-debug-nodejs/pull/599))
+- chore(build): update prettier and renovate config ([#597](https://github.com/googleapis/cloud-debug-nodejs/pull/597))
+- chore: update system tests key ([#596](https://github.com/googleapis/cloud-debug-nodejs/pull/596))
+- chore: update license file ([#595](https://github.com/googleapis/cloud-debug-nodejs/pull/595))
+- fix(build): fix system key decryption ([#591](https://github.com/googleapis/cloud-debug-nodejs/pull/591))
+- chore: use a uuid in system tests ([#590](https://github.com/googleapis/cloud-debug-nodejs/pull/590))
+- chore: add encrypted key for system tests ([#588](https://github.com/googleapis/cloud-debug-nodejs/pull/588))
+- chore: add synth.metadata
+- chore: update eslintignore config ([#579](https://github.com/googleapis/cloud-debug-nodejs/pull/579))
+- chore: drop contributors from multiple places ([#578](https://github.com/googleapis/cloud-debug-nodejs/pull/578))
+- chore: use latest npm on Windows ([#576](https://github.com/googleapis/cloud-debug-nodejs/pull/576))
+- chore: update CircleCI config ([#574](https://github.com/googleapis/cloud-debug-nodejs/pull/574))
+- chore: include build in eslintignore ([#571](https://github.com/googleapis/cloud-debug-nodejs/pull/571))
+- fix: fix Node 11 tests ([#569](https://github.com/googleapis/cloud-debug-nodejs/pull/569))
+- chore: remove old issue template ([#563](https://github.com/googleapis/cloud-debug-nodejs/pull/563))
+- fix: fix Node 10.12.0 specific test failures ([#560](https://github.com/googleapis/cloud-debug-nodejs/pull/560))
+- build: run tests on node11 ([#561](https://github.com/googleapis/cloud-debug-nodejs/pull/561))
+- chores(build): do not collect sponge.xml from windows builds ([#550](https://github.com/googleapis/cloud-debug-nodejs/pull/550))
+- chore: update new issue template ([#544](https://github.com/googleapis/cloud-debug-nodejs/pull/544))
+- build: fix codecov uploading on Kokoro ([#540](https://github.com/googleapis/cloud-debug-nodejs/pull/540))
+- Update kokoro config ([#538](https://github.com/googleapis/cloud-debug-nodejs/pull/538))
+- Update kokoro config ([#534](https://github.com/googleapis/cloud-debug-nodejs/pull/534))
+- test: remove appveyor config ([#533](https://github.com/googleapis/cloud-debug-nodejs/pull/533))
+- chore: update kokoro config ([#532](https://github.com/googleapis/cloud-debug-nodejs/pull/532))
+- Enable prefer-const in the eslint config ([#531](https://github.com/googleapis/cloud-debug-nodejs/pull/531))
+
 ## 2018-09-18, Version 3.0.0 (Beta), @dominickramer
 
 This version drops support for Node 4, adds the `pathResolver` configuration option to support debugging files that have ambiguous paths, and adds a fix to handle debugging objects with circular references (for Node <10).
