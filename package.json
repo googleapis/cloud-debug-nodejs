@@ -22,6 +22,7 @@
     "node": ">=6"
   },
   "devDependencies": {
+    "@compodoc/compodoc": "^1.1.7",
     "@types/acorn": "^4.0.2",
     "@types/console-log-level": "^1.4.0",
     "@types/estree": "0.0.39",
@@ -91,7 +92,7 @@
     "prepack": "npm run compile",
     "license-check": "jsgl --local .",
     "lint": "npm run check",
-    "docs": "echo no docs available 👻",
+    "docs": "compodoc src/",
     "samples-test": "mocha samples/system-test"
   },
   "files": [
