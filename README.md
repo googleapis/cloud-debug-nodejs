@@ -1,8 +1,7 @@
 # Stackdriver Debugger agent for Node.js
 
 [![NPM Version][npm-image]][npm-url]
-[![Build Status][travis-image]][travis-url]
-[![Test Coverage][coveralls-image]][coveralls-url]
+[![codecov](https://codecov.io/gh/googleapis/cloud-debug-nodejs/branch/master/graph/badge.svg)](https://codecov.io/gh/googleapis/cloud-debug-nodejs)
 [![Dependency Status][david-image]][david-url]
 [![devDependency Status][david-dev-image]][david-dev-url]
 [![Known Vulnerabilities][snyk-image]][snyk-url]
@@ -214,10 +213,6 @@ exports.myFunc = (event) => {
 [debugger-roles]: https://cloud.google.com/debugger/docs/iam#roles
 [npm-image]: https://img.shields.io/npm/v/@google-cloud/debug-agent.svg
 [npm-url]: https://npmjs.org/package/@google-cloud/debug-agent
-[travis-image]: https://travis-ci.org/googleapis/cloud-debug-nodejs.svg?branch=master
-[travis-url]: https://travis-ci.org/googleapis/cloud-debug-nodejs
-[coveralls-image]: https://img.shields.io/coveralls/googleapis/cloud-debug-nodejs/master.svg
-[coveralls-url]: https://coveralls.io/r/googleapis/cloud-debug-nodejs?branch=master
 [david-image]: https://david-dm.org/googleapis/cloud-debug-nodejs.svg
 [david-url]: https://david-dm.org/googleapis/cloud-debug-nodejs
 [david-dev-image]: https://david-dm.org/googleapis/cloud-debug-nodejs/dev-status.svg
@@ -226,4 +221,3 @@ exports.myFunc = (event) => {
 [snyk-image]: https://snyk.io/test/github/googleapis/cloud-debug-nodejs/badge.svg
 [snyk-url]: https://snyk.io/test/github/googleapis/cloud-debug-nodejs
 [config-ts]: https://github.com/googleapis/cloud-debug-nodejs/blob/master/src/agent/config.ts
-[configuration-object]: https://googleapis.github.io/google-cloud-node/#/docs/google-cloud/0.45.0/google-cloud
