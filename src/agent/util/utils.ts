@@ -55,7 +55,7 @@ export interface LegacyListener {
 
 export interface InspectorListener {
   enabled: boolean;
-  listener: (args: Array<inspector.Debugger.CallFrame>) => void;
+  listener: (args: inspector.Debugger.CallFrame[]) => void;
 }
 
 // Exposed for unit testing.
