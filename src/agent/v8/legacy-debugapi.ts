@@ -52,7 +52,7 @@ export class V8DebugApi implements debugapi.DebugApi {
   v8: v8.Debug;
   config: ResolvedDebugAgentConfig;
   fileStats: ScanStats;
-  listeners: {[id: string]: utils.Listener} = {};
+  listeners: {[id: string]: utils.LegacyListener} = {};
   v8Version: RegExpExecArray|null;
   usePermanentListener: boolean;
   logger: consoleLogLevel.Logger;
@@ -173,13 +173,13 @@ export class V8DebugApi implements debugapi.DebugApi {
     const that = this;
     const num = that.breakpoints[breakpoint.id].v8Breakpoint.number();
     const listener =
-        this.onBreakpointHit.bind(this, breakpoint, (err: Error) => {
+        this.onBreakpointHit.bind(this, breakpoint, (err: Error|null) => {
           that.listeners[num].enabled = false;
           // This method is called from the debug event listener, which
           // swallows all exception. We defer the callback to make sure the
           // user errors aren't silenced.
           setImmediate(() => {
-            callback(err);
+            callback(err || undefined);
           });
         });
 
@@ -195,7 +195,7 @@ export class V8DebugApi implements debugapi.DebugApi {
     let timesliceEnd = Date.now() + 1000;
     // TODO: Determine why the Error argument is not used.
     const listener =
-        this.onBreakpointHit.bind(this, breakpoint, (err: Error) => {
+        this.onBreakpointHit.bind(this, breakpoint, (err: Error|null) => {
           const currTime = Date.now();
           if (currTime > timesliceEnd) {
             logsThisSecond = 0;

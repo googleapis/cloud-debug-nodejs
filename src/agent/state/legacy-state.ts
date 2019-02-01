@@ -436,7 +436,7 @@ class StateResolver {
       return [];
     }
 
-    return [].concat.apply([], fromScopes).concat(resolveFromReceiver());
+    return ([] as stackdriver.Variable[]).concat(...fromScopes).concat(resolveFromReceiver());
   }
 
   /**

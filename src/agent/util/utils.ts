@@ -15,6 +15,7 @@
  */
 
 import is from '@sindresorhus/is';
+import * as inspector from 'inspector';
 import * as path from 'path';
 import * as semver from 'semver';
 
@@ -24,6 +25,7 @@ import {StatusMessage} from '../../client/stackdriver/status-message';
 import * as stackdriver from '../../types/stackdriver';
 import {ResolvedDebugAgentConfig} from '../config';
 import {ScanStats} from '../io/scanner';
+import * as v8 from '../../types/v8';
 
 
 export const messages = {
@@ -46,10 +48,16 @@ export const messages = {
       'Could not determine the output file associated with the transpiled input file'
 };
 
-export interface Listener {
+export interface LegacyListener {
   enabled: boolean;
-  listener: (...args: Array<{}>) => {};
+  listener: (args: v8.ExecutionState, eventData: v8.BreakEvent) => void;
 }
+
+export interface InspectorListener {
+  enabled: boolean;
+  listener: (args: Array<inspector.Debugger.CallFrame>) => void;
+}
+
 // Exposed for unit testing.
 export function findScripts(
     scriptPath: string, config: ResolvedDebugAgentConfig, fileStats: ScanStats,
