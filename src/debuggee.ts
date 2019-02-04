@@ -37,18 +37,18 @@ export interface DebuggeeProperties {
 }
 
 export class Debuggee {
-  uniquifier: string;
-  description: string;
+  uniquifier?: string;
+  description?: string;
   agentVersion?: string;
   sourceContexts?: Array<{[key: string]: {}}>;
 
   // Public to allow for testing
-  project: string;
+  project?: string;
   labels?: {
     [key: string]: string,
   };
   statusMessage?: StatusMessage;
-  id: string;
+  id!: string;
   // TODO: This doesn't seem to ever be set but is referenced in the
   //       debuglet.ts file.
   isDisabled?: boolean;

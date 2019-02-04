@@ -60,7 +60,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
   // TODO: listeners, scrpitmapper, location mapper and breakpointmapper can use
   // Map in the future after resolving Map.prototype.get(key) returns V or
   // undefined.
-  listeners: {[id: string]: utils.Listener} = {};
+  listeners: {[id: string]: utils.InspectorListener} = {};
   // scriptmapper maps scriptId to actual script path.
   scriptMapper: {[id: string]: {url: string}} = {};
   // locationmapper maps location string to a list of stackdriver breakpoint id.
@@ -189,13 +189,13 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       void {
     // TODO: Address the case whree `breakpoint.id` is `null`.
     const listener =
-        this.onBreakpointHit.bind(this, breakpoint, (err: Error) => {
+        this.onBreakpointHit.bind(this, breakpoint, (err: Error|null) => {
           this.listeners[breakpoint.id].enabled = false;
           // This method is called from the debug event listener, which
           // swallows all exception. We defer the callback to make sure
           // the user errors aren't silenced.
           setImmediate(() => {
-            callback(err);
+            callback(err || undefined);
           });
         });
     this.listeners[breakpoint.id] = {enabled: true, listener};
@@ -209,7 +209,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     let timesliceEnd = Date.now() + 1000;
     // TODO: Determine why the Error argument is not used.
     const listener =
-        this.onBreakpointHit.bind(this, breakpoint, (err: Error) => {
+        this.onBreakpointHit.bind(this, breakpoint, (err: Error|null) => {
           const currTime = Date.now();
           if (currTime > timesliceEnd) {
             logsThisSecond = 0;

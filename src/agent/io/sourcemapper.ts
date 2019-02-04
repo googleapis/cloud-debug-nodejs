@@ -218,12 +218,9 @@ export class SourceMapper {
      * give the correct mapping information.
      */
     const mappedPos: sourceMap.Position = allPos && allPos.length > 0 ?
-        Array.prototype.reduce.call(
-            allPos,
-            (accumulator: sourceMap.Position,
-             value: sourceMap.Position /*, index, arr*/) => {
-              return value.line < accumulator.line ? value : accumulator;
-            }) :
+        allPos.reduce((accumulator, value) => {
+          return value.line < accumulator.line ? value : accumulator;
+        }) :
         consumer.generatedPositionFor(sourcePos);
 
     return {
