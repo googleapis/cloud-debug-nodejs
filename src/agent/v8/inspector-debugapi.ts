@@ -273,7 +273,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       cb: (err: Error|null) => void): void {
     // Parse and validate conditions and watch expressions for correctness and
     // immutability
-    let ast: estree.Program|null = null;
+    let ast: acorn.Node|null = null;
     if (breakpoint.condition) {
       try {
         // We parse as ES6; even though the underlying V8 version may only
@@ -363,7 +363,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     }
 
     this.breakpoints[breakpoint.id] = new BreakpointData(
-        result.v8BreakpointId, breakpoint, ast as estree.Program,
+        result.v8BreakpointId, breakpoint, ast as estree.Node,
         result.locationStr, compile);
 
     this.numBreakpoints++;

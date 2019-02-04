@@ -337,7 +337,7 @@ export class V8DebugApi implements debugapi.DebugApi {
     }
     this.breakpoints[breakpoint.id] =
         // TODO: Address the case where `ast` is `null`.
-        new V8BreakpointData(breakpoint, v8bp, ast as estree.Program, compile);
+        new V8BreakpointData(breakpoint, v8bp, ast as estree.Node, compile);
     this.numBreakpoints++;
     setImmediate(() => {
       cb(null);
