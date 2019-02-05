@@ -309,47 +309,6 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should emit a warning iff maxDataSize = 0 on Node 10', async () => {
-      // TODO(kjin): When stableObjectId is added to Node 10, remove this test.
-      const useInspector = utils.satisfies(process.version, '>=10');
-      const maxDataSizeZeroConfig = Object.assign({}, defaultConfig, {
-        capture: Object.assign({}, defaultConfig.capture, {maxDataSize: 0})
-      });
-      const checkMaxDataSizeWarningForConfig =
-          (config: ResolvedDebugAgentConfig,
-           shouldShowMessage: boolean) => new Promise((resolve, reject) => {
-            const debug = new Debug(
-                {projectId: 'fake-project', credentials: fakeCredentials},
-                packageInfo);
-
-            const debuglet = new Debuglet(debug, config);
-            let text = '';
-            debuglet.logger.warn = (s: string) => {
-              text += s;
-            };
-
-            debuglet.once('initError', reject);
-
-            debuglet.once('started', () => {
-              assert.strictEqual(
-                  text.includes(
-                      'capture.maxDataSize=0 is not recommended on Node 10+'),
-                  shouldShowMessage);
-              debuglet.stop();
-              resolve();
-            });
-
-            debuglet.start();
-          });
-      // Run the actual test cases.
-      // Check what happens if maxDataSize = 0, regardless of Node version.
-      await checkMaxDataSizeWarningForConfig(
-          maxDataSizeZeroConfig, useInspector);
-      // Additionally, check that a warning doesn't get emitted if
-      // maxDataSize != 0.
-      await checkMaxDataSizeWarningForConfig(defaultConfig, false);
-    });
-
     describe('environment variables', () => {
       let env: NodeJS.ProcessEnv;
       beforeEach(() => {

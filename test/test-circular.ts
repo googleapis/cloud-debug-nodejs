@@ -20,7 +20,6 @@ import {defaultConfig} from '../src/agent/config';
 import {Debuglet} from '../src/agent/debuglet';
 import * as scanner from '../src/agent/io/scanner';
 import * as SourceMapper from '../src/agent/io/sourcemapper';
-import * as utils from '../src/agent/util/utils';
 import * as debugapi from '../src/agent/v8/debugapi';
 
 import consoleLogLevel = require('console-log-level');
@@ -28,11 +27,6 @@ import * as stackdriver from '../src/types/stackdriver';
 import {Variable} from '../src/types/stackdriver';
 
 const code = require('./test-circular-code.js');
-
-// TODO(kjin): When stableObjectId is added to Node 10, remove this check.
-// the inspector protocol is only used on Node >= 10 and thus isn't
-// tested on earlier versions
-const skipIfInspector = utils.satisfies(process.version, '>=10') ? it.skip : it;
 
 function stateIsClean(api: debugapi.DebugApi): boolean {
   assert.strictEqual(
@@ -70,67 +64,64 @@ describe(__filename, () => {
   afterEach(() => {
     assert(stateIsClean(api));
   });
-  skipIfInspector(
-      'Should be able to read the argument and the context', (done) => {
-        // TODO: Have this actually implement Breakpoint
-        const brk: stackdriver.Breakpoint = {
-          id: 'fake-id-123',
-          location: {path: 'test-circular-code.js', line: 9}
-        } as stackdriver.Breakpoint;
-        api.set(brk, (err1) => {
-          assert.ifError(err1);
-          api.wait(brk, (err2) => {
-            assert.ifError(err2);
-            assert.ok(brk.stackFrames.length >= 1);
-            const locals = [...brk.stackFrames[0].locals].sort(
-                (a, b) => a.name!.localeCompare(b.name!));
-            const nonStatusVars =
-                (brk.variableTable.filter(entry => entry && !!entry.members) as
-                 Variable[]);
-            const statusVarOffset =
-                brk.variableTable.length - nonStatusVars.length;
-            assert.ok(locals.length >= 3);
-            // At least three locals: a, b, and context (alias for this).
-            // In newer versions of inspector, this appears both as this and
-            // as context.
-            const aLocal = locals[0];
-            const bLocal = locals[1];
-            const contextLocal = locals[2];
-            const thisLocal = locals[3];  // Maybe non-existent
-            assert.ok(aLocal && bLocal && contextLocal);
-            assert.ok(
-                !thisLocal ||
-                thisLocal.varTableIndex === contextLocal.varTableIndex);
-            // All three non-status entries in the varTable correspond to each
-            // of the locals, respectively.
-            assert.strictEqual(nonStatusVars.length, 3);
-            // Every entry has a truthy members field.
-            assert.ok(!nonStatusVars.some(e => !e.members));
-            const aVar = nonStatusVars[aLocal.varTableIndex! - statusVarOffset];
-            const bVar = nonStatusVars[bLocal.varTableIndex! - statusVarOffset];
-            const thisVar =
-                nonStatusVars[contextLocal.varTableIndex! - statusVarOffset];
-            assert.strictEqual(aVar.members!.length, 1);       // a
-            assert.deepStrictEqual(aVar.members![0], bLocal);  // a.b
-            assert.strictEqual(bVar.members!.length, 2);       // b
-            assert.deepStrictEqual(bVar.members![0], aLocal);  // b.a
-            assert.deepStrictEqual(
-                bVar.members![1],
-                {name: 'c', varTableIndex: contextLocal.varTableIndex});
-            assert.strictEqual(thisVar.members!.length, 2);  // this
-            assert.deepStrictEqual(thisVar.members![0], {
-              name: 'x',
-              varTableIndex: contextLocal.varTableIndex
-            });  // this.x
-            assert.deepStrictEqual(
-                thisVar.members![1],
-                {name: 'y', varTableIndex: aLocal.varTableIndex});  // this.y
-            api.clear(brk, (err3) => {
-              assert.ifError(err3);
-              done();
-            });
-          });
-          process.nextTick(code.foo.bind({}));
+  it('Should be able to read the argument and the context', (done) => {
+    // TODO: Have this actually implement Breakpoint
+    const brk: stackdriver.Breakpoint = {
+      id: 'fake-id-123',
+      location: {path: 'test-circular-code.js', line: 9}
+    } as stackdriver.Breakpoint;
+    api.set(brk, (err1) => {
+      assert.ifError(err1);
+      api.wait(brk, (err2) => {
+        assert.ifError(err2);
+        assert.ok(brk.stackFrames.length >= 1);
+        const locals = [...brk.stackFrames[0].locals].sort(
+            (a, b) => a.name!.localeCompare(b.name!));
+        const nonStatusVars =
+            (brk.variableTable.filter(entry => entry && !!entry.members) as
+             Variable[]);
+        const statusVarOffset = brk.variableTable.length - nonStatusVars.length;
+        assert.ok(locals.length >= 3);
+        // At least three locals: a, b, and context (alias for this).
+        // In newer versions of inspector, this appears both as this and
+        // as context.
+        const aLocal = locals[0];
+        const bLocal = locals[1];
+        const contextLocal = locals[2];
+        const thisLocal = locals[3];  // Maybe non-existent
+        assert.ok(aLocal && bLocal && contextLocal);
+        assert.ok(
+            !thisLocal ||
+            thisLocal.varTableIndex === contextLocal.varTableIndex);
+        // All three non-status entries in the varTable correspond to each
+        // of the locals, respectively.
+        assert.strictEqual(nonStatusVars.length, 3);
+        // Every entry has a truthy members field.
+        assert.ok(!nonStatusVars.some(e => !e.members));
+        const aVar = nonStatusVars[aLocal.varTableIndex! - statusVarOffset];
+        const bVar = nonStatusVars[bLocal.varTableIndex! - statusVarOffset];
+        const thisVar =
+            nonStatusVars[contextLocal.varTableIndex! - statusVarOffset];
+        assert.strictEqual(aVar.members!.length, 1);       // a
+        assert.deepStrictEqual(aVar.members![0], bLocal);  // a.b
+        assert.strictEqual(bVar.members!.length, 2);       // b
+        assert.deepStrictEqual(bVar.members![0], aLocal);  // b.a
+        assert.deepStrictEqual(
+            bVar.members![1],
+            {name: 'c', varTableIndex: contextLocal.varTableIndex});
+        assert.strictEqual(thisVar.members!.length, 2);  // this
+        assert.deepStrictEqual(
+            thisVar.members![0],
+            {name: 'x', varTableIndex: contextLocal.varTableIndex});  // this.x
+        assert.deepStrictEqual(
+            thisVar.members![1],
+            {name: 'y', varTableIndex: aLocal.varTableIndex});  // this.y
+        api.clear(brk, (err3) => {
+          assert.ifError(err3);
+          done();
         });
       });
+      process.nextTick(code.foo.bind({}));
+    });
+  });
 });
