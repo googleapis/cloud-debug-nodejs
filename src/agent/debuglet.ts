@@ -402,16 +402,6 @@ export class Debuglet extends EventEmitter {
       // This is ignorable.
     }
 
-    // TODO: This code can be removed now that we support only Node 6+.
-    if (utils.satisfies(process.version, '5.2 || <4')) {
-      // Using an unsupported version. We report an error
-      // message about the Node.js version, but we keep on
-      // running. The idea is that the user may miss the error
-      // message on the console. This way we can report the
-      // error when the user tries to set a breakpoint.
-      that.logger.error(NODE_VERSION_MESSAGE);
-    }
-
     // We can register as a debuggee now.
     that.logger.debug('Starting debuggee, project', project);
     that.running = true;
