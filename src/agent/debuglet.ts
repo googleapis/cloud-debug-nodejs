@@ -325,15 +325,14 @@ export class Debuglet extends EventEmitter {
       return;
     }
 
-    // TODO: Verify that it is fine for `id` to be undefined.
-    let id: string|undefined;
+    let gaeId: string|undefined;
     if (process.env.GAE_MINOR_VERSION) {
-      id = 'GAE-' + process.env.GAE_MINOR_VERSION;
+      gaeId = 'GAE-' + process.env.GAE_MINOR_VERSION;
     }
 
     let findResults: FindFilesResult;
     try {
-      findResults = await Debuglet.findFiles(!id, that.config.workingDirectory);
+      findResults = await Debuglet.findFiles(!gaeId, that.config.workingDirectory);
       findResults.errors.forEach(that.logger.warn);
     } catch (err) {
       that.logger.error('Error scanning the filesystem.', err);
@@ -352,7 +351,8 @@ export class Debuglet extends EventEmitter {
     that.v8debug =
         debugapi.create(that.logger, that.config, findResults.jsStats, mapper);
 
-    id = id || findResults.hash;
+    const id: string = (gaeId || findResults.hash) as string;
+    assert(id);  // We compute a hash when not on GAE.
 
     that.logger.info('Unique ID for this Application: ' + id);
 
@@ -406,11 +406,9 @@ export class Debuglet extends EventEmitter {
     that.logger.debug('Starting debuggee, project', project);
     that.running = true;
 
-    // TODO: Address the case where `project` is `undefined`.
     that.project = project;
     that.debuggee = Debuglet.createDebuggee(
-        // TODO: Address the case when `id` is `undefined`.
-        project, id as string, that.config.serviceContext, sourceContext, onGCP,
+        project, id, that.config.serviceContext, sourceContext, onGCP,
         that.debug.packageInfo, that.config.description, undefined);
     that.scheduleRegistration_(0 /* immediately */);
     that.emit('started');
