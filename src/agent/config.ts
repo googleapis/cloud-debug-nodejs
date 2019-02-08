@@ -46,10 +46,10 @@ export interface AliasContext {
 }
 
 export interface CloudRepoSourceContext {
-  repoId: RepoId;
-  revisionId: string;
-  aliasName?: string;
-  aliasContext: AliasContext;
+  cloudRepo: {
+    repoId: RepoId; revisionId: string;
+    aliasName?: string; aliasContext: AliasContext;
+  };
 }
 
 export interface CloudWorkspaceId {
@@ -58,22 +58,21 @@ export interface CloudWorkspaceId {
 }
 
 export interface CloudWorkspaceSourceContext {
-  workspaceId: CloudWorkspaceId;
-  snapshotId: string;
+  cloudWorkspace: {workspaceId: CloudWorkspaceId; snapshotId: string;};
 }
 
 export interface GerritSourceContext {
-  hostUri: string;
-  gerritProject: string;
-  // one of:
-  revisionId?: string;
-  aliasName?: string;
-  aliasContext?: AliasContext;
+  gerrit: {
+    hostUri: string; gerritProject: string;
+    // one of:
+    revisionId?: string;
+    aliasName?: string;
+    aliasContext?: AliasContext;
+  };
 }
 
 export interface GitSourceContext {
-  url: string;
-  revisionId: string;
+  git: {url: string; revisionId: string;};
 }
 
 export interface ResolvedDebugAgentConfig extends GoogleAuthOptions {
