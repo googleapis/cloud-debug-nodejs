@@ -156,7 +156,7 @@ export interface FindFilesResult {
   jsStats: scanner.ScanStats;
   mapFiles: string[];
   errors: Map<string, Error>;
-  hash?: string;
+  hash: string;
 }
 
 export class Debuglet extends EventEmitter {
@@ -285,9 +285,10 @@ export class Debuglet extends EventEmitter {
     return extend(true, {}, defaultConfig, config, envConfig);
   }
 
-  static async findFiles(shouldHash: boolean, baseDir: string):
+  static async findFiles(baseDir: string, precomputedHash?: string):
       Promise<FindFilesResult> {
-    const fileStats = await scanner.scan(shouldHash, baseDir, /.js$|.js.map$/);
+    const fileStats =
+        await scanner.scan(baseDir, /.js$|.js.map$/, precomputedHash);
     const jsStats = fileStats.selectStats(/.js$/);
     const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
     const errors = fileStats.errors();
@@ -332,7 +333,8 @@ export class Debuglet extends EventEmitter {
 
     let findResults: FindFilesResult;
     try {
-      findResults = await Debuglet.findFiles(!gaeId, that.config.workingDirectory);
+      findResults =
+          await Debuglet.findFiles(that.config.workingDirectory, gaeId);
       findResults.errors.forEach(that.logger.warn);
     } catch (err) {
       that.logger.error('Error scanning the filesystem.', err);
@@ -351,8 +353,7 @@ export class Debuglet extends EventEmitter {
     that.v8debug =
         debugapi.create(that.logger, that.config, findResults.jsStats, mapper);
 
-    const id: string = (gaeId || findResults.hash) as string;
-    assert(id);  // We compute a hash when not on GAE.
+    const id: string = gaeId || findResults.hash;
 
     that.logger.info('Unique ID for this Application: ' + id);
 

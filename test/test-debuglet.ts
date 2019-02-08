@@ -92,7 +92,8 @@ describe('Debuglet', () => {
     it('throws an error for an invalid directory', async () => {
       let err: Error|null = null;
       try {
-        await Debuglet.findFiles(false, path.join(SOURCEMAP_DIR, '!INVALID!'));
+        await Debuglet.findFiles(
+            path.join(SOURCEMAP_DIR, '!INVALID!'), 'fake-id');
       } catch (e) {
         err = e;
       }
@@ -100,7 +101,7 @@ describe('Debuglet', () => {
     });
 
     it('finds the correct sourcemaps files', async () => {
-      const searchResults = await Debuglet.findFiles(false, SOURCEMAP_DIR);
+      const searchResults = await Debuglet.findFiles(SOURCEMAP_DIR, 'fake-id');
       assert(searchResults.jsStats);
       assert.strictEqual(Object.keys(searchResults.jsStats).length, 1);
       assert(searchResults.jsStats[path.join(SOURCEMAP_DIR, 'js-file.js')]);
@@ -252,7 +253,7 @@ describe('Debuglet', () => {
       }
       const mockedDebuglet = proxyquire('../src/agent/debuglet', {
         './io/scanner': {
-          scan: (shouldHash: boolean, baseDir: string, regex: RegExp) => {
+          scan: (baseDir: string, regex: RegExp, precomputedHash?: string) => {
             assert.strictEqual(baseDir, MOCKED_DIRECTORY);
             const results: ScanResults = {
               errors: () => {
@@ -270,7 +271,8 @@ describe('Debuglet', () => {
               },
               selectFiles: (regex: RegExp, baseDir: string) => {
                 return [];
-              }
+              },
+              hash: precomputedHash || 'fake-hash'
             };
             return results;
           }
@@ -659,13 +661,14 @@ describe('Debuglet', () => {
          // Don't actually scan the entire filesystem.  Act like the filesystem
          // is empty.
          mockedDebuglet.Debuglet.findFiles =
-             (shouldHash: boolean, baseDir: string):
+             (baseDir: string, precomputedHash?: string):
                  Promise<FindFilesResult> => {
                    assert.strictEqual(baseDir, root);
                    return Promise.resolve({
                      jsStats: {},
                      mapFiles: [],
-                     errors: new Map<string, Error>()
+                     errors: new Map<string, Error>(),
+                     hash: 'fake-hash'
                    });
                  };
 
