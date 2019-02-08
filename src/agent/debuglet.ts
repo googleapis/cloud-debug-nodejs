@@ -733,7 +733,7 @@ export class Debuglet extends EventEmitter {
         // New breakpoint
         that.addBreakpoint_(breakpoint, (err) => {
           if (err) {
-            that.completeBreakpoint_(breakpoint);
+            that.completeBreakpoint_(breakpoint, false);
           }
         });
 
@@ -755,7 +755,9 @@ export class Debuglet extends EventEmitter {
 
     // Remove active breakpoints that the server no longer care about.
     Debuglet.mapSubtract(this.activeBreakpointMap, updatedBreakpointMap)
-        .forEach(this.removeBreakpoint_, this);
+        .forEach(bp => {
+          this.removeBreakpoint_(bp, true);
+        });
   }
 
   /**
@@ -778,11 +780,12 @@ export class Debuglet extends EventEmitter {
    * @param {Breakpoint} breakpoint
    * @private
    */
-  removeBreakpoint_(breakpoint: stackdriver.Breakpoint): void {
+  removeBreakpoint_(breakpoint: stackdriver.Breakpoint, deleteFromV8: boolean):
+      void {
     this.logger.info('\tdeleted breakpoint', breakpoint.id);
     // TODO: Address the case when `breakpoint.id` is `undefined`.
     delete this.activeBreakpointMap[breakpoint.id as string];
-    if (this.v8debug) {
+    if (deleteFromV8 && this.v8debug) {
       this.v8debug.clear(breakpoint, (err) => {
         if (err) this.logger.error(err);
       });
@@ -866,7 +869,8 @@ export class Debuglet extends EventEmitter {
    * @param {Breakpoint} breakpoint
    * @private
    */
-  completeBreakpoint_(breakpoint: stackdriver.Breakpoint): void {
+  completeBreakpoint_(breakpoint: stackdriver.Breakpoint, deleteFromV8 = true):
+      void {
     const that = this;
 
     that.logger.info('\tupdating breakpoint data on server', breakpoint.id);
@@ -878,7 +882,7 @@ export class Debuglet extends EventEmitter {
           } else {
             // TODO: Address the case when `breakpoint.id` is `undefined`.
             that.completedBreakpointMap[breakpoint.id as string] = true;
-            that.removeBreakpoint_(breakpoint);
+            that.removeBreakpoint_(breakpoint, deleteFromV8);
           }
         });
   }
