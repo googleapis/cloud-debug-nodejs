@@ -42,7 +42,7 @@ export interface ScanResults {
   all(): ScanStats;
   selectStats(regex: RegExp): ScanStats;
   selectFiles(regex: RegExp, baseDir: string): string[];
-  hash?: string;
+  hash: string;
 }
 
 class ScanResultsImpl implements ScanResults {
@@ -60,7 +60,7 @@ class ScanResultsImpl implements ScanResults {
    */
   constructor(
       private readonly stats: ScanStats, readonly errorMap: Map<string, Error>,
-      readonly hash?: string) {}
+      readonly hash: string) {}
 
   errors(): Map<string, Error> {
     return this.errorMap;
@@ -112,24 +112,24 @@ class ScanResultsImpl implements ScanResults {
 }
 
 export async function scan(
-    shouldHash: boolean, baseDir: string, regex: RegExp): Promise<ScanResults> {
+    baseDir: string, regex: RegExp,
+    precomputedHash?: string): Promise<ScanResults> {
   const fileList = await findFiles(baseDir, regex);
-  return await computeStats(fileList, shouldHash);
+  return await computeStats(fileList, precomputedHash);
 }
 
 /**
  * This function accept an array of filenames and computes a unique hash-code
  * based on the contents.
  *
- * @param {!Array<string>} fileList array of filenames
- * @param {Boolean} shouldHash whether a hash should be computed
- * @param {!function(?Error, ?string, Object)} callback error-back style callback
- *    returning the hash-code and an object containing file statistics.
+ * @param fileList array of filenames
+ * @param precomputedHash if available, hashing operations will be omitted
+ * during scan
  */
 // TODO: Typescript: Fix the docs associated with this function to match the
 // call signature
 function computeStats(
-    fileList: string[], shouldHash: boolean): Promise<ScanResults> {
+    fileList: string[], precomputedHash?: string): Promise<ScanResults> {
   return new Promise<ScanResults>(async (resolve, reject) => {
     // return a valid, if fake, result when there are no js files to hash.
     if (fileList.length === 0) {
@@ -144,8 +144,8 @@ function computeStats(
 
     for (const filename of fileList) {
       try {
-        const fileStats = await statsForFile(filename, shouldHash);
-        if (shouldHash) {
+        const fileStats = await statsForFile(filename, !precomputedHash);
+        if (!precomputedHash) {
           hashes.push(fileStats.hash);
         }
         statistics[filename] = fileStats;
@@ -154,13 +154,15 @@ function computeStats(
       }
     }
 
-    let hash;
-    if (shouldHash) {
+    let hash: string;
+    if (!precomputedHash) {
       // Sort the hashes to get a deterministic order as the files may
       // not be in the same order each time we scan the disk.
       const buffer = hashes.sort().join();
       const sha1 = crypto.createHash('sha1').update(buffer).digest('hex');
       hash = 'SHA1-' + sha1;
+    } else {
+      hash = precomputedHash!;
     }
     resolve(new ScanResultsImpl(statistics, errors, hash));
   });

@@ -42,19 +42,18 @@ describe('maxDataSize', () => {
     if (!api) {
       const logger =
           consoleLogLevel({level: Debuglet.logLevelToName(config.logLevel)});
-      scanner.scan(true, config.workingDirectory, /.js$/)
-          .then(async (fileStats) => {
-            assert.strictEqual(fileStats.errors().size, 0);
-            const jsStats = fileStats.selectStats(/.js$/);
-            const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
-            const mapper = await SourceMapper.create(mapFiles);
-            // TODO: Handle the case when mapper is undefined
-            // TODO: Handle the case when v8debugapi.create returns null
-            api = debugapi.create(
-                      logger, config, jsStats,
-                      mapper as SourceMapper.SourceMapper) as debugapi.DebugApi;
-            done();
-          });
+      scanner.scan(config.workingDirectory, /.js$/).then(async (fileStats) => {
+        assert.strictEqual(fileStats.errors().size, 0);
+        const jsStats = fileStats.selectStats(/.js$/);
+        const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
+        const mapper = await SourceMapper.create(mapFiles);
+        // TODO: Handle the case when mapper is undefined
+        // TODO: Handle the case when v8debugapi.create returns null
+        api = debugapi.create(
+                  logger, config, jsStats,
+                  mapper as SourceMapper.SourceMapper) as debugapi.DebugApi;
+        done();
+      });
     } else {
       done();
     }
