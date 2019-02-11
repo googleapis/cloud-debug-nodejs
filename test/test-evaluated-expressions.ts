@@ -36,15 +36,14 @@ describe('debugger provides useful information', () => {
   before(done => {
     const logger =
         consoleLogLevel({level: Debuglet.logLevelToName(config.logLevel)});
-    scanner.scan(true, config.workingDirectory, /\.js$/)
-        .then(async fileStats => {
-          const jsStats = fileStats.selectStats(/\.js$/);
-          const mapFiles = fileStats.selectFiles(/\.map$/, process.cwd());
-          const mapper = await SourceMapper.create(mapFiles);
-          assert(mapper);
-          api = debugapi.create(logger, config, jsStats, mapper!);
-          done();
-        });
+    scanner.scan(config.workingDirectory, /\.js$/).then(async fileStats => {
+      const jsStats = fileStats.selectStats(/\.js$/);
+      const mapFiles = fileStats.selectFiles(/\.map$/, process.cwd());
+      const mapper = await SourceMapper.create(mapFiles);
+      assert(mapper);
+      api = debugapi.create(logger, config, jsStats, mapper!);
+      done();
+    });
   });
 
   function getValue(
