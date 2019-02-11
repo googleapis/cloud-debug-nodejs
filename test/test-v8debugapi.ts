@@ -160,7 +160,7 @@ describe('debugapi selection', () => {
   };
   it('should use the correct debugapi and have appropriate warning', (done) => {
     let api: DebugApi;
-    scanner.scan(true, config.workingDirectory, /.js$|.js.map$/)
+    scanner.scan(config.workingDirectory, /.js$|.js.map$/)
         .then(async (fileStats) => {
           assert.strictEqual(fileStats.errors().size, 0);
           const jsStats = fileStats.selectStats(/.js$/);
@@ -199,7 +199,7 @@ describeFn('debugapi selection on Node >=10', () => {
 
   it('should always use the inspector api', (done) => {
     let api: DebugApi;
-    scanner.scan(true, config.workingDirectory, /.js$|.js.map$/)
+    scanner.scan(config.workingDirectory, /.js$|.js.map$/)
         .then(async (fileStats) => {
           assert.strictEqual(fileStats.errors().size, 0);
           const jsStats = fileStats.selectStats(/.js$/);
@@ -223,7 +223,7 @@ describe('v8debugapi', () => {
 
   beforeEach((done) => {
     if (!api) {
-      scanner.scan(true, config.workingDirectory, /.js$|.js.map$/)
+      scanner.scan(config.workingDirectory, /.js$|.js.map$/)
           .then(async (fileStats) => {
             assert.strictEqual(fileStats.errors().size, 0);
             const jsStats = fileStats.selectStats(/.js$/);
