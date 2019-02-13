@@ -830,7 +830,8 @@ export class Debuglet extends EventEmitter {
             .log(
                 breakpoint,
                 (fmt: string, exprs: string[]) => {
-                  console.log('LOGPOINT:', Debuglet.format(fmt, exprs));
+                  that.config.log.logFunction(
+                      `LOGPOINT: ${Debuglet.format(fmt, exprs)}`);
                 },
                 () => {
                   // TODO: Address the case when `breakpoint.id` is `undefined`.
