@@ -32,6 +32,10 @@ var debuglet = require('../../..').start({
     breakpointUpdateIntervalSec: 1,
     testMode_: true,
     allowExpressions: true
+  },
+  serviceContext: {
+    service: 'cloud-debug-system-test-service',
+    version: 'unversioned'
   }
 });
 
