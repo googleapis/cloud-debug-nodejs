@@ -35,7 +35,7 @@ var debuglet = require('../../..').start({
   },
   serviceContext: {
     service: 'cloud-debug-system-test-service',
-    version: 'unversioned'
+    version: uuid.v4()
   }
 });
 
