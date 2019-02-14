@@ -21,6 +21,7 @@ function fib(n) {
  * limitations under the License.
  */
 
+const uuid = require('uuid');
 const nocks = require('../nocks.js');
 nocks.projectId('fake-project-id');
 
