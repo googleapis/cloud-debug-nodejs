@@ -98,9 +98,11 @@ describe('@google-cloud/debug end-to-end behavior', () => {
 
       for (let i = 0; i < CLUSTER_WORKERS; i++) {
         // Fork child processes that sned messages to this process with IPC.
+        // We pass UUID to the children so that they can all get the same
+        // debuggee id.
         const child: Child = {transcript: ''};
         child.process = cp.fork(
-            FILENAME, /* args */[],
+            FILENAME, /* args */[UUID],
             {execArgv: [], env: process.env, silent: true});
         child.process.on('message', handler);
 

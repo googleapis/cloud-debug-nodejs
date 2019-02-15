@@ -28,6 +28,8 @@ nocks.projectId('fake-project-id');
 // environment.
 nocks.metadataInstance();
 
+const UUID = process.argv[2] || uuid.v4();
+
 var debuglet = require('../../..').start({
   debug: {
     logLevel: 2,
@@ -35,12 +37,9 @@ var debuglet = require('../../..').start({
     logDelaySeconds: 5,
     breakpointUpdateIntervalSec: 1,
     testMode_: true,
-    allowExpressions: true
+    allowExpressions: true,
+    description: UUID
   },
-  serviceContext: {
-    service: 'cloud-debug-system-test-service',
-    version: uuid.v4()
-  }
 });
 
 // Make troubleshooting easier if run by itself
