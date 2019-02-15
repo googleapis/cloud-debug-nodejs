@@ -29,8 +29,10 @@ const FILENAME = 'build/test/fixtures/fib.js';
 
 const UUID = uuid.v4();
 const LOG_MESSAGE_FORMAT = UUID + ': o is: $0';
+
+// fib.js uses a custom log-point function that lower cases everything.
 const REGEX =
-    new RegExp(`LOGPOINT: ${UUID}: o is: {"a":\\[1,"hi",true\\]}`, 'g');
+    new RegExp(`logpoint: ${UUID}: o is: {"a":\\[1,"hi",true\\]}`, 'g');
 
 const delay = (delayTimeMS: number): Promise<void> => {
   return new Promise(r => setTimeout(r, delayTimeMS));
@@ -259,7 +261,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     console.log('-- checking log point was hit again');
     children.forEach((child) => {
       const count = (child.transcript.match(REGEX) || []).length;
-      assert.ok(count > 60, `expected count ${count} to be > 60`);
+      assert.ok(count > 20, `expected count ${count} to be > 20`);
     });
     console.log('-- test passed');
   }

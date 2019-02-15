@@ -33,8 +33,14 @@ const UUID = process.argv[2] || uuid.v4();
 var debuglet = require('../../..').start({
   debug: {
     logLevel: 2,
-    maxLogsPerSecond: 2,
-    logDelaySeconds: 5,
+    log: {
+      maxLogsPerSecond: 2,
+      logDelaySeconds: 5,
+      // Use a custom logpoint function that converts everything lower case.
+      logFunction: (message) => {
+        console.log(message.toLowerCase())
+      }
+    },
     breakpointUpdateIntervalSec: 1,
     testMode_: true,
     allowExpressions: true,

@@ -290,6 +290,13 @@ export interface ResolvedDebugAgentConfig extends GoogleAuthOptions {
      * logging resumes per logpoint.
      */
     logDelaySeconds: number;
+
+    /**
+     * By default log-points are printed using console.log. If necessary, one
+     * can provide a custom log point printing function. This may be useful in
+     * cases where you want to log to 3rd part logging service.
+     */
+    logFunction: (message: string) => void;
   };
 
   /**
@@ -347,7 +354,7 @@ export const defaultConfig: ResolvedDebugAgentConfig = {
     maxStringLength: 100
   },
 
-  log: {maxLogsPerSecond: 50, logDelaySeconds: 1},
+  log: {maxLogsPerSecond: 50, logDelaySeconds: 1, logFunction: console.log},
 
   internal: {
     registerDelayOnFetcherErrorSec: 300,  // 5 minutes.
