@@ -24,6 +24,9 @@ function fib(n) {
 const uuid = require('uuid');
 const nocks = require('../nocks.js');
 nocks.projectId('fake-project-id');
+// mock the metadata instance to uniformly make this look like a non-gcp
+// environment.
+nocks.metadataInstance();
 
 var debuglet = require('../../..').start({
   debug: {

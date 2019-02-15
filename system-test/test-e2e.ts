@@ -139,7 +139,9 @@ describe('@google-cloud/debug end-to-end behavior', () => {
   });
 
   async function verifyDebuggeeFound() {
-    const debuggees = await api.listDebuggees(projectId!, true);
+    const allDebuggees = await api.listDebuggees(projectId!, true);
+    const debuggees =
+        allDebuggees.filter(debuggee => debuggee.isInactive !== true);
 
     // Check that the debuggee created in this test is among the list of
     // debuggees, then list its breakpoints
