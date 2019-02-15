@@ -257,7 +257,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     console.log('-- checking log point was hit again');
     children.forEach((child) => {
       const count = (child.transcript.match(REGEX) || []).length;
-      assert.ok(count > 60);
+      assert.ok(count > 60, `expected count ${count} to be > 60`);
     });
     console.log('-- test passed');
   }
