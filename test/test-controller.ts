@@ -15,7 +15,6 @@
  */
 
 import * as assert from 'assert';
-import * as http from 'http';
 import * as nock from 'nock';
 
 import {Debug} from '../src/client/stackdriver/debug';
