@@ -57,7 +57,8 @@
     "require-inject": "^1.4.3",
     "source-map-support": "^0.5.6",
     "typescript": "~3.3.0",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.2",
+    "linkinator": "^1.1.2"
   },
   "dependencies": {
     "@google-cloud/common": "^0.31.0",
@@ -96,7 +97,7 @@
     "lint": "npm run check",
     "docs": "compodoc src/",
     "samples-test": "mocha samples/system-test",
-    "docs-test": "blcl docs -r --exclude www.googleapis.com",
+    "docs-test": "linkinator docs -r --skip www.googleapis.com",
     "predocs-test": "npm run docs"
   },
   "files": [
