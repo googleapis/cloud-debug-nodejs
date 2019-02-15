@@ -98,9 +98,11 @@ describe('@google-cloud/debug end-to-end behavior', () => {
 
       for (let i = 0; i < CLUSTER_WORKERS; i++) {
         // Fork child processes that sned messages to this process with IPC.
+        // We pass UUID to the children so that they can all get the same
+        // debuggee id.
         const child: Child = {transcript: ''};
         child.process = cp.fork(
-            FILENAME, /* args */[],
+            FILENAME, /* args */[UUID],
             {execArgv: [], env: process.env, silent: true});
         child.process.on('message', handler);
 
@@ -139,7 +141,9 @@ describe('@google-cloud/debug end-to-end behavior', () => {
   });
 
   async function verifyDebuggeeFound() {
-    const debuggees = await api.listDebuggees(projectId!, true);
+    const allDebuggees = await api.listDebuggees(projectId!, true);
+    const debuggees =
+        allDebuggees.filter(debuggee => debuggee.isInactive !== true);
 
     // Check that the debuggee created in this test is among the list of
     // debuggees, then list its breakpoints
@@ -255,7 +259,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     console.log('-- checking log point was hit again');
     children.forEach((child) => {
       const count = (child.transcript.match(REGEX) || []).length;
-      assert.ok(count > 60);
+      assert.ok(count > 60, `expected count ${count} to be > 60`);
     });
     console.log('-- test passed');
   }

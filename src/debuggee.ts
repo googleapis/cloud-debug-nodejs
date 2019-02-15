@@ -52,6 +52,7 @@ export class Debuggee {
   // TODO: This doesn't seem to ever be set but is referenced in the
   //       debuglet.ts file.
   isDisabled?: boolean;
+  isInactive?: boolean;
 
   /**
    * Creates a Debuggee service object.
