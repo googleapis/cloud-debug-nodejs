@@ -21,8 +21,14 @@ function fib(n) {
  * limitations under the License.
  */
 
+const uuid = require('uuid');
 const nocks = require('../nocks.js');
 nocks.projectId('fake-project-id');
+// mock the metadata instance to uniformly make this look like a non-gcp
+// environment.
+nocks.metadataInstance();
+
+const UUID = process.argv[2] || uuid.v4();
 
 var debuglet = require('../../..').start({
   debug: {
@@ -31,12 +37,9 @@ var debuglet = require('../../..').start({
     logDelaySeconds: 5,
     breakpointUpdateIntervalSec: 1,
     testMode_: true,
-    allowExpressions: true
+    allowExpressions: true,
+    description: UUID
   },
-  serviceContext: {
-    service: 'cloud-debug-system-test-service',
-    version: 'unversioned'
-  }
 });
 
 // Make troubleshooting easier if run by itself
