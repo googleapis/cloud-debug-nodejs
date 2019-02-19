@@ -97,7 +97,8 @@ function testTool(
       assert.strictEqual(info!.file, outputFilePath);
       assert.strictEqual(
           info!.line, expectedOutputLine,
-          ' invalid mapping for input line ' + inputLine);
+          ' invalid mapping for input line ' + inputLine +
+          ' Expected: ' + expectedOutputLine + ', Found: ' + info!.line);
     };
 
     it('for tool ' + tool + ' it properly maps line numbers', (done) => {
@@ -140,6 +141,6 @@ testTool(
     ]);
 
 testTool('Webpack with Typescript', path.join('webpack-ts', 'out.js.map'),
-         path.join('webpack-ts', 'in.ts'), path.join('webpack-ts', 'out.js'), [
-           [3, 93], [4, 94], [8, 98]
+         path.join('webpack-ts', 'in.ts_'), path.join('webpack-ts', 'out.js'), [
+           [3, 93], [4, 94], [8, 97]
          ]);
