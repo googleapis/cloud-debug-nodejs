@@ -96,35 +96,34 @@ async function processSourcemap(
   const outputPath = path.normalize(path.join(parentDir, outputBase));
 
   // the sources are in ascending order from shortest to longest
-  const nonemptySources = consumer.sources
-    .filter(val => !!val)
-    .sort((src1, src2) => src1.length - src2.length);
+  const nonemptySources = consumer.sources.filter(val => !!val)
+                              .sort((src1, src2) => src1.length - src2.length);
 
-  const normalizedSources = nonemptySources
-    .map((src: string) => {
-      if (src.toLowerCase().startsWith(WEBPACK_PREFIX)) {
-        return src.substring(WEBPACK_PREFIX.length);
-      }
-      return src;
-    })
-    .map((relPath: string) => {
-      // resolve the paths relative to the map file so that
-      // they are relative to the process's current working
-      // directory
-      return path.normalize(path.join(parentDir, relPath));
-    });
+  const normalizedSources =
+      nonemptySources
+          .map((src: string) => {
+            if (src.toLowerCase().startsWith(WEBPACK_PREFIX)) {
+              return src.substring(WEBPACK_PREFIX.length);
+            }
+            return src;
+          })
+          .map((relPath: string) => {
+            // resolve the paths relative to the map file so that
+            // they are relative to the process's current working
+            // directory
+            return path.normalize(path.join(parentDir, relPath));
+          });
 
   if (normalizedSources.length === 0) {
     throw new Error('No sources listed in the sourcemap file ' + mapPath);
   }
   for (const src of normalizedSources) {
-    infoMap.set(
-      path.normalize(src), {
-        outputFile: outputPath,
-        mapFile: mapPath,
-        mapConsumer: consumer,
-        sources: nonemptySources
-      });
+    infoMap.set(path.normalize(src), {
+      outputFile: outputPath,
+      mapFile: mapPath,
+      mapConsumer: consumer,
+      sources: nonemptySources
+    });
   }
 }
 
@@ -213,7 +212,7 @@ export class SourceMapper {
     }
 
     const relPath = path.relative(path.dirname(entry.mapFile), inputPath)
-      .replace(/\\/g, '/');
+                        .replace(/\\/g, '/');
 
     /**
      * Note: Since `entry.sources` is in ascending order from shortest

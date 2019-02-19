@@ -60,8 +60,10 @@ function testTool(
     it('for tool ' + tool +
            ' it states that it has mapping info for files it knows about',
        (done) => {
-         assert.strictEqual(sourcemapper.hasMappingInfo(inputFilePath), true,
-           `The sourcemapper should have information about '${inputFilePath}'`);
+         assert.strictEqual(
+             sourcemapper.hasMappingInfo(inputFilePath), true,
+             `The sourcemapper should have information about '${
+                 inputFilePath}'`);
          done();
        });
 
@@ -73,8 +75,10 @@ function testTool(
              sourcemapper.hasMappingInfo(relativeInputFilePath), true);
          const movedPath =
              path.join('/some/other/base/dir/', relativeInputFilePath);
-         assert.strictEqual(sourcemapper.hasMappingInfo(movedPath), true,
-           `The sourcemapper should have information about paths similar to '${movedPath}'`);
+         assert.strictEqual(
+             sourcemapper.hasMappingInfo(movedPath), true,
+             `The sourcemapper should have information about paths similar to '${
+                 movedPath}'`);
          done();
        });
 
@@ -85,7 +89,8 @@ function testTool(
          const invalidPath = inputFilePath + '_INVALID';
          assert.strictEqual(
              sourcemapper.hasMappingInfo(invalidPath), false,
-              `The source mapper should not have information the path '${invalidPath}' it doesn't recognize`);
+             `The source mapper should not have information the path '${
+                 invalidPath}' it doesn't recognize`);
          done();
        });
 
@@ -98,7 +103,7 @@ function testTool(
       assert.strictEqual(
           info!.line, expectedOutputLine,
           ' invalid mapping for input line ' + inputLine +
-          ' Expected: ' + expectedOutputLine + ', Found: ' + info!.line);
+              ' Expected: ' + expectedOutputLine + ', Found: ' + info!.line);
     };
 
     it('for tool ' + tool + ' it properly maps line numbers', (done) => {
@@ -140,7 +145,7 @@ testTool(
       [11, 24], [13, 31], [15, 33], [17, 36], [19, 38], [20, 40], [21, 44]
     ]);
 
-testTool('Webpack with Typescript', path.join('webpack-ts', 'out.js.map'),
-         path.join('webpack-ts', 'in.ts_'), path.join('webpack-ts', 'out.js'), [
-           [3, 93], [4, 94], [8, 97]
-         ]);
+testTool(
+    'Webpack with Typescript', path.join('webpack-ts', 'out.js.map'),
+    path.join('webpack-ts', 'in.ts_'), path.join('webpack-ts', 'out.js'),
+    [[3, 93], [4, 94], [8, 97]]);
