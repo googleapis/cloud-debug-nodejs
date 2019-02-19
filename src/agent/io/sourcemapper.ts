@@ -31,7 +31,7 @@ const readFilep = promisify(fs.readFile);
 export interface MapInfoInput {
   outputFile: string;
   mapFile: string;
-  mapConsumer: sourceMap.RawSourceMap;
+  mapConsumer: sourceMap.SourceMapConsumer;
 }
 
 export interface MapInfoOutput {
@@ -56,61 +56,45 @@ async function processSourcemap(
   }
   mapPath = path.normalize(mapPath);
 
-  let contents;
+  let rawSourceMap: sourceMap.RawSourceMap;
   try {
-    contents = await readFilep(mapPath, 'utf8');
+    rawSourceMap = await readFilep(mapPath, 'utf8');
   } catch (e) {
     throw new Error('Could not read sourcemap file ' + mapPath + ': ' + e);
   }
 
-  let consumer: sourceMap.RawSourceMap;
-  try {
-    // TODO: Determine how to reconsile the type conflict where `consumer`
-    //       is constructed as a SourceMapConsumer but is used as a
-    //       RawSourceMap.
-    // TODO: Resolve the cast of `contents as any` (This is needed because the
-    //       type is expected to be of `RawSourceMap` but the existing
-    //       working code uses a string.)
-    consumer = new sourceMap.SourceMapConsumer(
-                   contents as {} as sourceMap.RawSourceMap) as {} as
-        sourceMap.RawSourceMap;
-  } catch (e) {
-    throw new Error(
-        'An error occurred while reading the ' +
-        'sourcemap file ' + mapPath + ': ' + e);
-  }
+  await sourceMap.SourceMapConsumer.with(rawSourceMap, null, consumer => {
+    /*
+     * If the sourcemap file defines a "file" attribute, use it as
+     * the output file where the path is relative to the directory
+     * containing the map file.  Otherwise, use the name of the output
+     * file (with the .map extension removed) as the output file.
+     */
+    const outputBase = path.basename(mapPath, '.map');
+    const parentDir = path.dirname(mapPath);
+    const outputPath = path.normalize(path.join(parentDir, outputBase));
 
-  /*
-   * If the sourcemap file defines a "file" attribute, use it as
-   * the output file where the path is relative to the directory
-   * containing the map file.  Otherwise, use the name of the output
-   * file (with the .map extension removed) as the output file.
-   */
-  const outputBase =
-      consumer.file ? consumer.file : path.basename(mapPath, '.map');
-  const parentDir = path.dirname(mapPath);
-  const outputPath = path.normalize(path.join(parentDir, outputBase));
+    const sources = Array.prototype.slice.call(consumer.sources)
+                        .filter((value: string) => {
+                          // filter out any empty string, null, or undefined
+                          // sources
+                          return !!value;
+                        })
+                        .map((relPath: string) => {
+                          // resolve the paths relative to the map file so that
+                          // they are relative to the process's current working
+                          // directory
+                          return path.normalize(path.join(parentDir, relPath));
+                        });
 
-  const sources = Array.prototype.slice.call(consumer.sources)
-                      .filter((value: string) => {
-                        // filter out any empty string, null, or undefined
-                        // sources
-                        return !!value;
-                      })
-                      .map((relPath: string) => {
-                        // resolve the paths relative to the map file so that
-                        // they are relative to the process's current working
-                        // directory
-                        return path.normalize(path.join(parentDir, relPath));
-                      });
-
-  if (sources.length === 0) {
-    throw new Error('No sources listed in the sourcemap file ' + mapPath);
-  }
-  sources.forEach((src: string) => {
-    infoMap.set(
-        path.normalize(src),
-        {outputFile: outputPath, mapFile: mapPath, mapConsumer: consumer});
+    if (sources.length === 0) {
+      throw new Error('No sources listed in the sourcemap file ' + mapPath);
+    }
+    sources.forEach((src: string) => {
+      infoMap.set(
+          path.normalize(src),
+          {outputFile: outputPath, mapFile: mapPath, mapConsumer: consumer});
+    });
   });
 }
 
@@ -217,17 +201,20 @@ export class SourceMapper {
      * In particular, the generatedPositionFor() alone doesn't appear to
      * give the correct mapping information.
      */
-    const mappedPos: sourceMap.Position = allPos && allPos.length > 0 ?
+    const mappedPos: sourceMap.NullablePosition = allPos && allPos.length > 0 ?
         allPos.reduce((accumulator, value) => {
-          return value.line < accumulator.line ? value : accumulator;
+          return value.line && accumulator.line &&
+                  value.line < accumulator.line ?
+              value :
+              accumulator;
         }) :
         consumer.generatedPositionFor(sourcePos);
 
     return {
       file: entry.outputFile,
-      line: mappedPos.line - 1,  // convert the one-based line numbers returned
-                                 // by the SourceMapConsumer to the expected
-                                 // zero-based output.
+      line: (mappedPos.line || 0) - 1,  // convert the one-based line numbers
+                                        // returned by the SourceMapConsumer to
+                                        // the expected zero-based output.
       // TODO: The `sourceMap.Position` type definition has a `column`
       //       attribute and not a `col` attribute.  Determine if the type
       //       definition or this code is correct.
