@@ -8,6 +8,7 @@ module.exports = {
     path: path.resolve(__dirname),
     filename: 'out.js'
   },
+  devtool: 'source-map',
   optimization: {
     nodeEnv: false
   }
