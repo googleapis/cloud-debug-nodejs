@@ -80,6 +80,8 @@
   "scripts": {
     "changelog": "npm run compile && ./bin/run-changelog.sh",
     "prepare": "npm run compile",
+    "presamples-test": "npm run compile",
+    "samples-test": "cd samples/ && npm link ../ && npm install && npm test && cd ../",
     "presystem-test": "npm run compile",
     "system-test": "mocha build/system-test",
     "test-no-cover": "cross-env CLOUD_DEBUG_ASSERTIONS=1 mocha build/test --require source-map-support/register --timeout 4000 --R spec",
@@ -96,7 +98,6 @@
     "license-check": "jsgl --local .",
     "lint": "npm run check",
     "docs": "compodoc src/",
-    "samples-test": "mocha samples/system-test",
     "docs-test": "linkinator docs -r --skip www.googleapis.com",
     "predocs-test": "npm run docs"
   },
