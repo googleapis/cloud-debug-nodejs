@@ -12,7 +12,7 @@ This sample demonstrates [StackDriver Debugger][debugger] with Node.js.
 Before you can run or deploy the sample, you need to do the following (where
 appropriate, replace `YOUR_PROJECT_ID` with the ID of your Cloud project):
 
-1.  Refer to the [App Engine Quickstart][quickstart] for instructions on
+1.  Refer to the `@google-cloud/debug-agent` [README][readme] for instructions on
     running and deploying.
 
 1. Set the `GCLOUD_PROJECT` environment variable:
@@ -66,5 +66,5 @@ Use the [Stackdriver Debugger dashboard](https://console.cloud.google.com/debug)
 See [Contributing][contributing].
 
 [debugger]: https://cloud.google.com/debugger/
-[quickstart]: https://cloud.google.com/appengine/docs/standard/nodejs/quickstart
+[readme]: ../README.md
 [contributing]: https://github.com/GoogleCloudPlatform/nodejs-docs-samples/blob/master/CONTRIBUTING.md
