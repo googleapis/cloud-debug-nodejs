@@ -24,6 +24,7 @@ import {findScriptsFuzzy} from '../util/utils';
 import pLimit = require('p-limit');
 
 const CONCURRENCY = 10;
+const WEBPACK_PREFIX = 'webpack://';
 const readFilep = promisify(fs.readFile);
 
 /** @define {string} */ const MAP_EXT = '.map';
@@ -32,6 +33,9 @@ export interface MapInfoInput {
   outputFile: string;
   mapFile: string;
   mapConsumer: sourceMap.RawSourceMap;
+  // the sources are in ascending order from
+  // shortest to longest
+  sources: string[];
 }
 
 export interface MapInfoOutput {
@@ -91,27 +95,36 @@ async function processSourcemap(
   const parentDir = path.dirname(mapPath);
   const outputPath = path.normalize(path.join(parentDir, outputBase));
 
-  const sources = Array.prototype.slice.call(consumer.sources)
-                      .filter((value: string) => {
-                        // filter out any empty string, null, or undefined
-                        // sources
-                        return !!value;
-                      })
-                      .map((relPath: string) => {
-                        // resolve the paths relative to the map file so that
-                        // they are relative to the process's current working
-                        // directory
-                        return path.normalize(path.join(parentDir, relPath));
-                      });
+  // the sources are in ascending order from shortest to longest
+  const nonemptySources = consumer.sources.filter(val => !!val)
+                              .sort((src1, src2) => src1.length - src2.length);
 
-  if (sources.length === 0) {
+  const normalizedSources =
+      nonemptySources
+          .map((src: string) => {
+            if (src.toLowerCase().startsWith(WEBPACK_PREFIX)) {
+              return src.substring(WEBPACK_PREFIX.length);
+            }
+            return src;
+          })
+          .map((relPath: string) => {
+            // resolve the paths relative to the map file so that
+            // they are relative to the process's current working
+            // directory
+            return path.normalize(path.join(parentDir, relPath));
+          });
+
+  if (normalizedSources.length === 0) {
     throw new Error('No sources listed in the sourcemap file ' + mapPath);
   }
-  sources.forEach((src: string) => {
-    infoMap.set(
-        path.normalize(src),
-        {outputFile: outputPath, mapFile: mapPath, mapConsumer: consumer});
-  });
+  for (const src of normalizedSources) {
+    infoMap.set(path.normalize(src), {
+      outputFile: outputPath,
+      mapFile: mapPath,
+      mapConsumer: consumer,
+      sources: nonemptySources
+    });
+  }
 }
 
 export class SourceMapper {
@@ -198,9 +211,25 @@ export class SourceMapper {
       return null;
     }
 
+    const relPath = path.relative(path.dirname(entry.mapFile), inputPath)
+                        .replace(/\\/g, '/');
+
+    /**
+     * Note: Since `entry.sources` is in ascending order from shortest
+     *       to longest, the first source path that ends with the
+     *       relative path is necessarily the shortest source path
+     *       that ends with the relative path.
+     */
+    let source: string|undefined;
+    for (const src of entry.sources) {
+      if (src.endsWith(relPath)) {
+        source = src;
+        break;
+      }
+    }
+
     const sourcePos = {
-      source: path.relative(path.dirname(entry.mapFile), inputPath)
-                  .replace(/\\/g, '/'),
+      source: source || relPath,
       line: lineNumber + 1,  // the SourceMapConsumer expects the line number
                              // to be one-based but expects the column number
       column: colNumber      // to be zero-based
