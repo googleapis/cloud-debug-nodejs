@@ -16,6 +16,7 @@
 
 import * as assert from 'assert';
 import * as fs from 'fs';
+import * as gcpMetadata from 'gcp-metadata';
 import * as path from 'path';
 import * as proxyquire from 'proxyquire';
 
@@ -728,7 +729,7 @@ describe('Debuglet', () => {
         return Promise.resolve(true);
       };
       const clusterScope =
-          nock('http://metadata.google.internal')
+          nock(gcpMetadata.HOST_ADDRESS)
               .get('/computeMetadata/v1/instance/attributes/cluster-name')
               .once()
               .reply(200, 'cluster-name-from-metadata');
