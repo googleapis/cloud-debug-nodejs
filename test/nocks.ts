@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import * as gcpMetadata from 'gcp-metadata';
 import * as nock from 'nock';
 
 // In the future _=>true.
@@ -48,14 +49,14 @@ export function register(validator?: Validator): nock.Scope {
 }
 
 export function projectId(reply: string): nock.Scope {
-  return nock('http://metadata.google.internal')
+  return nock(gcpMetadata.HOST_ADDRESS)
       .get('/computeMetadata/v1/project/project-id')
       .once()
       .reply(200, reply);
 }
 
 export function metadataInstance(): nock.Scope {
-  return nock('http://metadata.google.internal/')
+  return nock(gcpMetadata.HOST_ADDRESS)
       .get('/computeMetadata/v1/instance')
       .replyWithError({code: 'ENOTFOUND', message: 'nocked request'});
 }
