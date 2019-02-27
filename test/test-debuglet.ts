@@ -728,7 +728,7 @@ describe('Debuglet', () => {
         return Promise.resolve(true);
       };
       const clusterScope =
-          nock('http://metadata.google.internal')
+          nock('http://metadata.google.internal.')
               .get('/computeMetadata/v1/instance/attributes/cluster-name')
               .once()
               .reply(200, 'cluster-name-from-metadata');
