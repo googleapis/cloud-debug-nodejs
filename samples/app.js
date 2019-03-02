@@ -13,12 +13,9 @@
  * limitations under the License.
  */
 
-// [START debugger_app]
 'use strict';
 
-// [START debugger_setup_implicit]
 require('@google-cloud/debug-agent').start();
-// [END debugger_setup_implicit]
 
 const express = require('express');
 const app = express();
@@ -38,6 +35,5 @@ if (module === require.main) {
     console.log('Press Ctrl+C to quit.');
   });
 }
-// [END debugger_app]
 
 module.exports = app;
