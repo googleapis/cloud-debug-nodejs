@@ -15,13 +15,12 @@
  */
 
 import * as fs from 'fs';
+import pLimit from 'p-limit';
 import * as path from 'path';
 import * as promisify from 'pify';
 import * as sourceMap from 'source-map';
 
 import {findScriptsFuzzy} from '../util/utils';
-
-import pLimit = require('p-limit');
 
 const CONCURRENCY = 10;
 const WEBPACK_PREFIX = 'webpack://';
