@@ -509,13 +509,11 @@ class StateResolver {
     const stableObjectId = this.getStableObjectId(value);
     let idx = this.rawVariableTable.findIndex(rawVar => {
       if (rawVar) {
-        // stableObjectId was introduced in Node 10.x.y as a more reliable way
-        // to check object equality, as objectId is unique only to object
-        // mirrors, and therefore monotonically increases on repeated accesses
-        // to the same remote object. If this field is available, use it.
-        // TODO(kjin): When stableObjectId is added to Node 10:
-        // 1. Fill in x.y with the appropriate versions.
-        // 2. Update DT Node inspector versions, and remove `any` casts here.
+        // stableObjectId was introduced in Node 10.15.3/11.7.0 as a more
+        // reliable way to check object equality, as objectId is unique only to
+        // object mirrors, and therefore monotonically increases on repeated
+        // accesses to the same remote object. If this field is available, use
+        // it.
         if (stableObjectId !== NO_STABLE_OBJECT_ID) {
           return rawVar.stableObjectId === stableObjectId;
         } else {
