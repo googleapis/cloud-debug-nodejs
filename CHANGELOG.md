@@ -1,5 +1,48 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## v3.1.0
+
+03-12-2019 16:20 PDT
+
+### New Features
+- feat: make logpoint function customizable ([#634](https://github.com/googleapis/cloud-debug-nodejs/pull/634))
+
+### Bug Fixes
+- fix: correct typings for SourceContext ([#626](https://github.com/googleapis/cloud-debug-nodejs/pull/626))
+- fix: add webpack support to the Sourcemapper ([#640](https://github.com/googleapis/cloud-debug-nodejs/pull/640))
+- fix: avoid spurious 'unable to clear' errors ([#624](https://github.com/googleapis/cloud-debug-nodejs/pull/624))
+
+### Dependencies
+- fix: update @google-cloud/common to ^0.31.0 ([#639](https://github.com/googleapis/cloud-debug-nodejs/pull/639))
+- fix(deps): update dependency gcp-metadata to v1
+- fix(deps): update dependency @sindresorhus/is to ^0.15.0 ([#619](https://github.com/googleapis/cloud-debug-nodejs/pull/619))
+
+### Documentation
+- docs: add samples code ([#633](https://github.com/googleapis/cloud-debug-nodejs/pull/633))
+- docs: update links in contrib guide ([#637](https://github.com/googleapis/cloud-debug-nodejs/pull/637))
+- docs: update contributing guide ([#628](https://github.com/googleapis/cloud-debug-nodejs/pull/628))
+- docs: add lint/fix example to contributing guide ([#621](https://github.com/googleapis/cloud-debug-nodejs/pull/621))
+
+### Internal / Testing Changes
+- build: Add docuploader credentials to node publish jobs ([#648](https://github.com/googleapis/cloud-debug-nodejs/pull/648))
+- build: use node10 to run samples-test, system-test etc ([#647](https://github.com/googleapis/cloud-debug-nodejs/pull/647))
+- build: add configs to import keys for builds
+- chore: remove p-limit types ([#645](https://github.com/googleapis/cloud-debug-nodejs/pull/645))
+- chore: Delete unused region tags ([#644](https://github.com/googleapis/cloud-debug-nodejs/pull/644))
+- chore(deps): update dependency mocha to v6
+- build: use linkinator for docs test ([#636](https://github.com/googleapis/cloud-debug-nodejs/pull/636))
+- test: use unique service context for e2e tests ([#638](https://github.com/googleapis/cloud-debug-nodejs/pull/638))
+- chore: add missing dev dependency ([#635](https://github.com/googleapis/cloud-debug-nodejs/pull/635))
+- test: add grpcjs system tests ([#631](https://github.com/googleapis/cloud-debug-nodejs/pull/631))
+- refactor: address TODO about id type ([#627](https://github.com/googleapis/cloud-debug-nodejs/pull/627))
+- build: create docs test npm scripts ([#630](https://github.com/googleapis/cloud-debug-nodejs/pull/630))
+- chore: remove unneeded code ([#625](https://github.com/googleapis/cloud-debug-nodejs/pull/625))
+- chore: update acorn to version 6 ([#620](https://github.com/googleapis/cloud-debug-nodejs/pull/620))
+- chore: upgrade typescript to ~3.3.0 ([#618](https://github.com/googleapis/cloud-debug-nodejs/pull/618))
+- build: ignore googleapis.com in doc link check ([#615](https://github.com/googleapis/cloud-debug-nodejs/pull/615))
+- build: check broken links in generated docs ([#612](https://github.com/googleapis/cloud-debug-nodejs/pull/612))
+- chore(build): inject yoshi automation key ([#608](https://github.com/googleapis/cloud-debug-nodejs/pull/608))
+
 ## v3.0.1
 
 12-11-2018 14:18 PST
