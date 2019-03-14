@@ -22,6 +22,7 @@ import * as proxyquire from 'proxyquire';
 
 import {DebugAgentConfig, ResolvedDebugAgentConfig} from '../src/agent/config';
 import {defaultConfig as DEFAULT_CONFIG} from '../src/agent/config';
+import * as utils from '../src/agent/util/utils';
 import {Debuggee} from '../src/debuggee';
 import * as stackdriver from '../src/types/stackdriver';
 
@@ -626,7 +627,7 @@ describe('Debuglet', () => {
          debuglet.on('initError', (err: Error) => {
            const errorMessage = 'The working directory is a root ' +
                'directory. Disabling to avoid a scan of the entire filesystem ' +
-               'for JavaScript files. Use config \allowRootAsWorkingDirectory` ' +
+               'for JavaScript files. Use config `allowRootAsWorkingDirectory` ' +
                'if you really want to do this.';
            assert.ok(err);
            assert.strictEqual(err.message, errorMessage);

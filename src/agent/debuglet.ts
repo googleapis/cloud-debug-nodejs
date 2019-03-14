@@ -47,7 +47,11 @@ const ALLOW_EXPRESSIONS_MESSAGE = 'Expressions and conditions are not allowed' +
     ' See the debug agent documentation at https://goo.gl/ShSm6r.';
 const NODE_VERSION_MESSAGE =
     'Node.js version not supported. Node.js 5.2.0 and ' +
-    ' versions older than 0.12 are not supported.';
+    'versions older than 0.12 are not supported.';
+const NODE_10_CIRC_REF_MESSAGE =
+    'capture.maxDataSize=0 is not recommended on older versions of Node' +
+    ' 10/11. See https://github.com/googleapis/cloud-debug-nodejs/issues/516' +
+    ' for more information.';
 const BREAKPOINT_ACTION_MESSAGE =
     'The only currently supported breakpoint actions' +
     ' are CAPTURE and LOG.';
@@ -319,7 +323,7 @@ export class Debuglet extends EventEmitter {
         path.join(workingDir, '..') === workingDir) {
       const message = 'The working directory is a root directory. Disabling ' +
           'to avoid a scan of the entire filesystem for JavaScript files. ' +
-          'Use config \allowRootAsWorkingDirectory` if you really want to ' +
+          'Use config `allowRootAsWorkingDirectory` if you really want to ' +
           'do this.';
       that.logger.error(message);
       that.emit('initError', new Error(message));
@@ -401,6 +405,11 @@ export class Debuglet extends EventEmitter {
     } catch (err5) {
       that.logger.warn('Unable to discover source context', err5);
       // This is ignorable.
+    }
+
+    if (this.config.capture && this.config.capture.maxDataSize === 0 &&
+        utils.satisfies(process.version, '>=10 <10.15.3 || >=11 <11.7')) {
+      that.logger.warn(NODE_10_CIRC_REF_MESSAGE);
     }
 
     // We can register as a debuggee now.
