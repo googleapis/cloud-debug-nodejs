@@ -407,10 +407,9 @@ export class Debuglet extends EventEmitter {
       // This is ignorable.
     }
 
-    if (utils.satisfies(process.version, '>=10 <10.15.3 || >=11 <11.7')) {
-      if (this.config.capture && this.config.capture.maxDataSize === 0) {
-        that.logger.warn(NODE_10_CIRC_REF_MESSAGE);
-      }
+    if (this.config.capture && this.config.capture.maxDataSize === 0 &&
+        utils.satisfies(process.version, '>=10 <10.15.3 || >=11 <11.7')) {
+      that.logger.warn(NODE_10_CIRC_REF_MESSAGE);
     }
 
     // We can register as a debuggee now.
