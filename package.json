@@ -38,7 +38,6 @@
     "@types/request": "^2.48.1",
     "@types/semver": "^5.3.32",
     "@types/uuid": "^3.4.4",
-    "broken-link-checker-local": "^0.2.0",
     "changelog-maker": "^2.2.2",
     "codecov": "^3.0.4",
     "cross-env": "^5.2.0",
