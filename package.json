@@ -105,14 +105,5 @@
     "LICENSE",
     "README.md",
     "build/src"
-  ],
-  "nyc": {
-    "reporter": [
-      "lcov"
-    ],
-    "exclude": [
-      "build/test/*-code.js",
-      "build/test/fixtures/**/*.js"
-    ]
-  }
+  ]
 }
