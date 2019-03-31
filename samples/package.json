@@ -1,39 +1,24 @@
 {
   "name": "nodejs-docs-samples-debugger",
   "description": "Sample for Google Stackdriver Trace on Google App Engine Flexible Environment.",
-  "version": "0.0.1",
   "private": true,
   "license": "Apache-2.0",
-  "author": "Google Inc.",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/GoogleCloudPlatform/nodejs-docs-samples.git"
-  },
+  "author": "Google LLC",
+  "repository": "googleapis/cloud-debug-nodejs",
   "engines": {
     "node": ">=8"
   },
   "scripts": {
     "deploy": "gcloud app deploy",
     "start": "node app.js",
-    "system-test": "repo-tools test app",
-    "test": "npm run system-test",
-    "e2e-test": "repo-tools test deploy"
+    "test": "mocha"
   },
   "dependencies": {
     "@google-cloud/debug-agent": "^3.1.0",
     "express": "4.16.4"
   },
   "devDependencies": {
-    "@google-cloud/nodejs-repo-tools": "^3.0.0",
+    "execa": "^1.0.0",
     "mocha": "^6.0.0"
-  },
-  "cloud-repo-tools": {
-    "test": {
-      "app": {
-        "msg": "Hello, world!"
-      }
-    },
-    "requiresKeyFile": true,
-    "requiresProjectId": true
   }
 }
