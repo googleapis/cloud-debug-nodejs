@@ -59,7 +59,7 @@
     "linkinator": "^1.1.2"
   },
   "dependencies": {
-    "@google-cloud/common": "^0.31.0",
+    "@google-cloud/common": "^0.32.0",
     "@sindresorhus/is": "^0.15.0",
     "acorn": "^6.0.0",
     "coffeescript": "^2.0.0",
