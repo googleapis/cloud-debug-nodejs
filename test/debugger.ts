@@ -19,8 +19,6 @@
  */
 
 import {ServiceObject} from '@google-cloud/common';
-import * as request from 'request';  // types only
-
 import {Debug} from '../src/client/stackdriver/debug';
 import {Debuggee} from '../src/debuggee';
 import * as stackdriver from '../src/types/stackdriver';
@@ -45,7 +43,7 @@ export class Debugger extends ServiceObject {
    * @constructor
    */
   constructor(debug: Debug) {
-    super({requestModule: request, parent: debug, baseUrl: '/debugger'});
+    super({parent: debug, baseUrl: '/debugger'});
 
     /** @private {string} */
     this.nextWaitToken = null;
