@@ -15,14 +15,14 @@
 
 'use strict';
 
-const execa = require('execa');
+const {spawn} = require('child_process');
 
 describe('debug samples', () => {
 
   it('should run the quickstart', done => {
     // select a random port between 49152 and 65535
     const PORT = Math.floor((Math.random() * (65535-49152))) + 49152;
-    const proc = execa('node', ['app.js'], {
+    const proc = spawn('node', ['app.js'], {
       env: {
         PORT
       }
