@@ -16,6 +16,7 @@
 'use strict';
 
 const {spawn} = require('child_process');
+const path = require('path')
 
 describe('debug samples', () => {
 
@@ -23,6 +24,7 @@ describe('debug samples', () => {
     // select a random port between 49152 and 65535
     const PORT = Math.floor((Math.random() * (65535-49152))) + 49152;
     const proc = spawn('node', ['app.js'], {
+      shell: true,
       env: {
         PORT
       }
