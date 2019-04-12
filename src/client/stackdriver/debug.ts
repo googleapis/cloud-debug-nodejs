@@ -16,7 +16,6 @@
 
 import {GoogleAuthOptions, Service} from '@google-cloud/common';
 import * as request from 'request';  //  Only for type declarations.
-import {teenyRequest} from 'teeny-request';
 
 export interface PackageInfo {
   name: string;
@@ -58,7 +57,6 @@ export class Debug extends Service {
     }
 
     const config = {
-      requestModule: teenyRequest as typeof request,
       projectIdRequired: false,
       baseUrl: 'https://clouddebugger.googleapis.com/v2',
       scopes: ['https://www.googleapis.com/auth/cloud_debugger'],

@@ -59,7 +59,7 @@
     "linkinator": "^1.1.2"
   },
   "dependencies": {
-    "@google-cloud/common": "^0.31.0",
+    "@google-cloud/common": "^0.32.0",
     "@sindresorhus/is": "^0.15.0",
     "acorn": "^6.0.0",
     "coffeescript": "^2.0.0",
@@ -72,8 +72,7 @@
     "pify": "^4.0.1",
     "semver": "^6.0.0",
     "source-map": "^0.6.1",
-    "split": "^1.0.0",
-    "teeny-request": "^3.11.1"
+    "split": "^1.0.0"
   },
   "scripts": {
     "changelog": "npm run compile && ./bin/run-changelog.sh",
