@@ -25,9 +25,7 @@ describe('debug samples', () => {
     const PORT = Math.floor((Math.random() * (65535-49152))) + 49152;
     const proc = spawn('node', ['app.js'], {
       shell: true,
-      env: {
-        PORT
-      }
+      env: Object.assign(process.env, {PORT})
     });
     proc.stdout.on('data', message => {
       // Listen to stdout and look for messages.  If we get a `Press CTRL+...`
