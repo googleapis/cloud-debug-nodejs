@@ -274,8 +274,10 @@ export class Debuglet extends EventEmitter {
     const envConfig = {
       logLevel: process.env.GCLOUD_DEBUG_LOGLEVEL,
       serviceContext: {
-        service: process.env.GAE_SERVICE || process.env.GAE_MODULE_NAME,
-        version: process.env.GAE_VERSION || process.env.GAE_MODULE_VERSION,
+        service: process.env.GAE_SERVICE || process.env.GAE_MODULE_NAME ||
+            process.env.K_SERVICE,
+        version: process.env.GAE_VERSION || process.env.GAE_MODULE_VERSION ||
+            process.env.K_REVISION,
         minorVersion_:
             process.env.GAE_DEPLOYMENT_ID || process.env.GAE_MINOR_VERSION
       }
