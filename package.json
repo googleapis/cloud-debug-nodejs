@@ -48,7 +48,7 @@
     "mocha": "^6.0.0",
     "ncp": "^2.0.0",
     "nock": "^10.0.0",
-    "nyc": "^13.1.0",
+    "nyc": "^14.0.0",
     "post-install-check": "0.0.1",
     "proxyquire": "^2.0.0",
     "request": "^2.88.0",
