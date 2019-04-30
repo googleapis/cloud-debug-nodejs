@@ -435,6 +435,20 @@ describe('Debuglet', () => {
                debuglet.config.serviceContext.version, 'fake-gae-version');
          });
 
+      it('should respect K_SERVICE and K_REVISION env. vars.', () => {
+        process.env.K_SERVICE = 'fake-cloudrun-service';
+        process.env.K_REVISION = 'fake-cloudrun-version';
+        const debug = new Debug({}, packageInfo);
+        const debuglet = new Debuglet(debug, defaultConfig);
+        assert.ok(debuglet.config);
+        assert.ok(debuglet.config.serviceContext);
+        assert.strictEqual(
+            debuglet.config.serviceContext.service, 'fake-cloudrun-service');
+        assert.strictEqual(
+            debuglet.config.serviceContext.version, 'fake-cloudrun-version');
+      });
+
+
       it('should respect FUNCTION_NAME env. var.', () => {
         process.env.FUNCTION_NAME = 'fake-fn-name';
         const debug = new Debug({}, packageInfo);
