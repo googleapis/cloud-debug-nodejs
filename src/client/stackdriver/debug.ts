@@ -60,7 +60,7 @@ export class Debug extends Service {
       projectIdRequired: false,
       baseUrl: 'https://clouddebugger.googleapis.com/v2',
       scopes: ['https://www.googleapis.com/auth/cloud_debugger'],
-      packageJson
+      packageJson,
     };
 
     // TODO: Update Service to provide types

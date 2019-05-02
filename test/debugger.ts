@@ -68,7 +68,7 @@ export class Debugger extends ServiceObject {
       const query = {
         clientVersion: this.clientVersion,
         includeInactive,
-        project: projectId
+        project: projectId,
       };
 
       const uri = API + '/debuggees?' + qs.stringify(query);
@@ -213,7 +213,7 @@ export class Debugger extends ServiceObject {
             '/breakpoints/set?' + qs.stringify(query),
         method: 'POST',
         json: true,
-        body: breakpoint
+        body: breakpoint,
       };
 
       this.request(options, (err, body, response) => {
@@ -251,7 +251,7 @@ export class Debugger extends ServiceObject {
             '/breakpoints/' + encodeURIComponent(breakpointId) + '?' +
             qs.stringify(query),
         method: 'DELETE',
-        json: true
+        json: true,
       };
 
       this.request(options, (err, body, response) => {

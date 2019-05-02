@@ -43,7 +43,7 @@ const fakeCredentials = require('./fixtures/gcloud-credentials.json');
 
 const packageInfo = {
   name: 'Some name',
-  version: 'Some version'
+  version: 'Some version',
 };
 
 import * as nock from 'nock';
@@ -58,13 +58,13 @@ let oldGP: string|undefined;
 const bp: stackdriver.Breakpoint = {
   id: 'test',
   action: 'CAPTURE',
-  location: {path: 'build/test/fixtures/foo.js', line: 2}
+  location: {path: 'build/test/fixtures/foo.js', line: 2},
 } as stackdriver.Breakpoint;
 // TODO: Have this actually implement Breakpoint.
 const errorBp: stackdriver.Breakpoint = {
   id: 'testLog',
   action: 'FOO',
-  location: {path: 'build/test/fixtures/foo.js', line: 2}
+  location: {path: 'build/test/fixtures/foo.js', line: 2},
 } as {} as stackdriver.Breakpoint;
 
 function verifyBreakpointRejection(
@@ -230,7 +230,7 @@ describe('Debuglet', () => {
       const config = debugletConfig();
       const debuglet = new Debuglet(debug, config);
       const scope = nock(config.apiUrl).post(REGISTER_PATH).reply(200, {
-        debuggee: {id: DEBUGGEE_ID}
+        debuggee: {id: DEBUGGEE_ID},
       });
 
       debuglet.once('registered', (id: string) => {
@@ -274,11 +274,11 @@ describe('Debuglet', () => {
               selectFiles: (regex: RegExp, baseDir: string) => {
                 return [];
               },
-              hash: precomputedHash || 'fake-hash'
+              hash: precomputedHash || 'fake-hash',
             };
             return results;
-          }
-        }
+          },
+        },
       });
       const debug = new Debug(
           {projectId: 'fake-project', credentials: fakeCredentials},
@@ -327,7 +327,7 @@ describe('Debuglet', () => {
         const config = debugletConfig();
         const debuglet = new Debuglet(debug, config);
         const scope = nock(config.apiUrl).post(REGISTER_PATH).reply(200, {
-          debuggee: {id: DEBUGGEE_ID}
+          debuggee: {id: DEBUGGEE_ID},
         });
 
         debuglet.once('registered', (id: string) => {
@@ -354,7 +354,7 @@ describe('Debuglet', () => {
            const config = debugletConfig();
            const debuglet = new Debuglet(debug, config);
            const scope = nock(config.apiUrl).post(REGISTER_PATH).reply(200, {
-             debuggee: {id: DEBUGGEE_ID}
+             debuggee: {id: DEBUGGEE_ID},
            });
 
            debuglet.once('registered', (id: string) => {
@@ -379,7 +379,7 @@ describe('Debuglet', () => {
         const config = debugletConfig();
         const debuglet = new Debuglet(debug, config);
         const scope = nock(config.apiUrl).post(REGISTER_PATH).reply(200, {
-          debuggee: {id: DEBUGGEE_ID}
+          debuggee: {id: DEBUGGEE_ID},
         });
 
         let buffer = '';
@@ -628,8 +628,8 @@ describe('Debuglet', () => {
                      return cb(null, {});
                    }
                    fs.stat(filepath, cb);
-                 }
-           }
+                 },
+           },
          });
          const config = extend({}, defaultConfig, {workingDirectory: root});
          const debuglet = new mockedDebuglet.Debuglet(debug, config);
@@ -670,8 +670,8 @@ describe('Debuglet', () => {
                      return cb(null, {});
                    }
                    fs.stat(filepath, cb);
-                 }
-           }
+                 },
+           },
          });
 
          // Don't actually scan the entire filesystem.  Act like the filesystem
@@ -684,7 +684,7 @@ describe('Debuglet', () => {
                      jsStats: {},
                      mapFiles: [],
                      errors: new Map<string, Error>(),
-                     hash: 'fake-hash'
+                     hash: 'fake-hash',
                    });
                  };
 
@@ -725,7 +725,7 @@ describe('Debuglet', () => {
       const config = debugletConfig();
       const debuglet = new Debuglet(debug, config);
       const scope = nock(config.apiUrl).post(REGISTER_PATH).reply(200, {
-        debuggee: {id: DEBUGGEE_ID}
+        debuggee: {id: DEBUGGEE_ID},
       });
 
       debuglet.once('registered', (id: string) => {
@@ -758,7 +758,7 @@ describe('Debuglet', () => {
       const config = debugletConfig();
       const debuglet = new Debuglet(debug, config);
       const scope = nock(config.apiUrl).post(REGISTER_PATH).reply(200, {
-        debuggee: {id: DEBUGGEE_ID}
+        debuggee: {id: DEBUGGEE_ID},
       });
 
       debuglet.once('registered', (id: string) => {
@@ -884,7 +884,7 @@ describe('Debuglet', () => {
          const config = debugletConfig();
          const debuglet = new Debuglet(debug, config);
          const scope = nock(config.apiUrl).post(REGISTER_PATH).reply(200, {
-           debuggee: {id: DEBUGGEE_ID, isDisabled: true}
+           debuggee: {id: DEBUGGEE_ID, isDisabled: true},
          });
 
          debuglet.once('remotelyDisabled', () => {
@@ -988,7 +988,7 @@ describe('Debuglet', () => {
          const breakpoint: stackdriver.Breakpoint = {
            id: 'test1',
            action: 'CAPTURE',
-           location: {path: 'build/test/fixtures/foo.js', line: 2}
+           location: {path: 'build/test/fixtures/foo.js', line: 2},
          } as stackdriver.Breakpoint;
 
          const debug = new Debug(
@@ -1067,8 +1067,8 @@ describe('Debuglet', () => {
                      id: 'test',
                      action: 'CAPTURE',
                      condition: 'x === 5',
-                     location: {path: 'fixtures/foo.js', line: 2}
-                   }]
+                     location: {path: 'fixtures/foo.js', line: 2},
+                   }],
                  })
                  .put(
                      BPS_PATH + '/test',
@@ -1108,8 +1108,8 @@ describe('Debuglet', () => {
                      id: 'test',
                      action: 'CAPTURE',
                      expressions: ['x'],
-                     location: {path: 'fixtures/foo.js', line: 2}
-                   }]
+                     location: {path: 'fixtures/foo.js', line: 2},
+                   }],
                  })
                  .put(
                      BPS_PATH + '/test',
@@ -1232,7 +1232,7 @@ describe('Debuglet', () => {
       const config = debugletConfig({
         breakpointExpirationSec: 1,
         breakpointUpdateIntervalSec: 1,
-        forceNewAgent_: true
+        forceNewAgent_: true,
       });
       const debuglet = new Debuglet(debug, config);
       const scope =

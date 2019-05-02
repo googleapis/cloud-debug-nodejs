@@ -59,9 +59,9 @@ describe('evaluating expressions', () => {
           id: 'fake-id-123',
           location: {
             path: 'build/test/test-expression-side-effect-code.js',
-            line: 16
+            line: 16,
           },
-          expressions: ['item.getPrice()']
+          expressions: ['item.getPrice()'],
         } as stackdriver.Breakpoint;
 
         api.set(bp, err => {
@@ -90,9 +90,9 @@ describe('evaluating expressions', () => {
           id: 'fake-id-123',
           location: {
             path: 'build/test/test-expression-side-effect-code.js',
-            line: 16
+            line: 16,
           },
-          expressions: ['item.increasePriceByOne()']
+          expressions: ['item.increasePriceByOne()'],
         } as stackdriver.Breakpoint;
 
         api.set(bp, err => {
@@ -120,7 +120,7 @@ describe('evaluating expressions', () => {
       id: 'fake-id-123',
       location:
           {path: 'build/test/test-expression-side-effect-code.js', line: 16},
-      expressions: ['process']
+      expressions: ['process'],
     } as stackdriver.Breakpoint;
 
     api.set(bp, err => {

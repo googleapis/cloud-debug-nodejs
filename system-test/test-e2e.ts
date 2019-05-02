@@ -200,7 +200,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
       logMessageFormat: LOG_MESSAGE_FORMAT,
       stackFrames: [],
       evaluatedExpressions: [],
-      variableTable: []
+      variableTable: [],
     });
 
     // Check the contents of the log, but keep the original breakpoint.
@@ -223,7 +223,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
       logMessageFormat: LOG_MESSAGE_FORMAT,
       stackFrames: [],
       evaluatedExpressions: [],
-      variableTable: []
+      variableTable: [],
     });
 
     console.log('-- now checking if the breakpoint was hit');
@@ -300,7 +300,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
       logMessageFormat: LOG_MESSAGE_FORMAT,
       stackFrames: [],
       evaluatedExpressions: [],
-      variableTable: []
+      variableTable: [],
     });
 
     // If no throttling occurs, we expect ~20 logs since we are logging

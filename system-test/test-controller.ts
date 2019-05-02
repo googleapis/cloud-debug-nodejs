@@ -31,7 +31,7 @@ import {Debug, PackageInfo} from '../src/client/stackdriver/debug';
 
 const packageInfo: PackageInfo = {
   name: 'SomeName',
-  version: 'SomeVersion'
+  version: 'SomeVersion',
 };
 const agentVersion = `${packageInfo.name}/client/${packageInfo.version}`;
 
@@ -46,7 +46,7 @@ describe('Controller', function() {
       project: process.env.GCLOUD_PROJECT,
       uniquifier: 'test-uid-' + Date.now(),
       description: 'this is a system test',
-      agentVersion
+      agentVersion,
     });
 
     controller.register(debuggee, (err, maybeBody) => {
@@ -65,7 +65,7 @@ describe('Controller', function() {
       project: process.env.GCLOUD_PROJECT,
       uniquifier: 'test-uid-' + Date.now(),
       description: 'this is a system test',
-      agentVersion
+      agentVersion,
     });
     // TODO: Determine if the body parameter should be used.
     controller.register(debuggee, (err1, body1) => {
@@ -89,7 +89,7 @@ describe('Controller', function() {
       project: process.env.GCLOUD_PROJECT,
       uniquifier: 'test-uid-' + Date.now(),
       description: 'this is a system test',
-      agentVersion
+      agentVersion,
     });
     // TODO: Determine if the body parameter should be used.
     controller.register(debuggee, (err, body) => {

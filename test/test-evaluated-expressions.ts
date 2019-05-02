@@ -123,7 +123,7 @@ describe('debugger provides useful information', () => {
       id: 'fake-id-123',
       location:
           {path: 'build/test/test-evaluated-expressions-code.js', line: 19},
-      expressions: ['someObject']
+      expressions: ['someObject'],
     } as stackdriver.Breakpoint;
 
     api.set(bp, err => {
@@ -133,7 +133,7 @@ describe('debugger provides useful information', () => {
 
         assertMembers(bp, 0, 'someObject', [
           {name: 'aNumber', value: '1'},
-          {name: 'aString', value: 'some string'}
+          {name: 'aString', value: 'some string'},
         ]);
 
         api.clear(bp, err => {
@@ -150,7 +150,7 @@ describe('debugger provides useful information', () => {
       id: 'fake-id-123',
       location:
           {path: 'build/test/test-evaluated-expressions-code.js', line: 19},
-      expressions: ['someArray']
+      expressions: ['someArray'],
     } as stackdriver.Breakpoint;
 
     api.set(bp, err => {
@@ -160,7 +160,7 @@ describe('debugger provides useful information', () => {
 
         assertMembers(bp, 0, 'someArray', [
           {name: '0', value: '1'}, {name: '1', value: '2'},
-          {name: '2', value: '3'}, {name: 'length', value: '3'}
+          {name: '2', value: '3'}, {name: 'length', value: '3'},
         ]);
 
         api.clear(bp, err => {
@@ -177,7 +177,7 @@ describe('debugger provides useful information', () => {
       id: 'fake-id-123',
       location:
           {path: 'build/test/test-evaluated-expressions-code.js', line: 19},
-      expressions: ['someRegex']
+      expressions: ['someRegex'],
     } as stackdriver.Breakpoint;
 
     api.set(bp, err => {
@@ -199,7 +199,7 @@ describe('debugger provides useful information', () => {
       id: 'fake-id-123',
       location:
           {path: 'build/test/test-evaluated-expressions-code.js', line: 19},
-      expressions: ['res']
+      expressions: ['res'],
     } as stackdriver.Breakpoint;
 
     api.set(bp, err => {
@@ -212,7 +212,7 @@ describe('debugger provides useful information', () => {
           {name: 'complete', value: 'false'}, {name: 'url', value: ''},
           {name: 'statusCode', value: '200'},
           {name: '_consuming', value: 'false'},
-          {name: '_dumped', value: 'false'}
+          {name: '_dumped', value: 'false'},
         ]);
         api.clear(bp, err => {
           assert.ifError(err);

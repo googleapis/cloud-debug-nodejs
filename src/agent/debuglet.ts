@@ -231,7 +231,7 @@ export class Debuglet extends EventEmitter {
     this.logger = consoleLogLevel({
       stderr: true,
       prefix: this.debug.packageInfo.name,
-      level: Debuglet.logLevelToName(this.config.logLevel)
+      level: Debuglet.logLevelToName(this.config.logLevel),
     });
 
     /** @private {DebugletApi} */
@@ -279,8 +279,8 @@ export class Debuglet extends EventEmitter {
         version: process.env.GAE_VERSION || process.env.GAE_MODULE_VERSION ||
             process.env.K_REVISION,
         minorVersion_:
-            process.env.GAE_DEPLOYMENT_ID || process.env.GAE_MINOR_VERSION
-      }
+            process.env.GAE_DEPLOYMENT_ID || process.env.GAE_MINOR_VERSION,
+      },
     };
 
     if (process.env.FUNCTION_NAME) {
@@ -393,7 +393,7 @@ export class Debuglet extends EventEmitter {
         that.config.serviceContext = {
           service: clusterName,
           version: 'unversioned',
-          minorVersion_: undefined
+          minorVersion_: undefined,
         };
       } catch (err) {
         /* we are not running on GKE - Ignore error. */
@@ -473,7 +473,7 @@ export class Debuglet extends EventEmitter {
       'V8 version': process.versions.v8,
       'agent.name': packageInfo.name,
       'agent.version': packageInfo.version,
-      'projectid': projectId
+      'projectid': projectId,
     };
 
     if (serviceContext) {
@@ -518,7 +518,7 @@ export class Debuglet extends EventEmitter {
       agentVersion: version,
       labels,
       statusMessage,
-      packageInfo
+      packageInfo,
     };
     if (sourceContext) {
       properties.sourceContexts = [sourceContext];
@@ -926,7 +926,7 @@ export class Debuglet extends EventEmitter {
       breakpoint.status = {
         description: {format: 'The snapshot has expired'},
         isError: true,
-        refersTo: StatusMessage.BREAKPOINT_AGE
+        refersTo: StatusMessage.BREAKPOINT_AGE,
       };
       that.completeBreakpoint_(breakpoint);
     }, (expiryTime - now) * 1000).unref();

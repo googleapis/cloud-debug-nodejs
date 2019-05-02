@@ -32,7 +32,7 @@ let api: debugapi.DebugApi;
 // TODO: Have this actually implement Breakpoint
 const breakpointInFoo: stackdriver.Breakpoint = {
   id: 'fake-id-123',
-  location: {path: 'build/test/test-max-data-size-code.js', line: 4}
+  location: {path: 'build/test/test-max-data-size-code.js', line: 4},
 } as stackdriver.Breakpoint;
 
 describe('maxDataSize', () => {
@@ -66,7 +66,7 @@ describe('maxDataSize', () => {
     // TODO: Have this actually implement Breakpoint.
     const bp: stackdriver.Breakpoint = {
       id: breakpointInFoo.id,
-      location: breakpointInFoo.location
+      location: breakpointInFoo.location,
     } as stackdriver.Breakpoint;
     // TODO: Determine how to remove this cast to any.
     api.set(bp, (err1) => {
@@ -95,7 +95,7 @@ describe('maxDataSize', () => {
     // TODO: Have this actually implement breakpoint
     const bp: stackdriver.Breakpoint = {
       id: breakpointInFoo.id,
-      location: breakpointInFoo.location
+      location: breakpointInFoo.location,
     } as stackdriver.Breakpoint;
     api.set(bp, (err1) => {
       assert.ifError(err1);

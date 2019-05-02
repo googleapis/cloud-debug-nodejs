@@ -410,7 +410,7 @@ export class V8DebugApi implements debugapi.DebugApi {
     }
     // TODO: Address the case where `result.mirror` is `null`.
     return {
-      value: !!((result.mirror as v8.ValueMirror).value())
+      value: !!((result.mirror as v8.ValueMirror).value()),
     };  // intentional !!
   }
 
@@ -432,7 +432,7 @@ export class V8DebugApi implements debugapi.DebugApi {
             name: breakpoint.expressions[i],
             status: new StatusMessage(
                 StatusMessage.VARIABLE_VALUE, 'Error Compiling Expression',
-                true)
+                true),
           });
           breakpoint.expressions.splice(i, 1);
           i--;

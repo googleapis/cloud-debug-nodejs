@@ -67,7 +67,7 @@ export class Controller extends ServiceObject {
       uri: this.apiUrl + '/debuggees/register',
       method: 'POST',
       json: true,
-      body: {debuggee}
+      body: {debuggee},
     };
     this.request(options, (err, body: {debuggee: Debuggee}, response) => {
       if (err) {
@@ -148,7 +148,7 @@ export class Controller extends ServiceObject {
           '/breakpoints/' + encodeURIComponent(breakpoint.id as string),
       json: true,
       method: 'PUT',
-      body: {debuggeeId: debuggee.id, breakpoint}
+      body: {debuggeeId: debuggee.id, breakpoint},
     };
 
     // We need to have a try/catch here because a JSON.stringify will be done

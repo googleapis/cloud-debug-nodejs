@@ -70,7 +70,7 @@ describe(__filename, () => {
     // TODO: Have this actually implement Breakpoint
     const brk: stackdriver.Breakpoint = {
       id: 'fake-id-123',
-      location: {path: 'test-duplicate-nested-expressions-code.js', line: 4}
+      location: {path: 'test-duplicate-nested-expressions-code.js', line: 4},
     } as stackdriver.Breakpoint;
     api.set(brk, (err1) => {
       assert.ifError(err1);
@@ -95,7 +95,7 @@ describe(__filename, () => {
     // TODO: Have this actually implement Breakpoint
     const brk: stackdriver.Breakpoint = {
       id: 'fake-id-1234',
-      location: {path: 'test-duplicate-nested-expressions-code.js', line: 5}
+      location: {path: 'test-duplicate-nested-expressions-code.js', line: 5},
     } as stackdriver.Breakpoint;
     api.set(brk, (err1) => {
       assert.ifError(err1);
@@ -120,7 +120,7 @@ describe(__filename, () => {
     // TODO: Have this actually implement Breakpoint
     const brk: stackdriver.Breakpoint = {
       id: 'fake-id-1234',
-      location: {path: 'test-duplicate-nested-expressions-code.js', line: 6}
+      location: {path: 'test-duplicate-nested-expressions-code.js', line: 6},
     } as stackdriver.Breakpoint;
     api.set(brk, (err1) => {
       assert.ifError(err1);
@@ -147,7 +147,7 @@ describe(__filename, () => {
        const brk: stackdriver.Breakpoint = {
          id: 'fake-id-1234',
          location:
-             {path: 'test-duplicate-nested-expressions-code.js', line: 8}
+             {path: 'test-duplicate-nested-expressions-code.js', line: 8},
        } as stackdriver.Breakpoint;
        api.set(brk, (err1) => {
          assert.ifError(err1);

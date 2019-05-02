@@ -104,17 +104,17 @@ class StateResolver {
     this.messageTable = [];
     this.messageTable[BUFFER_FULL_MESSAGE_INDEX] = {
       status: new StatusMessage(
-          StatusMessage.VARIABLE_VALUE, 'Max data size reached', true)
+          StatusMessage.VARIABLE_VALUE, 'Max data size reached', true),
     };
     this.messageTable[NATIVE_PROPERTY_MESSAGE_INDEX] = {
       status: new StatusMessage(
           StatusMessage.VARIABLE_VALUE, 'Native properties are not available',
-          true)
+          true),
     };
     this.messageTable[GETTER_MESSAGE_INDEX] = {
       status: new StatusMessage(
           StatusMessage.VARIABLE_VALUE,
-          'Properties with getters are not available', true)
+          'Properties with getters are not available', true),
     };
     this.messageTable[ARG_LOCAL_LIMIT_MESSAGE_INDEX] = {
       status: new StatusMessage(
@@ -122,7 +122,7 @@ class StateResolver {
           'Locals and arguments are only displayed for the ' +
               'top `config.capture.maxExpandFrames=' +
               config.capture.maxExpandFrames + '` stack frames.',
-          true)
+          true),
     };
 
     // TODO: Determine why _extend is used here
@@ -158,7 +158,7 @@ class StateResolver {
           evaluated = {
             name: expression,
             status: new StatusMessage(
-                StatusMessage.VARIABLE_VALUE, result.error, true)
+                StatusMessage.VARIABLE_VALUE, result.error, true),
           };
         } else {
           // TODO: Determine how to not downcast this to v8.ValueMirror
@@ -206,7 +206,7 @@ class StateResolver {
           stackdriver.SourceLocation,
       stackFrames: frames,
       variableTable: that.resolvedVariableTable,
-      evaluatedExpressions: that.evaluatedExpressions
+      evaluatedExpressions: that.evaluatedExpressions,
     };
   }
 
@@ -325,11 +325,11 @@ class StateResolver {
     if (!underFrameCap) {
       args.push({
         name: 'arguments_not_available',
-        varTableIndex: ARG_LOCAL_LIMIT_MESSAGE_INDEX
+        varTableIndex: ARG_LOCAL_LIMIT_MESSAGE_INDEX,
       });
       locals.push({
         name: 'locals_not_available',
-        varTableIndex: ARG_LOCAL_LIMIT_MESSAGE_INDEX
+        varTableIndex: ARG_LOCAL_LIMIT_MESSAGE_INDEX,
       });
     } else {
       // We will use the values aggregated from the ScopeMirror traversal stored
@@ -344,7 +344,7 @@ class StateResolver {
       function: this.resolveFunctionName_(frame.func()),
       location: this.resolveLocation_(frame),
       arguments: args,
-      locals
+      locals,
     };
   }
 
@@ -359,7 +359,7 @@ class StateResolver {
     return {
       path: this.resolveRelativePath_(frame),
       // V8 uses 0-based line numbers but Debuglet API uses 1-based numbers.
-      line: frame.sourceLine() + 1
+      line: frame.sourceLine() + 1,
     };
   }
 
@@ -534,7 +534,7 @@ class StateResolver {
         name: 'Only first `config.capture.maxProperties=' +
             this.config.capture.maxProperties +
             '` properties were captured. Use in an expression' +
-            ' to see all properties.'
+            ' to see all properties.',
       });
     }
     return {value: mirror.toText(), members};

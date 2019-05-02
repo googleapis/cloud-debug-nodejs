@@ -230,8 +230,8 @@ describe('scanner', () => {
                       `because it doesn't have a mock`);
             });
             return rs;
-          }
-        }
+          },
+        },
       });
     });
 

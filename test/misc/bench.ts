@@ -47,7 +47,7 @@ bench('100x set + validate', () => {
     const bp = {
       id: 'breakpoint1',
       location: {path: __filename, line: 4},
-      condition: 'x === 1, 2, {f: 2}, process.env, (this ? this : this)'
+      condition: 'x === 1, 2, {f: 2}, process.env, (this ? this : this)',
     };
     v8debugapi.set(bp);
     v8debugapi.clear(bp);
@@ -63,7 +63,7 @@ bench('fib(29)', () => {
   const bp = {
     id: 'breakpoint1',
     location: {path: __filename, line: 4},
-    condition: 'n > 50000'
+    condition: 'n > 50000',
   };
   v8debugapi.set(bp);
   bench('fib(29) with breakpoint: ', () => {

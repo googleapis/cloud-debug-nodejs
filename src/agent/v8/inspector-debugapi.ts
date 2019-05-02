@@ -95,7 +95,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     });
     this.inspectorOptions = {
       // Well-Formatted URL is required in Node 10.11.1+.
-      useWellFormattedUrl: utils.satisfies(process.version, '>10.11.0')
+      useWellFormattedUrl: utils.satisfies(process.version, '>10.11.0'),
     };
     this.v8Inspector = new V8Inspector(this.session);
   }
@@ -391,7 +391,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
         lineNumber: line - 1,
         url,
         columnNumber: column - 1,
-        condition: breakpoint.condition || undefined
+        condition: breakpoint.condition || undefined,
       });
       if (res.error || !res.response) {
         // Error case.
@@ -453,7 +453,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
             name: breakpoint.expressions[i],
             status: new StatusMessage(
                 StatusMessage.VARIABLE_VALUE, 'Error Compiling Expression',
-                true)
+                true),
           });
           breakpoint.expressions.splice(i, 1);
           i--;

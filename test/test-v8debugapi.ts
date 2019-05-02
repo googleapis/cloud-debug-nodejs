@@ -26,7 +26,7 @@ const breakpointInFoo: stackdriver.Breakpoint = {
   id: 'fake-id-123',
   // TODO(dominickramer): Determine if we should be restricting to only the
   // build directory.
-  location: {path: 'build/test/test-v8debugapi-code.js', line: 5}
+  location: {path: 'build/test/test-v8debugapi-code.js', line: 5},
 } as stackdriver.Breakpoint;
 
 const MAX_INT = 2147483647;  // Max signed int32.
@@ -262,7 +262,7 @@ describe('v8debugapi', () => {
     // TODO(dominickramer): Have this actually implement Breakpoint
     const bp: stackdriver.Breakpoint = {
       id: breakpointInFoo.id,
-      location: breakpointInFoo.location
+      location: breakpointInFoo.location,
     } as stackdriver.Breakpoint;
     api.set(bp, (err1) => {
       assert.ifError(err1);
@@ -293,7 +293,7 @@ describe('v8debugapi', () => {
     // TODO(dominickramer): Have this actually implement Breakpoint
     const bp = {
       id: 0,
-      location: {line: 1, path: path.join('fixtures', 'key-bad.json')}
+      location: {line: 1, path: path.join('fixtures', 'key-bad.json')},
     } as {} as stackdriver.Breakpoint;
     api.set(bp, (err) => {
       assert.ok(err, 'should return an error');
@@ -310,7 +310,7 @@ describe('v8debugapi', () => {
     // TODO(dominickramer): Have this actually implement Breakpoint
     const bp: stackdriver.Breakpoint = {
       id: 0,
-      location: {line: 1, path: path.join(path.sep, 'test', 'foo.js')}
+      location: {line: 1, path: path.join(path.sep, 'test', 'foo.js')},
     } as {} as stackdriver.Breakpoint;
     api.set(bp, (err1) => {
       assert.ifError(err1);
@@ -328,7 +328,7 @@ describe('v8debugapi', () => {
     const bp: stackdriver.Breakpoint = {
       id: 0,
       location:
-          {line: 1, path: path.join(path.sep, 'Server', 'a', 'hello.js')}
+          {line: 1, path: path.join(path.sep, 'Server', 'a', 'hello.js')},
     } as {} as stackdriver.Breakpoint;
     api.set(bp, (err1) => {
       assert.ifError(err1);
@@ -350,8 +350,8 @@ describe('v8debugapi', () => {
           stackdriver.Breakpoint,
       {
         id: 'with incomplete path',
-        location: {path: 'st-v8debugapi.js', line: 4}
-      } as {} as stackdriver.Breakpoint
+        location: {path: 'st-v8debugapi.js', line: 4},
+      } as {} as stackdriver.Breakpoint,
     ];
 
     badBreakpoints.forEach((bp: stackdriver.Breakpoint) => {
@@ -372,7 +372,7 @@ describe('v8debugapi', () => {
       // TODO(dominickramer): Have this actually implement Breakpoint
       const bp: stackdriver.Breakpoint = {
         id: 'ambiguous',
-        location: {line: 1, path: 'hello.js'}
+        location: {line: 1, path: 'hello.js'},
       } as {} as stackdriver.Breakpoint;
       api.set(bp, (err) => {
         assert.ok(err);
@@ -391,7 +391,7 @@ describe('v8debugapi', () => {
       // TODO(dominickramer): Have this actually implement Breakpoint
       const bp: stackdriver.Breakpoint = {
         id: 'non-existent line',
-        location: {path: path.join('fixtures', 'foo.js'), line: 500}
+        location: {path: path.join('fixtures', 'foo.js'), line: 500},
       } as {} as stackdriver.Breakpoint;
       api.set(bp, (err) => {
         assert.ok(err);
@@ -417,7 +417,7 @@ describe('v8debugapi', () => {
              const bp: stackdriver.Breakpoint = {
                id: breakpointInFoo.id,
                location: breakpointInFoo.location,
-               condition: expr
+               condition: expr,
              } as {} as stackdriver.Breakpoint;
              api.set(bp, (err1) => {
                test(err1);
@@ -490,7 +490,7 @@ describe('v8debugapi', () => {
   if (utils.satisfies(process.version, '>=4.0')) {
     conditionTests('invalid conditions Node 4+', assert, [
       '[][Symbol.iterator]()', '`${[][Symbol.iterator]()}`', '`${let x = 1}`',
-      '`${JSON.parse("{x:1}")}`', '`${try {1}}`'
+      '`${JSON.parse("{x:1}")}`', '`${try {1}}`',
     ]);
     conditionTests(
         'valid conditions Node 4+',
@@ -514,13 +514,13 @@ describe('v8debugapi', () => {
         id: 'path0',
         location: {
           line: 5,
-          path: path.join(path.sep, 'test', 'test-v8debugapi-code.js')
-        }
+          path: path.join(path.sep, 'test', 'test-v8debugapi-code.js'),
+        },
       } as {} as stackdriver.Breakpoint,
       {
         id: 'path1',
         location:
-            {line: 5, path: path.join('test', 'test-v8debugapi-code.js')}
+            {line: 5, path: path.join('test', 'test-v8debugapi-code.js')},
       } as {} as stackdriver.Breakpoint,
       {
         id: 'path2',
@@ -531,34 +531,34 @@ describe('v8debugapi', () => {
               __filename.split(path.sep)
                   .slice(0, -1)
                   .concat('test-v8debugapi-code.js')
-                  .join(path.sep)
-        }
+                  .join(path.sep),
+        },
       } as {} as stackdriver.Breakpoint,
       {
         id: 'with . in path',
         location: {
           path: path.join('test', '.', 'test-v8debugapi-code.js'),
-          line: 5
-        }
+          line: 5,
+        },
       } as {} as stackdriver.Breakpoint,
       {
         id: 'with . in path',
-        location: {path: path.join('.', 'test-v8debugapi-code.js'), line: 5}
+        location: {path: path.join('.', 'test-v8debugapi-code.js'), line: 5},
       } as {} as stackdriver.Breakpoint,
       {
         id: 'with .. in path',
         location: {
           path: path.join('test', '..', 'test-v8debugapi-code.js'),
-          line: 5
-        }
+          line: 5,
+        },
       } as {} as stackdriver.Breakpoint,
       {
         id: 'with .. in path',
         location: {
           path: path.join('..', 'test', 'test-v8debugapi-code.js'),
-          line: 5
-        }
-      } as {} as stackdriver.Breakpoint
+          line: 5,
+        },
+      } as {} as stackdriver.Breakpoint,
     ];
 
     breakpoints.forEach((bp: stackdriver.Breakpoint) => {
@@ -604,7 +604,7 @@ describe('v8debugapi', () => {
         id: breakpointInFoo.id,
         location: breakpointInFoo.location,
         action: 'LOG',
-        logMessageFormat: 'cat'
+        logMessageFormat: 'cat',
       } as {} as stackdriver.Breakpoint;
       api.set(bp, (err1) => {
         let transcript = '';
@@ -642,7 +642,7 @@ describe('v8debugapi', () => {
       // TODO(dominickramer): Have this actually implement Breakpoint
       const bp: stackdriver.Breakpoint = {
         id: breakpointInFoo.id,
-        location: breakpointInFoo.location
+        location: breakpointInFoo.location,
       } as {} as stackdriver.Breakpoint;
       api.set(bp, (err1) => {
         assert.ifError(err1);
@@ -663,7 +663,7 @@ describe('v8debugapi', () => {
        (done) => {
          const bp: stackdriver.Breakpoint = {
            id: 'fake-id-124',
-           location: {path: 'build/test/test-v8debugapi-code.js', line: 4}
+           location: {path: 'build/test/test-v8debugapi-code.js', line: 4},
          } as {} as stackdriver.Breakpoint;
          api.set(bp, (err1) => {
            assert.ifError(err1);
@@ -688,8 +688,8 @@ describe('v8debugapi', () => {
            id: 'fake-id-125',
            location: {
              path: path.join('test', 'test-v8debugapi-ts-code.ts'),
-             line: 10
-           }
+             line: 10,
+           },
          } as stackdriver.Breakpoint;
          api.set(bp, (err1) => {
            assert.ifError(err1);
@@ -723,8 +723,8 @@ describe('v8debugapi', () => {
           //       the number of lines in `in.js` but less than or equal to the
           //       number of lines in `in.coffee`, the breakpoint will still hit
           //       correctly.
-          line: 60
-        }
+          line: 60,
+        },
       } as stackdriver.Breakpoint;
       api.set(bp, (err1) => {
         assert.ifError(err1);
@@ -752,7 +752,7 @@ describe('v8debugapi', () => {
       // TODO(dominickramer): Have this actually implement Breakpoint
       const bp: stackdriver.Breakpoint = {
         id: breakpointInFoo.id,
-        location: breakpointInFoo.location
+        location: breakpointInFoo.location,
       } as {} as stackdriver.Breakpoint;
       api.set(bp, (err1) => {
         assert.ifError(err1);
@@ -783,7 +783,7 @@ describe('v8debugapi', () => {
            id: breakpointInFoo.id,
            action: 'LOG',
            logMessageFormat: 'Hello World',
-           location: breakpointInFoo.location
+           location: breakpointInFoo.location,
          } as {} as stackdriver.Breakpoint;
          api.set(bp, (err1) => {
            assert.ifError(err1);
@@ -805,7 +805,7 @@ describe('v8debugapi', () => {
       // TODO(dominickramer): Have this actually implement Breakpoint
       const bp: stackdriver.Breakpoint = {
         id: breakpointInFoo.id,
-        location: breakpointInFoo.location
+        location: breakpointInFoo.location,
       } as {} as stackdriver.Breakpoint;
       api.set(bp, (err1) => {
         assert.ifError(err1);
@@ -837,7 +837,7 @@ describe('v8debugapi', () => {
       // TODO(dominickramer): Have this actually implement Breakpoint
       const bp: stackdriver.Breakpoint = {
         id: breakpointInFoo.id,
-        location: breakpointInFoo.location
+        location: breakpointInFoo.location,
       } as {} as stackdriver.Breakpoint;
       const oldCount = config.capture.maxExpandFrames;
       config.capture.maxExpandFrames = 0;
@@ -885,7 +885,7 @@ describe('v8debugapi', () => {
       // TODO(dominickramer): Have this actually implement Breakpoint
       const bp: stackdriver.Breakpoint = {
         id: breakpointInFoo.id,
-        location: breakpointInFoo.location
+        location: breakpointInFoo.location,
       } as {} as stackdriver.Breakpoint;
       const oldMax = config.capture.maxFrames;
       config.capture.maxFrames = 1;
@@ -918,7 +918,7 @@ describe('v8debugapi', () => {
       const bp: stackdriver.Breakpoint = {
         id: breakpointInFoo.id,
         location: breakpointInFoo.location,
-        expressions: ['process']
+        expressions: ['process'],
       } as {} as stackdriver.Breakpoint;
       const oldMaxProps = config.capture.maxProperties;
       const oldMaxData = config.capture.maxDataSize;
@@ -972,7 +972,7 @@ describe('v8debugapi', () => {
         // been
         //       converted to Typescript.
         location: {path: 'build/test/test-v8debugapi-code.js', line: 10},
-        expressions: ['process.env', 'hasGetter']
+        expressions: ['process.env', 'hasGetter'],
       } as {} as stackdriver.Breakpoint;
       const oldMaxData = config.capture.maxDataSize;
       config.capture.maxDataSize = 20000;
@@ -1019,7 +1019,7 @@ describe('v8debugapi', () => {
         // been
         //       converted to Typescript.
         location: {path: 'build/test/test-v8debugapi-code.js', line: 6},
-        expressions: ['A']
+        expressions: ['A'],
       } as {} as stackdriver.Breakpoint;
       api.set(bp, (err1) => {
         assert.ifError(err1);
@@ -1057,7 +1057,7 @@ describe('v8debugapi', () => {
         // TODO(dominickramer): This path can be lest strict when this file has
         // been
         //       converted to Typescript.
-        location: {path: 'build/test/test-v8debugapi-code.js', line: 10}
+        location: {path: 'build/test/test-v8debugapi-code.js', line: 10},
       } as {} as stackdriver.Breakpoint;
       const oldMaxLength = config.capture.maxStringLength;
       const oldMaxData = config.capture.maxDataSize;
@@ -1099,7 +1099,7 @@ describe('v8debugapi', () => {
         // TODO(dominickramer): This path can be lest strict when this file has
         // been
         //       converted to Typescript.
-        location: {path: 'build/test/test-v8debugapi-code.js', line: 6}
+        location: {path: 'build/test/test-v8debugapi-code.js', line: 6},
       } as {} as stackdriver.Breakpoint;
       const oldMax = config.capture.maxProperties;
       config.capture.maxProperties = 1;
@@ -1135,7 +1135,7 @@ describe('v8debugapi', () => {
         // TODO(dominickramer): This path can be lest strict when this file has
         // been
         //       converted to Typescript.
-        location: {path: 'build/test/test-v8debugapi-code.js', line: 6}
+        location: {path: 'build/test/test-v8debugapi-code.js', line: 6},
       } as {} as stackdriver.Breakpoint;
       const oldMax = config.capture.maxProperties;
       config.capture.maxProperties = 1;
@@ -1173,7 +1173,7 @@ describe('v8debugapi', () => {
            // has been
            //       converted to Typescript.
            location: {path: 'build/test/test-v8debugapi-code.js', line: 10},
-           expressions: ['hasGetter']
+           expressions: ['hasGetter'],
          } as {} as stackdriver.Breakpoint;
          const oldMaxLength = config.capture.maxStringLength;
          const oldMaxData = config.capture.maxDataSize;
@@ -1214,7 +1214,7 @@ describe('v8debugapi', () => {
            // has been
            //       converted to Typescript.
            location: {path: 'build/test/test-v8debugapi-code.js', line: 6},
-           expressions: ['A']
+           expressions: ['A'],
          } as {} as stackdriver.Breakpoint;
          const oldMaxProps = config.capture.maxProperties;
          const oldMaxData = config.capture.maxDataSize;
@@ -1252,7 +1252,7 @@ describe('v8debugapi', () => {
            // has been
            //       converted to Typescript.
            location: {path: 'build/test/test-v8debugapi-code.js', line: 6},
-           expressions: ['B']
+           expressions: ['B'],
          } as {} as stackdriver.Breakpoint;
          const oldMaxProps = config.capture.maxProperties;
          const oldMaxData = config.capture.maxDataSize;
@@ -1289,7 +1289,7 @@ describe('v8debugapi', () => {
            // has been
            //       converted to Typescript.
            location: {path: 'build/test/test-v8debugapi-code.js', line: 6},
-           expressions: ['A']
+           expressions: ['A'],
          } as {} as stackdriver.Breakpoint;
          const oldMaxProps = config.capture.maxProperties;
          const oldMaxData = config.capture.maxDataSize;
@@ -1327,7 +1327,7 @@ describe('v8debugapi', () => {
            // has been
            //       converted to Typescript.
            location: {path: 'build/test/test-v8debugapi-code.js', line: 6},
-           expressions: ['B']
+           expressions: ['B'],
          } as {} as stackdriver.Breakpoint;
          const oldMaxProps = config.capture.maxProperties;
          const oldMaxData = config.capture.maxDataSize;
@@ -1365,7 +1365,7 @@ describe('v8debugapi', () => {
            // has been
            //       converted to Typescript.
            location: {path: 'build/test/test-v8debugapi-code.js', line: 6},
-           expressions: ['A']
+           expressions: ['A'],
          } as {} as stackdriver.Breakpoint;
          const oldMaxProps = config.capture.maxProperties;
          const oldMaxData = config.capture.maxDataSize;
@@ -1409,7 +1409,7 @@ describe('v8debugapi', () => {
            id: breakpointInFoo.id,
            location: breakpointInFoo.location,
            expressions:
-               [':)', 'process()', 'process=this', 'i', 'process._not._def']
+               [':)', 'process()', 'process=this', 'i', 'process._not._def'],
          } as {} as stackdriver.Breakpoint;
          api.set(bp, (err1) => {
            assert.ifError(err1);
@@ -1443,7 +1443,7 @@ describe('v8debugapi', () => {
       const bp: stackdriver.Breakpoint = {
         id: breakpointInFoo.id,
         location: breakpointInFoo.location,
-        condition: 'n===5'
+        condition: 'n===5',
       } as {} as stackdriver.Breakpoint;
       api.set(bp, (err1) => {
         assert.ifError(err1);
@@ -1476,9 +1476,9 @@ describe('v8debugapi', () => {
              path: path.join(
                  '.', 'build', 'test', 'fixtures', 'coffee',
                  'transpile.coffee'),
-             line: 3
+             line: 3,
            },
-           condition: 'if n == 3 then true else false'
+           condition: 'if n == 3 then true else false',
          } as {} as stackdriver.Breakpoint;
          const tt = require('./fixtures/coffee/transpile');
          api.set(bp, (err1) => {
@@ -1510,9 +1510,9 @@ describe('v8debugapi', () => {
         location: {
           path:
               path.join('.', 'test', 'fixtures', 'coffee', 'transpile.coffee'),
-          line: 3
+          line: 3,
         },
-        condition: 'process=false'
+        condition: 'process=false',
       } as {} as stackdriver.Breakpoint;
       api.set(bp, (err) => {
         assert(err);
@@ -1530,9 +1530,9 @@ describe('v8debugapi', () => {
            location: {
              path: path.join(
                  '.', 'build', 'test', 'fixtures', 'es6', 'transpile.es6'),
-             line: 2
+             line: 2,
            },
-           condition: 'i + j === 3'
+           condition: 'i + j === 3',
          } as {} as stackdriver.Breakpoint;
          const tt = require('./fixtures/es6/transpile');
          api.set(bp, (err1) => {
@@ -1567,9 +1567,9 @@ describe('v8debugapi', () => {
              path: path.join(
                  '.', 'build', 'test', 'fixtures', 'coffee',
                  'transpile.coffee'),
-             line: 3
+             line: 3,
            },
-           expressions: ['if n == 3 then Math.PI * n else n']
+           expressions: ['if n == 3 then Math.PI * n else n'],
          } as {} as stackdriver.Breakpoint;
          const tt = require('./fixtures/coffee/transpile');
          api.set(bp, (err1) => {
@@ -1608,10 +1608,10 @@ describe('v8debugapi', () => {
              path: path.join(
                  '.', 'build', 'test', 'fixtures', 'coffee',
                  'transpile.coffee'),
-             line: 3
+             line: 3,
            },
            expressions:
-               [':)', 'n n, n', 'process=this', '((x) -> x x) n', 'return']
+               [':)', 'n n, n', 'process=this', '((x) -> x x) n', 'return'],
          } as {} as stackdriver.Breakpoint;
          const tt = require('./fixtures/coffee/transpile');
          api.set(bp, err => {
@@ -1657,7 +1657,7 @@ describe('v8debugapi', () => {
          const bp: stackdriver.Breakpoint = {
            id: breakpointInFoo.id,
            location: breakpointInFoo.location,
-           condition: 'n===447'
+           condition: 'n===447',
          } as {} as stackdriver.Breakpoint;
          api.set(bp, (err1) => {
            assert.ifError(err1);
@@ -1681,12 +1681,12 @@ describe('v8debugapi', () => {
       // TODO(dominickramer): Have this actually implement Breakpoint
       const bp1: stackdriver.Breakpoint = {
         id: 'bp1',
-        location: {path: __filename, line: 5}
+        location: {path: __filename, line: 5},
       } as {} as stackdriver.Breakpoint;
       // TODO(dominickramer): Have this actually implement Breakpoint
       const bp2: stackdriver.Breakpoint = {
         id: 'bp2',
-        location: {path: __filename, line: 6}
+        location: {path: __filename, line: 6},
       } as {} as stackdriver.Breakpoint;
       api.set(bp1, (err1) => {
         assert.ifError(err1);
@@ -1712,7 +1712,7 @@ describe('v8debugapi', () => {
       // TODO(dominickramer): Have this actually implement Breakpoint
       const bp: stackdriver.Breakpoint = {
         id: 'bp-line-1',
-        location: {path: 'foo.js', line: 1, column: 45}
+        location: {path: 'foo.js', line: 1, column: 45},
       } as {} as stackdriver.Breakpoint;
       api.set(bp, (err1) => {
         assert.ifError(err1);
@@ -1750,7 +1750,7 @@ describe('v8debugapi', () => {
       // TODO(dominickramer): Have this actually implement Breakpoint
       const bp: stackdriver.Breakpoint = {
         id: breakpointInFoo.id,
-        location: breakpointInFoo.location
+        location: breakpointInFoo.location,
       } as {} as stackdriver.Breakpoint;
       api.set(bp, (err1) => {
         assert.ifError(err1);
@@ -1772,8 +1772,8 @@ describe('v8debugapi', () => {
         id: 'async-id-1',
         location: {
           path: path.join('.', 'test', 'fixtures', 'ts', 'async.js'),
-          line: 71
-        }
+          line: 71,
+        },
       } as {} as stackdriver.Breakpoint;
 
       const run = require('./fixtures/ts/async.js');
@@ -1803,7 +1803,7 @@ describe('v8debugapi.findScripts', () => {
   it('should properly handle appPathRelativeToRepository', () => {
     const config = extend(true, {}, undefined!, {
       workingDirectory: path.join('some', 'strange', 'directory'),
-      appPathRelativeToRepository: path.join('my', 'project', 'root')
+      appPathRelativeToRepository: path.join('my', 'project', 'root'),
     });
 
     const logger = new MockLogger();
@@ -1813,7 +1813,7 @@ describe('v8debugapi.findScripts', () => {
           'some', 'strange', 'directory', 'test', 'fixtures', 'a', 'hello.js')]:
           {hash: 'fake', lines: 5},
       [path.join('my', 'project', 'root', 'test', 'fixtures', 'a', 'hello.js')]:
-          {hash: 'fake', lines: 50}
+          {hash: 'fake', lines: 50},
     };
     const scriptPath =
         path.join('my', 'project', 'root', 'test', 'fixtures', 'a', 'hello.js');
@@ -1860,7 +1860,7 @@ describe('v8debugapi.findScripts', () => {
     assert.deepEqual(
         utils.findScripts('index.js', config, fakeFileStats, logger), [
           path.join('build', 'index.js'),
-          path.join('build', 'some', 'subdir', 'index.js')
+          path.join('build', 'some', 'subdir', 'index.js'),
         ]);
     assert.strictEqual(logger.allCalls().length, 0);
   });
@@ -1885,7 +1885,7 @@ describe('v8debugapi.findScripts', () => {
        assert.deepEqual(
            utils.findScripts('index.js', config, fakeFileStats, logger), [
              path.join('build', 'index.js'),
-             path.join('build', 'some', 'subdir', 'index.js')
+             path.join('build', 'some', 'subdir', 'index.js'),
            ]);
        assert.strictEqual(logger.allCalls().length, 0);
      });
@@ -1911,7 +1911,7 @@ describe('v8debugapi.findScripts', () => {
     assert.deepEqual(
         utils.findScripts('index.js', config, fakeFileStats, logger), [
           path.join('build', 'index.js'),
-          path.join('build', 'some', 'subdir', 'index.js')
+          path.join('build', 'some', 'subdir', 'index.js'),
         ]);
     assert.strictEqual(logger.allCalls().length, 1);
     assert.strictEqual(logger.warns.length, 1);
@@ -1943,7 +1943,7 @@ describe('v8debugapi.findScripts', () => {
     assert.deepEqual(
         utils.findScripts('index.js', config, fakeFileStats, logger), [
           path.join('build', 'index.js'),
-          path.join('build', 'some', 'subdir', 'index.js')
+          path.join('build', 'some', 'subdir', 'index.js'),
         ]);
     assert.strictEqual(logger.allCalls().length, 1);
     assert.strictEqual(logger.warns.length, 1);
@@ -1975,7 +1975,7 @@ describe('v8debugapi.findScripts', () => {
        assert.deepEqual(
            utils.findScripts('index.js', config, fakeFileStats, logger), [
              path.join('build', 'index.js'),
-             path.join('build', 'some', 'subdir', 'index.js')
+             path.join('build', 'some', 'subdir', 'index.js'),
            ]);
        assert.strictEqual(logger.allCalls().length, 1);
        assert.strictEqual(logger.warns.length, 1);
@@ -2001,7 +2001,7 @@ describe('v8debugapi.findScripts', () => {
     assert.deepEqual(
         utils.findScripts('index.js', config, fakeFileStats, logger), [
           path.join('build', 'index.js'),
-          path.join('build', 'some', 'subdir', 'index.js')
+          path.join('build', 'some', 'subdir', 'index.js'),
         ]);
     assert.strictEqual(logger.allCalls().length, 1);
     assert.strictEqual(logger.warns.length, 1);
@@ -2028,13 +2028,13 @@ describe('v8debugapi.findScriptsFuzzy', () => {
       {
         scriptPath: 'a/foo.js',
         fileList: ['/a/b/foo.js'],
-        result: ['/a/b/foo.js']
+        result: ['/a/b/foo.js'],
       },
       // Resolve to a better match.
       {
         scriptPath: 'a/foo.js',
         fileList: ['/b/a/foo.js', '/a/b/foo.js'],
-        result: ['/b/a/foo.js']
+        result: ['/b/a/foo.js'],
       },
       // Empty list on no matches.
       {scriptPath: 'st-v8debugapi.js', fileList: ['/doc.js'], result: []},
@@ -2042,10 +2042,10 @@ describe('v8debugapi.findScriptsFuzzy', () => {
       {
         scriptPath: 'a/foo.js',
         fileList: ['x/a/foo.js', 'y/a/foo.js'],
-        result: ['x/a/foo.js', 'y/a/foo.js']
+        result: ['x/a/foo.js', 'y/a/foo.js'],
       },
       // Fail on multiple fuzzy matches.
-      {scriptPath: 'a/foo.js', fileList: ['b/foo.js', 'c/foo.js'], result: []}
+      {scriptPath: 'a/foo.js', fileList: ['b/foo.js', 'c/foo.js'], result: []},
     ];
 
     TESTS.forEach((test) => {

@@ -351,16 +351,16 @@ export const defaultConfig: ResolvedDebugAgentConfig = {
     maxExpandFrames: 5,
     maxProperties: 10,
     maxDataSize: 20000,
-    maxStringLength: 100
+    maxStringLength: 100,
   },
 
   log: {maxLogsPerSecond: 50, logDelaySeconds: 1, logFunction: console.log},
 
   internal: {
     registerDelayOnFetcherErrorSec: 300,  // 5 minutes.
-    maxRegistrationRetryDelay: 40
+    maxRegistrationRetryDelay: 40,
   },
 
   forceNewAgent_: false,
-  testMode_: false
+  testMode_: false,
 };

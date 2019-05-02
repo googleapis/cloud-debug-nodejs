@@ -42,13 +42,13 @@ describe('Controller API', () => {
     it('should get a debuggeeId', (done) => {
       const scope = nock(url).post(api + '/debuggees/register').reply(200, {
         debuggee: {id: 'fake-debuggee'},
-        activePeriodSec: 600
+        activePeriodSec: 600,
       });
       const debuggee = new Debuggee({
         project: 'fake-project',
         uniquifier: 'fake-id',
         description: 'unit test',
-        agentVersion
+        agentVersion,
       });
       const controller = new Controller(fakeDebug);
       // TODO: Determine if this type signature is correct.
@@ -70,7 +70,7 @@ describe('Controller API', () => {
         project: 'fake-project',
         uniquifier: 'fake-id',
         description: 'unit test',
-        agentVersion
+        agentVersion,
       });
       const controller = new Controller(fakeDebug);
       controller.register(debuggee, (err, result) => {
@@ -90,13 +90,13 @@ describe('Controller API', () => {
     before((done) => {
       nock(url).post(api + '/debuggees/register').reply(200, {
         debuggee: {id: 'fake-debuggee'},
-        activePeriodSec: 600
+        activePeriodSec: 600,
       });
       const debuggee = new Debuggee({
         project: 'fake-project',
         uniquifier: 'fake-id',
         description: 'unit test',
-        agentVersion
+        agentVersion,
       });
       const controller = new Controller(fakeDebug);
       controller.register(debuggee, (err /*, result*/) => {
@@ -238,7 +238,7 @@ describe('Controller API', () => {
       // TODO: Fix breakpoint to actually Breakpoint
       const breakpoint: stackdriver.Breakpoint = {
         id: 'breakpoint-0',
-        location: {path: 'foo.js', line: 99}
+        location: {path: 'foo.js', line: 99},
       } as stackdriver.Breakpoint;
       const scope =
           nock(url)

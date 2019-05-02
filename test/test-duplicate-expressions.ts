@@ -20,7 +20,7 @@ import * as stackdriver from '../src/types/stackdriver';
 // TODO: Have this actually implement Breakpoint
 const breakpointInFoo: stackdriver.Breakpoint = {
   id: 'fake-id-123',
-  location: {path: 'test-duplicate-expressions-code.js', line: 4}
+  location: {path: 'test-duplicate-expressions-code.js', line: 4},
 } as stackdriver.Breakpoint;
 
 import * as assert from 'assert';

@@ -73,7 +73,7 @@ describe(__filename, () => {
     // TODO: Have this implement Breakpoint
     const brk: stackdriver.Breakpoint = {
       id: 'fake-id-123',
-      location: {path: 'fixtures/fat-arrow.js', line: 5}
+      location: {path: 'fixtures/fat-arrow.js', line: 5},
     } as stackdriver.Breakpoint;
     api.set(brk, (err1) => {
       assert.ifError(err1);
@@ -97,7 +97,7 @@ describe(__filename, () => {
     // TODO: Have this implement Breakpoint
     const brk: stackdriver.Breakpoint = {
       id: 'fake-id-123',
-      location: {path: 'fixtures/fat-arrow.js', line: 6}
+      location: {path: 'fixtures/fat-arrow.js', line: 6},
     } as stackdriver.Breakpoint;
     api.set(brk, (err1) => {
       assert.ifError(err1);

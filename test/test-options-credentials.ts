@@ -29,7 +29,7 @@ import * as nocks from './nocks';
 const envProject = process.env.GCLOUD_PROJECT;
 const packageInfo = {
   name: 'Some name',
-  version: 'Some version'
+  version: 'Some version',
 };
 
 nock.disableNetConnect();
@@ -53,7 +53,7 @@ describe('test-options-credentials', () => {
     const credentials = require('./fixtures/gcloud-credentials.json');
     const options = extend({}, {
       projectId: 'fake-project',
-      keyFilename: path.join(__dirname, 'fixtures', 'gcloud-credentials.json')
+      keyFilename: path.join(__dirname, 'fixtures', 'gcloud-credentials.json'),
     });
     const debug = new Debug(options, packageInfo);
     const scope = nocks.oauth2((body) => {
@@ -77,7 +77,7 @@ describe('test-options-credentials', () => {
   it('should use the credentials field of the options object', (done) => {
     const options = extend({}, {
       projectId: 'fake-project',
-      credentials: require('./fixtures/gcloud-credentials.json')
+      credentials: require('./fixtures/gcloud-credentials.json'),
     });
     const debug = new Debug(options, packageInfo);
     const scope = nocks.oauth2((body) => {
@@ -104,12 +104,12 @@ describe('test-options-credentials', () => {
       client_id: 'a',
       client_secret: 'b',
       refresh_token: 'c',
-      type: 'authorized_user'
+      type: 'authorized_user',
     };
     const options = extend({}, {
       projectId: 'fake-project',
       keyFilename: path.join('test', 'fixtures', 'gcloud-credentials.json'),
-      credentials
+      credentials,
     });
     const debug = new Debug(options, packageInfo);
     const scope = nocks.oauth2((body) => {

@@ -25,7 +25,7 @@ describe('Debuggee', () => {
       project: 'project',
       uniquifier: 'uid',
       description: 'unit test',
-      agentVersion
+      agentVersion,
     });
     assert.ok(debuggee instanceof Debuggee);
   });
@@ -35,7 +35,7 @@ describe('Debuggee', () => {
       project: 'project',
       uniquifier: 'uid',
       description: 'unit test',
-      agentVersion
+      agentVersion,
     });
     assert.ok(debuggee instanceof Debuggee);
   });

@@ -68,7 +68,7 @@ describe(__filename, () => {
     // TODO: Have this actually implement Breakpoint
     const brk: stackdriver.Breakpoint = {
       id: 'fake-id-123',
-      location: {path: 'test-circular-code.js', line: 9}
+      location: {path: 'test-circular-code.js', line: 9},
     } as stackdriver.Breakpoint;
     api.set(brk, (err1) => {
       assert.ifError(err1);

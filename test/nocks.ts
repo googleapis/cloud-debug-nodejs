@@ -35,7 +35,7 @@ export function oauth2(validator?: Validator): nock.Scope {
       .reply(200, {
         refresh_token: 'hello',
         access_token: 'goodbye',
-        expiry_date: new Date(9999, 1, 1)
+        expiry_date: new Date(9999, 1, 1),
       });
 }
 

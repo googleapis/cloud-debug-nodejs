@@ -55,7 +55,7 @@ const fakeAssert: FakeAssert = {
   AssertionError: nop,
   rejects: nop,
   doesNotReject: nop,
-  strict: nop
+  strict: nop,
 };
 
 export function debugAssert(enableAssertions: boolean): FakeAssert {

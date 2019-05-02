@@ -121,7 +121,7 @@ async function processSourcemap(
       outputFile: outputPath,
       mapFile: mapPath,
       mapConsumer: consumer,
-      sources: nonemptySources
+      sources: nonemptySources,
     });
   }
 }
@@ -231,7 +231,7 @@ export class SourceMapper {
       source: source || relPath,
       line: lineNumber + 1,  // the SourceMapConsumer expects the line number
                              // to be one-based but expects the column number
-      column: colNumber      // to be zero-based
+      column: colNumber,      // to be zero-based
     };
 
     // TODO: Determine how to remove the explicit cast here.
@@ -259,7 +259,7 @@ export class SourceMapper {
       // TODO: The `sourceMap.Position` type definition has a `column`
       //       attribute and not a `col` attribute.  Determine if the type
       //       definition or this code is correct.
-      column: (mappedPos as {} as {col: number}).col  // SourceMapConsumer uses
+      column: (mappedPos as {} as {col: number}).col,  // SourceMapConsumer uses
                                                       // zero-based column
                                                       // numbers which is the
                                                       // same as the expected

@@ -115,7 +115,7 @@ export async function scan(
     baseDir: string, regex: RegExp,
     precomputedHash?: string): Promise<ScanResults> {
   const fileList = await findFiles(baseDir, regex);
-  return await computeStats(fileList, precomputedHash);
+  return computeStats(fileList, precomputedHash);
 }
 
 /**
