@@ -1,5 +1,34 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## v3.2.0
+
+05-02-2019 08:18 PDT
+
+### Implementation Changes
+
+### New Features
+- feat: add debugger support for Cloud Run. See b/112087600 for context ([#671](https://github.com/googleapis/cloud-debug-nodejs/pull/671))
+- fix: use stableObjectId field for object equality in Node 10+ ([#524](https://github.com/googleapis/cloud-debug-nodejs/pull/524))
+
+### Dependencies
+- chore(deps): update dependency @types/nock to v10 ([#674](https://github.com/googleapis/cloud-debug-nodejs/pull/674))
+- chore(deps): update dependency nyc to v14 ([#669](https://github.com/googleapis/cloud-debug-nodejs/pull/669))
+- fix(deps): update dependency @google-cloud/common to ^0.32.0 ([#667](https://github.com/googleapis/cloud-debug-nodejs/pull/667))
+- chore(deps): update dependency @types/semver to v6
+- chore(deps): drop unused dependency on broken-link-checker-local
+- chore(deps): update dependency typescript to ~3.4.0
+- fix(deps): update dependency semver to v6
+- chore(deps): update dependency @types/node to ~10.14.0
+
+### Documentation
+
+### Internal / Testing Changes
+- update to .nycrc with --all enabled ([#675](https://github.com/googleapis/cloud-debug-nodejs/pull/675))
+- test: add smoke test for app sample ([#663](https://github.com/googleapis/cloud-debug-nodejs/pull/663))
+- chore: drop duplicate nyc config ([#665](https://github.com/googleapis/cloud-debug-nodejs/pull/665))
+- chore: publish to npm using wombat ([#655](https://github.com/googleapis/cloud-debug-nodejs/pull/655))
+- build: use per-repo publish token ([#654](https://github.com/googleapis/cloud-debug-nodejs/pull/654))
+
 ## v3.1.0
 
 03-12-2019 16:20 PDT
