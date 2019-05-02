@@ -17,12 +17,14 @@
 import * as assert from 'assert';
 
 assert.ok(
-    process.env.GCLOUD_PROJECT,
-    'Need to have GCLOUD_PROJECT defined to be able to run this test');
+  process.env.GCLOUD_PROJECT,
+  'Need to have GCLOUD_PROJECT defined to be able to run this test'
+);
 assert.ok(
-    process.env.GOOGLE_APPLICATION_CREDENTIALS,
-    'Need to have GOOGLE_APPLICATION_CREDENTIALS defined to be able to run ' +
-        'this test');
+  process.env.GOOGLE_APPLICATION_CREDENTIALS,
+  'Need to have GOOGLE_APPLICATION_CREDENTIALS defined to be able to run ' +
+    'this test'
+);
 
 import * as stackdriver from '../src/types/stackdriver';
 import {Controller} from '../src/agent/controller';
@@ -40,7 +42,7 @@ const debug = new Debug({}, packageInfo);
 describe('Controller', function() {
   this.timeout(60 * 1000);
 
-  it('should register successfully', (done) => {
+  it('should register successfully', done => {
     const controller = new Controller(debug);
     const debuggee = new Debuggee({
       project: process.env.GCLOUD_PROJECT,
@@ -59,7 +61,7 @@ describe('Controller', function() {
     });
   });
 
-  it('should list breakpoints', (done) => {
+  it('should list breakpoints', done => {
     const controller = new Controller(debug);
     const debuggee = new Debuggee({
       project: process.env.GCLOUD_PROJECT,
@@ -82,7 +84,7 @@ describe('Controller', function() {
     });
   });
 
-  it('should pass success on timeout', (done) => {
+  it('should pass success on timeout', done => {
     this.timeout(100000);
     const controller = new Controller(debug);
     const debuggee = new Debuggee({

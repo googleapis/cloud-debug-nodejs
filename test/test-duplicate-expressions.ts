@@ -35,22 +35,31 @@ const foo = require('./test-duplicate-expressions-code.js');
 // TODO: Determine why this must be named `stateIsClean1`.
 function stateIsClean1(api: debugapi.DebugApi): boolean {
   assert.strictEqual(
-      api.numBreakpoints_(), 0, 'there should be no breakpoints active');
+    api.numBreakpoints_(),
+    0,
+    'there should be no breakpoints active'
+  );
   assert.strictEqual(
-      api.numListeners_(), 0, 'there should be no listeners active');
+    api.numListeners_(),
+    0,
+    'there should be no listeners active'
+  );
   return true;
 }
 
 describe(__filename, () => {
-  const config = extend(
-      {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
-  const logger =
-      consoleLogLevel({level: Debuglet.logLevelToName(config.logLevel)});
+  const config = extend({}, defaultConfig, {
+    workingDirectory: __dirname,
+    forceNewAgent_: true,
+  });
+  const logger = consoleLogLevel({
+    level: Debuglet.logLevelToName(config.logLevel),
+  });
   let api: debugapi.DebugApi;
 
-  beforeEach((done) => {
+  beforeEach(done => {
     if (!api) {
-      scanner.scan(config.workingDirectory, /.js$/).then(async (fileStats) => {
+      scanner.scan(config.workingDirectory, /.js$/).then(async fileStats => {
         assert.strictEqual(fileStats.errors().size, 0);
         const jsStats = fileStats.selectStats(/.js$/);
         const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
@@ -58,8 +67,11 @@ describe(__filename, () => {
         // TODO: Handle the case when mapper is undefined
         // TODO: Handle the case when v8debugapi.create returns null
         api = debugapi.create(
-                  logger, config, jsStats,
-                  mapper as SourceMapper.SourceMapper) as debugapi.DebugApi;
+          logger,
+          config,
+          jsStats,
+          mapper as SourceMapper.SourceMapper
+        ) as debugapi.DebugApi;
         assert.ok(api, 'should be able to create the api');
         done();
       });
@@ -72,22 +84,24 @@ describe(__filename, () => {
     assert(stateIsClean1(api));
   });
 
-  it('should not duplicate expressions', (done) => {
-    api.set(breakpointInFoo, (err1) => {
+  it('should not duplicate expressions', done => {
+    api.set(breakpointInFoo, err1 => {
       assert.ifError(err1);
-      api.wait(breakpointInFoo, (err2) => {
+      api.wait(breakpointInFoo, err2 => {
         assert.ifError(err2);
         // TODO: Determine how to remove this cast to any.
         const frames = breakpointInFoo.stackFrames[0];
         const exprs = frames.arguments.concat(frames.locals);
         const varTableIndicesSeen: number[] = [];
-        exprs.forEach((expr) => {
+        exprs.forEach(expr => {
           // TODO: Handle the case when expr.varTableIndex is undefined
           assert.strictEqual(
-              varTableIndicesSeen.indexOf(expr.varTableIndex as number), -1);
+            varTableIndicesSeen.indexOf(expr.varTableIndex as number),
+            -1
+          );
           varTableIndicesSeen.push(expr.varTableIndex as number);
         });
-        api.clear(breakpointInFoo, (err) => {
+        api.clear(breakpointInFoo, err => {
           assert.ifError(err);
           done();
         });

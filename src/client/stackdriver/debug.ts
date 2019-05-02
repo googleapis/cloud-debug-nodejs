@@ -15,7 +15,7 @@
  */
 
 import {GoogleAuthOptions, Service} from '@google-cloud/common';
-import * as request from 'request';  //  Only for type declarations.
+import * as request from 'request'; //  Only for type declarations.
 
 export interface PackageInfo {
   name: string;
@@ -49,9 +49,13 @@ export class Debug extends Service {
    *
    * @param options - [Authentication options](#/docs)
    */
-  constructor(options: GoogleAuthOptions, packageJson: {
-    name: string; version: string;
-  }) {
+  constructor(
+    options: GoogleAuthOptions,
+    packageJson: {
+      name: string;
+      version: string;
+    }
+  ) {
     if (new.target !== Debug) {
       return new Debug(options, packageJson);
     }

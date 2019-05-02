@@ -15,17 +15,19 @@
  */
 
 import * as assert from 'assert';
-const m: NodeModule&{start: Function} = require('../..');
+const m: NodeModule & {start: Function} = require('../..');
 import * as nock from 'nock';
 import * as nocks from './nocks';
 
 nock.disableNetConnect();
 
 describe('Debug module', () => {
-  before((done) => {
+  before(done => {
     nocks.projectId('project-via-metadata');
-    const debuglet = m.start(
-        {projectId: '0', debug: {forceNewAgent_: true, testMode_: true}});
+    const debuglet = m.start({
+      projectId: '0',
+      debug: {forceNewAgent_: true, testMode_: true},
+    });
     debuglet.on('started', () => {
       debuglet.stop();
       done();

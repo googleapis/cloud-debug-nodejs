@@ -60,5 +60,5 @@ const fakeAssert: FakeAssert = {
 
 export function debugAssert(enableAssertions: boolean): FakeAssert {
   // The typecast is needed since the @types/node doesn't cover Node 10 yet
-  return enableAssertions ? realAssert as {} as FakeAssert : fakeAssert;
+  return enableAssertions ? ((realAssert as {}) as FakeAssert) : fakeAssert;
 }

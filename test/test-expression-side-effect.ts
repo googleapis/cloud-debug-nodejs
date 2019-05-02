@@ -28,7 +28,6 @@ import * as stackdriver from '../src/types/stackdriver';
 
 const code = require('./test-expression-side-effect-code.js');
 
-
 // the inspector protocol is only used on Node >= 10 and thus isn't
 // tested on earlier versions
 const itWithInspector = utils.satisfies(process.version, '>=10') ? it : it.skip;
@@ -38,8 +37,9 @@ describe('evaluating expressions', () => {
   const config = extend({}, defaultConfig, {forceNewAgent_: true});
 
   before(done => {
-    const logger =
-        consoleLogLevel({level: Debuglet.logLevelToName(config.logLevel)});
+    const logger = consoleLogLevel({
+      level: Debuglet.logLevelToName(config.logLevel),
+    });
     scanner.scan(config.workingDirectory, /\.js$/).then(async fileStats => {
       const jsStats = fileStats.selectStats(/\.js$/);
       const mapFiles = fileStats.selectFiles(/\.map$/, process.cwd());
@@ -50,76 +50,76 @@ describe('evaluating expressions', () => {
     });
   });
 
-  itWithInspector(
-      'should evaluate expressions without side effects', (done) => {
-        // this test makes sure that the necessary environment variables to
-        // enable asserts are present during testing. Use run-tests.sh, or
-        // export CLOUD_DEBUG_ASSERTIONS=1 to make sure this test passes.
-        const bp: stackdriver.Breakpoint = {
-          id: 'fake-id-123',
-          location: {
-            path: 'build/test/test-expression-side-effect-code.js',
-            line: 16,
-          },
-          expressions: ['item.getPrice()'],
-        } as stackdriver.Breakpoint;
+  itWithInspector('should evaluate expressions without side effects', done => {
+    // this test makes sure that the necessary environment variables to
+    // enable asserts are present during testing. Use run-tests.sh, or
+    // export CLOUD_DEBUG_ASSERTIONS=1 to make sure this test passes.
+    const bp: stackdriver.Breakpoint = {
+      id: 'fake-id-123',
+      location: {
+        path: 'build/test/test-expression-side-effect-code.js',
+        line: 16,
+      },
+      expressions: ['item.getPrice()'],
+    } as stackdriver.Breakpoint;
 
-        api.set(bp, err => {
+    api.set(bp, err => {
+      assert.ifError(err);
+      api.wait(bp, err => {
+        assert.ifError(err);
+        const watch = bp.evaluatedExpressions[0];
+        assert.strictEqual((watch as {value: string}).value, '2');
+        api.clear(bp, err => {
           assert.ifError(err);
-          api.wait(bp, err => {
-            assert.ifError(err);
-            const watch = bp.evaluatedExpressions[0];
-            assert.strictEqual((watch as {value: string}).value, '2');
-            api.clear(bp, err => {
-              assert.ifError(err);
-              done();
-            });
-          });
-          process.nextTick(() => {
-            code.foo();
-          });
+          done();
         });
       });
+      process.nextTick(() => {
+        code.foo();
+      });
+    });
+  });
 
-  itWithInspector(
-      'should not evaluate expressions with side effects', (done) => {
-        // this test makes sure that the necessary environment variables to
-        // enable asserts are present during testing. Use run-tests.sh, or
-        // export CLOUD_DEBUG_ASSERTIONS=1 to make sure this test passes.
-        const bp: stackdriver.Breakpoint = {
-          id: 'fake-id-123',
-          location: {
-            path: 'build/test/test-expression-side-effect-code.js',
-            line: 16,
-          },
-          expressions: ['item.increasePriceByOne()'],
-        } as stackdriver.Breakpoint;
+  itWithInspector('should not evaluate expressions with side effects', done => {
+    // this test makes sure that the necessary environment variables to
+    // enable asserts are present during testing. Use run-tests.sh, or
+    // export CLOUD_DEBUG_ASSERTIONS=1 to make sure this test passes.
+    const bp: stackdriver.Breakpoint = {
+      id: 'fake-id-123',
+      location: {
+        path: 'build/test/test-expression-side-effect-code.js',
+        line: 16,
+      },
+      expressions: ['item.increasePriceByOne()'],
+    } as stackdriver.Breakpoint;
 
-        api.set(bp, err => {
+    api.set(bp, err => {
+      assert.ifError(err);
+      api.wait(bp, err => {
+        assert.ifError(err);
+        const watch = bp.evaluatedExpressions[0];
+        assert((watch as {status: StatusMessage}).status.isError);
+        api.clear(bp, err => {
           assert.ifError(err);
-          api.wait(bp, err => {
-            assert.ifError(err);
-            const watch = bp.evaluatedExpressions[0];
-            assert((watch as {status: StatusMessage}).status.isError);
-            api.clear(bp, err => {
-              assert.ifError(err);
-              done();
-            });
-          });
-          process.nextTick(() => {
-            code.foo();
-          });
+          done();
         });
       });
+      process.nextTick(() => {
+        code.foo();
+      });
+    });
+  });
 
-  itWithInspector('should not evaluate process.title', (done) => {
+  itWithInspector('should not evaluate process.title', done => {
     // this test makes sure that the necessary environment variables to enable
     // asserts are present during testing. Use run-tests.sh, or export
     // CLOUD_DEBUG_ASSERTIONS=1 to make sure this test passes.
     const bp: stackdriver.Breakpoint = {
       id: 'fake-id-123',
-      location:
-          {path: 'build/test/test-expression-side-effect-code.js', line: 16},
+      location: {
+        path: 'build/test/test-expression-side-effect-code.js',
+        line: 16,
+      },
       expressions: ['process'],
     } as stackdriver.Breakpoint;
 

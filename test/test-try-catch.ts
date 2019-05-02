@@ -29,22 +29,31 @@ const foo = require('./test-try-catch-code.js');
 
 function stateIsClean(api: debugapi.DebugApi): boolean {
   assert.strictEqual(
-      api.numBreakpoints_(), 0, 'there should be no breakpoints active');
+    api.numBreakpoints_(),
+    0,
+    'there should be no breakpoints active'
+  );
   assert.strictEqual(
-      api.numListeners_(), 0, 'there should be no listeners active');
+    api.numListeners_(),
+    0,
+    'there should be no listeners active'
+  );
   return true;
 }
 
 describe(__filename, () => {
-  const config = extend(
-      {}, defaultConfig, {workingDirectory: __dirname, forceNewAgent_: true});
-  const logger =
-      consoleLogLevel({level: Debuglet.logLevelToName(config.logLevel)});
+  const config = extend({}, defaultConfig, {
+    workingDirectory: __dirname,
+    forceNewAgent_: true,
+  });
+  const logger = consoleLogLevel({
+    level: Debuglet.logLevelToName(config.logLevel),
+  });
   let api: debugapi.DebugApi;
 
-  beforeEach((done) => {
+  beforeEach(done => {
     if (!api) {
-      scanner.scan(config.workingDirectory, /.js$/).then(async (fileStats) => {
+      scanner.scan(config.workingDirectory, /.js$/).then(async fileStats => {
         assert.strictEqual(fileStats.errors().size, 0);
         const jsStats = fileStats.selectStats(/.js$/);
         const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
@@ -52,8 +61,11 @@ describe(__filename, () => {
         // TODO: Handle the case when mapper is undefined
         // TODO: Handle the case when v8debugapi.create returns null
         api = debugapi.create(
-                  logger, config, jsStats,
-                  mapper as SourceMapper.SourceMapper) as debugapi.DebugApi;
+          logger,
+          config,
+          jsStats,
+          mapper as SourceMapper.SourceMapper
+        ) as debugapi.DebugApi;
         assert.ok(api, 'should be able to create the api');
         done();
       });
@@ -65,15 +77,15 @@ describe(__filename, () => {
   afterEach(() => {
     assert(stateIsClean(api));
   });
-  it('Should read e as the caught error', (done) => {
+  it('Should read e as the caught error', done => {
     // TODO: Have this actually implement Breakpoint
     const brk: stackdriver.Breakpoint = {
       id: 'fake-id-123',
       location: {path: 'test-try-catch-code.js', line: 7},
     } as stackdriver.Breakpoint;
-    api.set(brk, (err1) => {
+    api.set(brk, err1 => {
       assert.ifError(err1);
-      api.wait(brk, (err2) => {
+      api.wait(brk, err2 => {
         assert.ifError(err2);
         const frame = brk.stackFrames[0];
         const args = frame.arguments;
@@ -85,7 +97,7 @@ describe(__filename, () => {
         // Number.isInteger will return false if varTableIndex is `undefined`
         assert(Number.isInteger(e.varTableIndex!));
         assert.strictEqual(args.length, 0, 'There should be zero arguments');
-        api.clear(brk, (err3) => {
+        api.clear(brk, err3 => {
           assert.ifError(err3);
           done();
         });
@@ -93,15 +105,15 @@ describe(__filename, () => {
       process.nextTick(foo.bind(null, 'test'));
     });
   });
-  it('Should read e as the local error', (done) => {
+  it('Should read e as the local error', done => {
     // TODO: Have this actually implement Breakpoint
     const brk: stackdriver.Breakpoint = {
       id: 'fake-id-123',
       location: {path: 'test-try-catch-code.js', line: 8},
     } as stackdriver.Breakpoint;
-    api.set(brk, (err1) => {
+    api.set(brk, err1 => {
       assert.ifError(err1);
-      api.wait(brk, (err2) => {
+      api.wait(brk, err2 => {
         assert.ifError(err2);
         const frame = brk.stackFrames[0];
         const args = frame.arguments;
@@ -110,7 +122,7 @@ describe(__filename, () => {
         assert.strictEqual(locals.length, 1, 'There should be one local');
         assert.deepStrictEqual(locals[0], {name: 'e', value: '2'});
         assert.strictEqual(args.length, 0, 'There should be zero arguments');
-        api.clear(brk, (err3) => {
+        api.clear(brk, err3 => {
           assert.ifError(err3);
           done();
         });

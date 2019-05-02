@@ -17,9 +17,11 @@
 import * as request from 'request';
 
 export function authRequest(
-    options: (request.UriOptions&request.CoreOptions)|
-    (request.UrlOptions & request.CoreOptions),
-    cb: (err: Error|null, body?: {}, response?: request.Response) => void) {
+  options:
+    | (request.UriOptions & request.CoreOptions)
+    | (request.UrlOptions & request.CoreOptions),
+  cb: (err: Error | null, body?: {}, response?: request.Response) => void
+) {
   request(options, (err: Error, response: request.RequestResponse) => {
     if (err) {
       cb(err);

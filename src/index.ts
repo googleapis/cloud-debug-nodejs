@@ -35,11 +35,12 @@ let debuglet: Debuglet;
  * @example
  * debug.startAgent();
  */
-export function start(options?: DebugAgentConfig|StackdriverConfig): Debuglet|
-    IsReady {
+export function start(
+  options?: DebugAgentConfig | StackdriverConfig
+): Debuglet | IsReady {
   options = options || {};
   const agentConfig: DebugAgentConfig =
-      (options as StackdriverConfig).debug || (options as DebugAgentConfig);
+    (options as StackdriverConfig).debug || (options as DebugAgentConfig);
 
   // forceNewAgent_ is for testing purposes only.
   if (debuglet && !agentConfig.forceNewAgent_) {

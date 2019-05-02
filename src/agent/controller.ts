@@ -21,7 +21,7 @@
 import {ServiceObject} from '@google-cloud/common';
 import * as assert from 'assert';
 import * as qs from 'querystring';
-import * as request from 'request';  // Only for type declarations.
+import * as request from 'request'; // Only for type declarations.
 
 import {URL} from 'url';
 
@@ -33,7 +33,7 @@ import * as stackdriver from '../types/stackdriver';
 const API = 'https://clouddebugger.googleapis.com/v2/controller';
 
 export class Controller extends ServiceObject {
-  private nextWaitToken: string|null;
+  private nextWaitToken: string | null;
 
   apiUrl: string;
 
@@ -60,9 +60,15 @@ export class Controller extends ServiceObject {
    * @param {!function(?Error,Object=)} callback
    * @private
    */
-  register(debuggee: Debuggee, callback: (err: Error|null, result?: {
-                                 debuggee: Debuggee
-                               }) => void): void {
+  register(
+    debuggee: Debuggee,
+    callback: (
+      err: Error | null,
+      result?: {
+        debuggee: Debuggee;
+      }
+    ) => void
+  ): void {
     const options = {
       uri: this.apiUrl + '/debuggees/register',
       method: 'POST',
@@ -73,8 +79,9 @@ export class Controller extends ServiceObject {
       if (err) {
         callback(err);
       } else if (response!.statusCode !== 200) {
-        callback(new Error(
-            'unable to register, statusCode ' + response!.statusCode));
+        callback(
+          new Error('unable to register, statusCode ' + response!.statusCode)
+        );
       } else if (!body.debuggee) {
         callback(new Error('invalid response body from server'));
       } else {
@@ -84,17 +91,19 @@ export class Controller extends ServiceObject {
     });
   }
 
-
   /**
    * Fetch the list of breakpoints from the server. Assumes we have registered.
    * @param {!function(?Error,Object=,Object=)} callback accepting (err, response,
    * body)
    */
   listBreakpoints(
-      debuggee: Debuggee,
-      callback:
-          (err: Error|null, response?: request.Response,
-           body?: stackdriver.ListBreakpointsResponse) => void): void {
+    debuggee: Debuggee,
+    callback: (
+      err: Error | null,
+      response?: request.Response,
+      body?: stackdriver.ListBreakpointsResponse
+    ) => void
+  ): void {
     const that = this;
     assert(debuggee.id, 'should have a registered debuggee');
     const query: stackdriver.ListBreakpointsQuery = {successOnTimeout: true};
@@ -102,31 +111,39 @@ export class Controller extends ServiceObject {
       query.waitToken = that.nextWaitToken;
     }
 
-    const uri = this.apiUrl + '/debuggees/' + encodeURIComponent(debuggee.id) +
-        '/breakpoints?' + qs.stringify(query);
+    const uri =
+      this.apiUrl +
+      '/debuggees/' +
+      encodeURIComponent(debuggee.id) +
+      '/breakpoints?' +
+      qs.stringify(query);
     that.request(
-        {uri, json: true},
-        (err, body: stackdriver.ListBreakpointsResponse, response) => {
-          if (!response) {
-            callback(
-                err || new Error('unknown error - request response missing'));
-            return;
-          } else if (response.statusCode === 404) {
-            // The v2 API returns 404 (google.rpc.Code.NOT_FOUND) when the agent
-            // registration expires. We should re-register.
-            callback(null, response);
-            return;
-          } else if (response.statusCode !== 200) {
-            callback(new Error(
-                'unable to list breakpoints, status code ' +
-                response.statusCode));
-            return;
-          } else {
-            body = body || {};
-            that.nextWaitToken = body.nextWaitToken;
-            callback(null, response, body);
-          }
-        });
+      {uri, json: true},
+      (err, body: stackdriver.ListBreakpointsResponse, response) => {
+        if (!response) {
+          callback(
+            err || new Error('unknown error - request response missing')
+          );
+          return;
+        } else if (response.statusCode === 404) {
+          // The v2 API returns 404 (google.rpc.Code.NOT_FOUND) when the agent
+          // registration expires. We should re-register.
+          callback(null, response);
+          return;
+        } else if (response.statusCode !== 200) {
+          callback(
+            new Error(
+              'unable to list breakpoints, status code ' + response.statusCode
+            )
+          );
+          return;
+        } else {
+          body = body || {};
+          that.nextWaitToken = body.nextWaitToken;
+          callback(null, response, body);
+        }
+      }
+    );
   }
 
   /**
@@ -136,16 +153,22 @@ export class Controller extends ServiceObject {
    * @param {!Function} callback accepting (err, body)
    */
   updateBreakpoint(
-      debuggee: Debuggee, breakpoint: stackdriver.Breakpoint,
-      callback: (err?: Error, body?: {}) => void): void {
+    debuggee: Debuggee,
+    breakpoint: stackdriver.Breakpoint,
+    callback: (err?: Error, body?: {}) => void
+  ): void {
     assert(debuggee.id, 'should have a registered debuggee');
 
     breakpoint.action = 'CAPTURE';
     breakpoint.isFinalState = true;
     const options = {
-      uri: this.apiUrl + '/debuggees/' + encodeURIComponent(debuggee.id) +
-          // TODO: Address the case where `breakpoint.id` is `undefined`.
-          '/breakpoints/' + encodeURIComponent(breakpoint.id as string),
+      uri:
+        this.apiUrl +
+        '/debuggees/' +
+        encodeURIComponent(debuggee.id) +
+        // TODO: Address the case where `breakpoint.id` is `undefined`.
+        '/breakpoints/' +
+        encodeURIComponent(breakpoint.id as string),
       json: true,
       method: 'PUT',
       body: {debuggeeId: debuggee.id, breakpoint},

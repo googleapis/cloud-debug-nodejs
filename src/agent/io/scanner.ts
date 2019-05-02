@@ -34,7 +34,7 @@ export interface FileStats {
 
 // TODO: Update the code so that `undefined  is not a possible property value
 export interface ScanStats {
-  [filename: string]: FileStats|undefined;
+  [filename: string]: FileStats | undefined;
 }
 
 export interface ScanResults {
@@ -59,8 +59,10 @@ class ScanResultsImpl implements ScanResults {
    * @param hash A hashcode computed from the contents of all the files.
    */
   constructor(
-      private readonly stats: ScanStats, readonly errorMap: Map<string, Error>,
-      readonly hash: string) {}
+    private readonly stats: ScanStats,
+    readonly errorMap: Map<string, Error>,
+    readonly hash: string
+  ) {}
 
   errors(): Map<string, Error> {
     return this.errorMap;
@@ -81,7 +83,7 @@ class ScanResultsImpl implements ScanResults {
    *  to determine if the scan results for that filename
    *  should be included in the returned results.
    */
-  selectStats(regex: RegExp): ScanStats|{} {
+  selectStats(regex: RegExp): ScanStats | {} {
     return pickBy(this.stats, (_, key) => regex.test(key));
   }
 
@@ -102,18 +104,20 @@ class ScanResultsImpl implements ScanResults {
     // ensure the base directory has only a single trailing path separator
     baseDir = path.normalize(baseDir + path.sep);
     return Object.keys(this.stats)
-        .filter((file) => {
-          return file && regex.test(file);
-        })
-        .map((file) => {
-          return path.normalize(file).replace(baseDir, '');
-        });
+      .filter(file => {
+        return file && regex.test(file);
+      })
+      .map(file => {
+        return path.normalize(file).replace(baseDir, '');
+      });
   }
 }
 
 export async function scan(
-    baseDir: string, regex: RegExp,
-    precomputedHash?: string): Promise<ScanResults> {
+  baseDir: string,
+  regex: RegExp,
+  precomputedHash?: string
+): Promise<ScanResults> {
   const fileList = await findFiles(baseDir, regex);
   return computeStats(fileList, precomputedHash);
 }
@@ -129,7 +133,9 @@ export async function scan(
 // TODO: Typescript: Fix the docs associated with this function to match the
 // call signature
 function computeStats(
-    fileList: string[], precomputedHash?: string): Promise<ScanResults> {
+  fileList: string[],
+  precomputedHash?: string
+): Promise<ScanResults> {
   return new Promise<ScanResults>(async (resolve, reject) => {
     // return a valid, if fake, result when there are no js files to hash.
     if (fileList.length === 0) {
@@ -138,7 +144,7 @@ function computeStats(
     }
 
     // TODO: Address the case where the array contains `undefined`.
-    const hashes: Array<string|undefined> = [];
+    const hashes: Array<string | undefined> = [];
     const statistics: ScanStats = {};
     const errors: Map<string, Error> = new Map<string, Error>();
 
@@ -159,7 +165,10 @@ function computeStats(
       // Sort the hashes to get a deterministic order as the files may
       // not be in the same order each time we scan the disk.
       const buffer = hashes.sort().join();
-      const sha1 = crypto.createHash('sha1').update(buffer).digest('hex');
+      const sha1 = crypto
+        .createHash('sha1')
+        .update(buffer)
+        .digest('hex');
       hash = 'SHA1-' + sha1;
     } else {
       hash = precomputedHash!;
@@ -167,7 +176,6 @@ function computeStats(
     resolve(new ScanResultsImpl(statistics, errors, hash));
   });
 }
-
 
 /**
  * Given a base-directory, this function scans the subtree and finds all the js
@@ -179,7 +187,7 @@ function computeStats(
  */
 function findFiles(baseDir: string, regex: RegExp): Promise<string[]> {
   return new Promise<string[]>((resolve, reject) => {
-    let error: Error|undefined;
+    let error: Error | undefined;
 
     if (!baseDir) {
       reject(new Error('hasher.findJSFiles requires a baseDir argument'));
@@ -197,7 +205,7 @@ function findFiles(baseDir: string, regex: RegExp): Promise<string[]> {
     find.on('directory', (dir: string, ignore: fs.Stats, stop: () => void) => {
       const base = path.basename(dir);
       if (base === '.git' || base === 'node_modules') {
-        stop();  // do not descend
+        stop(); // do not descend
       }
     });
 
@@ -226,10 +234,12 @@ function findFiles(baseDir: string, regex: RegExp): Promise<string[]> {
  * @private
  */
 function statsForFile(
-    filename: string, shouldHash: boolean): Promise<FileStats> {
+  filename: string,
+  shouldHash: boolean
+): Promise<FileStats> {
   return new Promise<FileStats>((resolve, reject) => {
     const reader = fs.createReadStream(filename);
-    reader.on('error', (err) => {
+    reader.on('error', err => {
       reject(err);
     });
     reader.on('open', () => {
@@ -239,7 +249,7 @@ function statsForFile(
       }
 
       let lines = 0;
-      let error: Error|undefined;
+      let error: Error | undefined;
       const byLine = reader!.pipe(split());
       byLine.on('error', (e: Error) => {
         error = e;

@@ -54,8 +54,11 @@ describe('Debuggee', () => {
       return new Debuggee({project: 'test', agentVersion});
     });
     assert.throws(() => {
-      const _ =
-          new Debuggee({project: 'test', uniquifier: undefined, agentVersion});
+      const _ = new Debuggee({
+        project: 'test',
+        uniquifier: undefined,
+        agentVersion,
+      });
       assert.throws(() => {
         return new Debuggee({project: 'test', uniquifier: 'uid', agentVersion});
       });

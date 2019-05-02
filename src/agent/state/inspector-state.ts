@@ -52,9 +52,11 @@ interface RawVariableTableEntry {
  * @return an object with error and mirror fields.
  */
 export function evaluate(
-    expression: string, frame: inspector.Debugger.CallFrame,
-    v8inspector: V8Inspector, returnByValue: boolean):
-    {error: string|null, object?: inspector.Runtime.RemoteObject} {
+  expression: string,
+  frame: inspector.Debugger.CallFrame,
+  v8inspector: V8Inspector,
+  returnByValue: boolean
+): {error: string | null; object?: inspector.Runtime.RemoteObject} {
   // First validate the expression to make sure it doesn't mutate state
   // and ask V8 Inspector to evaluate the expression
   const result = v8inspector.evaluateOnCallFrame({
@@ -77,7 +79,7 @@ export function evaluate(
 class StateResolver {
   private callFrames: inspector.Debugger.CallFrame[];
   private v8Inspector: V8Inspector;
-  private expressions: string[]|undefined;
+  private expressions: string[] | undefined;
   private config: ResolvedDebugAgentConfig;
   private scriptmapper: {[id: string]: {url: string}};
   private breakpoint: stackdriver.Breakpoint;
@@ -85,7 +87,7 @@ class StateResolver {
   private totalSize: number;
   private messageTable: stackdriver.Variable[];
   private resolvedVariableTable: stackdriver.Variable[];
-  private rawVariableTable: Array<RawVariableTableEntry|null>;
+  private rawVariableTable: Array<RawVariableTableEntry | null>;
 
   /**
    * @param {Array<!Object>} callFrames
@@ -94,9 +96,12 @@ class StateResolver {
    * @constructor
    */
   constructor(
-      callFrames: inspector.Debugger.CallFrame[],
-      breakpoint: stackdriver.Breakpoint, config: ResolvedDebugAgentConfig,
-      scriptmapper: {[id: string]: {url: string}}, v8Inspector: V8Inspector) {
+    callFrames: inspector.Debugger.CallFrame[],
+    breakpoint: stackdriver.Breakpoint,
+    config: ResolvedDebugAgentConfig,
+    scriptmapper: {[id: string]: {url: string}},
+    v8Inspector: V8Inspector
+  ) {
     this.callFrames = callFrames;
     this.breakpoint = breakpoint;
     // TODO: Investigate whether this cast can be avoided.
@@ -111,35 +116,45 @@ class StateResolver {
     this.messageTable = [];
     this.messageTable[BUFFER_FULL_MESSAGE_INDEX] = {
       status: new StatusMessage(
-          StatusMessage.VARIABLE_VALUE, 'Max data size reached', true),
+        StatusMessage.VARIABLE_VALUE,
+        'Max data size reached',
+        true
+      ),
     };
     this.messageTable[NATIVE_PROPERTY_MESSAGE_INDEX] = {
       status: new StatusMessage(
-          StatusMessage.VARIABLE_VALUE, 'Native properties are not available',
-          true),
+        StatusMessage.VARIABLE_VALUE,
+        'Native properties are not available',
+        true
+      ),
     };
     this.messageTable[GETTER_MESSAGE_INDEX] = {
       status: new StatusMessage(
-          StatusMessage.VARIABLE_VALUE,
-          'Properties with getters are not available', true),
+        StatusMessage.VARIABLE_VALUE,
+        'Properties with getters are not available',
+        true
+      ),
     };
     this.messageTable[ARG_LOCAL_LIMIT_MESSAGE_INDEX] = {
       status: new StatusMessage(
-          StatusMessage.VARIABLE_VALUE,
-          'Locals and arguments are only displayed for the ' +
-              'top `config.capture.maxExpandFrames=' +
-              config.capture.maxExpandFrames + '` stack frames.',
-          true),
+        StatusMessage.VARIABLE_VALUE,
+        'Locals and arguments are only displayed for the ' +
+          'top `config.capture.maxExpandFrames=' +
+          config.capture.maxExpandFrames +
+          '` stack frames.',
+        true
+      ),
     };
 
     // TODO: Determine why _extend is used here
-    this.resolvedVariableTable =
-        (util as {} as {_extend: Function})._extend([], this.messageTable);
+    this.resolvedVariableTable = ((util as {}) as {_extend: Function})._extend(
+      [],
+      this.messageTable
+    );
     this.rawVariableTable = this.messageTable.map(() => {
       return null;
     });
   }
-
 
   /**
    * Captures the stack and current execution state.
@@ -152,21 +167,30 @@ class StateResolver {
     const evalIndexSet = new Set();
     if (this.expressions) {
       this.expressions.forEach((expression, index2) => {
-        const result =
-            evaluate(expression, this.callFrames[0], this.v8Inspector, false);
+        const result = evaluate(
+          expression,
+          this.callFrames[0],
+          this.v8Inspector,
+          false
+        );
         let evaluated;
         if (result.error) {
           evaluated = {
             name: expression,
             status: new StatusMessage(
-                StatusMessage.VARIABLE_VALUE, result.error, true),
+              StatusMessage.VARIABLE_VALUE,
+              result.error,
+              true
+            ),
           };
         } else {
           // TODO: Determine how to not downcast this to v8Types.ValueMirror
           // TODO: Handle the case where `result.mirror` is `undefined`.
           evaluated = this.resolveVariable_(
-              expression, result.object as inspector.Runtime.RemoteObject,
-              true);
+            expression,
+            result.object as inspector.Runtime.RemoteObject,
+            true
+          );
           const varTableIdx = evaluated.varTableIndex;
           if (typeof varTableIdx !== 'undefined') {
             evalIndexSet.add(varTableIdx);
@@ -180,18 +204,21 @@ class StateResolver {
     // the max data size limits
     const frames = this.resolveFrames_();
     // Now resolve the variables
-    let index = this.messageTable.length;  // skip the sentinel values
+    let index = this.messageTable.length; // skip the sentinel values
     const noLimit = this.config.capture.maxDataSize === 0;
-    while (index <
-               this.rawVariableTable.length &&  // NOTE: length changes in loop
-           (this.totalSize < this.config.capture.maxDataSize || noLimit)) {
-      assert.ok(!this.resolvedVariableTable[index]);  // shouldn't have it
-                                                      // resolved yet
+    while (
+      index < this.rawVariableTable.length && // NOTE: length changes in loop
+      (this.totalSize < this.config.capture.maxDataSize || noLimit)
+    ) {
+      assert.ok(!this.resolvedVariableTable[index]); // shouldn't have it
+      // resolved yet
       const isEvaluated = evalIndexSet.has(index);
       // TODO: Handle the cases where `null` or `undefined` occurs
       if (this.rawVariableTable![index]!.objectId) {
         this.resolvedVariableTable[index] = this.resolveRemoteObject_(
-            this.rawVariableTable[index]!, isEvaluated);
+          this.rawVariableTable[index]!,
+          isEvaluated
+        );
       }
       index++;
     }
@@ -216,14 +243,15 @@ class StateResolver {
    * @param {Object} frames Frames associated with the current execution
    *                        environment.
    */
-  trimVariableTable_(fromIndex: number, frames: stackdriver.StackFrame[]):
-      void {
-    this.resolvedVariableTable.splice(
-        fromIndex);  // remove the remaining entries
+  trimVariableTable_(
+    fromIndex: number,
+    frames: stackdriver.StackFrame[]
+  ): void {
+    this.resolvedVariableTable.splice(fromIndex); // remove the remaining entries
 
     const that = this;
     const processBufferFull = (variables: stackdriver.Variable[]) => {
-      variables.forEach((variable) => {
+      variables.forEach(variable => {
         if (variable.varTableIndex && variable.varTableIndex >= fromIndex) {
           // make it point to the sentinel 'buffer full' value
           variable.varTableIndex = BUFFER_FULL_MESSAGE_INDEX;
@@ -235,7 +263,7 @@ class StateResolver {
       });
     };
 
-    frames.forEach((frame) => {
+    frames.forEach(frame => {
       processBufferFull(frame.arguments);
       processBufferFull(frame.locals);
     });
@@ -245,13 +273,16 @@ class StateResolver {
 
   resolveFrames_(): stackdriver.StackFrame[] {
     const frames: stackdriver.StackFrame[] = [];
-    const frameCount =
-        Math.min(this.callFrames.length, this.config.capture.maxFrames);
+    const frameCount = Math.min(
+      this.callFrames.length,
+      this.config.capture.maxFrames
+    );
     for (let i = 0; i < frameCount; i++) {
       const frame = this.callFrames[i];
       if (this.shouldFrameBeResolved_(frame)) {
-        frames.push(this.resolveFrame_(
-            frame, (i < this.config.capture.maxExpandFrames)));
+        frames.push(
+          this.resolveFrame_(frame, i < this.config.capture.maxExpandFrames)
+        );
       }
     }
     return frames;
@@ -266,8 +297,10 @@ class StateResolver {
     }
 
     const relativePath = this.resolveRelativePath_(frame);
-    if (!this.config.capture.includeNodeModules &&
-        this.isPathInNodeModulesDirectory_(relativePath)) {
+    if (
+      !this.config.capture.includeNodeModules &&
+      this.isPathInNodeModulesDirectory_(relativePath)
+    ) {
       return false;
     }
 
@@ -294,28 +327,34 @@ class StateResolver {
   }
 
   static stripFileProtocol_(path: string) {
-    return path.toLowerCase().startsWith(FILE_PROTOCOL) ?
-        path.substr(FILE_PROTOCOL.length) :
-        path;
+    return path.toLowerCase().startsWith(FILE_PROTOCOL)
+      ? path.substr(FILE_PROTOCOL.length)
+      : path;
   }
 
   stripCurrentWorkingDirectory_(path: string): string {
     // Strip 1 extra character to remove the slash.
     return StateResolver.stripFileProtocol_(path).substr(
-        (this.config.workingDirectory!).length + 1);
+      this.config.workingDirectory!.length + 1
+    );
   }
 
   isPathInCurrentWorkingDirectory_(path: string): boolean {
-    return StateResolver.stripFileProtocol_(path).indexOf(
-               this.config.workingDirectory) === 0;
+    return (
+      StateResolver.stripFileProtocol_(path).indexOf(
+        this.config.workingDirectory
+      ) === 0
+    );
   }
 
   isPathInNodeModulesDirectory_(path: string): boolean {
     return StateResolver.stripFileProtocol_(path).indexOf('node_modules') === 0;
   }
 
-  resolveFrame_(frame: inspector.Debugger.CallFrame, underFrameCap: boolean):
-      stackdriver.StackFrame {
+  resolveFrame_(
+    frame: inspector.Debugger.CallFrame,
+    underFrameCap: boolean
+  ): stackdriver.StackFrame {
     const args: stackdriver.Variable[] = [];
     let locals: Array<{}> = [];
 
@@ -353,8 +392,9 @@ class StateResolver {
     return frame.functionName;
   }
 
-  resolveLocation_(frame: inspector.Debugger.CallFrame):
-      stackdriver.SourceLocation {
+  resolveLocation_(
+    frame: inspector.Debugger.CallFrame
+  ): stackdriver.SourceLocation {
     return {
       path: this.resolveRelativePath_(frame),
       line: frame.location.lineNumber,
@@ -375,8 +415,9 @@ class StateResolver {
    * @returns {Array<Object>} - returns an array containing data about selected
    *  variables
    */
-  resolveLocalsList_(frame: inspector.Debugger.CallFrame):
-      stackdriver.Variable[] {
+  resolveLocalsList_(
+    frame: inspector.Debugger.CallFrame
+  ): stackdriver.Variable[] {
     const locals: Array<{}> = [];
 
     const usedNames: {[name: string]: boolean} = {};
@@ -391,8 +432,9 @@ class StateResolver {
       count -= 1;
     }
     for (let i = 0; i < count; ++i) {
-      const result = this.v8Inspector.getProperties(
-          {objectId: frame.scopeChain[i].object.objectId as string});
+      const result = this.v8Inspector.getProperties({
+        objectId: frame.scopeChain[i].object.objectId as string,
+      });
       // TODO: Handle when result.error exists.
       if (result.response && !is.emptyArray(result.response.result)) {
         for (let j = 0; j < result.response.result.length; ++j) {
@@ -401,11 +443,14 @@ class StateResolver {
             // and wasn't discovered at a lower-scope
             usedNames[result.response.result[j].name] = true;
             if (result.response.result[j].value) {
-              locals.push(this.resolveVariable_(
+              locals.push(
+                this.resolveVariable_(
                   result.response.result[j].name,
-                  result.response.result[j].value as
-                      inspector.Runtime.RemoteObject,
-                  false));
+                  result.response.result[j]
+                    .value as inspector.Runtime.RemoteObject,
+                  false
+                )
+              );
             }
           }
         }
@@ -428,8 +473,10 @@ class StateResolver {
    *                              expression.
    */
   resolveVariable_(
-      name: string, object: inspector.Runtime.RemoteObject,
-      isEvaluated: boolean): stackdriver.Variable {
+    name: string,
+    object: inspector.Runtime.RemoteObject,
+    isEvaluated: boolean
+  ): stackdriver.Variable {
     let size = name.length;
     const data: stackdriver.Variable = {name};
     if (this.isPrimitive_(object.type)) {
@@ -438,18 +485,19 @@ class StateResolver {
       const maxLength = this.config.capture.maxStringLength;
       if (!isEvaluated && maxLength && maxLength < data.value.length) {
         data.status = new StatusMessage(
-            StatusMessage.VARIABLE_VALUE,
-            'Only first `config.capture.maxStringLength=' +
-                this.config.capture.maxStringLength +
-                '` chars were captured for string of length ' +
-                data.value.length +
-                '. Use in an expression to see the full string.',
-            false);
+          StatusMessage.VARIABLE_VALUE,
+          'Only first `config.capture.maxStringLength=' +
+            this.config.capture.maxStringLength +
+            '` chars were captured for string of length ' +
+            data.value.length +
+            '. Use in an expression to see the full string.',
+          false
+        );
         data.value = data.value.substring(0, maxLength) + '...';
       }
     } else if (this.isFunction_(object.type)) {
       data.value =
-          'function ' + (name === '' ? '(anonymous function)' : name + '()');
+        'function ' + (name === '' ? '(anonymous function)' : name + '()');
     } else if (this.isObject_(object.type)) {
       data.varTableIndex = this.getVariableIndex_(object);
     } else {
@@ -459,15 +507,20 @@ class StateResolver {
     if (data.value) {
       size += data.value.length;
     } else {
-      size += 8;  // fudge-it
+      size += 8; // fudge-it
     }
     this.totalSize += size;
     return data;
   }
 
   isPrimitive_(type: string): boolean {
-    return type === 'undefined' || type === 'boolean' || type === 'number' ||
-        type === 'string' || type === 'symbol';
+    return (
+      type === 'undefined' ||
+      type === 'boolean' ||
+      type === 'number' ||
+      type === 'string' ||
+      type === 'symbol'
+    );
   }
 
   isObject_(type: string): boolean {
@@ -483,23 +536,32 @@ class StateResolver {
    * if it can't be obtained.
    * @param remoteObject The object whose stable object ID should be retrieved.
    */
-  private getStableObjectId(remoteObject: inspector.Runtime.RemoteObject):
-      number {
+  private getStableObjectId(
+    remoteObject: inspector.Runtime.RemoteObject
+  ): number {
     if (remoteObject.objectId === undefined) {
       // Unexpected... but since this is required to obtain the stable object
       // ID, return a value that specifies that it is not available.
       return NO_STABLE_OBJECT_ID;
     }
-    const properties =
-        this.v8Inspector.getProperties({objectId: remoteObject.objectId});
-    if (properties.error || !properties.response ||
-        !properties.response.internalProperties) {
+    const properties = this.v8Inspector.getProperties({
+      objectId: remoteObject.objectId,
+    });
+    if (
+      properties.error ||
+      !properties.response ||
+      !properties.response.internalProperties
+    ) {
       return NO_STABLE_OBJECT_ID;
     }
     const stableObjectIdProperty = properties.response.internalProperties.find(
-        property => property.name === STABLE_OBJECT_ID_PROPERTY);
-    if (!stableObjectIdProperty || !stableObjectIdProperty.value ||
-        stableObjectIdProperty.value.value === undefined) {
+      property => property.name === STABLE_OBJECT_ID_PROPERTY
+    );
+    if (
+      !stableObjectIdProperty ||
+      !stableObjectIdProperty.value ||
+      stableObjectIdProperty.value.value === undefined
+    ) {
       return NO_STABLE_OBJECT_ID;
     }
     return stableObjectIdProperty.value.value;
@@ -541,8 +603,10 @@ class StateResolver {
    * Responsible for recursively resolving the properties on a
    * provided remote object.
    */
-  resolveRemoteObject_(object: RawVariableTableEntry, isEvaluated: boolean):
-      stackdriver.Variable {
+  resolveRemoteObject_(
+    object: RawVariableTableEntry,
+    isEvaluated: boolean
+  ): stackdriver.Variable {
     const maxProps = this.config.capture.maxProperties;
     // TS: ! is OK since getProperties will populate result.error in the absence
     // of an object ID.
@@ -550,8 +614,9 @@ class StateResolver {
     const members: Array<{}> = [];
     if (result.error || !result.response) {
       members.push({
-        name: result.error ? String(result.error) :
-                             'no response got in getProperty',
+        name: result.error
+          ? String(result.error)
+          : 'no response got in getProperty',
       });
     } else {
       let truncate = maxProps && result.response.result.length > maxProps;
@@ -559,8 +624,9 @@ class StateResolver {
       if (!isEvaluated && truncate) upperBound = maxProps;
       for (let i = 0; i < upperBound; ++i) {
         if (result.response.result[i].isOwn) {
-          members.push(this.resolveObjectProperty_(
-              isEvaluated, result.response.result[i]));
+          members.push(
+            this.resolveObjectProperty_(isEvaluated, result.response.result[i])
+          );
         } else {
           truncate = false;
         }
@@ -568,10 +634,11 @@ class StateResolver {
 
       if (!isEvaluated && truncate) {
         members.push({
-          name: 'Only first `config.capture.maxProperties=' +
-              this.config.capture.maxProperties +
-              '` properties were captured. Use in an expression' +
-              ' to see all properties.',
+          name:
+            'Only first `config.capture.maxProperties=' +
+            this.config.capture.maxProperties +
+            '` properties were captured. Use in an expression' +
+            ' to see all properties.',
         });
       }
     }
@@ -579,8 +646,9 @@ class StateResolver {
   }
 
   resolveObjectProperty_(
-      isEvaluated: boolean,
-      property: inspector.Runtime.PropertyDescriptor): stackdriver.Variable {
+    isEvaluated: boolean,
+    property: inspector.Runtime.PropertyDescriptor
+  ): stackdriver.Variable {
     const name = String(property.name);
     if (property.get !== undefined) {
       return {name, varTableIndex: GETTER_MESSAGE_INDEX};
@@ -602,11 +670,17 @@ export function testAssert(): void {
  *         evaluatedExpressions fields
  */
 export function capture(
-    callFrames: inspector.Debugger.CallFrame[],
-    breakpoint: stackdriver.Breakpoint, config: ResolvedDebugAgentConfig,
-    scriptmapper: {[id: string]: {url: string}},
-    v8Inspector: V8Inspector): stackdriver.Breakpoint {
-  return (new StateResolver(
-              callFrames, breakpoint, config, scriptmapper, v8Inspector))
-      .capture_();
+  callFrames: inspector.Debugger.CallFrame[],
+  breakpoint: stackdriver.Breakpoint,
+  config: ResolvedDebugAgentConfig,
+  scriptmapper: {[id: string]: {url: string}},
+  v8Inspector: V8Inspector
+): stackdriver.Breakpoint {
+  return new StateResolver(
+    callFrames,
+    breakpoint,
+    config,
+    scriptmapper,
+    v8Inspector
+  ).capture_();
 }

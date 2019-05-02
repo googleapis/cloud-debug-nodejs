@@ -21,58 +21,76 @@ export class V8Inspector {
   constructor(session: inspector.Session) {
     this.session = session;
   }
-  setBreakpointByUrl(options:
-                         inspector.Debugger.SetBreakpointByUrlParameterType) {
+  setBreakpointByUrl(
+    options: inspector.Debugger.SetBreakpointByUrlParameterType
+  ) {
     const result: {
-      error?: Error,
-      response?: inspector.Debugger.SetBreakpointByUrlReturnType
+      error?: Error;
+      response?: inspector.Debugger.SetBreakpointByUrlReturnType;
     } = {};
     this.session.post(
-        'Debugger.setBreakpointByUrl', options,
-        (error: Error|null,
-         response: inspector.Debugger.SetBreakpointByUrlReturnType) => {
-          if (error) result.error = error;
-          result.response = response;
-        });
+      'Debugger.setBreakpointByUrl',
+      options,
+      (
+        error: Error | null,
+        response: inspector.Debugger.SetBreakpointByUrlReturnType
+      ) => {
+        if (error) result.error = error;
+        result.response = response;
+      }
+    );
     return result;
   }
 
   removeBreakpoint(breakpointId: string) {
     const result: {error?: Error} = {};
     this.session.post(
-        'Debugger.removeBreakpoint', {breakpointId}, (error: Error|null) => {
-          if (error) result.error = error;
-        });
+      'Debugger.removeBreakpoint',
+      {breakpointId},
+      (error: Error | null) => {
+        if (error) result.error = error;
+      }
+    );
     return result;
   }
 
-  evaluateOnCallFrame(options:
-                          inspector.Debugger.EvaluateOnCallFrameParameterType) {
+  evaluateOnCallFrame(
+    options: inspector.Debugger.EvaluateOnCallFrameParameterType
+  ) {
     const result: {
-      error?: Error,
-      response?: inspector.Debugger.EvaluateOnCallFrameReturnType
+      error?: Error;
+      response?: inspector.Debugger.EvaluateOnCallFrameReturnType;
     } = {};
     this.session.post(
-        'Debugger.evaluateOnCallFrame', options,
-        (error: Error|null,
-         response: inspector.Debugger.EvaluateOnCallFrameReturnType) => {
-          if (error) result.error = error;
-          result.response = response;
-        });
+      'Debugger.evaluateOnCallFrame',
+      options,
+      (
+        error: Error | null,
+        response: inspector.Debugger.EvaluateOnCallFrameReturnType
+      ) => {
+        if (error) result.error = error;
+        result.response = response;
+      }
+    );
     return result;
   }
 
   getProperties(options: inspector.Runtime.GetPropertiesParameterType) {
-    const result:
-        {error?: Error,
-         response?: inspector.Runtime.GetPropertiesReturnType} = {};
+    const result: {
+      error?: Error;
+      response?: inspector.Runtime.GetPropertiesReturnType;
+    } = {};
     this.session.post(
-        'Runtime.getProperties', options,
-        (error: Error|null,
-         response: inspector.Runtime.GetPropertiesReturnType) => {
-          if (error) result.error = error;
-          result.response = response;
-        });
+      'Runtime.getProperties',
+      options,
+      (
+        error: Error | null,
+        response: inspector.Runtime.GetPropertiesReturnType
+      ) => {
+        if (error) result.error = error;
+        result.response = response;
+      }
+    );
     return result;
   }
 }

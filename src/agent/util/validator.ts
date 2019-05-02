@@ -70,15 +70,18 @@ export function isValid(node: estree.Node): boolean {
       return isValid(node.left) && isValid(node.right);
 
     case 'ConditionalExpression':
-      return isValid(node.test) && isValid(node.alternate) &&
-          isValid(node.consequent);
+      return (
+        isValid(node.test) &&
+        isValid(node.alternate) &&
+        isValid(node.consequent)
+      );
 
     case 'MemberExpression':
       return isValid(node.object) && isValid(node.property);
 
     case 'ObjectExpression':
       // every property is a valid expression
-      return node.properties.every((prop) => {
+      return node.properties.every(prop => {
         return isValid(prop.value);
       });
 

@@ -46,7 +46,7 @@ debug.start({
   }
 });`,
     description:
-        'imports the module and starts with a partial `serviceContext`',
+      'imports the module and starts with a partial `serviceContext`',
     dependencies: [],
     devDependencies: [],
   },
@@ -60,7 +60,7 @@ debug.start({
   }
 });`,
     description:
-        'imports the module and starts with a complete `serviceContext`',
+      'imports the module and starts with a complete `serviceContext`',
     dependencies: [],
     devDependencies: [],
   },

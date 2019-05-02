@@ -36,8 +36,7 @@ import {Debug} from '../src/client/stackdriver/debug';
 const DEBUGGEE_ID = 'bar';
 const REGISTER_PATH = '/v2/controller/debuggees/register';
 const BPS_PATH = '/v2/controller/debuggees/' + DEBUGGEE_ID + '/breakpoints';
-const EXPRESSIONS_REGEX =
-    /Expressions and conditions are not allowed.*https:\/\/goo\.gl\/ShSm6r/;
+const EXPRESSIONS_REGEX = /Expressions and conditions are not allowed.*https:\/\/goo\.gl\/ShSm6r/;
 
 const fakeCredentials = require('./fixtures/gcloud-credentials.json');
 
@@ -52,7 +51,7 @@ nock.disableNetConnect();
 
 const defaultConfig = extend(true, {}, DEFAULT_CONFIG, {logLevel: 0});
 
-let oldGP: string|undefined;
+let oldGP: string | undefined;
 
 // TODO: Have this actually implement Breakpoint.
 const bp: stackdriver.Breakpoint = {
@@ -61,30 +60,30 @@ const bp: stackdriver.Breakpoint = {
   location: {path: 'build/test/fixtures/foo.js', line: 2},
 } as stackdriver.Breakpoint;
 // TODO: Have this actually implement Breakpoint.
-const errorBp: stackdriver.Breakpoint = {
+const errorBp: stackdriver.Breakpoint = ({
   id: 'testLog',
   action: 'FOO',
   location: {path: 'build/test/fixtures/foo.js', line: 2},
-} as {} as stackdriver.Breakpoint;
+} as {}) as stackdriver.Breakpoint;
 
 function verifyBreakpointRejection(
-    re: RegExp, body: {breakpoint: stackdriver.Breakpoint}) {
+  re: RegExp,
+  body: {breakpoint: stackdriver.Breakpoint}
+) {
   const status = body.breakpoint.status;
   const hasCorrectDescription = status!.description.format.match(re);
   return status!.isError && hasCorrectDescription;
 }
 
-
 describe('CachedPromise', () => {
-  it('CachedPromise.get() will resolve after CachedPromise.resolve()',
-     function(done) {
-       this.timeout(2000);
-       const cachedPromise = new CachedPromise();
-       cachedPromise.get().then(() => {
-         done();
-       });
-       cachedPromise.resolve();
-     });
+  it('CachedPromise.get() will resolve after CachedPromise.resolve()', function(done) {
+    this.timeout(2000);
+    const cachedPromise = new CachedPromise();
+    cachedPromise.get().then(() => {
+      done();
+    });
+    cachedPromise.resolve();
+  });
 });
 
 describe('Debuglet', () => {
@@ -92,10 +91,12 @@ describe('Debuglet', () => {
     const SOURCEMAP_DIR = path.join(__dirname, 'fixtures', 'sourcemaps');
 
     it('throws an error for an invalid directory', async () => {
-      let err: Error|null = null;
+      let err: Error | null = null;
       try {
         await Debuglet.findFiles(
-            path.join(SOURCEMAP_DIR, '!INVALID!'), 'fake-id');
+          path.join(SOURCEMAP_DIR, '!INVALID!'),
+          'fake-id'
+        );
       } catch (e) {
         err = e;
       }
@@ -136,8 +137,9 @@ describe('Debuglet', () => {
 
       // TODO: Fix this so that config does not have to be cast as
       // DebugAgentConfig.
-      const mergedConfig =
-          Debuglet.normalizeConfig_(config as DebugAgentConfig);
+      const mergedConfig = Debuglet.normalizeConfig_(
+        config as DebugAgentConfig
+      );
       // TODO: Debuglet.normalizeConfig_() expects 1 parameter but the original
       //       test code had zero arguments here.  Determine which is correct.
       const compareConfig = Debuglet.normalizeConfig_(null!);
@@ -147,7 +149,7 @@ describe('Debuglet', () => {
       assert.deepStrictEqual(mergedConfig, compareConfig);
     });
 
-    it('should not start when projectId is not available', (done) => {
+    it('should not start when projectId is not available', done => {
       const debug = new Debug({}, packageInfo);
 
       const savedGetProjectId = debug.authClient.getProjectId;
@@ -169,38 +171,36 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should give a useful error message when projectId is not available',
-       (done) => {
-         const debug = new Debug({}, packageInfo);
+    it('should give a useful error message when projectId is not available', done => {
+      const debug = new Debug({}, packageInfo);
 
-         const savedGetProjectId = debug.authClient.getProjectId;
-         debug.authClient.getProjectId = () => {
-           return Promise.reject(new Error('no project id'));
-         };
+      const savedGetProjectId = debug.authClient.getProjectId;
+      debug.authClient.getProjectId = () => {
+        return Promise.reject(new Error('no project id'));
+      };
 
-         const debuglet = new Debuglet(debug, defaultConfig);
+      const debuglet = new Debuglet(debug, defaultConfig);
 
-         let message = '';
-         const savedLoggerError = debuglet.logger.error;
-         debuglet.logger.error = (text: string) => {
-           message += text;
-         };
+      let message = '';
+      const savedLoggerError = debuglet.logger.error;
+      debuglet.logger.error = (text: string) => {
+        message += text;
+      };
 
-         debuglet.once('initError', (err) => {
-           debug.authClient.getProjectId = savedGetProjectId;
-           debuglet.logger.error = savedLoggerError;
-           assert.ok(err);
-           assert(
-               message.startsWith('The project ID could not be determined:'));
-           done();
-         });
-         debuglet.once('started', () => {
-           assert.fail('The debuglet should fail to start without a projectId');
-         });
-         debuglet.start();
-       });
+      debuglet.once('initError', err => {
+        debug.authClient.getProjectId = savedGetProjectId;
+        debuglet.logger.error = savedLoggerError;
+        assert.ok(err);
+        assert(message.startsWith('The project ID could not be determined:'));
+        done();
+      });
+      debuglet.once('started', () => {
+        assert.fail('The debuglet should fail to start without a projectId');
+      });
+      debuglet.start();
+    });
 
-    it('should not crash without project num', (done) => {
+    it('should not crash without project num', done => {
       const debug = new Debug({}, packageInfo);
 
       const savedGetProjectId = debug.authClient.getProjectId;
@@ -220,18 +220,22 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should use config.projectId', (done) => {
+    it('should use config.projectId', done => {
       const projectId = '11020304f2934-a';
-      const debug =
-          new Debug({projectId, credentials: fakeCredentials}, packageInfo);
+      const debug = new Debug(
+        {projectId, credentials: fakeCredentials},
+        packageInfo
+      );
 
       nocks.projectId('project-via-metadata');
 
       const config = debugletConfig();
       const debuglet = new Debuglet(debug, config);
-      const scope = nock(config.apiUrl).post(REGISTER_PATH).reply(200, {
-        debuggee: {id: DEBUGGEE_ID},
-      });
+      const scope = nock(config.apiUrl)
+        .post(REGISTER_PATH)
+        .reply(200, {
+          debuggee: {id: DEBUGGEE_ID},
+        });
 
       debuglet.once('registered', (id: string) => {
         assert.strictEqual(id, DEBUGGEE_ID);
@@ -245,9 +249,9 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should not fail if files cannot be read', (done) => {
+    it('should not fail if files cannot be read', done => {
       const MOCKED_DIRECTORY = process.cwd();
-      const errors: Array<{filename: string; error: string;}> = [];
+      const errors: Array<{filename: string; error: string}> = [];
       for (let i = 1; i <= 2; i++) {
         const filename = `cannot-read-${i}.js`;
         const error = `EACCES: permission denied, open '${filename}'`;
@@ -281,10 +285,12 @@ describe('Debuglet', () => {
         },
       });
       const debug = new Debug(
-          {projectId: 'fake-project', credentials: fakeCredentials},
-          packageInfo);
-      const config =
-          extend({}, defaultConfig, {workingDirectory: MOCKED_DIRECTORY});
+        {projectId: 'fake-project', credentials: fakeCredentials},
+        packageInfo
+      );
+      const config = extend({}, defaultConfig, {
+        workingDirectory: MOCKED_DIRECTORY,
+      });
       const debuglet = new mockedDebuglet.Debuglet(debug, config);
       let text = '';
       debuglet.logger.warn = (s: string) => {
@@ -299,8 +305,9 @@ describe('Debuglet', () => {
         for (const item of errors) {
           const regex = new RegExp(item.error);
           assert(
-              regex.test(text),
-              `Should warn that file '${item.filename}' cannot be read`);
+            regex.test(text),
+            `Should warn that file '${item.filename}' cannot be read`
+          );
         }
         debuglet.stop();
         done();
@@ -318,7 +325,7 @@ describe('Debuglet', () => {
         process.env = extend({}, env);
       });
 
-      it('should use GCLOUD_PROJECT in lieu of config.projectId', (done) => {
+      it('should use GCLOUD_PROJECT in lieu of config.projectId', done => {
         process.env.GCLOUD_PROJECT = '11020304f2934-b';
         const debug = new Debug({credentials: fakeCredentials}, packageInfo);
 
@@ -326,14 +333,18 @@ describe('Debuglet', () => {
 
         const config = debugletConfig();
         const debuglet = new Debuglet(debug, config);
-        const scope = nock(config.apiUrl).post(REGISTER_PATH).reply(200, {
-          debuggee: {id: DEBUGGEE_ID},
-        });
+        const scope = nock(config.apiUrl)
+          .post(REGISTER_PATH)
+          .reply(200, {
+            debuggee: {id: DEBUGGEE_ID},
+          });
 
         debuglet.once('registered', (id: string) => {
           assert.strictEqual(id, DEBUGGEE_ID);
           assert.strictEqual(
-              debuglet.debuggee!.project, process.env.GCLOUD_PROJECT);
+            debuglet.debuggee!.project,
+            process.env.GCLOUD_PROJECT
+          );
           debuglet.stop();
           scope.done();
           done();
@@ -342,34 +353,35 @@ describe('Debuglet', () => {
         debuglet.start();
       });
 
-      it('should use options.projectId in preference to the environment variable',
-         (done) => {
-           process.env.GCLOUD_PROJECT = 'should-not-be-used';
-           const debug = new Debug(
-               {projectId: 'project-via-options', credentials: fakeCredentials},
-               packageInfo);
+      it('should use options.projectId in preference to the environment variable', done => {
+        process.env.GCLOUD_PROJECT = 'should-not-be-used';
+        const debug = new Debug(
+          {projectId: 'project-via-options', credentials: fakeCredentials},
+          packageInfo
+        );
 
-           nocks.projectId('project-via-metadata');
+        nocks.projectId('project-via-metadata');
 
-           const config = debugletConfig();
-           const debuglet = new Debuglet(debug, config);
-           const scope = nock(config.apiUrl).post(REGISTER_PATH).reply(200, {
-             debuggee: {id: DEBUGGEE_ID},
-           });
+        const config = debugletConfig();
+        const debuglet = new Debuglet(debug, config);
+        const scope = nock(config.apiUrl)
+          .post(REGISTER_PATH)
+          .reply(200, {
+            debuggee: {id: DEBUGGEE_ID},
+          });
 
-           debuglet.once('registered', (id: string) => {
-             assert.strictEqual(id, DEBUGGEE_ID);
-             assert.strictEqual(
-                 debuglet.debuggee!.project, 'project-via-options');
-             debuglet.stop();
-             scope.done();
-             done();
-           });
+        debuglet.once('registered', (id: string) => {
+          assert.strictEqual(id, DEBUGGEE_ID);
+          assert.strictEqual(debuglet.debuggee!.project, 'project-via-options');
+          debuglet.stop();
+          scope.done();
+          done();
+        });
 
-           debuglet.start();
-         });
+        debuglet.start();
+      });
 
-      it('should respect GCLOUD_DEBUG_LOGLEVEL', (done) => {
+      it('should respect GCLOUD_DEBUG_LOGLEVEL', done => {
         process.env.GCLOUD_PROJECT = '11020304f2934';
         process.env.GCLOUD_DEBUG_LOGLEVEL = '3';
         const debug = new Debug({credentials: fakeCredentials}, packageInfo);
@@ -378,9 +390,11 @@ describe('Debuglet', () => {
 
         const config = debugletConfig();
         const debuglet = new Debuglet(debug, config);
-        const scope = nock(config.apiUrl).post(REGISTER_PATH).reply(200, {
-          debuggee: {id: DEBUGGEE_ID},
-        });
+        const scope = nock(config.apiUrl)
+          .post(REGISTER_PATH)
+          .reply(200, {
+            debuggee: {id: DEBUGGEE_ID},
+          });
 
         let buffer = '';
         const oldConsoleError = console.error;
@@ -416,24 +430,31 @@ describe('Debuglet', () => {
         assert.ok(debuglet.config);
         assert.ok(debuglet.config.serviceContext);
         assert.strictEqual(
-            debuglet.config.serviceContext.service, 'fake-gae-service');
+          debuglet.config.serviceContext.service,
+          'fake-gae-service'
+        );
         assert.strictEqual(
-            debuglet.config.serviceContext.version, 'fake-gae-version');
+          debuglet.config.serviceContext.version,
+          'fake-gae-version'
+        );
       });
 
-      it('should respect GAE_MODULE_NAME and GAE_MODULE_VERSION env. vars.',
-         () => {
-           process.env.GAE_MODULE_NAME = 'fake-gae-service';
-           process.env.GAE_MODULE_VERSION = 'fake-gae-version';
-           const debug = new Debug({}, packageInfo);
-           const debuglet = new Debuglet(debug, defaultConfig);
-           assert.ok(debuglet.config);
-           assert.ok(debuglet.config.serviceContext);
-           assert.strictEqual(
-               debuglet.config.serviceContext.service, 'fake-gae-service');
-           assert.strictEqual(
-               debuglet.config.serviceContext.version, 'fake-gae-version');
-         });
+      it('should respect GAE_MODULE_NAME and GAE_MODULE_VERSION env. vars.', () => {
+        process.env.GAE_MODULE_NAME = 'fake-gae-service';
+        process.env.GAE_MODULE_VERSION = 'fake-gae-version';
+        const debug = new Debug({}, packageInfo);
+        const debuglet = new Debuglet(debug, defaultConfig);
+        assert.ok(debuglet.config);
+        assert.ok(debuglet.config.serviceContext);
+        assert.strictEqual(
+          debuglet.config.serviceContext.service,
+          'fake-gae-service'
+        );
+        assert.strictEqual(
+          debuglet.config.serviceContext.version,
+          'fake-gae-version'
+        );
+      });
 
       it('should respect K_SERVICE and K_REVISION env. vars.', () => {
         process.env.K_SERVICE = 'fake-cloudrun-service';
@@ -443,11 +464,14 @@ describe('Debuglet', () => {
         assert.ok(debuglet.config);
         assert.ok(debuglet.config.serviceContext);
         assert.strictEqual(
-            debuglet.config.serviceContext.service, 'fake-cloudrun-service');
+          debuglet.config.serviceContext.service,
+          'fake-cloudrun-service'
+        );
         assert.strictEqual(
-            debuglet.config.serviceContext.version, 'fake-cloudrun-version');
+          debuglet.config.serviceContext.version,
+          'fake-cloudrun-version'
+        );
       });
-
 
       it('should respect FUNCTION_NAME env. var.', () => {
         process.env.FUNCTION_NAME = 'fake-fn-name';
@@ -456,9 +480,13 @@ describe('Debuglet', () => {
         assert.ok(debuglet.config);
         assert.ok(debuglet.config.serviceContext);
         assert.strictEqual(
-            debuglet.config.serviceContext.service, 'fake-fn-name');
+          debuglet.config.serviceContext.service,
+          'fake-fn-name'
+        );
         assert.strictEqual(
-            debuglet.config.serviceContext.version, 'unversioned');
+          debuglet.config.serviceContext.version,
+          'unversioned'
+        );
       });
 
       it('should prefer new flex vars over GAE_MODULE_*', () => {
@@ -471,9 +499,13 @@ describe('Debuglet', () => {
         assert.ok(debuglet.config);
         assert.ok(debuglet.config.serviceContext);
         assert.strictEqual(
-            debuglet.config.serviceContext.service, 'fake-gae-service');
+          debuglet.config.serviceContext.service,
+          'fake-gae-service'
+        );
         assert.strictEqual(
-            debuglet.config.serviceContext.version, 'fake-gae-version');
+          debuglet.config.serviceContext.version,
+          'fake-gae-version'
+        );
       });
 
       it('should respect GAE_DEPLOYMENT_ID env. var. when available', () => {
@@ -484,7 +516,9 @@ describe('Debuglet', () => {
         assert.ok(debuglet.config);
         assert.ok(debuglet.config.serviceContext);
         assert.strictEqual(
-            debuglet.config.serviceContext.minorVersion_, 'some deployment id');
+          debuglet.config.serviceContext.minorVersion_,
+          'some deployment id'
+        );
       });
 
       it('should respect GAE_MINOR_VERSION env. var. when available', () => {
@@ -495,7 +529,9 @@ describe('Debuglet', () => {
         assert.ok(debuglet.config);
         assert.ok(debuglet.config.serviceContext);
         assert.strictEqual(
-            debuglet.config.serviceContext.minorVersion_, 'some minor version');
+          debuglet.config.serviceContext.minorVersion_,
+          'some minor version'
+        );
       });
 
       it('should prefer GAE_DEPLOYMENT_ID over GAE_MINOR_VERSION', () => {
@@ -506,7 +542,9 @@ describe('Debuglet', () => {
         assert.ok(debuglet.config);
         assert.ok(debuglet.config.serviceContext);
         assert.strictEqual(
-            debuglet.config.serviceContext.minorVersion_, 'some deployment id');
+          debuglet.config.serviceContext.minorVersion_,
+          'some deployment id'
+        );
       });
 
       it('should not have minorVersion unless enviroment provides it', () => {
@@ -518,56 +556,56 @@ describe('Debuglet', () => {
         //       is.  That is, if minorVersion is replaced with the
         //       correctly named minorVersion_, then the test fails.
         //       Resolve this.
-        assert.strictEqual(undefined, (debuglet.config.serviceContext as {
-                                        minorVersion: {}
-                                      }).minorVersion);
+        assert.strictEqual(
+          undefined,
+          (debuglet.config.serviceContext as {
+            minorVersion: {};
+          }).minorVersion
+        );
       });
 
-      it('should not provide minorversion upon registration on non flex',
-         (done) => {
-           const debug = new Debug(
-               {projectId: 'fake-project', credentials: fakeCredentials},
-               packageInfo);
+      it('should not provide minorversion upon registration on non flex', done => {
+        const debug = new Debug(
+          {projectId: 'fake-project', credentials: fakeCredentials},
+          packageInfo
+        );
 
-           const config = debugletConfig();
-           const debuglet = new Debuglet(debug, config);
-           const scope =
-               nock(config.apiUrl)
-                   .post(
-                       REGISTER_PATH,
-                       (body: {debuggee: Debuggee}) => {
-                         assert.strictEqual(
-                             undefined, body.debuggee.labels!.minorversion);
-                         return true;
-                       })
-                   .once()
-                   .reply(200, {debuggee: {id: DEBUGGEE_ID}});
+        const config = debugletConfig();
+        const debuglet = new Debuglet(debug, config);
+        const scope = nock(config.apiUrl)
+          .post(REGISTER_PATH, (body: {debuggee: Debuggee}) => {
+            assert.strictEqual(undefined, body.debuggee.labels!.minorversion);
+            return true;
+          })
+          .once()
+          .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
-           // TODO: Determine if the id parameter should be used.
-           debuglet.once('registered', (id: string) => {
-             debuglet.stop();
-             scope.done();
-             done();
-           });
-           debuglet.start();
-         });
+        // TODO: Determine if the id parameter should be used.
+        debuglet.once('registered', (id: string) => {
+          debuglet.stop();
+          scope.done();
+          done();
+        });
+        debuglet.start();
+      });
     });
 
     it('should retry on failed registration', function(done) {
       this.timeout(10000);
       const debug = new Debug(
-          {projectId: '11020304f2934', credentials: fakeCredentials},
-          packageInfo);
+        {projectId: '11020304f2934', credentials: fakeCredentials},
+        packageInfo
+      );
 
       const config = debugletConfig();
       const debuglet = new Debuglet(debug, config);
       const scope = nock(config.apiUrl)
-                        .post(REGISTER_PATH)
-                        .reply(404)
-                        .post(REGISTER_PATH)
-                        .reply(509)
-                        .post(REGISTER_PATH)
-                        .reply(200, {debuggee: {id: DEBUGGEE_ID}});
+        .post(REGISTER_PATH)
+        .reply(404)
+        .post(REGISTER_PATH)
+        .reply(509)
+        .post(REGISTER_PATH)
+        .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
       debuglet.once('registered', (id: string) => {
         assert.strictEqual(id, DEBUGGEE_ID);
@@ -579,13 +617,15 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should error if a package.json doesn\'t exist', (done) => {
+    it("should error if a package.json doesn't exist", done => {
       const debug = new Debug(
-          {projectId: 'fake-project', credentials: fakeCredentials},
-          packageInfo);
-      const config = extend(
-          {}, defaultConfig,
-          {workingDirectory: __dirname, forceNewAgent_: true});
+        {projectId: 'fake-project', credentials: fakeCredentials},
+        packageInfo
+      );
+      const config = extend({}, defaultConfig, {
+        workingDirectory: __dirname,
+        forceNewAgent_: true,
+      });
       const debuglet = new Debuglet(debug, config);
 
       debuglet.once('initError', (err: Error) => {
@@ -596,137 +636,142 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should by default error when workingDirectory is a root directory with a package.json',
-       (done) => {
-         const debug = new Debug({}, packageInfo);
-         /*
-          * `path.sep` represents a root directory on both Windows and Unix.
-          * On Windows, `path.sep` resolves to the current drive.
-          *
-          * That is, after opening a command prompt in Windows, relative to the
-          * drive C: and starting the Node REPL, the value of `path.sep`
-          * represents `C:\\'.
-          *
-          * If `D:` is entered at the prompt to switch to the D: drive before
-          * starting the Node REPL, `path.sep` represents `D:\\`.
-          */
-         const root = path.sep;
-         const mockedDebuglet = proxyquire('../src/agent/debuglet', {
-           /*
-            * Mock the 'fs' module to verify that if the root directory is used,
-            * and the root directory is reported to contain a `package.json`
-            * file, then the agent still produces an `initError` when the
-            * working directory is the root directory.
-            */
-           fs: {
-             stat:
-                 (filepath: string|Buffer,
-                  cb: (err: Error|null, stats: {}) => void) => {
-                   if (filepath === path.join(root, 'package.json')) {
-                     // The key point is that looking for `package.json` in the
-                     // root directory does not cause an error.
-                     return cb(null, {});
-                   }
-                   fs.stat(filepath, cb);
-                 },
-           },
-         });
-         const config = extend({}, defaultConfig, {workingDirectory: root});
-         const debuglet = new mockedDebuglet.Debuglet(debug, config);
-         let text = '';
-         debuglet.logger.error = (str: string) => {
-           text += str;
-         };
+    it('should by default error when workingDirectory is a root directory with a package.json', done => {
+      const debug = new Debug({}, packageInfo);
+      /*
+       * `path.sep` represents a root directory on both Windows and Unix.
+       * On Windows, `path.sep` resolves to the current drive.
+       *
+       * That is, after opening a command prompt in Windows, relative to the
+       * drive C: and starting the Node REPL, the value of `path.sep`
+       * represents `C:\\'.
+       *
+       * If `D:` is entered at the prompt to switch to the D: drive before
+       * starting the Node REPL, `path.sep` represents `D:\\`.
+       */
+      const root = path.sep;
+      const mockedDebuglet = proxyquire('../src/agent/debuglet', {
+        /*
+         * Mock the 'fs' module to verify that if the root directory is used,
+         * and the root directory is reported to contain a `package.json`
+         * file, then the agent still produces an `initError` when the
+         * working directory is the root directory.
+         */
+        fs: {
+          stat: (
+            filepath: string | Buffer,
+            cb: (err: Error | null, stats: {}) => void
+          ) => {
+            if (filepath === path.join(root, 'package.json')) {
+              // The key point is that looking for `package.json` in the
+              // root directory does not cause an error.
+              return cb(null, {});
+            }
+            fs.stat(filepath, cb);
+          },
+        },
+      });
+      const config = extend({}, defaultConfig, {workingDirectory: root});
+      const debuglet = new mockedDebuglet.Debuglet(debug, config);
+      let text = '';
+      debuglet.logger.error = (str: string) => {
+        text += str;
+      };
 
-         debuglet.on('initError', (err: Error) => {
-           const errorMessage = 'The working directory is a root ' +
-               'directory. Disabling to avoid a scan of the entire filesystem ' +
-               'for JavaScript files. Use config `allowRootAsWorkingDirectory` ' +
-               'if you really want to do this.';
-           assert.ok(err);
-           assert.strictEqual(err.message, errorMessage);
-           assert.ok(text.includes(errorMessage));
-           done();
-         });
+      debuglet.on('initError', (err: Error) => {
+        const errorMessage =
+          'The working directory is a root ' +
+          'directory. Disabling to avoid a scan of the entire filesystem ' +
+          'for JavaScript files. Use config `allowRootAsWorkingDirectory` ' +
+          'if you really want to do this.';
+        assert.ok(err);
+        assert.strictEqual(err.message, errorMessage);
+        assert.ok(text.includes(errorMessage));
+        done();
+      });
 
-         debuglet.once('started', () => {
-           assert.fail(
-               'Should not start if workingDirectory is a root directory');
-         });
+      debuglet.once('started', () => {
+        assert.fail('Should not start if workingDirectory is a root directory');
+      });
 
-         debuglet.start();
-       });
+      debuglet.start();
+    });
 
-    it('should be able to force the workingDirectory to be a root directory',
-       (done) => {
-         const root = path.sep;
-         // Act like the root directory contains a `package.json` file
-         const mockedDebuglet = proxyquire('../src/agent/debuglet', {
-           fs: {
-             stat:
-                 (filepath: string|Buffer,
-                  cb: (err: Error|null, stats: {}) => void) => {
-                   if (filepath === path.join(root, 'package.json')) {
-                     return cb(null, {});
-                   }
-                   fs.stat(filepath, cb);
-                 },
-           },
-         });
+    it('should be able to force the workingDirectory to be a root directory', done => {
+      const root = path.sep;
+      // Act like the root directory contains a `package.json` file
+      const mockedDebuglet = proxyquire('../src/agent/debuglet', {
+        fs: {
+          stat: (
+            filepath: string | Buffer,
+            cb: (err: Error | null, stats: {}) => void
+          ) => {
+            if (filepath === path.join(root, 'package.json')) {
+              return cb(null, {});
+            }
+            fs.stat(filepath, cb);
+          },
+        },
+      });
 
-         // Don't actually scan the entire filesystem.  Act like the filesystem
-         // is empty.
-         mockedDebuglet.Debuglet.findFiles =
-             (baseDir: string, precomputedHash?: string):
-                 Promise<FindFilesResult> => {
-                   assert.strictEqual(baseDir, root);
-                   return Promise.resolve({
-                     jsStats: {},
-                     mapFiles: [],
-                     errors: new Map<string, Error>(),
-                     hash: 'fake-hash',
-                   });
-                 };
+      // Don't actually scan the entire filesystem.  Act like the filesystem
+      // is empty.
+      mockedDebuglet.Debuglet.findFiles = (
+        baseDir: string,
+        precomputedHash?: string
+      ): Promise<FindFilesResult> => {
+        assert.strictEqual(baseDir, root);
+        return Promise.resolve({
+          jsStats: {},
+          mapFiles: [],
+          errors: new Map<string, Error>(),
+          hash: 'fake-hash',
+        });
+      };
 
-         // No need to restore `findFiles` because we are modifying a
-         // mocked version of `Debuglet` not `Debuglet` itself.
+      // No need to restore `findFiles` because we are modifying a
+      // mocked version of `Debuglet` not `Debuglet` itself.
 
-         const config = extend(
-             {}, defaultConfig,
-             {workingDirectory: root, allowRootAsWorkingDirectory: true});
+      const config = extend({}, defaultConfig, {
+        workingDirectory: root,
+        allowRootAsWorkingDirectory: true,
+      });
 
-         const debug = new Debug({}, packageInfo);
+      const debug = new Debug({}, packageInfo);
 
-         // Act like the debuglet can get a project id
-         debug.authClient.getProjectId = async () => 'some-project-id';
+      // Act like the debuglet can get a project id
+      debug.authClient.getProjectId = async () => 'some-project-id';
 
-         const debuglet = new mockedDebuglet.Debuglet(debug, config);
+      const debuglet = new mockedDebuglet.Debuglet(debug, config);
 
-         debuglet.on('initError', (err: Error) => {
-           assert.ifError(err);
-           done();
-         });
+      debuglet.on('initError', (err: Error) => {
+        assert.ifError(err);
+        done();
+      });
 
-         debuglet.once('started', () => {
-           debuglet.stop();
-           done();
-         });
+      debuglet.once('started', () => {
+        debuglet.stop();
+        done();
+      });
 
-         debuglet.start();
-       });
+      debuglet.start();
+    });
 
-    it('should register successfully otherwise', (done) => {
+    it('should register successfully otherwise', done => {
       const debug = new Debug(
-          {projectId: 'fake-project', credentials: fakeCredentials},
-          packageInfo);
+        {projectId: 'fake-project', credentials: fakeCredentials},
+        packageInfo
+      );
 
       nocks.oauth2();
 
       const config = debugletConfig();
       const debuglet = new Debuglet(debug, config);
-      const scope = nock(config.apiUrl).post(REGISTER_PATH).reply(200, {
-        debuggee: {id: DEBUGGEE_ID},
-      });
+      const scope = nock(config.apiUrl)
+        .post(REGISTER_PATH)
+        .reply(200, {
+          debuggee: {id: DEBUGGEE_ID},
+        });
 
       debuglet.once('registered', (id: string) => {
         assert.strictEqual(id, DEBUGGEE_ID);
@@ -738,28 +783,30 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should attempt to retrieve cluster name if needed', (done) => {
+    it('should attempt to retrieve cluster name if needed', done => {
       const savedRunningOnGCP = Debuglet.runningOnGCP;
       Debuglet.runningOnGCP = () => {
         return Promise.resolve(true);
       };
-      const clusterScope =
-          nock(gcpMetadata.HOST_ADDRESS)
-              .get('/computeMetadata/v1/instance/attributes/cluster-name')
-              .once()
-              .reply(200, 'cluster-name-from-metadata');
+      const clusterScope = nock(gcpMetadata.HOST_ADDRESS)
+        .get('/computeMetadata/v1/instance/attributes/cluster-name')
+        .once()
+        .reply(200, 'cluster-name-from-metadata');
 
       const debug = new Debug(
-          {projectId: 'fake-project', credentials: fakeCredentials},
-          packageInfo);
+        {projectId: 'fake-project', credentials: fakeCredentials},
+        packageInfo
+      );
 
       nocks.oauth2();
 
       const config = debugletConfig();
       const debuglet = new Debuglet(debug, config);
-      const scope = nock(config.apiUrl).post(REGISTER_PATH).reply(200, {
-        debuggee: {id: DEBUGGEE_ID},
-      });
+      const scope = nock(config.apiUrl)
+        .post(REGISTER_PATH)
+        .reply(200, {
+          debuggee: {id: DEBUGGEE_ID},
+        });
 
       debuglet.once('registered', (id: string) => {
         assert.strictEqual(id, DEBUGGEE_ID);
@@ -775,28 +822,31 @@ describe('Debuglet', () => {
 
     it('should pass config source context to api', done => {
       const REPO_URL =
-          'https://github.com/non-existent-users/non-existend-repo';
+        'https://github.com/non-existent-users/non-existend-repo';
       const REVISION_ID = '5';
 
       const debug = new Debug(
-          {projectId: 'fake-project', credentials: fakeCredentials},
-          packageInfo);
+        {projectId: 'fake-project', credentials: fakeCredentials},
+        packageInfo
+      );
 
-      const config = debugletConfig(
-          {sourceContext: {url: REPO_URL, revisionId: REVISION_ID}});
+      const config = debugletConfig({
+        sourceContext: {url: REPO_URL, revisionId: REVISION_ID},
+      });
       const debuglet = new Debuglet(debug, config);
       const scope = nock(config.apiUrl)
-                        .post(
-                            REGISTER_PATH,
-                            (body: {debuggee: Debuggee}) => {
-                              const context = body.debuggee.sourceContexts![0];
-                              return context && context.url === REPO_URL &&
-                                  context.revisionId === REVISION_ID;
-                            })
-                        .reply(200, {debuggee: {id: DEBUGGEE_ID}});
+        .post(REGISTER_PATH, (body: {debuggee: Debuggee}) => {
+          const context = body.debuggee.sourceContexts![0];
+          return (
+            context &&
+            context.url === REPO_URL &&
+            context.revisionId === REVISION_ID
+          );
+        })
+        .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
       debuglet.once('registered', (id: string) => {
-        assert.equal(id, DEBUGGEE_ID);
+        assert.strictEqual(id, DEBUGGEE_ID);
         debuglet.stop();
         scope.done();
         done();
@@ -805,25 +855,24 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should pass source context to api if present', (done) => {
+    it('should pass source context to api if present', done => {
       const debug = new Debug(
-          {projectId: 'fake-project', credentials: fakeCredentials},
-          packageInfo);
+        {projectId: 'fake-project', credentials: fakeCredentials},
+        packageInfo
+      );
       const old = Debuglet.getSourceContextFromFile;
       Debuglet.getSourceContextFromFile = async () => {
-        return {a: 5 as {} as string};
+        return {a: (5 as {}) as string};
       };
 
       const config = debugletConfig();
       const debuglet = new Debuglet(debug, config);
       const scope = nock(config.apiUrl)
-                        .post(
-                            REGISTER_PATH,
-                            (body: {debuggee: Debuggee}) => {
-                              const context = body.debuggee.sourceContexts![0];
-                              return context && context.a === 5;
-                            })
-                        .reply(200, {debuggee: {id: DEBUGGEE_ID}});
+        .post(REGISTER_PATH, (body: {debuggee: Debuggee}) => {
+          const context = body.debuggee.sourceContexts![0];
+          return context && context.a === 5;
+        })
+        .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
       debuglet.once('registered', (id: string) => {
         Debuglet.getSourceContextFromFile = old;
@@ -838,34 +887,37 @@ describe('Debuglet', () => {
 
     it('should prefer config source context to file', done => {
       const REPO_URL =
-          'https://github.com/non-existent-users/non-existend-repo';
+        'https://github.com/non-existent-users/non-existend-repo';
       const REVISION_ID = '5';
 
       const debug = new Debug(
-          {projectId: 'fake-project', credentials: fakeCredentials},
-          packageInfo);
+        {projectId: 'fake-project', credentials: fakeCredentials},
+        packageInfo
+      );
 
       const old = Debuglet.getSourceContextFromFile;
       Debuglet.getSourceContextFromFile = async () => {
-        return {a: 5 as {} as string};
+        return {a: (5 as {}) as string};
       };
 
-      const config = debugletConfig(
-          {sourceContext: {url: REPO_URL, revisionId: REVISION_ID}});
+      const config = debugletConfig({
+        sourceContext: {url: REPO_URL, revisionId: REVISION_ID},
+      });
       const debuglet = new Debuglet(debug, config);
       const scope = nock(config.apiUrl)
-                        .post(
-                            REGISTER_PATH,
-                            (body: {debuggee: Debuggee}) => {
-                              const context = body.debuggee.sourceContexts![0];
-                              return context && context.url === REPO_URL &&
-                                  context.revisionId === REVISION_ID;
-                            })
-                        .reply(200, {debuggee: {id: DEBUGGEE_ID}});
+        .post(REGISTER_PATH, (body: {debuggee: Debuggee}) => {
+          const context = body.debuggee.sourceContexts![0];
+          return (
+            context &&
+            context.url === REPO_URL &&
+            context.revisionId === REVISION_ID
+          );
+        })
+        .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
       debuglet.once('registered', (id: string) => {
         Debuglet.getSourceContextFromFile = old;
-        assert.equal(id, DEBUGGEE_ID);
+        assert.strictEqual(id, DEBUGGEE_ID);
         debuglet.stop();
         scope.done();
         done();
@@ -874,43 +926,45 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should de-activate when the server responds with isDisabled',
-       function(done) {
-         this.timeout(4000);
-         const debug = new Debug(
-             {projectId: 'fake-project', credentials: fakeCredentials},
-             packageInfo);
+    it('should de-activate when the server responds with isDisabled', function(done) {
+      this.timeout(4000);
+      const debug = new Debug(
+        {projectId: 'fake-project', credentials: fakeCredentials},
+        packageInfo
+      );
 
-         const config = debugletConfig();
-         const debuglet = new Debuglet(debug, config);
-         const scope = nock(config.apiUrl).post(REGISTER_PATH).reply(200, {
-           debuggee: {id: DEBUGGEE_ID, isDisabled: true},
-         });
+      const config = debugletConfig();
+      const debuglet = new Debuglet(debug, config);
+      const scope = nock(config.apiUrl)
+        .post(REGISTER_PATH)
+        .reply(200, {
+          debuggee: {id: DEBUGGEE_ID, isDisabled: true},
+        });
 
-         debuglet.once('remotelyDisabled', () => {
-           assert.ok(!debuglet.fetcherActive);
-           debuglet.stop();
-           scope.done();
-           done();
-         });
+      debuglet.once('remotelyDisabled', () => {
+        assert.ok(!debuglet.fetcherActive);
+        debuglet.stop();
+        scope.done();
+        done();
+      });
 
-         debuglet.start();
-       });
+      debuglet.start();
+    });
 
     it('should retry after a isDisabled request', function(done) {
       this.timeout(4000);
       const debug = new Debug(
-          {projectId: 'fake-project', credentials: fakeCredentials},
-          packageInfo);
+        {projectId: 'fake-project', credentials: fakeCredentials},
+        packageInfo
+      );
 
       const config = debugletConfig();
       const debuglet = new Debuglet(debug, config);
-      const scope =
-          nock(config.apiUrl)
-              .post(REGISTER_PATH)
-              .reply(200, {debuggee: {id: DEBUGGEE_ID, isDisabled: true}})
-              .post(REGISTER_PATH)
-              .reply(200, {debuggee: {id: DEBUGGEE_ID}});
+      const scope = nock(config.apiUrl)
+        .post(REGISTER_PATH)
+        .reply(200, {debuggee: {id: DEBUGGEE_ID, isDisabled: true}})
+        .post(REGISTER_PATH)
+        .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
       let gotDisabled = false;
       debuglet.once('remotelyDisabled', () => {
@@ -929,19 +983,20 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should re-register when registration expires', (done) => {
+    it('should re-register when registration expires', done => {
       const debug = new Debug(
-          {projectId: 'fake-project', credentials: fakeCredentials},
-          packageInfo);
+        {projectId: 'fake-project', credentials: fakeCredentials},
+        packageInfo
+      );
       const config = debugletConfig();
       const debuglet = new Debuglet(debug, config);
       const scope = nock(config.apiUrl)
-                        .post(REGISTER_PATH)
-                        .reply(200, {debuggee: {id: DEBUGGEE_ID}})
-                        .get(BPS_PATH + '?successOnTimeout=true')
-                        .reply(404)
-                        .post(REGISTER_PATH)
-                        .reply(200, {debuggee: {id: DEBUGGEE_ID}});
+        .post(REGISTER_PATH)
+        .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+        .get(BPS_PATH + '?successOnTimeout=true')
+        .reply(404)
+        .post(REGISTER_PATH)
+        .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
       debuglet.once('registered', (id1: string) => {
         assert.strictEqual(id1, DEBUGGEE_ID);
@@ -959,15 +1014,16 @@ describe('Debuglet', () => {
     it('should fetch and add breakpoints', function(done) {
       this.timeout(2000);
       const debug = new Debug(
-          {projectId: 'fake-project', credentials: fakeCredentials},
-          packageInfo);
+        {projectId: 'fake-project', credentials: fakeCredentials},
+        packageInfo
+      );
       const config = debugletConfig();
       const debuglet = new Debuglet(debug, config);
       const scope = nock(config.apiUrl)
-                        .post(REGISTER_PATH)
-                        .reply(200, {debuggee: {id: DEBUGGEE_ID}})
-                        .get(BPS_PATH + '?successOnTimeout=true')
-                        .reply(200, {breakpoints: [bp]});
+        .post(REGISTER_PATH)
+        .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+        .get(BPS_PATH + '?successOnTimeout=true')
+        .reply(200, {breakpoints: [bp]});
 
       debuglet.once('registered', function reg(id: string) {
         assert.strictEqual(id, DEBUGGEE_ID);
@@ -982,183 +1038,192 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should have breakpoints fetched when promise is resolved',
-       function(done) {
-         this.timeout(2000);
-         const breakpoint: stackdriver.Breakpoint = {
-           id: 'test1',
-           action: 'CAPTURE',
-           location: {path: 'build/test/fixtures/foo.js', line: 2},
-         } as stackdriver.Breakpoint;
+    it('should have breakpoints fetched when promise is resolved', function(done) {
+      this.timeout(2000);
+      const breakpoint: stackdriver.Breakpoint = {
+        id: 'test1',
+        action: 'CAPTURE',
+        location: {path: 'build/test/fixtures/foo.js', line: 2},
+      } as stackdriver.Breakpoint;
 
-         const debug = new Debug(
-             {projectId: 'fake-project', credentials: fakeCredentials},
-             packageInfo);
+      const debug = new Debug(
+        {projectId: 'fake-project', credentials: fakeCredentials},
+        packageInfo
+      );
 
-         const config = debugletConfig();
-         const debuglet = new Debuglet(debug, config);
-         const scope = nock(config.apiUrl)
-                           .post(REGISTER_PATH)
-                           .reply(200, {debuggee: {id: DEBUGGEE_ID}})
-                           .get(BPS_PATH + '?successOnTimeout=true')
-                           .twice()
-                           .reply(200, {breakpoints: [breakpoint]});
-         const debugPromise = debuglet.isReadyManager.isReady();
-         debuglet.once('registered', function reg(id: string) {
-           debugPromise.then(() => {
-             // Once debugPromise is resolved, debuggee must be registered.
-             assert(debuglet.debuggee);
-             setTimeout(() => {
-               assert.deepStrictEqual(
-                   debuglet.activeBreakpointMap.test1, breakpoint);
-               debuglet.activeBreakpointMap = {};
-               debuglet.stop();
-               scope.done();
-               done();
-             }, 1000);
-           });
-         });
-         debuglet.start();
-       });
+      const config = debugletConfig();
+      const debuglet = new Debuglet(debug, config);
+      const scope = nock(config.apiUrl)
+        .post(REGISTER_PATH)
+        .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+        .get(BPS_PATH + '?successOnTimeout=true')
+        .twice()
+        .reply(200, {breakpoints: [breakpoint]});
+      const debugPromise = debuglet.isReadyManager.isReady();
+      debuglet.once('registered', function reg(id: string) {
+        debugPromise.then(() => {
+          // Once debugPromise is resolved, debuggee must be registered.
+          assert(debuglet.debuggee);
+          setTimeout(() => {
+            assert.deepStrictEqual(
+              debuglet.activeBreakpointMap.test1,
+              breakpoint
+            );
+            debuglet.activeBreakpointMap = {};
+            debuglet.stop();
+            scope.done();
+            done();
+          }, 1000);
+        });
+      });
+      debuglet.start();
+    });
 
-    it('should resolve breakpointFetched promise when registration expires',
-       function(done) {
-         this.timeout(2000);
-         const debug = new Debug(
-             {projectId: 'fake-project', credentials: fakeCredentials},
-             packageInfo);
+    it('should resolve breakpointFetched promise when registration expires', function(done) {
+      this.timeout(2000);
+      const debug = new Debug(
+        {projectId: 'fake-project', credentials: fakeCredentials},
+        packageInfo
+      );
 
-         // const debuglet = new Debuglet(debug, defaultConfig);
-         // const scope = nock(API)
-         /// this change to a unique scope per test causes
-         const config = debugletConfig();
-         const debuglet = new Debuglet(debug, config);
-         const scope = nock(config.apiUrl)
-                           .post(REGISTER_PATH)
-                           .reply(200, {debuggee: {id: DEBUGGEE_ID}})
-                           .get(BPS_PATH + '?successOnTimeout=true')
-                           .reply(404);  // signal re-registration.
-         const debugPromise = debuglet.isReadyManager.isReady();
-         debugPromise.then(() => {
-           debuglet.stop();
-           scope.done();
-           done();
-         });
+      // const debuglet = new Debuglet(debug, defaultConfig);
+      // const scope = nock(API)
+      /// this change to a unique scope per test causes
+      const config = debugletConfig();
+      const debuglet = new Debuglet(debug, config);
+      const scope = nock(config.apiUrl)
+        .post(REGISTER_PATH)
+        .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+        .get(BPS_PATH + '?successOnTimeout=true')
+        .reply(404); // signal re-registration.
+      const debugPromise = debuglet.isReadyManager.isReady();
+      debugPromise.then(() => {
+        debuglet.stop();
+        scope.done();
+        done();
+      });
 
-         debuglet.start();
-       });
+      debuglet.start();
+    });
 
-    it('should reject breakpoints with conditions when allowExpressions=false',
-       function(done) {
-         this.timeout(2000);
-         const debug = new Debug(
-             {projectId: 'fake-project', credentials: fakeCredentials},
-             packageInfo);
+    it('should reject breakpoints with conditions when allowExpressions=false', function(done) {
+      this.timeout(2000);
+      const debug = new Debug(
+        {projectId: 'fake-project', credentials: fakeCredentials},
+        packageInfo
+      );
 
-         const config = debugletConfig({allowExpressions: false});
-         const debuglet = new Debuglet(debug, config);
-         const scope =
-             nock(config.apiUrl)
-                 .post(REGISTER_PATH)
-                 .reply(200, {debuggee: {id: DEBUGGEE_ID}})
-                 .get(BPS_PATH + '?successOnTimeout=true')
-                 .reply(200, {
-                   breakpoints: [{
-                     id: 'test',
-                     action: 'CAPTURE',
-                     condition: 'x === 5',
-                     location: {path: 'fixtures/foo.js', line: 2},
-                   }],
-                 })
-                 .put(
-                     BPS_PATH + '/test',
-                     verifyBreakpointRejection.bind(null, EXPRESSIONS_REGEX))
-                 .reply(200);
+      const config = debugletConfig({allowExpressions: false});
+      const debuglet = new Debuglet(debug, config);
+      const scope = nock(config.apiUrl)
+        .post(REGISTER_PATH)
+        .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+        .get(BPS_PATH + '?successOnTimeout=true')
+        .reply(200, {
+          breakpoints: [
+            {
+              id: 'test',
+              action: 'CAPTURE',
+              condition: 'x === 5',
+              location: {path: 'fixtures/foo.js', line: 2},
+            },
+          ],
+        })
+        .put(
+          BPS_PATH + '/test',
+          verifyBreakpointRejection.bind(null, EXPRESSIONS_REGEX)
+        )
+        .reply(200);
 
-         debuglet.once('registered', function reg(id: string) {
-           assert.strictEqual(id, DEBUGGEE_ID);
-           setTimeout(() => {
-             assert.ok(!debuglet.activeBreakpointMap.test);
-             debuglet.stop();
-             debuglet.config.allowExpressions = true;
-             scope.done();
-             done();
-           }, 1000);
-         });
+      debuglet.once('registered', function reg(id: string) {
+        assert.strictEqual(id, DEBUGGEE_ID);
+        setTimeout(() => {
+          assert.ok(!debuglet.activeBreakpointMap.test);
+          debuglet.stop();
+          debuglet.config.allowExpressions = true;
+          scope.done();
+          done();
+        }, 1000);
+      });
 
-         debuglet.start();
-       });
+      debuglet.start();
+    });
 
-    it('should reject breakpoints with expressions when allowExpressions=false',
-       function(done) {
-         this.timeout(2000);
-         const debug = new Debug(
-             {projectId: 'fake-project', credentials: fakeCredentials},
-             packageInfo);
+    it('should reject breakpoints with expressions when allowExpressions=false', function(done) {
+      this.timeout(2000);
+      const debug = new Debug(
+        {projectId: 'fake-project', credentials: fakeCredentials},
+        packageInfo
+      );
 
-         const config = debugletConfig({allowExpressions: false});
-         const debuglet = new Debuglet(debug, config);
-         const scope =
-             nock(config.apiUrl)
-                 .post(REGISTER_PATH)
-                 .reply(200, {debuggee: {id: DEBUGGEE_ID}})
-                 .get(BPS_PATH + '?successOnTimeout=true')
-                 .reply(200, {
-                   breakpoints: [{
-                     id: 'test',
-                     action: 'CAPTURE',
-                     expressions: ['x'],
-                     location: {path: 'fixtures/foo.js', line: 2},
-                   }],
-                 })
-                 .put(
-                     BPS_PATH + '/test',
-                     verifyBreakpointRejection.bind(null, EXPRESSIONS_REGEX))
-                 .reply(200);
+      const config = debugletConfig({allowExpressions: false});
+      const debuglet = new Debuglet(debug, config);
+      const scope = nock(config.apiUrl)
+        .post(REGISTER_PATH)
+        .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+        .get(BPS_PATH + '?successOnTimeout=true')
+        .reply(200, {
+          breakpoints: [
+            {
+              id: 'test',
+              action: 'CAPTURE',
+              expressions: ['x'],
+              location: {path: 'fixtures/foo.js', line: 2},
+            },
+          ],
+        })
+        .put(
+          BPS_PATH + '/test',
+          verifyBreakpointRejection.bind(null, EXPRESSIONS_REGEX)
+        )
+        .reply(200);
 
-         debuglet.once('registered', function reg(id: string) {
-           assert.strictEqual(id, DEBUGGEE_ID);
-           setTimeout(() => {
-             assert.ok(!debuglet.activeBreakpointMap.test);
-             debuglet.stop();
-             debuglet.config.allowExpressions = true;
-             scope.done();
-             done();
-           }, 1000);
-         });
+      debuglet.once('registered', function reg(id: string) {
+        assert.strictEqual(id, DEBUGGEE_ID);
+        setTimeout(() => {
+          assert.ok(!debuglet.activeBreakpointMap.test);
+          debuglet.stop();
+          debuglet.config.allowExpressions = true;
+          scope.done();
+          done();
+        }, 1000);
+      });
 
-         debuglet.start();
-       });
+      debuglet.start();
+    });
 
     it('should re-fetch breakpoints on error', function(done) {
       this.timeout(6000);
 
       const debug = new Debug(
-          {projectId: 'fake-project', credentials: fakeCredentials},
-          packageInfo);
+        {projectId: 'fake-project', credentials: fakeCredentials},
+        packageInfo
+      );
 
       const config = debugletConfig();
       const debuglet = new Debuglet(debug, config);
       const scope = nock(config.apiUrl)
-                        .post(REGISTER_PATH)
-                        .reply(200, {debuggee: {id: DEBUGGEE_ID}})
-                        .post(REGISTER_PATH)
-                        .reply(200, {debuggee: {id: DEBUGGEE_ID}})
-                        .get(BPS_PATH + '?successOnTimeout=true')
-                        .reply(404)
-                        .get(BPS_PATH + '?successOnTimeout=true')
-                        .reply(200, {waitExpired: true})
-                        .get(BPS_PATH + '?successOnTimeout=true')
-                        .reply(200, {breakpoints: [bp, errorBp]})
-                        .put(
-                            BPS_PATH + '/' + errorBp.id,
-                            (body: {breakpoint: stackdriver.Breakpoint}) => {
-                              const status = body.breakpoint.status;
-                              return status!.isError &&
-                                  status!.description.format.indexOf(
-                                      'actions are CAPTURE') !== -1;
-                            })
-                        .reply(200);
+        .post(REGISTER_PATH)
+        .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+        .post(REGISTER_PATH)
+        .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+        .get(BPS_PATH + '?successOnTimeout=true')
+        .reply(404)
+        .get(BPS_PATH + '?successOnTimeout=true')
+        .reply(200, {waitExpired: true})
+        .get(BPS_PATH + '?successOnTimeout=true')
+        .reply(200, {breakpoints: [bp, errorBp]})
+        .put(
+          BPS_PATH + '/' + errorBp.id,
+          (body: {breakpoint: stackdriver.Breakpoint}) => {
+            const status = body.breakpoint.status;
+            return (
+              status!.isError &&
+              status!.description.format.indexOf('actions are CAPTURE') !== -1
+            );
+          }
+        )
+        .reply(200);
 
       debuglet.once('registered', function reg(id: string) {
         assert.strictEqual(id, DEBUGGEE_ID);
@@ -1176,28 +1241,33 @@ describe('Debuglet', () => {
 
     it('should expire stale breakpoints', function(done) {
       const debug = new Debug(
-          {projectId: 'fake-project', credentials: fakeCredentials},
-          packageInfo);
+        {projectId: 'fake-project', credentials: fakeCredentials},
+        packageInfo
+      );
 
       this.timeout(6000);
 
-      const config =
-          debugletConfig({breakpointExpirationSec: 1, forceNewAgent_: true});
+      const config = debugletConfig({
+        breakpointExpirationSec: 1,
+        forceNewAgent_: true,
+      });
       const debuglet = new Debuglet(debug, config);
       const scope = nock(config.apiUrl)
-                        .post(REGISTER_PATH)
-                        .reply(200, {debuggee: {id: DEBUGGEE_ID}})
-                        .get(BPS_PATH + '?successOnTimeout=true')
-                        .reply(200, {breakpoints: [bp]})
-                        .put(
-                            BPS_PATH + '/test',
-                            (body: {breakpoint: stackdriver.Breakpoint}) => {
-                              const status = body.breakpoint.status;
-                              return status!.description.format ===
-                                  'The snapshot has expired' &&
-                                  status!.refersTo === 'BREAKPOINT_AGE';
-                            })
-                        .reply(200);
+        .post(REGISTER_PATH)
+        .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+        .get(BPS_PATH + '?successOnTimeout=true')
+        .reply(200, {breakpoints: [bp]})
+        .put(
+          BPS_PATH + '/test',
+          (body: {breakpoint: stackdriver.Breakpoint}) => {
+            const status = body.breakpoint.status;
+            return (
+              status!.description.format === 'The snapshot has expired' &&
+              status!.refersTo === 'BREAKPOINT_AGE'
+            );
+          }
+        )
+        .reply(200);
 
       debuglet.once('registered', (id: string) => {
         assert.strictEqual(id, DEBUGGEE_ID);
@@ -1224,8 +1294,9 @@ describe('Debuglet', () => {
     // is only expired with the server once.
     it('should not update expired breakpoints', function(done) {
       const debug = new Debug(
-          {projectId: 'fake-project', credentials: fakeCredentials},
-          packageInfo);
+        {projectId: 'fake-project', credentials: fakeCredentials},
+        packageInfo
+      );
 
       this.timeout(6000);
 
@@ -1235,22 +1306,24 @@ describe('Debuglet', () => {
         forceNewAgent_: true,
       });
       const debuglet = new Debuglet(debug, config);
-      const scope =
-          nock(config.apiUrl)
-              .post(REGISTER_PATH)
-              .reply(200, {debuggee: {id: DEBUGGEE_ID}})
-              .get(BPS_PATH + '?successOnTimeout=true')
-              .reply(200, {breakpoints: [bp]})
-              .put(
-                  BPS_PATH + '/test',
-                  (body: {breakpoint: stackdriver.Breakpoint}) => {
-                    return body.breakpoint.status!.description.format ===
-                        'The snapshot has expired';
-                  })
-              .reply(200)
-              .get(BPS_PATH + '?successOnTimeout=true')
-              .times(4)
-              .reply(200, {breakpoints: [bp]});
+      const scope = nock(config.apiUrl)
+        .post(REGISTER_PATH)
+        .reply(200, {debuggee: {id: DEBUGGEE_ID}})
+        .get(BPS_PATH + '?successOnTimeout=true')
+        .reply(200, {breakpoints: [bp]})
+        .put(
+          BPS_PATH + '/test',
+          (body: {breakpoint: stackdriver.Breakpoint}) => {
+            return (
+              body.breakpoint.status!.description.format ===
+              'The snapshot has expired'
+            );
+          }
+        )
+        .reply(200)
+        .get(BPS_PATH + '?successOnTimeout=true')
+        .times(4)
+        .reply(200, {breakpoints: [bp]});
 
       debuglet.once('registered', (id: string) => {
         assert.strictEqual(id, DEBUGGEE_ID);
@@ -1288,39 +1361,73 @@ describe('Debuglet', () => {
       // TODO: Determine if Debuglet.format() should allow a number[]
       //       or if only string[] should be allowed.
       assert.deepStrictEqual(
-          Debuglet.format('hi', [5] as {} as string[]), 'hi');
+        Debuglet.format('hi', ([5] as {}) as string[]),
+        'hi'
+      );
       assert.deepStrictEqual(
-          Debuglet.format('hi $0', [5] as {} as string[]), 'hi 5');
+        Debuglet.format('hi $0', ([5] as {}) as string[]),
+        'hi 5'
+      );
       assert.deepStrictEqual(
-          Debuglet.format('hi $0 $1', [5, 'there'] as {} as string[]),
-          'hi 5 there');
+        Debuglet.format('hi $0 $1', ([5, 'there'] as {}) as string[]),
+        'hi 5 there'
+      );
       assert.deepStrictEqual(
-          Debuglet.format('hi $0 $1', [5] as {} as string[]), 'hi 5 $1');
+        Debuglet.format('hi $0 $1', ([5] as {}) as string[]),
+        'hi 5 $1'
+      );
       assert.deepStrictEqual(
-          Debuglet.format('hi $0 $1 $0', [5] as {} as string[]), 'hi 5 $1 5');
+        Debuglet.format('hi $0 $1 $0', ([5] as {}) as string[]),
+        'hi 5 $1 5'
+      );
       assert.deepStrictEqual(
-          Debuglet.format('hi $$', [5] as {} as string[]), 'hi $');
+        Debuglet.format('hi $$', ([5] as {}) as string[]),
+        'hi $'
+      );
       assert.deepStrictEqual(
-          Debuglet.format('hi $$0', [5] as {} as string[]), 'hi $0');
+        Debuglet.format('hi $$0', ([5] as {}) as string[]),
+        'hi $0'
+      );
       assert.deepStrictEqual(
-          Debuglet.format('hi $00', [5] as {} as string[]), 'hi 50');
+        Debuglet.format('hi $00', ([5] as {}) as string[]),
+        'hi 50'
+      );
       assert.deepStrictEqual(
-          Debuglet.format('hi $0', ['$1', 5] as {} as string[]), 'hi $1');
+        Debuglet.format('hi $0', (['$1', 5] as {}) as string[]),
+        'hi $1'
+      );
       assert.deepStrictEqual(
-          Debuglet.format(
-              'hi $11',
-              [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd'] as {} as
-                  string[]),
-          'hi b');
+        Debuglet.format('hi $11', ([
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          'a',
+          'b',
+          'c',
+          'd',
+        ] as {}) as string[]),
+        'hi b'
+      );
     });
   });
 
   describe('createDebuggee', () => {
     it('should have sensible labels', () => {
       const debuggee = Debuglet.createDebuggee(
-          'some project', 'id',
-          {service: 'some-service', version: 'production'}, {}, false,
-          packageInfo);
+        'some project',
+        'id',
+        {service: 'some-service', version: 'production'},
+        {},
+        false,
+        packageInfo
+      );
       assert.ok(debuggee);
       assert.ok(debuggee.labels);
       assert.strictEqual(debuggee.labels!.module, 'some-service');
@@ -1329,8 +1436,13 @@ describe('Debuglet', () => {
 
     it('should not add a module label when service is default', () => {
       const debuggee = Debuglet.createDebuggee(
-          'fancy-project', 'very-unique',
-          {service: 'default', version: 'yellow.5'}, {}, false, packageInfo);
+        'fancy-project',
+        'very-unique',
+        {service: 'default', version: 'yellow.5'},
+        {},
+        false,
+        packageInfo
+      );
       assert.ok(debuggee);
       assert.ok(debuggee.labels);
       assert.strictEqual(debuggee.labels!.module, undefined);
@@ -1339,8 +1451,15 @@ describe('Debuglet', () => {
 
     it('should have an error statusMessage with the appropriate arg', () => {
       const debuggee = Debuglet.createDebuggee(
-          'a', 'b', {}, {}, false, packageInfo, undefined,
-          'Some Error Message');
+        'a',
+        'b',
+        {},
+        {},
+        false,
+        packageInfo,
+        undefined,
+        'Some Error Message'
+      );
       assert.ok(debuggee);
       assert.ok(debuggee.statusMessage);
     });
@@ -1361,20 +1480,30 @@ describe('Debuglet', () => {
       assert.strictEqual(fn(desc, version, uid, sourceContext, labels), u1);
 
       assert.notStrictEqual(
-          fn('foo', version, uid, sourceContext, labels), u1,
-          'changing the description should change the result');
+        fn('foo', version, uid, sourceContext, labels),
+        u1,
+        'changing the description should change the result'
+      );
       assert.notStrictEqual(
-          fn(desc, '1.2', uid, sourceContext, labels), u1,
-          'changing the version should change the result');
+        fn(desc, '1.2', uid, sourceContext, labels),
+        u1,
+        'changing the version should change the result'
+      );
       assert.notStrictEqual(
-          fn(desc, version, '5', sourceContext, labels), u1,
-          'changing the description should change the result');
+        fn(desc, version, '5', sourceContext, labels),
+        u1,
+        'changing the description should change the result'
+      );
       assert.notStrictEqual(
-          fn(desc, version, uid, {git: 'blah'}, labels), u1,
-          'changing the sourceContext should change the result');
+        fn(desc, version, uid, {git: 'blah'}, labels),
+        u1,
+        'changing the sourceContext should change the result'
+      );
       assert.notStrictEqual(
-          fn(desc, version, uid, sourceContext, {key1: 'value2'}), u1,
-          'changing the labels should change the result');
+        fn(desc, version, uid, sourceContext, {key1: 'value2'}),
+        u1,
+        'changing the labels should change the result'
+      );
     });
   });
 });
@@ -1386,11 +1515,15 @@ let apiUrlInc = 0;
  * returns a new config object to be passed to debuglet. always has apiUrl
  * @param conf custom config values
  */
-function debugletConfig(conf?: {}): (ResolvedDebugAgentConfig&
-                                     {apiUrl: string}) {
-  const apiUrl = 'https://clouddebugger.googleapis.com' + (++apiUrlInc);
-  const c = Object.assign({}, DEFAULT_CONFIG, conf) as (
-                ResolvedDebugAgentConfig & {apiUrl: string});
+function debugletConfig(conf?: {}): ResolvedDebugAgentConfig & {
+  apiUrl: string;
+} {
+  const apiUrl = 'https://clouddebugger.googleapis.com' + ++apiUrlInc;
+  const c = Object.assign(
+    {},
+    DEFAULT_CONFIG,
+    conf
+  ) as (ResolvedDebugAgentConfig & {apiUrl: string});
   c.apiUrl = apiUrl;
   return c;
 }

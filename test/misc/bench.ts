@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 const v8debugapi = require('../src/v8debugapi.js');
 const config = require('../config.js').default;
 import * as assert from 'assert';

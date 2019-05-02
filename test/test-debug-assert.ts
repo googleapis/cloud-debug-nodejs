@@ -33,10 +33,11 @@ describe('debug-assert', () => {
     });
 
     it('should cover the full assert API', () => {
-      Object.keys(realAssert).forEach((key) => {
+      Object.keys(realAssert).forEach(key => {
         realAssert.strictEqual(
-            typeof (assert as {} as {[key: string]: Function})[key],
-            'function');
+          typeof ((assert as {}) as {[key: string]: Function})[key],
+          'function'
+        );
       });
     });
   });

@@ -16,11 +16,19 @@
 
 import {GoogleAuthOptions} from '@google-cloud/common';
 
-export type DebugAgentConfig = GoogleAuthOptions&{
-  [K in keyof ResolvedDebugAgentConfig]?: Partial<ResolvedDebugAgentConfig[K]>
-};
+export type DebugAgentConfig = GoogleAuthOptions &
+  {
+    [K in keyof ResolvedDebugAgentConfig]?: Partial<ResolvedDebugAgentConfig[K]>
+  };
 
-export type LogLevel = 'error'|'trace'|'debug'|'info'|'warn'|'fatal'|undefined;
+export type LogLevel =
+  | 'error'
+  | 'trace'
+  | 'debug'
+  | 'info'
+  | 'warn'
+  | 'fatal'
+  | undefined;
 export interface Logger {
   error(...args: Array<{}>): void;
   trace(...args: Array<{}>): void;
@@ -41,14 +49,16 @@ export interface RepoId {
 }
 
 export interface AliasContext {
-  kind: 'ANY'|'FIXED'|'MOVABLE'|'OTHER';
+  kind: 'ANY' | 'FIXED' | 'MOVABLE' | 'OTHER';
   name: string;
 }
 
 export interface CloudRepoSourceContext {
   cloudRepo: {
-    repoId: RepoId; revisionId: string;
-    aliasName?: string; aliasContext: AliasContext;
+    repoId: RepoId;
+    revisionId: string;
+    aliasName?: string;
+    aliasContext: AliasContext;
   };
 }
 
@@ -58,12 +68,13 @@ export interface CloudWorkspaceId {
 }
 
 export interface CloudWorkspaceSourceContext {
-  cloudWorkspace: {workspaceId: CloudWorkspaceId; snapshotId: string;};
+  cloudWorkspace: {workspaceId: CloudWorkspaceId; snapshotId: string};
 }
 
 export interface GerritSourceContext {
   gerrit: {
-    hostUri: string; gerritProject: string;
+    hostUri: string;
+    gerritProject: string;
     // one of:
     revisionId?: string;
     aliasName?: string;
@@ -72,7 +83,7 @@ export interface GerritSourceContext {
 }
 
 export interface GitSourceContext {
-  git: {url: string; revisionId: string;};
+  git: {url: string; revisionId: string};
 }
 
 export interface ResolvedDebugAgentConfig extends GoogleAuthOptions {
@@ -150,8 +161,11 @@ export interface ResolvedDebugAgentConfig extends GoogleAuthOptions {
    * @link
    * https://cloud.google.com/debugger/api/reference/rest/v2/Debuggee#SourceContext
    */
-  sourceContext?: CloudRepoSourceContext|CloudWorkspaceSourceContext|
-      GerritSourceContext|GitSourceContext;
+  sourceContext?:
+    | CloudRepoSourceContext
+    | CloudWorkspaceSourceContext
+    | GerritSourceContext
+    | GitSourceContext;
 
   /**
    * The path within your repository to the directory
@@ -211,9 +225,11 @@ export interface ResolvedDebugAgentConfig extends GoogleAuthOptions {
    * for example, the debug agent would know to set the breakpoint in
    * the `/x/y/src/index.js` file.
    */
-  pathResolver?:
-      (scriptPath: string, knownFiles: string[],
-       resolved: string[]) => string[] | undefined;
+  pathResolver?: (
+    scriptPath: string,
+    knownFiles: string[],
+    resolved: string[]
+  ) => string[] | undefined;
 
   /**
    * agent log level 0-disabled, 1-error, 2-warn, 3-info, 4-debug
@@ -303,7 +319,8 @@ export interface ResolvedDebugAgentConfig extends GoogleAuthOptions {
    * These configuration options are for internal  experimentation only.
    */
   internal: {
-    registerDelayOnFetcherErrorSec: number; maxRegistrationRetryDelay: number;
+    registerDelayOnFetcherErrorSec: number;
+    maxRegistrationRetryDelay: number;
   };
 
   /**
@@ -336,14 +353,17 @@ export const defaultConfig: ResolvedDebugAgentConfig = {
 
   // FIXME(ofrobots): today we prioritize GAE_MODULE_NAME/GAE_MODULE_VERSION
   // over the user specified config. We should reverse that.
-  serviceContext:
-      {service: undefined, version: undefined, minorVersion_: undefined},
+  serviceContext: {
+    service: undefined,
+    version: undefined,
+    minorVersion_: undefined,
+  },
 
   appPathRelativeToRepository: undefined,
   pathResolver: undefined,
   logLevel: 1,
   breakpointUpdateIntervalSec: 10,
-  breakpointExpirationSec: 60 * 60 * 24,  // 24 hours
+  breakpointExpirationSec: 60 * 60 * 24, // 24 hours
 
   capture: {
     includeNodeModules: false,
@@ -357,7 +377,7 @@ export const defaultConfig: ResolvedDebugAgentConfig = {
   log: {maxLogsPerSecond: 50, logDelaySeconds: 1, logFunction: console.log},
 
   internal: {
-    registerDelayOnFetcherErrorSec: 300,  // 5 minutes.
+    registerDelayOnFetcherErrorSec: 300, // 5 minutes.
     maxRegistrationRetryDelay: 40,
   },
 
