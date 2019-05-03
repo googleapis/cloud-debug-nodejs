@@ -17,12 +17,14 @@
 import * as assert from 'assert';
 
 assert.ok(
-    process.env.GCLOUD_PROJECT,
-    'Need to have GCLOUD_PROJECT defined to be able to run this test');
+  process.env.GCLOUD_PROJECT,
+  'Need to have GCLOUD_PROJECT defined to be able to run this test'
+);
 assert.ok(
-    process.env.GOOGLE_APPLICATION_CREDENTIALS,
-    'Need to have GOOGLE_APPLICATION_CREDENTIALS defined to be able to run ' +
-        'this test');
+  process.env.GOOGLE_APPLICATION_CREDENTIALS,
+  'Need to have GOOGLE_APPLICATION_CREDENTIALS defined to be able to run ' +
+    'this test'
+);
 
 import * as stackdriver from '../src/types/stackdriver';
 import {Controller} from '../src/agent/controller';
@@ -31,7 +33,7 @@ import {Debug, PackageInfo} from '../src/client/stackdriver/debug';
 
 const packageInfo: PackageInfo = {
   name: 'SomeName',
-  version: 'SomeVersion'
+  version: 'SomeVersion',
 };
 const agentVersion = `${packageInfo.name}/client/${packageInfo.version}`;
 
@@ -40,13 +42,13 @@ const debug = new Debug({}, packageInfo);
 describe('Controller', function() {
   this.timeout(60 * 1000);
 
-  it('should register successfully', (done) => {
+  it('should register successfully', done => {
     const controller = new Controller(debug);
     const debuggee = new Debuggee({
       project: process.env.GCLOUD_PROJECT,
       uniquifier: 'test-uid-' + Date.now(),
       description: 'this is a system test',
-      agentVersion
+      agentVersion,
     });
 
     controller.register(debuggee, (err, maybeBody) => {
@@ -59,13 +61,13 @@ describe('Controller', function() {
     });
   });
 
-  it('should list breakpoints', (done) => {
+  it('should list breakpoints', done => {
     const controller = new Controller(debug);
     const debuggee = new Debuggee({
       project: process.env.GCLOUD_PROJECT,
       uniquifier: 'test-uid-' + Date.now(),
       description: 'this is a system test',
-      agentVersion
+      agentVersion,
     });
     // TODO: Determine if the body parameter should be used.
     controller.register(debuggee, (err1, body1) => {
@@ -82,14 +84,14 @@ describe('Controller', function() {
     });
   });
 
-  it('should pass success on timeout', (done) => {
+  it('should pass success on timeout', done => {
     this.timeout(100000);
     const controller = new Controller(debug);
     const debuggee = new Debuggee({
       project: process.env.GCLOUD_PROJECT,
       uniquifier: 'test-uid-' + Date.now(),
       description: 'this is a system test',
-      agentVersion
+      agentVersion,
     });
     // TODO: Determine if the body parameter should be used.
     controller.register(debuggee, (err, body) => {

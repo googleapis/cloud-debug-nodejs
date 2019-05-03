@@ -18,7 +18,7 @@ import consoleLogLevel = require('console-log-level');
 
 export type Arguments = string[];
 export interface Call {
-  type: 'trace'|'debug'|'info'|'warn'|'error'|'fatal';
+  type: 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
   args: Arguments;
 }
 
@@ -32,7 +32,12 @@ export class MockLogger implements consoleLogLevel.Logger {
 
   allCalls() {
     return this.traces.concat(
-        this.debugs, this.infos, this.warns, this.errors, this.fatals);
+      this.debugs,
+      this.infos,
+      this.warns,
+      this.errors,
+      this.fatals
+    );
   }
 
   trace(...args: Arguments) {

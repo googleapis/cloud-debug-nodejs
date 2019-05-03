@@ -17,8 +17,9 @@
 import * as assert from 'assert';
 import * as utils from '../src/agent/util/utils';
 
-const describeFn =
-    utils.satisfies(process.version, '>=10') ? describe.skip : describe;
+const describeFn = utils.satisfies(process.version, '>=10')
+  ? describe.skip
+  : describe;
 
 describeFn('state', () => {
   // Testing of state.js is driven through test-v8debugapi.js. There are
@@ -32,8 +33,9 @@ describeFn('state', () => {
     // CLOUD_DEBUG_ASSERTIONS=1 to make sure this test passes.
     if (!process.env.CLOUD_DEBUG_ASSERTIONS) {
       console.log(
-          'This test requires the enviornment variable ' +
-          'CLOUD_DEBUG_ASSERTIONS to be set in order to pass');
+        'This test requires the enviornment variable ' +
+          'CLOUD_DEBUG_ASSERTIONS to be set in order to pass'
+      );
     }
     assert.throws(() => {
       state.testAssert();

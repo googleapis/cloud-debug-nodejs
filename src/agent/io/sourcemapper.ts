@@ -51,7 +51,9 @@ export interface MapInfoOutput {
  * @private
  */
 async function processSourcemap(
-    infoMap: Map<string, MapInfoInput>, mapPath: string) {
+  infoMap: Map<string, MapInfoInput>,
+  mapPath: string
+) {
   // this handles the case when the path is undefined, null, or
   // the empty string
   if (!mapPath || !mapPath.endsWith(MAP_EXT)) {
@@ -74,13 +76,17 @@ async function processSourcemap(
     // TODO: Resolve the cast of `contents as any` (This is needed because the
     //       type is expected to be of `RawSourceMap` but the existing
     //       working code uses a string.)
-    consumer = new sourceMap.SourceMapConsumer(
-                   contents as {} as sourceMap.RawSourceMap) as {} as
-        sourceMap.RawSourceMap;
+    consumer = (new sourceMap.SourceMapConsumer(
+      (contents as {}) as sourceMap.RawSourceMap
+    ) as {}) as sourceMap.RawSourceMap;
   } catch (e) {
     throw new Error(
-        'An error occurred while reading the ' +
-        'sourcemap file ' + mapPath + ': ' + e);
+      'An error occurred while reading the ' +
+        'sourcemap file ' +
+        mapPath +
+        ': ' +
+        e
+    );
   }
 
   /*
@@ -89,29 +95,30 @@ async function processSourcemap(
    * containing the map file.  Otherwise, use the name of the output
    * file (with the .map extension removed) as the output file.
    */
-  const outputBase =
-      consumer.file ? consumer.file : path.basename(mapPath, '.map');
+  const outputBase = consumer.file
+    ? consumer.file
+    : path.basename(mapPath, '.map');
   const parentDir = path.dirname(mapPath);
   const outputPath = path.normalize(path.join(parentDir, outputBase));
 
   // the sources are in ascending order from shortest to longest
-  const nonemptySources = consumer.sources.filter(val => !!val)
-                              .sort((src1, src2) => src1.length - src2.length);
+  const nonemptySources = consumer.sources
+    .filter(val => !!val)
+    .sort((src1, src2) => src1.length - src2.length);
 
-  const normalizedSources =
-      nonemptySources
-          .map((src: string) => {
-            if (src.toLowerCase().startsWith(WEBPACK_PREFIX)) {
-              return src.substring(WEBPACK_PREFIX.length);
-            }
-            return src;
-          })
-          .map((relPath: string) => {
-            // resolve the paths relative to the map file so that
-            // they are relative to the process's current working
-            // directory
-            return path.normalize(path.join(parentDir, relPath));
-          });
+  const normalizedSources = nonemptySources
+    .map((src: string) => {
+      if (src.toLowerCase().startsWith(WEBPACK_PREFIX)) {
+        return src.substring(WEBPACK_PREFIX.length);
+      }
+      return src;
+    })
+    .map((relPath: string) => {
+      // resolve the paths relative to the map file so that
+      // they are relative to the process's current working
+      // directory
+      return path.normalize(path.join(parentDir, relPath));
+    });
 
   if (normalizedSources.length === 0) {
     throw new Error('No sources listed in the sourcemap file ' + mapPath);
@@ -121,7 +128,7 @@ async function processSourcemap(
       outputFile: outputPath,
       mapFile: mapPath,
       mapConsumer: consumer,
-      sources: nonemptySources
+      sources: nonemptySources,
     });
   }
 }
@@ -152,13 +159,15 @@ export class SourceMapper {
    *  zero files are associated with the input path or if more than one file
    *  could possibly be associated with the given input path.
    */
-  private getMappingInfo(inputPath: string): MapInfoInput|null {
+  private getMappingInfo(inputPath: string): MapInfoInput | null {
     if (this.infoMap.has(path.normalize(inputPath))) {
       return this.infoMap.get(inputPath) as MapInfoInput;
     }
 
-    const matches =
-        findScriptsFuzzy(inputPath, Array.from(this.infoMap.keys()));
+    const matches = findScriptsFuzzy(
+      inputPath,
+      Array.from(this.infoMap.keys())
+    );
     if (matches.length === 1) {
       return this.infoMap.get(matches[0]) as MapInfoInput;
     }
@@ -202,16 +211,20 @@ export class SourceMapper {
    *   If the given input file does not have mapping information associated
    *   with it then null is returned.
    */
-  mappingInfo(inputPath: string, lineNumber: number, colNumber: number):
-      MapInfoOutput|null {
+  mappingInfo(
+    inputPath: string,
+    lineNumber: number,
+    colNumber: number
+  ): MapInfoOutput | null {
     inputPath = path.normalize(inputPath);
     const entry = this.getMappingInfo(inputPath);
     if (entry === null) {
       return null;
     }
 
-    const relPath = path.relative(path.dirname(entry.mapFile), inputPath)
-                        .replace(/\\/g, '/');
+    const relPath = path
+      .relative(path.dirname(entry.mapFile), inputPath)
+      .replace(/\\/g, '/');
 
     /**
      * Note: Since `entry.sources` is in ascending order from shortest
@@ -219,7 +232,7 @@ export class SourceMapper {
      *       relative path is necessarily the shortest source path
      *       that ends with the relative path.
      */
-    let source: string|undefined;
+    let source: string | undefined;
     for (const src of entry.sources) {
       if (src.endsWith(relPath)) {
         source = src;
@@ -229,14 +242,13 @@ export class SourceMapper {
 
     const sourcePos = {
       source: source || relPath,
-      line: lineNumber + 1,  // the SourceMapConsumer expects the line number
-                             // to be one-based but expects the column number
-      column: colNumber      // to be zero-based
+      line: lineNumber + 1, // the SourceMapConsumer expects the line number
+      // to be one-based but expects the column number
+      column: colNumber, // to be zero-based
     };
 
     // TODO: Determine how to remove the explicit cast here.
-    const consumer: sourceMap.SourceMapConsumer =
-        entry.mapConsumer as {} as sourceMap.SourceMapConsumer;
+    const consumer: sourceMap.SourceMapConsumer = (entry.mapConsumer as {}) as sourceMap.SourceMapConsumer;
     const allPos = consumer.allGeneratedPositionsFor(sourcePos);
     /*
      * Based on testing, it appears that the following code is needed to
@@ -245,25 +257,26 @@ export class SourceMapper {
      * In particular, the generatedPositionFor() alone doesn't appear to
      * give the correct mapping information.
      */
-    const mappedPos: sourceMap.Position = allPos && allPos.length > 0 ?
-        allPos.reduce((accumulator, value) => {
-          return value.line < accumulator.line ? value : accumulator;
-        }) :
-        consumer.generatedPositionFor(sourcePos);
+    const mappedPos: sourceMap.Position =
+      allPos && allPos.length > 0
+        ? allPos.reduce((accumulator, value) => {
+            return value.line < accumulator.line ? value : accumulator;
+          })
+        : consumer.generatedPositionFor(sourcePos);
 
     return {
       file: entry.outputFile,
-      line: mappedPos.line - 1,  // convert the one-based line numbers returned
-                                 // by the SourceMapConsumer to the expected
-                                 // zero-based output.
+      line: mappedPos.line - 1, // convert the one-based line numbers returned
+      // by the SourceMapConsumer to the expected
+      // zero-based output.
       // TODO: The `sourceMap.Position` type definition has a `column`
       //       attribute and not a `col` attribute.  Determine if the type
       //       definition or this code is correct.
-      column: (mappedPos as {} as {col: number}).col  // SourceMapConsumer uses
-                                                      // zero-based column
-                                                      // numbers which is the
-                                                      // same as the expected
-                                                      // output
+      column: ((mappedPos as {}) as {col: number}).col, // SourceMapConsumer uses
+      // zero-based column
+      // numbers which is the
+      // same as the expected
+      // output
     };
   }
 }
@@ -271,13 +284,15 @@ export class SourceMapper {
 export async function create(sourcemapPaths: string[]): Promise<SourceMapper> {
   const limit = pLimit(CONCURRENCY);
   const mapper = new SourceMapper();
-  const promises = sourcemapPaths.map(
-      path => limit(() => processSourcemap(mapper.infoMap, path)));
+  const promises = sourcemapPaths.map(path =>
+    limit(() => processSourcemap(mapper.infoMap, path))
+  );
   try {
     await Promise.all(promises);
   } catch (err) {
     throw new Error(
-        'An error occurred while processing the sourcemap files' + err);
+      'An error occurred while processing the sourcemap files' + err
+    );
   }
   return mapper;
 }

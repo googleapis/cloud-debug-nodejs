@@ -32,17 +32,18 @@ let api: debugapi.DebugApi;
 // TODO: Have this actually implement Breakpoint
 const breakpointInFoo: stackdriver.Breakpoint = {
   id: 'fake-id-123',
-  location: {path: 'build/test/test-max-data-size-code.js', line: 4}
+  location: {path: 'build/test/test-max-data-size-code.js', line: 4},
 } as stackdriver.Breakpoint;
 
 describe('maxDataSize', () => {
   const config = extend({}, defaultConfig, {forceNewAgent_: true});
 
-  before((done) => {
+  before(done => {
     if (!api) {
-      const logger =
-          consoleLogLevel({level: Debuglet.logLevelToName(config.logLevel)});
-      scanner.scan(config.workingDirectory, /.js$/).then(async (fileStats) => {
+      const logger = consoleLogLevel({
+        level: Debuglet.logLevelToName(config.logLevel),
+      });
+      scanner.scan(config.workingDirectory, /.js$/).then(async fileStats => {
         assert.strictEqual(fileStats.errors().size, 0);
         const jsStats = fileStats.selectStats(/.js$/);
         const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
@@ -50,8 +51,11 @@ describe('maxDataSize', () => {
         // TODO: Handle the case when mapper is undefined
         // TODO: Handle the case when v8debugapi.create returns null
         api = debugapi.create(
-                  logger, config, jsStats,
-                  mapper as SourceMapper.SourceMapper) as debugapi.DebugApi;
+          logger,
+          config,
+          jsStats,
+          mapper as SourceMapper.SourceMapper
+        ) as debugapi.DebugApi;
         done();
       });
     } else {
@@ -59,24 +63,26 @@ describe('maxDataSize', () => {
     }
   });
 
-  it('should limit data reported', (done) => {
+  it('should limit data reported', done => {
     const oldMaxData = config.capture.maxDataSize;
     config.capture.maxDataSize = 5;
     // clone a clean breakpointInFoo
     // TODO: Have this actually implement Breakpoint.
     const bp: stackdriver.Breakpoint = {
       id: breakpointInFoo.id,
-      location: breakpointInFoo.location
+      location: breakpointInFoo.location,
     } as stackdriver.Breakpoint;
     // TODO: Determine how to remove this cast to any.
-    api.set(bp, (err1) => {
+    api.set(bp, err1 => {
       assert.ifError(err1);
       api.wait(bp, (err2?: Error) => {
         assert.ifError(err2);
-        assert(bp.variableTable.some((v) => {
-          return v!.status!.description.format === 'Max data size reached';
-        }));
-        api.clear(bp, (err3) => {
+        assert(
+          bp.variableTable.some(v => {
+            return v!.status!.description.format === 'Max data size reached';
+          })
+        );
+        api.clear(bp, err3 => {
           config.capture.maxDataSize = oldMaxData;
           assert.ifError(err3);
           done();
@@ -88,30 +94,37 @@ describe('maxDataSize', () => {
     });
   });
 
-  it('should be unlimited if 0', (done) => {
+  it('should be unlimited if 0', done => {
     const oldMaxData = config.capture.maxDataSize;
     config.capture.maxDataSize = 0;
     // clone a clean breakpointInFoo
     // TODO: Have this actually implement breakpoint
     const bp: stackdriver.Breakpoint = {
       id: breakpointInFoo.id,
-      location: breakpointInFoo.location
+      location: breakpointInFoo.location,
     } as stackdriver.Breakpoint;
-    api.set(bp, (err1) => {
+    api.set(bp, err1 => {
       assert.ifError(err1);
       api.wait(bp, (err2?: Error) => {
         assert.ifError(err2);
         // TODO: The function supplied to reduce is of the wrong type.
         //       Fix this.
-        assert(bp.variableTable.reduce(
-            (acc: Function|stackdriver.Variable|null,
-             elem: stackdriver.Variable|null) => {
-              return acc &&
-                  (!elem!.status ||
-                   elem!.status!.description.format !==
-                       'Max data size reached') as {} as stackdriver.Variable;
-            }));
-        api.clear(bp, (err3) => {
+        assert(
+          bp.variableTable.reduce(
+            (
+              acc: Function | stackdriver.Variable | null,
+              elem: stackdriver.Variable | null
+            ) => {
+              return (
+                acc &&
+                (((!elem!.status ||
+                  elem!.status!.description.format !==
+                    'Max data size reached') as {}) as stackdriver.Variable)
+              );
+            }
+          )
+        );
+        api.clear(bp, err3 => {
           config.capture.maxDataSize = oldMaxData;
           assert.ifError(err3);
           done();

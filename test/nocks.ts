@@ -23,40 +23,42 @@ function accept(): true {
 }
 
 export type Validator = (body: {
-  client_id: string; client_secret: string; refresh_token: string;
+  client_id: string;
+  client_secret: string;
+  refresh_token: string;
 }) => boolean;
 
 // TODO: Determine if the type of `validator` is correct.
 export function oauth2(validator?: Validator): nock.Scope {
   validator = validator || accept;
   return nock('https://oauth2.googleapis.com')
-      .post('/token', validator)
-      .once()
-      .reply(200, {
-        refresh_token: 'hello',
-        access_token: 'goodbye',
-        expiry_date: new Date(9999, 1, 1)
-      });
+    .post('/token', validator)
+    .once()
+    .reply(200, {
+      refresh_token: 'hello',
+      access_token: 'goodbye',
+      expiry_date: new Date(9999, 1, 1),
+    });
 }
 
 // TODO: Determine if the type of `validator` is correct.
 export function register(validator?: Validator): nock.Scope {
   validator = validator || accept;
   return nock('https://clouddebugger.googleapis.com')
-      .post('/v2/controller/debuggees/register', validator)
-      .once()
-      .reply(200, {debuggee: {}});
+    .post('/v2/controller/debuggees/register', validator)
+    .once()
+    .reply(200, {debuggee: {}});
 }
 
 export function projectId(reply: string): nock.Scope {
   return nock(gcpMetadata.HOST_ADDRESS)
-      .get('/computeMetadata/v1/project/project-id')
-      .once()
-      .reply(200, reply);
+    .get('/computeMetadata/v1/project/project-id')
+    .once()
+    .reply(200, reply);
 }
 
 export function metadataInstance(): nock.Scope {
   return nock(gcpMetadata.HOST_ADDRESS)
-      .get('/computeMetadata/v1/instance')
-      .replyWithError({code: 'ENOTFOUND', message: 'nocked request'});
+    .get('/computeMetadata/v1/instance')
+    .replyWithError({code: 'ENOTFOUND', message: 'nocked request'});
 }

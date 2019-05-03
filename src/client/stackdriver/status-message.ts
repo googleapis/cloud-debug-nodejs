@@ -26,7 +26,10 @@ export class StatusMessage implements stackdriver.StatusMessage {
    * @constructor
    */
   constructor(
-      refersTo: stackdriver.Reference, description: string, isError: boolean) {
+    refersTo: stackdriver.Reference,
+    description: string,
+    isError: boolean
+  ) {
     this.refersTo = refersTo;
     this.description = {format: description};
     this.isError = isError;
@@ -36,11 +39,11 @@ export class StatusMessage implements stackdriver.StatusMessage {
   // New status messages cannot be added here.
   static readonly UNSPECIFIED: stackdriver.Reference = 'UNSPECIFIED';
   static readonly BREAKPOINT_SOURCE_LOCATION: stackdriver.Reference =
-      'BREAKPOINT_SOURCE_LOCATION';
+    'BREAKPOINT_SOURCE_LOCATION';
   static readonly BREAKPOINT_CONDITION: stackdriver.Reference =
-      'BREAKPOINT_CONDITION';
+    'BREAKPOINT_CONDITION';
   static readonly BREAKPOINT_EXPRESSION: stackdriver.Reference =
-      'BREAKPOINT_EXPRESSION';
+    'BREAKPOINT_EXPRESSION';
   static readonly VARIABLE_NAME: stackdriver.Reference = 'VARIABLE_NAME';
   static readonly VARIABLE_VALUE: stackdriver.Reference = 'VARIABLE_VALUE';
   static readonly BREAKPOINT_AGE: stackdriver.Reference = 'BREAKPOINT_AGE';

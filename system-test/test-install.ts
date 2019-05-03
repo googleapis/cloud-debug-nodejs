@@ -21,21 +21,21 @@ const TS_CODE_ARRAY: check.CodeSample[] = [
     code: `import * as debug from '@google-cloud/debug-agent';`,
     description: 'imports the module',
     dependencies: [],
-    devDependencies: []
+    devDependencies: [],
   },
   {
     code: `import * as debug from '@google-cloud/debug-agent';
 debug.start();`,
     description: 'imports the module and starts without arguments',
     dependencies: [],
-    devDependencies: []
+    devDependencies: [],
   },
   {
     code: `import * as debug from '@google-cloud/debug-agent';
 debug.start({ allowExpressions: true });`,
     description: 'imports the module and starts with {allowExpressions: true}',
     dependencies: [],
-    devDependencies: []
+    devDependencies: [],
   },
   {
     code: `import * as debug from '@google-cloud/debug-agent';
@@ -46,9 +46,9 @@ debug.start({
   }
 });`,
     description:
-        'imports the module and starts with a partial `serviceContext`',
+      'imports the module and starts with a partial `serviceContext`',
     dependencies: [],
-    devDependencies: []
+    devDependencies: [],
   },
   {
     code: `import * as debug from '@google-cloud/debug-agent';
@@ -60,9 +60,9 @@ debug.start({
   }
 });`,
     description:
-        'imports the module and starts with a complete `serviceContext`',
+      'imports the module and starts with a complete `serviceContext`',
     dependencies: [],
-    devDependencies: []
+    devDependencies: [],
   },
   {
     code: `import * as debug from '@google-cloud/debug-agent';
@@ -73,8 +73,8 @@ debug.start({
 });`,
     description: 'imports the module and starts with a partial `capture`',
     dependencies: [],
-    devDependencies: []
-  }
+    devDependencies: [],
+  },
 ];
 
 const JS_CODE_ARRAY: check.CodeSample[] = [
@@ -82,13 +82,13 @@ const JS_CODE_ARRAY: check.CodeSample[] = [
     code: `require('@google-cloud/debug-agent').start()`,
     description: 'requires the module and starts without arguments',
     dependencies: [],
-    devDependencies: []
+    devDependencies: [],
   },
   {
     code: `require('@google-cloud/debug-agent').start({})`,
     description: 'requires the module and starts with {}',
     dependencies: [],
-    devDependencies: []
+    devDependencies: [],
   },
   {
     code: `require('@google-cloud/debug-agent').start({
@@ -96,8 +96,8 @@ const JS_CODE_ARRAY: check.CodeSample[] = [
 })`,
     description: 'requires the module and stargs with {allowExpressions: true}',
     dependencies: [],
-    devDependencies: []
-  }
+    devDependencies: [],
+  },
 ];
 
 check.testInstallation(TS_CODE_ARRAY, JS_CODE_ARRAY, {timeout: 2 * 60 * 1000});

@@ -22,22 +22,35 @@ import {SourceMapper} from '../io/sourcemapper';
 import * as utils from '../util/utils';
 
 export interface DebugApi {
-  set(breakpoint: stackdriver.Breakpoint, cb: (err: Error|null) => void): void;
-  clear(breakpoint: stackdriver.Breakpoint, cb: (err: Error|null) => void):
-      void;
-  wait(breakpoint: stackdriver.Breakpoint, callback: (err?: Error) => void):
-      void;
-  log(breakpoint: stackdriver.Breakpoint,
-      print: (format: string, exps: string[]) => void,
-      shouldStop: () => boolean): void;
+  set(
+    breakpoint: stackdriver.Breakpoint,
+    cb: (err: Error | null) => void
+  ): void;
+  clear(
+    breakpoint: stackdriver.Breakpoint,
+    cb: (err: Error | null) => void
+  ): void;
+  wait(
+    breakpoint: stackdriver.Breakpoint,
+    callback: (err?: Error) => void
+  ): void;
+  log(
+    breakpoint: stackdriver.Breakpoint,
+    print: (format: string, exps: string[]) => void,
+    shouldStop: () => boolean
+  ): void;
   disconnect(): void;
   numBreakpoints_(): number;
   numListeners_(): number;
 }
 
 interface DebugApiConstructor {
-  new(logger: consoleLogLevel.Logger, config: DebugAgentConfig,
-      jsFiles: ScanStats, sourcemapper: SourceMapper): DebugApi;
+  new (
+    logger: consoleLogLevel.Logger,
+    config: DebugAgentConfig,
+    jsFiles: ScanStats,
+    sourcemapper: SourceMapper
+  ): DebugApi;
 }
 
 let debugApiConstructor: DebugApiConstructor;
@@ -55,14 +68,18 @@ if (willUseInspector()) {
   debugApiConstructor = v8debugapi.V8DebugApi;
 }
 
-export const MODULE_WRAP_PREFIX_LENGTH =
-    require('module').wrap('☃').indexOf('☃');
+export const MODULE_WRAP_PREFIX_LENGTH = require('module')
+  .wrap('☃')
+  .indexOf('☃');
 
 let singleton: DebugApi;
 
 export function create(
-    logger: consoleLogLevel.Logger, config: DebugAgentConfig,
-    jsFiles: ScanStats, sourcemapper: SourceMapper): DebugApi {
+  logger: consoleLogLevel.Logger,
+  config: DebugAgentConfig,
+  jsFiles: ScanStats,
+  sourcemapper: SourceMapper
+): DebugApi {
   if (singleton && !config.forceNewAgent_) {
     return singleton;
   } else if (singleton) {

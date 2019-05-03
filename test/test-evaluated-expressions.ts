@@ -25,17 +25,19 @@ import * as debugapi from '../src/agent/v8/debugapi';
 import consoleLogLevel = require('console-log-level');
 import * as stackdriver from '../src/types/stackdriver';
 
-
 const code = require('./test-evaluated-expressions-code.js');
 
 describe('debugger provides useful information', () => {
   let api: debugapi.DebugApi;
-  const config =
-      extend({}, defaultConfig, {allowExpressions: true, forceNewAgent_: true});
+  const config = extend({}, defaultConfig, {
+    allowExpressions: true,
+    forceNewAgent_: true,
+  });
 
   before(done => {
-    const logger =
-        consoleLogLevel({level: Debuglet.logLevelToName(config.logLevel)});
+    const logger = consoleLogLevel({
+      level: Debuglet.logLevelToName(config.logLevel),
+    });
     scanner.scan(config.workingDirectory, /\.js$/).then(async fileStats => {
       const jsStats = fileStats.selectStats(/\.js$/);
       const mapFiles = fileStats.selectFiles(/\.map$/, process.cwd());
@@ -47,8 +49,9 @@ describe('debugger provides useful information', () => {
   });
 
   function getValue(
-      exp: stackdriver.Variable,
-      varTable: Array<stackdriver.Variable|null>): string|null|undefined {
+    exp: stackdriver.Variable,
+    varTable: Array<stackdriver.Variable | null>
+  ): string | null | undefined {
     if ('value' in exp) {
       return exp.value;
     }
@@ -63,13 +66,17 @@ describe('debugger provides useful information', () => {
     }
 
     throw new Error(
-        `The variable ${JSON.stringify(exp, null, 2)} ` +
-        `does not have a 'value' nor a 'varTableIndex' property`);
+      `The variable ${JSON.stringify(exp, null, 2)} ` +
+        `does not have a 'value' nor a 'varTableIndex' property`
+    );
   }
 
   function assertValue(
-      bp: stackdriver.Breakpoint, targetIndex: number, expectedName: string,
-      expectedValue: string) {
+    bp: stackdriver.Breakpoint,
+    targetIndex: number,
+    expectedName: string,
+    expectedValue: string
+  ) {
     const rawExp = bp.evaluatedExpressions[targetIndex];
     assert(rawExp);
 
@@ -79,8 +86,11 @@ describe('debugger provides useful information', () => {
   }
 
   function assertMembers(
-      bp: stackdriver.Breakpoint, targetIndex: number, expectedName: string,
-      expectedMemberValues: stackdriver.Variable[]) {
+    bp: stackdriver.Breakpoint,
+    targetIndex: number,
+    expectedName: string,
+    expectedMemberValues: stackdriver.Variable[]
+  ) {
     const rawExp = bp.evaluatedExpressions[targetIndex];
     assert(rawExp);
 
@@ -95,7 +105,7 @@ describe('debugger provides useful information', () => {
     assert.notStrictEqual(rawVarData, undefined);
 
     const varData = rawVarData!;
-    const memberMap = new Map<string, string|null|undefined>();
+    const memberMap = new Map<string, string | null | undefined>();
     assert.notStrictEqual(varData.members, undefined);
     for (const member of varData.members!) {
       assert.notStrictEqual(member.name, undefined);
@@ -109,21 +119,27 @@ describe('debugger provides useful information', () => {
       assert.notStrictEqual(rawName, undefined);
       const expected = member.value;
       assert.notStrictEqual(
-          expected, undefined,
-          'Each expected member must have its value specified');
+        expected,
+        undefined,
+        'Each expected member must have its value specified'
+      );
       const actual = memberMap.get(rawName!);
       assert.deepStrictEqual(
-          actual, expected,
-          `Expected ${rawName} to have value ${expected} but found ${actual}`);
+        actual,
+        expected,
+        `Expected ${rawName} to have value ${expected} but found ${actual}`
+      );
     }
   }
 
   it(`should provide data about plain objects`, done => {
     const bp: stackdriver.Breakpoint = {
       id: 'fake-id-123',
-      location:
-          {path: 'build/test/test-evaluated-expressions-code.js', line: 19},
-      expressions: ['someObject']
+      location: {
+        path: 'build/test/test-evaluated-expressions-code.js',
+        line: 19,
+      },
+      expressions: ['someObject'],
     } as stackdriver.Breakpoint;
 
     api.set(bp, err => {
@@ -133,7 +149,7 @@ describe('debugger provides useful information', () => {
 
         assertMembers(bp, 0, 'someObject', [
           {name: 'aNumber', value: '1'},
-          {name: 'aString', value: 'some string'}
+          {name: 'aString', value: 'some string'},
         ]);
 
         api.clear(bp, err => {
@@ -148,9 +164,11 @@ describe('debugger provides useful information', () => {
   it(`should provide data about arrays`, done => {
     const bp: stackdriver.Breakpoint = {
       id: 'fake-id-123',
-      location:
-          {path: 'build/test/test-evaluated-expressions-code.js', line: 19},
-      expressions: ['someArray']
+      location: {
+        path: 'build/test/test-evaluated-expressions-code.js',
+        line: 19,
+      },
+      expressions: ['someArray'],
     } as stackdriver.Breakpoint;
 
     api.set(bp, err => {
@@ -159,8 +177,10 @@ describe('debugger provides useful information', () => {
         assert.ifError(err);
 
         assertMembers(bp, 0, 'someArray', [
-          {name: '0', value: '1'}, {name: '1', value: '2'},
-          {name: '2', value: '3'}, {name: 'length', value: '3'}
+          {name: '0', value: '1'},
+          {name: '1', value: '2'},
+          {name: '2', value: '3'},
+          {name: 'length', value: '3'},
         ]);
 
         api.clear(bp, err => {
@@ -175,9 +195,11 @@ describe('debugger provides useful information', () => {
   it(`should provide data about regexes`, done => {
     const bp: stackdriver.Breakpoint = {
       id: 'fake-id-123',
-      location:
-          {path: 'build/test/test-evaluated-expressions-code.js', line: 19},
-      expressions: ['someRegex']
+      location: {
+        path: 'build/test/test-evaluated-expressions-code.js',
+        line: 19,
+      },
+      expressions: ['someRegex'],
     } as stackdriver.Breakpoint;
 
     api.set(bp, err => {
@@ -197,9 +219,11 @@ describe('debugger provides useful information', () => {
   it(`should provide data about responses`, done => {
     const bp: stackdriver.Breakpoint = {
       id: 'fake-id-123',
-      location:
-          {path: 'build/test/test-evaluated-expressions-code.js', line: 19},
-      expressions: ['res']
+      location: {
+        path: 'build/test/test-evaluated-expressions-code.js',
+        line: 19,
+      },
+      expressions: ['res'],
     } as stackdriver.Breakpoint;
 
     api.set(bp, err => {
@@ -207,12 +231,14 @@ describe('debugger provides useful information', () => {
       api.wait(bp, err => {
         assert.ifError(err);
         assertMembers(bp, 0, 'res', [
-          {name: 'readable', value: 'true'}, {name: '_eventsCount', value: '0'},
+          {name: 'readable', value: 'true'},
+          {name: '_eventsCount', value: '0'},
           {name: '_maxListeners', value: 'undefined'},
-          {name: 'complete', value: 'false'}, {name: 'url', value: ''},
+          {name: 'complete', value: 'false'},
+          {name: 'url', value: ''},
           {name: 'statusCode', value: '200'},
           {name: '_consuming', value: 'false'},
-          {name: '_dumped', value: 'false'}
+          {name: '_dumped', value: 'false'},
         ]);
         api.clear(bp, err => {
           assert.ifError(err);

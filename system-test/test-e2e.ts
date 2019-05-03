@@ -31,8 +31,10 @@ const UUID = uuid.v4();
 const LOG_MESSAGE_FORMAT = UUID + ': o is: $0';
 
 // fib.js uses a custom log-point function that lower cases everything.
-const REGEX =
-    new RegExp(`logpoint: ${UUID}: o is: {"a":\\[1,"hi",true\\]}`, 'g');
+const REGEX = new RegExp(
+  `logpoint: ${UUID}: o is: {"a":\\[1,"hi",true\\]}`,
+  'g'
+);
 
 const delay = (delayTimeMS: number): Promise<void> => {
   return new Promise(r => setTimeout(r, delayTimeMS));
@@ -47,8 +49,8 @@ interface Child {
 describe('@google-cloud/debug end-to-end behavior', () => {
   let api: Debugger;
 
-  let debuggeeId: string|null;
-  let projectId: string|null;
+  let debuggeeId: string | null;
+  let projectId: string | null;
   let children: Child[] = [];
 
   before(() => {
@@ -62,32 +64,37 @@ describe('@google-cloud/debug end-to-end behavior', () => {
       let numChildrenReady = 0;
 
       // Process a status message sent from a child process.
-      const handler =
-          (c: {error: Error|null, debuggeeId: string, projectId: string}) => {
-            console.log(c);
-            if (c.error) {
-              reject(new Error(
-                  'A child reported the following error: ' + c.error));
-              return;
-            }
-            if (!debuggeeId) {
-              // Cache the needed info from the first worker.
-              debuggeeId = c.debuggeeId;
-              projectId = c.projectId;
-            } else {
-              // Make sure all other workers are consistent.
-              if (debuggeeId !== c.debuggeeId || projectId !== c.projectId) {
-                reject(new Error(
-                    'Child debuggee ID and/or project ID' +
-                    'is not consistent with previous child'));
-                return;
-              }
-            }
-            numChildrenReady++;
-            if (numChildrenReady === CLUSTER_WORKERS) {
-              resolve();
-            }
-          };
+      const handler = (c: {
+        error: Error | null;
+        debuggeeId: string;
+        projectId: string;
+      }) => {
+        console.log(c);
+        if (c.error) {
+          reject(new Error('A child reported the following error: ' + c.error));
+          return;
+        }
+        if (!debuggeeId) {
+          // Cache the needed info from the first worker.
+          debuggeeId = c.debuggeeId;
+          projectId = c.projectId;
+        } else {
+          // Make sure all other workers are consistent.
+          if (debuggeeId !== c.debuggeeId || projectId !== c.projectId) {
+            reject(
+              new Error(
+                'Child debuggee ID and/or project ID' +
+                  'is not consistent with previous child'
+              )
+            );
+            return;
+          }
+        }
+        numChildrenReady++;
+        if (numChildrenReady === CLUSTER_WORKERS) {
+          resolve();
+        }
+      };
 
       // Handle stdout/stderr output from a child process. More specifically,
       // write the child process's output to a transcript.
@@ -103,9 +110,11 @@ describe('@google-cloud/debug end-to-end behavior', () => {
         // We pass UUID to the children so that they can all get the same
         // debuggee id.
         const child: Child = {transcript: ''};
-        child.process = cp.fork(
-            FILENAME, /* args */[UUID],
-            {execArgv: [], env: process.env, silent: true});
+        child.process = cp.fork(FILENAME, /* args */ [UUID], {
+          execArgv: [],
+          env: process.env,
+          silent: true,
+        });
         child.process.on('message', handler);
 
         children.push(child);
@@ -119,7 +128,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
   afterEach(function() {
     this.timeout(5 * 1000);
     // Create a promise for each child that resolves when that child exits.
-    const childExitPromises = children.map((child) => {
+    const childExitPromises = children.map(child => {
       console.log(child.transcript);
       assert(child.process);
       const childProcess = child.process as cp.ChildProcess;
@@ -144,13 +153,16 @@ describe('@google-cloud/debug end-to-end behavior', () => {
 
   async function verifyDebuggeeFound() {
     const allDebuggees = await api.listDebuggees(projectId!, true);
-    const debuggees =
-        allDebuggees.filter(debuggee => debuggee.isInactive !== true);
+    const debuggees = allDebuggees.filter(
+      debuggee => debuggee.isInactive !== true
+    );
 
     // Check that the debuggee created in this test is among the list of
     // debuggees, then list its breakpoints
     console.log(
-        '-- List of debuggees\n', util.inspect(debuggees, {depth: null}));
+      '-- List of debuggees\n',
+      util.inspect(debuggees, {depth: null})
+    );
     assert.ok(debuggees, 'should get a valid ListDebuggees response');
 
     const result = debuggees.find(d => d.id === debuggeeId);
@@ -200,15 +212,18 @@ describe('@google-cloud/debug end-to-end behavior', () => {
       logMessageFormat: LOG_MESSAGE_FORMAT,
       stackFrames: [],
       evaluatedExpressions: [],
-      variableTable: []
+      variableTable: [],
     });
 
     // Check the contents of the log, but keep the original breakpoint.
     children.forEach((child, index) => {
       assert(
-          child.transcript.indexOf(`${UUID}: o is: {"a":[1,"hi",true]}`) !== -1,
-          'transcript in child ' + index +
-              ' should contain value of o: ' + child.transcript);
+        child.transcript.indexOf(`${UUID}: o is: {"a":[1,"hi",true]}`) !== -1,
+        'transcript in child ' +
+          index +
+          ' should contain value of o: ' +
+          child.transcript
+      );
     });
   }
 
@@ -218,12 +233,12 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     const breakpoint = await verifySetBreakpoint({
       id: 'breakpoint-2',
       location: {path: FILENAME, line: 5},
-      expressions: ['process'],  // Process for large variable
+      expressions: ['process'], // Process for large variable
       condition: 'n === 10',
       logMessageFormat: LOG_MESSAGE_FORMAT,
       stackFrames: [],
       evaluatedExpressions: [],
-      variableTable: []
+      variableTable: [],
     });
 
     console.log('-- now checking if the breakpoint was hit');
@@ -244,7 +259,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     assert.ok(arg, 'should find the n argument');
     assert.strictEqual(arg!.value, '10');
     console.log('-- checking log point was hit again');
-    children.forEach((child) => {
+    children.forEach(child => {
       const count = (child.transcript.match(REGEX) || []).length;
       assert.ok(count > 4);
     });
@@ -259,7 +274,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
 
     // Make sure the log point is continuing to be hit.
     console.log('-- checking log point was hit again');
-    children.forEach((child) => {
+    children.forEach(child => {
       const count = (child.transcript.match(REGEX) || []).length;
       assert.ok(count > 20, `expected count ${count} to be > 20`);
     });
@@ -300,12 +315,12 @@ describe('@google-cloud/debug end-to-end behavior', () => {
       logMessageFormat: LOG_MESSAGE_FORMAT,
       stackFrames: [],
       evaluatedExpressions: [],
-      variableTable: []
+      variableTable: [],
     });
 
     // If no throttling occurs, we expect ~20 logs since we are logging
     // 2x per second over a 10 second period.
-    children.forEach((child) => {
+    children.forEach(child => {
       const logCount = (child.transcript.match(REGEX) || []).length;
       // A log count of greater than 10 indicates that we did not
       // successfully pause when the rate of `maxLogsPerSecond` was

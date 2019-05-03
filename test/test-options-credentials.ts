@@ -29,13 +29,13 @@ import * as nocks from './nocks';
 const envProject = process.env.GCLOUD_PROJECT;
 const packageInfo = {
   name: 'Some name',
-  version: 'Some version'
+  version: 'Some version',
 };
 
 nock.disableNetConnect();
 
 describe('test-options-credentials', () => {
-  let debuglet: Debuglet|null = null;
+  let debuglet: Debuglet | null = null;
 
   beforeEach(() => {
     delete process.env.GCLOUD_PROJECT;
@@ -49,14 +49,21 @@ describe('test-options-credentials', () => {
     process.env.GCLOUD_PROJECT = envProject;
   });
 
-  it('should use the keyFilename field of the options object', (done) => {
+  it('should use the keyFilename field of the options object', done => {
     const credentials = require('./fixtures/gcloud-credentials.json');
-    const options = extend({}, {
-      projectId: 'fake-project',
-      keyFilename: path.join(__dirname, 'fixtures', 'gcloud-credentials.json')
-    });
+    const options = extend(
+      {},
+      {
+        projectId: 'fake-project',
+        keyFilename: path.join(
+          __dirname,
+          'fixtures',
+          'gcloud-credentials.json'
+        ),
+      }
+    );
     const debug = new Debug(options, packageInfo);
-    const scope = nocks.oauth2((body) => {
+    const scope = nocks.oauth2(body => {
       assert.strictEqual(body.client_id, credentials.client_id);
       assert.strictEqual(body.client_secret, credentials.client_secret);
       assert.strictEqual(body.refresh_token, credentials.refresh_token);
@@ -70,17 +77,20 @@ describe('test-options-credentials', () => {
     });
     nocks.projectId('project-via-metadata');
     // TODO: Determine how to remove this cast.
-    debuglet = new Debuglet(debug, config as {} as DebugAgentConfig);
+    debuglet = new Debuglet(debug, (config as {}) as DebugAgentConfig);
     debuglet.start();
   });
 
-  it('should use the credentials field of the options object', (done) => {
-    const options = extend({}, {
-      projectId: 'fake-project',
-      credentials: require('./fixtures/gcloud-credentials.json')
-    });
+  it('should use the credentials field of the options object', done => {
+    const options = extend(
+      {},
+      {
+        projectId: 'fake-project',
+        credentials: require('./fixtures/gcloud-credentials.json'),
+      }
+    );
     const debug = new Debug(options, packageInfo);
-    const scope = nocks.oauth2((body) => {
+    const scope = nocks.oauth2(body => {
       assert.strictEqual(body.client_id, options.credentials.client_id);
       assert.strictEqual(body.client_secret, options.credentials.client_secret);
       assert.strictEqual(body.refresh_token, options.credentials.refresh_token);
@@ -94,25 +104,28 @@ describe('test-options-credentials', () => {
     });
     nocks.projectId('project-via-metadata');
     // TODO: Determine how to remove this cast.
-    debuglet = new Debuglet(debug, config as {} as DebugAgentConfig);
+    debuglet = new Debuglet(debug, (config as {}) as DebugAgentConfig);
     debuglet.start();
   });
 
-  it('should ignore keyFilename if credentials is provided', (done) => {
+  it('should ignore keyFilename if credentials is provided', done => {
     const fileCredentials = require('./fixtures/gcloud-credentials.json');
-    const credentials: {[key: string]: string|undefined} = {
+    const credentials: {[key: string]: string | undefined} = {
       client_id: 'a',
       client_secret: 'b',
       refresh_token: 'c',
-      type: 'authorized_user'
+      type: 'authorized_user',
     };
-    const options = extend({}, {
-      projectId: 'fake-project',
-      keyFilename: path.join('test', 'fixtures', 'gcloud-credentials.json'),
-      credentials
-    });
+    const options = extend(
+      {},
+      {
+        projectId: 'fake-project',
+        keyFilename: path.join('test', 'fixtures', 'gcloud-credentials.json'),
+        credentials,
+      }
+    );
     const debug = new Debug(options, packageInfo);
-    const scope = nocks.oauth2((body) => {
+    const scope = nocks.oauth2(body => {
       assert.strictEqual(body.client_id, credentials.client_id);
       assert.strictEqual(body.client_secret, credentials.client_secret);
       assert.strictEqual(body.refresh_token, credentials.refresh_token);
@@ -125,13 +138,13 @@ describe('test-options-credentials', () => {
       return true;
     });
     nocks.projectId('project-via-metadata');
-    ['client_id', 'client_secret', 'refresh_token'].forEach((field) => {
+    ['client_id', 'client_secret', 'refresh_token'].forEach(field => {
       assert(fileCredentials.hasOwnProperty(field));
       assert(options.credentials.hasOwnProperty(field));
-      assert.notEqual(options.credentials[field], fileCredentials[field]);
+      assert.notStrictEqual(options.credentials[field], fileCredentials[field]);
     });
     // TODO: Determine how to remove this cast.
-    debuglet = new Debuglet(debug, config as {} as DebugAgentConfig);
+    debuglet = new Debuglet(debug, (config as {}) as DebugAgentConfig);
     debuglet.start();
   });
 });
