@@ -22,3 +22,6 @@ common_templates = gcp.CommonTemplates()
 
 templates = common_templates.node_library()
 s.copy(templates)
+s.copy(templates, excludes=[
+  '.kokoro/test.sh'
+])
