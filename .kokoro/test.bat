@@ -23,8 +23,6 @@ cd ..
 @rem install npm for v10.15.3.
 call nvm use v8.9.1 || goto :error
 call node C:\Users\kbuilder\AppData\Roaming\nvm-ps\versions\v8.9.1\node_modules\npm-bootstrap\bin\npm-cli.js i npm -g || goto :error
-call nvm use v10.15.3 || goto :error
-call node C:\Users\kbuilder\AppData\Roaming\nvm-ps\versions\v8.9.1\node_modules\npm\bin\npm-cli.js i npm -g || goto :error
 
 call npm install || goto :error
 call npm run test || goto :error
