@@ -20,8 +20,7 @@ import * as nock from 'nock';
 import {Debug} from '../src/client/stackdriver/debug';
 import {Debuggee} from '../src/debuggee';
 import * as stackdriver from '../src/types/stackdriver';
-
-import {authRequest as request} from './auth-request';
+import * as r from 'request';
 
 // the tests in this file rely on the GCLOUD_PROJECT environment variable
 // not being set
@@ -29,7 +28,13 @@ delete process.env.GCLOUD_PROJECT;
 
 import {Controller} from '../src/agent/controller';
 // TODO: Fix fakeDebug to actually implement Debug.
-const fakeDebug: Debug = ({request} as {}) as Debug;
+const fakeDebug = ({
+  request: (options: r.Options, cb: r.RequestCallback) => {
+    r(options, (err, r) => {
+      cb(err, r ? r.body : undefined, r);
+    });
+  },
+} as {}) as Debug;
 
 const agentVersion = `SomeName/client/SomeVersion`;
 const url = 'https://clouddebugger.googleapis.com';
