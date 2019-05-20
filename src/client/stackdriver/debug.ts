@@ -15,7 +15,6 @@
  */
 
 import {GoogleAuthOptions, Service} from '@google-cloud/common';
-import * as request from 'request'; //  Only for type declarations.
 
 export interface PackageInfo {
   name: string;
