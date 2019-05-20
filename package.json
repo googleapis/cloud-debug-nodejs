@@ -37,7 +37,6 @@
     "@types/request": "^2.48.1",
     "@types/semver": "^6.0.0",
     "@types/uuid": "^3.4.4",
-    "changelog-maker": "^2.2.2",
     "codecov": "^3.0.4",
     "cross-env": "^5.2.0",
     "gts": "^1.0.0",
@@ -73,7 +72,6 @@
     "split": "^1.0.0"
   },
   "scripts": {
-    "changelog": "npm run compile && ./bin/run-changelog.sh",
     "prepare": "npm run compile",
     "presamples-test": "npm run compile",
     "samples-test": "cd samples/ && npm link ../ && npm install && npm test && cd ../",
