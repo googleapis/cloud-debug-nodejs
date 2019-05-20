@@ -17,7 +17,7 @@
 import * as fs from 'fs';
 import pLimit from 'p-limit';
 import * as path from 'path';
-import * as promisify from 'pify';
+import {promisify} from 'util';
 import * as sourceMap from 'source-map';
 
 import {findScriptsFuzzy} from '../util/utils';
