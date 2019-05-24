@@ -15,12 +15,12 @@
  */
 
 import * as path from 'path';
-import * as pify from 'pify';
+import {promisify} from 'util';
 import * as rawMkdirp from 'mkdirp';
 import * as rawNcp from 'ncp';
 
-const mkdirp = pify(rawMkdirp);
-const ncp = pify(rawNcp);
+const mkdirp = promisify(rawMkdirp);
+const ncp = promisify(rawNcp as {} as Function);
 
 const TEST = 'test';
 const SYSTEM_TEST = 'system-test';

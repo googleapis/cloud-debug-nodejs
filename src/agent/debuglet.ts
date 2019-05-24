@@ -23,7 +23,6 @@ import * as extend from 'extend';
 import * as fs from 'fs';
 import * as metadata from 'gcp-metadata';
 import * as path from 'path';
-import * as promisify from 'pify';
 import * as util from 'util';
 
 import {Debug, PackageInfo} from '../client/stackdriver/debug';
@@ -45,7 +44,7 @@ import * as utils from './util/utils';
 import * as debugapi from './v8/debugapi';
 import {DebugApi} from './v8/debugapi';
 
-const readFilep = promisify(fs.readFile);
+const readFilep = util.promisify(fs.readFile);
 
 const ALLOW_EXPRESSIONS_MESSAGE =
   'Expressions and conditions are not allowed' +
@@ -336,7 +335,7 @@ export class Debuglet extends EventEmitter {
    */
   async start(): Promise<void> {
     const that = this;
-    const stat = promisify(fs.stat);
+    const stat = util.promisify(fs.stat);
 
     try {
       await stat(path.join(that.config.workingDirectory, 'package.json'));
