@@ -62,6 +62,7 @@ export class Debug extends Service {
     const config = {
       projectIdRequired: false,
       baseUrl: 'https://clouddebugger.googleapis.com/v2',
+      apiEndpoint: 'clouddebugger.googleapis.com',
       scopes: ['https://www.googleapis.com/auth/cloud_debugger'],
       packageJson,
     };
