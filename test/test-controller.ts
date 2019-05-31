@@ -30,7 +30,7 @@ delete process.env.GCLOUD_PROJECT;
 import {Controller} from '../src/agent/controller';
 // TODO: Fix fakeDebug to actually implement Debug.
 const fakeDebug = ({
-  apiEndpoint: `cloudebugger.googleapis.com`,
+  apiEndpoint: `clouddebugger.googleapis.com`,
   request: (options: r.Options, cb: r.RequestCallback) => {
     teenyRequest(options, (err, r) => {
       cb(err, r ? r.body : undefined, r);
