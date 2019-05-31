@@ -39,7 +39,7 @@ export function start(
   options?: DebugAgentConfig | StackdriverConfig
 ): Debuglet | IsReady {
   options = options || {};
-  const agentConfig: DebugAgentConfig = mergeConfigs<DebugAgentConfig>(options);
+  const agentConfig: DebugAgentConfig = mergeConfigs(options);
 
   // forceNewAgent_ is for testing purposes only.
   if (debuglet && !agentConfig.forceNewAgent_) {
