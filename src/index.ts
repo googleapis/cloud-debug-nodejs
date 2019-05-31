@@ -39,9 +39,7 @@ export function start(
   options?: DebugAgentConfig | StackdriverConfig
 ): Debuglet | IsReady {
   options = options || {};
-  const agentConfig: DebugAgentConfig =
-    Object.assign({}, options, (options as StackdriverConfig).debug) ||
-    (options as DebugAgentConfig);
+  const agentConfig: DebugAgentConfig = mergeConfigs<DebugAgentConfig>(options);
 
   // forceNewAgent_ is for testing purposes only.
   if (debuglet && !agentConfig.forceNewAgent_) {
@@ -53,4 +51,13 @@ export function start(
   debuglet.start();
 
   return agentConfig.testMode_ ? debuglet : debuglet.isReadyManager;
+}
+
+function mergeConfigs<T>(options: T & {debug?: T}): T {
+  if (!options.debug) {
+    return options;
+  }
+  const result = Object.assign({}, options);
+  delete result.debug;
+  return Object.assign(result, options.debug);
 }
