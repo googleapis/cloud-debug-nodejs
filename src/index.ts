@@ -53,6 +53,12 @@ export function start(
   return agentConfig.testMode_ ? debuglet : debuglet.isReadyManager;
 }
 
+/**
+ * If the given `options` object has a `debug` property
+ * of the same type, this function returns the union of the
+ * properties in `options.debug` and `options` except that
+ * the returned object no longer has a `debug` property.
+ */
 function mergeConfigs<T>(options: T & {debug?: T}): T {
   if (!options.debug) {
     return options;
