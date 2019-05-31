@@ -96,49 +96,5 @@
     "teeny-request": "^3.11.3",
     "typescript": "~3.5.0",
     "uuid": "^3.3.2"
-  },
-  "dependencies": {
-    "@google-cloud/common": "^2.0.0",
-    "@sindresorhus/is": "^0.17.1",
-    "acorn": "^6.0.0",
-    "coffeescript": "^2.0.0",
-    "console-log-level": "^1.4.0",
-    "extend": "^3.0.1",
-    "findit2": "^2.2.3",
-    "gcp-metadata": "^2.0.0",
-    "lodash.pickby": "^4.6.0",
-    "p-limit": "^2.2.0",
-    "semver": "^6.0.0",
-    "source-map": "^0.6.1",
-    "split": "^1.0.0"
-  },
-  "scripts": {
-    "prepare": "npm run compile",
-    "presamples-test": "npm run compile",
-    "samples-test": "cd samples/ && npm link ../ && npm install && npm test && cd ../",
-    "presystem-test": "npm run compile",
-    "system-test": "mocha build/system-test",
-    "test-no-cover": "cross-env CLOUD_DEBUG_ASSERTIONS=1 mocha build/test --require source-map-support/register --timeout 4000 --R spec",
-    "test": "nyc npm run test-no-cover && nyc report",
-    "check": "gts check",
-    "clean": "gts clean",
-    "precompile": "npm run compile-scripts && node build/scripts/setup-build-dir.js",
-    "compile": "tsc -p .",
-    "compile-scripts": "tsc -p scripts-tsconfig.json",
-    "fix": "gts fix",
-    "pretest": "npm run compile",
-    "posttest": "npm run check && npm run license-check",
-    "prepack": "npm run compile",
-    "license-check": "jsgl --local .",
-    "lint": "npm run check",
-    "docs": "compodoc src/",
-    "docs-test": "linkinator docs -r --skip www.googleapis.com",
-    "predocs-test": "npm run docs"
-  },
-  "files": [
-    "CHANGELOG.md",
-    "LICENSE",
-    "README.md",
-    "build/src"
-  ]
+  }
 }
