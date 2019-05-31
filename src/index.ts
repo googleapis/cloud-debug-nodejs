@@ -40,7 +40,8 @@ export function start(
 ): Debuglet | IsReady {
   options = options || {};
   const agentConfig: DebugAgentConfig =
-    (options as StackdriverConfig).debug || (options as DebugAgentConfig);
+    Object.assign({}, options, (options as StackdriverConfig).debug) ||
+    (options as DebugAgentConfig);
 
   // forceNewAgent_ is for testing purposes only.
   if (debuglet && !agentConfig.forceNewAgent_) {
