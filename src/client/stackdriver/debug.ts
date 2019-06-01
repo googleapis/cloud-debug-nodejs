@@ -21,8 +21,16 @@ export interface PackageInfo {
   version: string;
 }
 
+export interface DebugOptions extends GoogleAuthOptions {
+  /**
+   * The API endpoint of the service used to make requests.
+   * Defaults to `clouddebugger.googleapis.com`.
+   */
+  apiEndpoint?: string;
+}
+
 export class Debug extends Service {
-  options!: GoogleAuthOptions;
+  options!: DebugOptions;
   packageInfo!: PackageInfo;
 
   /**
@@ -49,7 +57,7 @@ export class Debug extends Service {
    * @param options - [Authentication options](#/docs)
    */
   constructor(
-    options: GoogleAuthOptions,
+    options: DebugOptions = {},
     packageJson: {
       name: string;
       version: string;
@@ -58,10 +66,11 @@ export class Debug extends Service {
     if (new.target !== Debug) {
       return new Debug(options, packageJson);
     }
-
+    options.apiEndpoint = options.apiEndpoint || 'clouddebugger.googleapis.com';
     const config = {
       projectIdRequired: false,
-      baseUrl: 'https://clouddebugger.googleapis.com/v2',
+      apiEndpoint: options.apiEndpoint,
+      baseUrl: `https://${options.apiEndpoint}/v2`,
       scopes: ['https://www.googleapis.com/auth/cloud_debugger'],
       packageJson,
     };
