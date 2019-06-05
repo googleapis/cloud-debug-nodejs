@@ -29,9 +29,6 @@ import {Debug} from '../client/stackdriver/debug';
 import {Debuggee} from '../debuggee';
 import * as stackdriver from '../types/stackdriver';
 
-/** @const {string} Cloud Debug API endpoint */
-const API = 'https://clouddebugger.googleapis.com/v2/controller';
-
 export class Controller extends ServiceObject {
   private nextWaitToken: string | null;
 
@@ -47,10 +44,10 @@ export class Controller extends ServiceObject {
     /** @private {string} */
     this.nextWaitToken = null;
 
-    this.apiUrl = API;
+    this.apiUrl = `https://${debug.apiEndpoint}/v2/controller`;
 
     if (config && config.apiUrl) {
-      this.apiUrl = config.apiUrl + new URL(API).pathname;
+      this.apiUrl = config.apiUrl + new URL(this.apiUrl).pathname;
     }
   }
 
