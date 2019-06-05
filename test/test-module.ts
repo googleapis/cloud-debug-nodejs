@@ -53,6 +53,11 @@ describe('Debug module', () => {
 
 describe('Debug module without start() called', () => {
   it('get() should return `undefined`', () => {
+    delete require.cache[require.resolve('../..')];
+    const m: NodeModule & {
+      start: Function;
+      get: () => Debuglet | undefined;
+    } = require('../..');
     const agent = m.get();
     assert.strictEqual(
       agent,
