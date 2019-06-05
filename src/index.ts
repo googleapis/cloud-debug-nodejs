@@ -58,6 +58,8 @@ export function start(
  * of the same type, this function returns the union of the
  * properties in `options.debug` and `options` except that
  * the returned object no longer has a `debug` property.
+ * If a field exists in both `options` and `options.debug`,
+ * the value in `option.debug` takes precedence.
  */
 function mergeConfigs<T>(options: T & {debug?: T}): T {
   if (!options.debug) {
