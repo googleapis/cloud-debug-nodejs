@@ -15,9 +15,13 @@
  */
 
 import * as assert from 'assert';
-const m: NodeModule & {start: Function} = require('../..');
+const m: NodeModule & {
+  start: Function;
+  get: () => Debuglet | undefined;
+} = require('../..');
 import * as nock from 'nock';
 import * as nocks from './nocks';
+import {Debuglet} from '../src/agent/debuglet';
 
 nock.disableNetConnect();
 
@@ -38,5 +42,27 @@ describe('Debug module', () => {
     assert.throws(() => {
       m.start();
     });
+  });
+
+  it('should return the agent via the get() method', () => {
+    const agent = m.get();
+    assert(agent, 'Expected to get the started agent');
+    assert.strictEqual(agent!.config.projectId, '0');
+  });
+});
+
+describe('Debug module without start() called', () => {
+  it('get() should return `undefined`', () => {
+    delete require.cache[require.resolve('../..')];
+    const m: NodeModule & {
+      start: Function;
+      get: () => Debuglet | undefined;
+    } = require('../..');
+    const agent = m.get();
+    assert.strictEqual(
+      agent,
+      undefined,
+      'Expected `undefined` since the agent was not started'
+    );
   });
 });

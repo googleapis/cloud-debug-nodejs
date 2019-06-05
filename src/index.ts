@@ -69,3 +69,10 @@ function mergeConfigs<T>(options: T & {debug?: T}): T {
   delete result.debug;
   return Object.assign(result, options.debug);
 }
+
+/* Used to access the agent if it has been started.  Returns the agent
+ * if the agent has been started.  Otherwise, `undefined` is returned.
+ */
+export function get(): Debuglet | undefined {
+  return debuglet;
+}
