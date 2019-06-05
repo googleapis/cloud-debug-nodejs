@@ -39,8 +39,7 @@ export function start(
   options?: DebugAgentConfig | StackdriverConfig
 ): Debuglet | IsReady {
   options = options || {};
-  const agentConfig: DebugAgentConfig =
-    (options as StackdriverConfig).debug || (options as DebugAgentConfig);
+  const agentConfig: DebugAgentConfig = mergeConfigs(options);
 
   // forceNewAgent_ is for testing purposes only.
   if (debuglet && !agentConfig.forceNewAgent_) {
@@ -52,4 +51,21 @@ export function start(
   debuglet.start();
 
   return agentConfig.testMode_ ? debuglet : debuglet.isReadyManager;
+}
+
+/**
+ * If the given `options` object has a `debug` property
+ * of the same type, this function returns the union of the
+ * properties in `options.debug` and `options` except that
+ * the returned object no longer has a `debug` property.
+ * If a field exists in both `options` and `options.debug`,
+ * the value in `option.debug` takes precedence.
+ */
+function mergeConfigs<T>(options: T & {debug?: T}): T {
+  if (!options.debug) {
+    return options;
+  }
+  const result = Object.assign({}, options);
+  delete result.debug;
+  return Object.assign(result, options.debug);
 }
