@@ -18,7 +18,9 @@ import {GoogleAuthOptions} from '@google-cloud/common';
 
 export type DebugAgentConfig = GoogleAuthOptions &
   {
-    [K in keyof ResolvedDebugAgentConfig]?: Partial<ResolvedDebugAgentConfig[K]>
+    [K in keyof ResolvedDebugAgentConfig]?: Partial<
+      ResolvedDebugAgentConfig[K]
+    >;
   };
 
 export type LogLevel =
