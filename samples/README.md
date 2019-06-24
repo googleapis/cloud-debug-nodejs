@@ -1,70 +1,62 @@
-# StackDriver Debugger sample for Node.js
+[//]: # "This README.md file is auto-generated, all changes to this file will be lost."
+[//]: # "To regenerate it, use `python -m synthtool`."
+<img src="https://avatars2.githubusercontent.com/u/2810941?v=3&s=96" alt="Google Cloud Platform logo" title="Google Cloud Platform" align="right" height="96" width="96"/>
 
-This sample demonstrates [StackDriver Debugger][debugger] with Node.js.
+# [Stackdriver Debugger: Node.js Samples](https://github.com/googleapis/cloud-debug-nodejs)
 
-* [Setup](#setup)
-* [Running locally](#running-locally)
-* [Deploying to App Engine](#deploying-to-app-engine)
-* [Running the tests](#running-the-tests)
-
-## Setup
-
-Before you can run or deploy the sample, you need to do the following (where
-appropriate, replace `YOUR_PROJECT_ID` with the ID of your Cloud project):
-
-1.  Refer to the `@google-cloud/debug-agent` [README][readme] for instructions on
-    running and deploying.
-
-1. Set the `GCLOUD_PROJECT` environment variable:
-
-    Linux:
-
-        export GCLOUD_PROJECT=your-project-id
-
-    Windows:
-
-        set GCLOUD_PROJECT=your-project-id
-
-    Windows (PowerShell):
-
-        $env:GCLOUD_PROJECT="your-project-id"
-
-1.  Acquire local credentials for authenticating with Google Cloud Platform APIs:
-
-        gcloud auth application-default login
-
-1.  Configure git to use gcloud SDK:
-
-        git config credential.helper gcloud.sh
-
-1.  Add your Cloud Source Repository as a git remote:
-
-        git remote add google https://source.developers.google.com/p/YOUR_PROJECT_ID/r/default
-
-1.  Commit and push the code into the Cloud Source Repository:
-
-        git add -A && git commit -m "Initial commit" && git push --all google
-
-1.  Install dependencies:
-
-        npm install
-
-## Running locally
-
-    npm start
+[![Open in Cloud Shell][shell_img]][shell_link]
 
 
-## Deploying to App Engine
 
-    npm run deploy
+## Table of Contents
+
+* [Before you begin](#before-you-begin)
+* [Samples](#samples)
+  * [App](#app)
+  * [Snippets](#snippets)
+
+## Before you begin
+
+Before running the samples, make sure you've followed the steps outlined in
+[Using the client library](https://github.com/googleapis/cloud-debug-nodejs#using-the-client-library).
+
+## Samples
 
 
-Use the [Stackdriver Debugger dashboard](https://console.cloud.google.com/debug) to inspect runtime data of the app.
 
-## Running the tests
+### App
 
-See [Contributing][contributing].
+View the [source code](https://github.com/googleapis/cloud-debug-nodejs/blob/master/samples/app.js).
 
-[debugger]: https://cloud.google.com/debugger/
-[readme]: ../README.md
-[contributing]: https://github.com/GoogleCloudPlatform/nodejs-docs-samples/blob/master/CONTRIBUTING.md
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/cloud-debug-nodejs&page=editor&open_in_editor=samples/app.js,samples/README.md)
+
+__Usage:__
+
+
+`node app.js`
+
+
+-----
+
+
+
+
+### Snippets
+
+View the [source code](https://github.com/googleapis/cloud-debug-nodejs/blob/master/samples/snippets.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/cloud-debug-nodejs&page=editor&open_in_editor=samples/snippets.js,samples/README.md)
+
+__Usage:__
+
+
+`node snippets.js`
+
+
+
+
+
+
+[shell_img]: https://gstatic.com/cloudssh/images/open-btn.png
+[shell_link]: https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/cloud-debug-nodejs&page=editor&open_in_editor=samples/README.md
+[product-docs]: https://cloud.google.com/debugger

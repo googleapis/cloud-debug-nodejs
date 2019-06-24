@@ -1,0 +1,12 @@
+{
+  "name": "debugger",
+  "name_pretty": "Stackdriver Debugger",
+  "product_documentation": "https://cloud.google.com/debugger",
+  "client_documentation": "https://googleapis.dev/nodejs/debugger/latest/",
+  "issue_tracker": "https://issuetracker.google.com/savedsearches/559771",
+  "release_level": "beta",
+  "language": "nodejs",
+  "repo": "googleapis/cloud-debug-nodejs",
+  "distribution_name": "@google-cloud/debug-agent",
+  "api_id": "clouddebugger.googleapis.com"
+}
