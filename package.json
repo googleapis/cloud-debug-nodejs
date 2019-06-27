@@ -44,7 +44,7 @@
     "license-check": "jsgl --local .",
     "lint": "npm run check",
     "docs": "compodoc src/",
-    "docs-test": "linkinator docs -r --skip www.googleapis.com",
+    "docs-test": "linkinator docs",
     "predocs-test": "npm run docs"
   },
   "dependencies": {
@@ -83,7 +83,7 @@
     "gts": "^1.0.0",
     "intelli-espower-loader": "^1.0.1",
     "js-green-licenses": "^1.0.0",
-    "linkinator": "^1.1.2",
+    "linkinator": "^1.5.0",
     "mkdirp": "^0.5.1",
     "mocha": "^6.1.4",
     "ncp": "^2.0.0",
