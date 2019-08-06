@@ -53,7 +53,7 @@
     "acorn": "^6.0.0",
     "coffeescript": "^2.0.0",
     "console-log-level": "^1.4.0",
-    "extend": "^3.0.1",
+    "extend": "^3.0.2",
     "findit2": "^2.2.3",
     "gcp-metadata": "^2.0.0",
     "lodash.pickby": "^4.6.0",
