@@ -1819,29 +1819,30 @@ describe('v8debugapi', () => {
       });
     });
 
-    it('should correctly stop on line-1 breakpoints', done => {
-      const foo = require('./fixtures/foo.js');
-      // TODO(dominickramer): Have this actually implement Breakpoint
-      const bp: stackdriver.Breakpoint = ({
-        id: 'bp-line-1',
-        location: {path: 'foo.js', line: 1, column: 45},
-      } as {}) as stackdriver.Breakpoint;
-      api.set(bp, err1 => {
-        assert.ifError(err1);
-        api.wait(bp, err2 => {
-          assert.ifError(err2);
-          assert.ok(bp.stackFrames);
+    // Skipped until #737 is resolved.
+    // it('should correctly stop on line-1 breakpoints', done => {
+    //   const foo = require('./fixtures/foo.js');
+    //   // TODO(dominickramer): Have this actually implement Breakpoint
+    //   const bp: stackdriver.Breakpoint = ({
+    //     id: 'bp-line-1',
+    //     location: {path: 'foo.js', line: 1, column: 45},
+    //   } as {}) as stackdriver.Breakpoint;
+    //   api.set(bp, err1 => {
+    //     assert.ifError(err1);
+    //     api.wait(bp, err2 => {
+    //       assert.ifError(err2);
+    //       assert.ok(bp.stackFrames);
 
-          api.clear(bp, err3 => {
-            assert.ifError(err3);
-            done();
-          });
-        });
-        process.nextTick(() => {
-          foo();
-        });
-      });
-    });
+    //       api.clear(bp, err3 => {
+    //         assert.ifError(err3);
+    //         done();
+    //       });
+    //     });
+    //     process.nextTick(() => {
+    //       foo();
+    //     });
+    //   });
+    // });
 
     it('should not silence errors thrown in the wait callback', done => {
       const message = 'This exception should not be silenced';
