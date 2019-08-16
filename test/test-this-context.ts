@@ -78,8 +78,6 @@ describe(__filename, () => {
   afterEach(() => {
     assert(stateIsClean(api));
   });
-  // TODO(kjin): Re-enable this test after issue #742 has been addressed
-  /*
   it('Should be able to read the argument and the context', done => {
     // TODO: Have this actually implement Breakpoint
     const brk: stackdriver.Breakpoint = {
@@ -104,7 +102,7 @@ describe(__filename, () => {
         );
         assert.deepStrictEqual(ctxMembers![0], {name: 'a', value: '10'});
         assert.strictEqual(args.length, 0, 'There should be zero arguments');
-        if (utils.satisfies(process.version, '>=11')) {
+        if (utils.satisfies(process.version, '>=11 && <12')) {
           assert.strictEqual(locals.length, 3, 'There should be three locals');
           assert.deepStrictEqual(locals[0].name, 'this');
           assert.deepStrictEqual(locals[1], {name: 'b', value: '1'});
@@ -122,7 +120,6 @@ describe(__filename, () => {
       process.nextTick(code.foo.bind({}, 1));
     });
   });
-  */
   it('Should be able to read the argument and deny the context', done => {
     // TODO: Have this actually implement Breakpoint
     const brk = {
