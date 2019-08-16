@@ -76,6 +76,8 @@ describe(__filename, () => {
   afterEach(() => {
     assert(stateIsClean(api));
   });
+  // TODO(kjin): Re-enable this test after issue #742 has been addressed
+  /*
   it('Should be able to read the argument and the context', done => {
     // TODO: Have this actually implement Breakpoint
     const brk: stackdriver.Breakpoint = {
@@ -140,4 +142,5 @@ describe(__filename, () => {
       process.nextTick(code.foo.bind({}));
     });
   });
+  */
 });
