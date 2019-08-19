@@ -102,7 +102,7 @@ describe(__filename, () => {
         );
         assert.deepStrictEqual(ctxMembers![0], {name: 'a', value: '10'});
         assert.strictEqual(args.length, 0, 'There should be zero arguments');
-        if (utils.satisfies(process.version, '>=11')) {
+        if (utils.satisfies(process.version, '>=11 && <12')) {
           assert.strictEqual(locals.length, 3, 'There should be three locals');
           assert.deepStrictEqual(locals[0].name, 'this');
           assert.deepStrictEqual(locals[1], {name: 'b', value: '1'});

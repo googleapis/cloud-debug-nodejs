@@ -54,9 +54,10 @@ const NODE_VERSION_MESSAGE =
   'Node.js version not supported. Node.js 5.2.0 and ' +
   'versions older than 0.12 are not supported.';
 const NODE_10_CIRC_REF_MESSAGE =
-  'capture.maxDataSize=0 is not recommended on older versions of Node' +
-  ' 10/11. See https://github.com/googleapis/cloud-debug-nodejs/issues/516' +
-  ' for more information.';
+  'capture.maxDataSize=0 is not recommended on older versions of Node 10/11' +
+  ' and Node 12.' +
+  ' See https://github.com/googleapis/cloud-debug-nodejs/issues/516 for more' +
+  ' information.';
 const BREAKPOINT_ACTION_MESSAGE =
   'The only currently supported breakpoint actions' + ' are CAPTURE and LOG.';
 
@@ -453,7 +454,7 @@ export class Debuglet extends EventEmitter {
     if (
       this.config.capture &&
       this.config.capture.maxDataSize === 0 &&
-      utils.satisfies(process.version, '>=10 <10.15.3 || >=11 <11.7')
+      utils.satisfies(process.version, '>=10 <10.15.3 || >=11 <11.7 || >=12')
     ) {
       that.logger.warn(NODE_10_CIRC_REF_MESSAGE);
     }

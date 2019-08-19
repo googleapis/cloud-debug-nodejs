@@ -25,6 +25,7 @@ import * as debugapi from '../src/agent/v8/debugapi';
 import consoleLogLevel = require('console-log-level');
 import * as stackdriver from '../src/types/stackdriver';
 import {Variable} from '../src/types/stackdriver';
+import {satisfies} from '../src/agent/util/utils';
 
 const code = require('./test-circular-code.js');
 
@@ -42,7 +43,19 @@ function stateIsClean(api: debugapi.DebugApi): boolean {
   return true;
 }
 
-describe(__filename, () => {
+/**
+ * Stable object ID was reverted in V8 7.3 (Node 12), so circular objects will
+ * not work in the near future. For now, we warn if the user specifies
+ * maxDataSize = 0, as this will cause the app to crash.
+ */
+const maybeDescribe = satisfies(
+  process.version,
+  '>=10 <10.15.3 || >=11 <11.7 || >=12'
+)
+  ? describe.skip
+  : describe;
+
+maybeDescribe(__filename, () => {
   const config = Object.assign({}, defaultConfig, {
     workingDirectory: __dirname,
     forceNewAgent_: true,

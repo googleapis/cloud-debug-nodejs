@@ -125,7 +125,7 @@ export class Controller extends ServiceObject {
         } else if (response.statusCode === 404) {
           // The v2 API returns 404 (google.rpc.Code.NOT_FOUND) when the agent
           // registration expires. We should re-register.
-          callback(null, response);
+          callback(null, (response as {}) as request.Response);
           return;
         } else if (response.statusCode !== 200) {
           callback(
@@ -137,7 +137,7 @@ export class Controller extends ServiceObject {
         } else {
           body = body || {};
           that.nextWaitToken = body.nextWaitToken;
-          callback(null, response, body);
+          callback(null, (response as {}) as request.Response, body);
         }
       }
     );
