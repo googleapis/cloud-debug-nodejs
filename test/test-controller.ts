@@ -20,7 +20,7 @@ import * as nock from 'nock';
 import {Debug} from '../src/client/stackdriver/debug';
 import {Debuggee} from '../src/debuggee';
 import * as stackdriver from '../src/types/stackdriver';
-import * as r from 'request'; // types only
+import * as t from 'teeny-request';
 import {teenyRequest} from 'teeny-request';
 
 // the tests in this file rely on the GCLOUD_PROJECT environment variable
@@ -31,7 +31,7 @@ import {Controller} from '../src/agent/controller';
 // TODO: Fix fakeDebug to actually implement Debug.
 const fakeDebug = ({
   apiEndpoint: `clouddebugger.googleapis.com`,
-  request: (options: r.Options, cb: r.RequestCallback) => {
+  request: (options: t.Options, cb: t.RequestCallback) => {
     teenyRequest(options, (err, r) => {
       cb(err, r ? r.body : undefined, r);
     });
