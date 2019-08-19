@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "@google-cloud/common": "^2.0.0",
-    "@sindresorhus/is": "^0.17.1",
+    "@sindresorhus/is": "^1.0.0",
     "acorn": "^7.0.0",
     "coffeescript": "^2.0.0",
     "console-log-level": "^1.4.0",
