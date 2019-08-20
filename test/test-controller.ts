@@ -20,7 +20,7 @@ import * as nock from 'nock';
 import {Debug} from '../src/client/stackdriver/debug';
 import {Debuggee} from '../src/debuggee';
 import * as stackdriver from '../src/types/stackdriver';
-import * as t from 'teeny-request';
+import * as t from 'teeny-request'; // types only
 import {teenyRequest} from 'teeny-request';
 
 // the tests in this file rely on the GCLOUD_PROJECT environment variable
