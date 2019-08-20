@@ -21,7 +21,7 @@
 import {ServiceObject} from '@google-cloud/common';
 import * as assert from 'assert';
 import * as qs from 'querystring';
-import * as request from 'request'; // Only for type declarations.
+import * as t from 'teeny-request';
 
 import {URL} from 'url';
 
@@ -97,7 +97,7 @@ export class Controller extends ServiceObject {
     debuggee: Debuggee,
     callback: (
       err: Error | null,
-      response?: request.Response,
+      response?: t.Response,
       body?: stackdriver.ListBreakpointsResponse
     ) => void
   ): void {
@@ -125,7 +125,7 @@ export class Controller extends ServiceObject {
         } else if (response.statusCode === 404) {
           // The v2 API returns 404 (google.rpc.Code.NOT_FOUND) when the agent
           // registration expires. We should re-register.
-          callback(null, (response as {}) as request.Response);
+          callback(null, (response as {}) as t.Response);
           return;
         } else if (response.statusCode !== 200) {
           callback(
@@ -137,7 +137,7 @@ export class Controller extends ServiceObject {
         } else {
           body = body || {};
           that.nextWaitToken = body.nextWaitToken;
-          callback(null, (response as {}) as request.Response, body);
+          callback(null, (response as {}) as t.Response, body);
         }
       }
     );
