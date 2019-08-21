@@ -42,6 +42,17 @@ interface InspectorOptions {
   useWellFormattedUrl: boolean;
 }
 
+/**
+ * In older versions of Node, the script source as seen by the Inspector
+ * backend is wrapped in `require('module').wrapper`, and in new versions
+ * (Node 10.16+, Node 11.11+, Node 12+) it's not. This affects line-1
+ * breakpoints.
+ */
+const USE_MODULE_PREFIX = utils.satisfies(
+  process.version,
+  '<10.16 || >=11 <11.11'
+);
+
 export class BreakpointData {
   constructor(
     public id: inspector.Debugger.BreakpointId,
@@ -405,10 +416,9 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     const line = mapInfo
       ? mapInfo.line
       : (breakpoint.location as stackdriver.SourceLocation).line;
-    // We need to special case breakpoints on the first line. Since Node.js
-    // wraps modules with a function expression, we adjust
-    // to deal with that.
-    if (line === 1) {
+    // In older versions of Node, since Node.js wraps modules with a function
+    // expression, we need to special case breakpoints on the first line.
+    if (USE_MODULE_PREFIX && line === 1) {
       column += debugapi.MODULE_WRAP_PREFIX_LENGTH - 1;
     }
 
