@@ -1,5 +1,17 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+### [4.0.2](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v4.0.1...v4.0.2) (2019-08-21)
+
+
+### Bug Fixes
+
+* allow calls with no request, add JSON proto ([bb1bcc9](https://www.github.com/googleapis/cloud-debug-nodejs/commit/bb1bcc9))
+* warn if maxDataSize=0 ([#744](https://www.github.com/googleapis/cloud-debug-nodejs/issues/744)) ([e322b6c](https://www.github.com/googleapis/cloud-debug-nodejs/commit/e322b6c))
+* **deps:** update @sindresorhus/is to v1 ([#747](https://www.github.com/googleapis/cloud-debug-nodejs/issues/747)) ([dac1102](https://www.github.com/googleapis/cloud-debug-nodejs/commit/dac1102))
+* **deps:** update dependency acorn to v7 ([#748](https://www.github.com/googleapis/cloud-debug-nodejs/issues/748)) ([ddc3629](https://www.github.com/googleapis/cloud-debug-nodejs/commit/ddc3629))
+* **deps:** use the latest extend ([#735](https://www.github.com/googleapis/cloud-debug-nodejs/issues/735)) ([2d60f49](https://www.github.com/googleapis/cloud-debug-nodejs/commit/2d60f49))
+* **docs:** link to reference docs section on googleapis.dev ([#724](https://www.github.com/googleapis/cloud-debug-nodejs/issues/724)) ([6d809e6](https://www.github.com/googleapis/cloud-debug-nodejs/commit/6d809e6))
+
 ### [4.0.1](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v4.0.0...v4.0.1) (2019-06-24)
 
 
