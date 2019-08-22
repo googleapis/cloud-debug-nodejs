@@ -1,5 +1,12 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+### [4.0.3](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v4.0.2...v4.0.3) (2019-08-22)
+
+
+### Bug Fixes
+
+* correct column numbers for line-1 breakpoints ([#751](https://www.github.com/googleapis/cloud-debug-nodejs/issues/751)) ([f6d4f76](https://www.github.com/googleapis/cloud-debug-nodejs/commit/f6d4f76))
+
 ### [4.0.2](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v4.0.1...v4.0.2) (2019-08-21)
 
 
