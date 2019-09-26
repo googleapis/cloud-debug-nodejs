@@ -253,7 +253,7 @@ describe('Controller API', () => {
         .put(api + '/debuggees/fake-debuggee/breakpoints/breakpoint-0', {
           debuggeeId: 'fake-debuggee',
           breakpoint,
-        })
+        } as {})
         .reply(200, {
           kind: 'debugletcontroller#updateActiveBreakpointResponse',
         });
