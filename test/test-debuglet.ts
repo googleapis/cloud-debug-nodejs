@@ -71,7 +71,7 @@ function verifyBreakpointRejection(
   body: {breakpoint: stackdriver.Breakpoint}
 ) {
   const status = body.breakpoint.status;
-  const hasCorrectDescription = status!.description.format.match(re);
+  const hasCorrectDescription = !!status!.description.format.match(re);
   return status!.isError && hasCorrectDescription;
 }
 
