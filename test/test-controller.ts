@@ -249,6 +249,12 @@ describe('Controller API', () => {
         id: 'breakpoint-0',
         location: {path: 'foo.js', line: 99},
       } as stackdriver.Breakpoint;
+      // A cast for the second argument to put() is necessary for nock 11
+      // because the type definitions state that the second argument cannot
+      // be an Object even though the nock code itself seems to handle an
+      // Object.  Further, the tests pass when using the cast.
+      // This issue is being tracked in the nock repo at
+      // https://github.com/nock/nock/issues/1731.
       const scope = nock(url)
         .put(api + '/debuggees/fake-debuggee/breakpoints/breakpoint-0', {
           debuggeeId: 'fake-debuggee',
