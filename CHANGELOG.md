@@ -1,5 +1,12 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+### [4.0.4](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v4.0.3...v4.0.4) (2019-10-02)
+
+
+### Bug Fixes
+
+* **deps:** update dependency gcp-metadata to v3 ([#757](https://www.github.com/googleapis/cloud-debug-nodejs/issues/757)) ([77d0d93](https://www.github.com/googleapis/cloud-debug-nodejs/commit/77d0d93))
+
 ### [4.0.3](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v4.0.2...v4.0.3) (2019-08-22)
 
 
