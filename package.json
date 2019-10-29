@@ -72,7 +72,7 @@
     "@types/mkdirp": "^0.5.1",
     "@types/mocha": "^5.0.0",
     "@types/ncp": "^2.0.1",
-    "@types/node": "~10.14.0",
+    "@types/node": "~10.17.0",
     "@types/proxyquire": "^1.3.28",
     "@types/semver": "^6.0.0",
     "@types/uuid": "^3.4.4",
