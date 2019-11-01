@@ -180,6 +180,15 @@ export interface ResolvedDebugAgentConfig extends GoogleAuthOptions {
   appPathRelativeToRepository?: string;
 
   /**
+   * The set of file extensions that identify javascript code to be debugged.
+   * By default, only .js files or files with sourcemaps are considered to be
+   * debuggable. This setting can be used to inform the debugger if you have
+   * javascript code in files with extensions other than .js.
+   * Example: ['.js', '.jsz']
+   */
+  javascriptFileExtensions: string[];
+
+  /**
    * A function which takes the path of a source file in your repository,
    * a list of your project's Javascript files known to the debugger,
    * and the file(s) in your project that the debugger thinks is identified
@@ -362,6 +371,7 @@ export const defaultConfig: ResolvedDebugAgentConfig = {
   },
 
   appPathRelativeToRepository: undefined,
+  javascriptFileExtensions: ['.js'],
   pathResolver: undefined,
   logLevel: 1,
   breakpointUpdateIntervalSec: 10,

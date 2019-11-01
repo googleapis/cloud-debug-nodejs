@@ -136,7 +136,8 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     }
     const baseScriptPath = path.normalize(breakpoint.location.path);
     if (!this.sourcemapper.hasMappingInfo(baseScriptPath)) {
-      if (!baseScriptPath.endsWith('js')) {
+      const extension = path.extname(baseScriptPath);
+      if (!this.config.javascriptFileExtensions.includes(extension)) {
         return utils.setErrorStatusAndCallback(
           cb,
           breakpoint,

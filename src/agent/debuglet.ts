@@ -314,16 +314,23 @@ export class Debuglet extends EventEmitter {
     return extend(true, {}, defaultConfig, config, envConfig);
   }
 
+  static buildRegExp(fileExtensions: string[]): RegExp {
+    return new RegExp(fileExtensions.map(f => f + '$').join('|'));
+  }
+
   static async findFiles(
-    baseDir: string,
+    config: ResolvedDebugAgentConfig,
     precomputedHash?: string
   ): Promise<FindFilesResult> {
+    const baseDir = config.workingDirectory;
     const fileStats = await scanner.scan(
       baseDir,
-      /.js$|.js.map$/,
+      Debuglet.buildRegExp(config.javascriptFileExtensions.concat('js.map')),
       precomputedHash
     );
-    const jsStats = fileStats.selectStats(/.js$/);
+    const jsStats = fileStats.selectStats(
+      Debuglet.buildRegExp(config.javascriptFileExtensions)
+    );
     const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
     const errors = fileStats.errors();
     return {jsStats, mapFiles, errors, hash: fileStats.hash};
@@ -370,10 +377,7 @@ export class Debuglet extends EventEmitter {
 
     let findResults: FindFilesResult;
     try {
-      findResults = await Debuglet.findFiles(
-        that.config.workingDirectory,
-        gaeId
-      );
+      findResults = await Debuglet.findFiles(that.config, gaeId);
       findResults.errors.forEach(that.logger.warn);
     } catch (err) {
       that.logger.error('Error scanning the filesystem.', err);
