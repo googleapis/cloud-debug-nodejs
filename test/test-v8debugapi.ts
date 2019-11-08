@@ -244,6 +244,7 @@ describe('v8debugapi', () => {
   const config: ResolvedDebugAgentConfig = extend({}, defaultConfig, {
     workingDirectory: __dirname,
     forceNewAgent_: true,
+    javascriptFileExtensions: ['.js', '.jsz'],
   });
   const logger = consoleLogLevel({
     level: Debuglet.logLevelToName(config.logLevel),
@@ -253,10 +254,10 @@ describe('v8debugapi', () => {
   beforeEach(done => {
     if (!api) {
       scanner
-        .scan(config.workingDirectory, /.js$|.js.map$/)
+        .scan(config.workingDirectory, /.js$|.jsz$|.js.map$/)
         .then(async fileStats => {
           assert.strictEqual(fileStats.errors().size, 0);
-          const jsStats = fileStats.selectStats(/.js$/);
+          const jsStats = fileStats.selectStats(/.js$|.jsz$/);
           const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
           const mapper = await SourceMapper.create(mapFiles);
 
@@ -312,6 +313,21 @@ describe('v8debugapi', () => {
     const bp: stackdriver.Breakpoint = ({
       id: 0,
       location: breakpointInFoo.location,
+    } as {}) as stackdriver.Breakpoint;
+    api.set(bp, err1 => {
+      assert.ifError(err1);
+      api.clear(bp, err2 => {
+        assert.ifError(err2);
+        done();
+      });
+    });
+  });
+
+  it('should permit breakpoints on js files with non-standard extensions', done => {
+    require('./fixtures/hello.jsz');
+    const bp: stackdriver.Breakpoint = ({
+      id: 0,
+      location: {line: 1, path: path.join('fixtures', 'hello.jsz')},
     } as {}) as stackdriver.Breakpoint;
     api.set(bp, err1 => {
       assert.ifError(err1);

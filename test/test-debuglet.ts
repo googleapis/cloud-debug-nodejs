@@ -91,12 +91,12 @@ describe('Debuglet', () => {
     const SOURCEMAP_DIR = path.join(__dirname, 'fixtures', 'sourcemaps');
 
     it('throws an error for an invalid directory', async () => {
+      const config = extend({}, defaultConfig, {
+        workingDirectory: path.join(SOURCEMAP_DIR, '!INVALID'),
+      });
       let err: Error | null = null;
       try {
-        await Debuglet.findFiles(
-          path.join(SOURCEMAP_DIR, '!INVALID!'),
-          'fake-id'
-        );
+        await Debuglet.findFiles(config, 'fake-id');
       } catch (e) {
         err = e;
       }
@@ -104,7 +104,10 @@ describe('Debuglet', () => {
     });
 
     it('finds the correct sourcemaps files', async () => {
-      const searchResults = await Debuglet.findFiles(SOURCEMAP_DIR, 'fake-id');
+      const config = extend({}, defaultConfig, {
+        workingDirectory: SOURCEMAP_DIR,
+      });
+      const searchResults = await Debuglet.findFiles(config, 'fake-id');
       assert(searchResults.jsStats);
       assert.strictEqual(Object.keys(searchResults.jsStats).length, 1);
       assert(searchResults.jsStats[path.join(SOURCEMAP_DIR, 'js-file.js')]);
@@ -717,9 +720,10 @@ describe('Debuglet', () => {
       // Don't actually scan the entire filesystem.  Act like the filesystem
       // is empty.
       mockedDebuglet.Debuglet.findFiles = (
-        baseDir: string,
+        config: ResolvedDebugAgentConfig,
         precomputedHash?: string
       ): Promise<FindFilesResult> => {
+        const baseDir = config.workingDirectory;
         assert.strictEqual(baseDir, root);
         return Promise.resolve({
           jsStats: {},
