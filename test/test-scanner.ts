@@ -49,7 +49,6 @@ describe('scanner', () => {
     it('should ignore broken links', function(done) {
       if (process.platform === 'win32') {
         this.skip();
-        return;
       }
 
       scanner.scan(fixture('broken-links'), /.*/).then(fileStats => {
