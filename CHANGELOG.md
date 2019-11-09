@@ -1,5 +1,12 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## [4.1.0](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v4.0.4...v4.1.0) (2019-11-08)
+
+
+### Features
+
+* introduce javascriptFileExtensions config parameter. ([#779](https://www.github.com/googleapis/cloud-debug-nodejs/issues/779)) ([bf79ce8](https://www.github.com/googleapis/cloud-debug-nodejs/commit/bf79ce8d0d3b53a1bfe121672893ad2590472e9f))
+
 ### [4.0.4](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v4.0.3...v4.0.4) (2019-10-02)
 
 
