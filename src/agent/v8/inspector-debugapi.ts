@@ -378,12 +378,13 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     // working directory.
     let matchingScript;
     // TODO: Address the case where `breakpoint.location` is `null`.
+    const scriptPath = mapInfo
+      ? mapInfo.file
+      : path.normalize(
+          (breakpoint.location as stackdriver.SourceLocation).path
+        );
     const scripts = utils.findScripts(
-      mapInfo
-        ? mapInfo.file
-        : path.normalize(
-            (breakpoint.location as stackdriver.SourceLocation).path
-          ),
+      scriptPath,
       this.config,
       this.fileStats,
       this.logger
@@ -399,6 +400,9 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       // Found the script
       matchingScript = scripts[0];
     } else {
+      this.logger.warn(
+        `Unable to unambiguously find ${scriptPath}. Potential matches: ${scripts}`
+      );
       return utils.setErrorStatusAndCallback(
         cb,
         breakpoint,

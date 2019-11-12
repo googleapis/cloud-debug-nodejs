@@ -435,6 +435,32 @@ describe('v8debugapi', () => {
         assert(
           bp.status!.description.format === utils.messages.SOURCE_FILE_AMBIGUOUS
         );
+
+        // Verify that a log message is emitted.
+        assert.strictEqual(
+          logger.warns.length,
+          1,
+          `Expected 1 warning log message, got ${logger.allCalls.length}`
+        );
+        const message = logger.warns[0].args[0];
+        let expectedSubstring = path.join('fixtures', 'a', 'hello.js');
+        assert.notStrictEqual(
+          message.indexOf(expectedSubstring),
+          -1,
+          `Missing text '${expectedSubstring}' in '${message}'`
+        );
+        expectedSubstring = path.join('fixtures', 'b', 'hello.js');
+        assert.notStrictEqual(
+          message.indexOf(expectedSubstring),
+          -1,
+          `Missing text '${expectedSubstring}' in '${message}'`
+        );
+        expectedSubstring = 'Unable to unambiguously find';
+        assert.notStrictEqual(
+          message.indexOf(expectedSubstring),
+          -1,
+          `Missing text '${expectedSubstring}' in '${message}'`
+        );
         done();
       });
     });
