@@ -246,9 +246,7 @@ describe('v8debugapi', () => {
     forceNewAgent_: true,
     javascriptFileExtensions: ['.js', '.jsz'],
   });
-  const logger = consoleLogLevel({
-    level: Debuglet.logLevelToName(config.logLevel),
-  });
+  const logger = new MockLogger();
   let api: DebugApi;
 
   beforeEach(done => {
@@ -288,6 +286,7 @@ describe('v8debugapi', () => {
     }
   });
   afterEach(() => {
+    logger.clear();
     assert(stateIsClean(api));
   });
 
