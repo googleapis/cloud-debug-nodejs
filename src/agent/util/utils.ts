@@ -126,8 +126,15 @@ function resolveScripts(
     // There should be no ambiguity resolution if project root is provided.
     return fileStats[candidate] ? [candidate] : [];
   }
-  const regexp = pathToRegExp(scriptPath);
+
+  // Try for an exact match using the working directory.
+  const candidate = path.join(config.workingDirectory || '', scriptPath);
+  if (fileStats[candidate]) {
+    return [candidate];
+  }
+
   // Next try to match path.
+  const regexp = pathToRegExp(scriptPath);
   const matches = Object.keys(fileStats).filter(regexp.test.bind(regexp));
   if (matches.length === 1) {
     return matches;

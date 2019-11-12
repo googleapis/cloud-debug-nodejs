@@ -1980,6 +1980,23 @@ describe('v8debugapi.findScripts', () => {
     assert.strictEqual(logger.allCalls().length, 0);
   });
 
+  it('should prefer exact path matches to ones involving subdirectories', () => {
+    const config = extend(true, {}, undefined!, {
+      workingDirectory: path.join('root'),
+    });
+
+    const logger = new MockLogger();
+
+    const fakeFileStats = {
+      [path.join('root', 'hello.js')]: {hash: 'fake', lines: 5},
+      [path.join('root', 'subdir', 'hello.js')]: {hash: 'fake', lines: 50},
+    };
+    const scriptPath = 'hello.js';
+    const result = utils.findScripts(scriptPath, config, fakeFileStats, logger);
+    assert.deepStrictEqual(result, [path.join('root', 'hello.js')]);
+    assert.strictEqual(logger.allCalls().length, 0);
+  });
+
   it('should invoke pathResolver if provided', () => {
     const config = extend(true, {}, undefined!, {
       pathResolver(
