@@ -40,6 +40,15 @@ export class MockLogger implements consoleLogLevel.Logger {
     );
   }
 
+  clear() {
+    this.traces = [];
+    this.debugs = [];
+    this.infos = [];
+    this.warns = [];
+    this.errors = [];
+    this.fatals = [];
+  }
+
   trace(...args: Arguments) {
     this.traces.push({type: 'trace', args});
   }
