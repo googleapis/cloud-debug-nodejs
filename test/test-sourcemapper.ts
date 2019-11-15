@@ -255,5 +255,9 @@ testTool(
   path.join('webpack-ts', 'out.js.map'),
   path.join('webpack-ts', 'in.ts_'),
   path.join('webpack-ts', 'out.js'),
-  [[3, 93], [4, 94], [8, 97]]
+  [
+    [3, 93],
+    [4, 94],
+    [8, 97],
+  ]
 );

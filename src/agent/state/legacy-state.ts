@@ -438,22 +438,19 @@ class StateResolver {
 
     const fromScopes = scopes.map((scope: v8.ScopeMirror) => {
       const obj = scope.details().object();
-      return Object.keys(obj).reduce(
-        (acc, name) => {
-          const value = obj[name];
-          const trg = makeMirror(value);
-          if (!usedNames[name]) {
-            // It's a valid variable that belongs in the locals list
-            // and wasn't discovered at a lower-scope
-            usedNames[name] = true;
-            // TODO: Determine how to not have an explicit down cast to
-            // ValueMirror
-            acc.push(self.resolveVariable_(name, trg as v8.ValueMirror, false));
-          }
-          return acc;
-        },
-        [] as stackdriver.Variable[]
-      );
+      return Object.keys(obj).reduce((acc, name) => {
+        const value = obj[name];
+        const trg = makeMirror(value);
+        if (!usedNames[name]) {
+          // It's a valid variable that belongs in the locals list
+          // and wasn't discovered at a lower-scope
+          usedNames[name] = true;
+          // TODO: Determine how to not have an explicit down cast to
+          // ValueMirror
+          acc.push(self.resolveVariable_(name, trg as v8.ValueMirror, false));
+        }
+        return acc;
+      }, [] as stackdriver.Variable[]);
     });
 
     function resolveFromReceiver(): stackdriver.Variable[] {
