@@ -1527,7 +1527,7 @@ function debugletConfig(conf?: {}): ResolvedDebugAgentConfig & {
     {},
     DEFAULT_CONFIG,
     conf
-  ) as (ResolvedDebugAgentConfig & {apiUrl: string});
+  ) as ResolvedDebugAgentConfig & {apiUrl: string};
   c.apiUrl = apiUrl;
   return c;
 }
