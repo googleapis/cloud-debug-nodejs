@@ -1,0 +1,21 @@
+{
+  "name": "sample",
+  "private": true,
+  "description": "",
+  "scripts": {
+    "compile": "tsc -p .",
+    "fix": "gts fix",
+    "prepare": "npm run compile"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@google-cloud/debug-agent": "./debug.tgz"
+  },
+  "devDependencies": {
+    "gts": "^1.1.0",
+    "typescript": "~3.7.0",
+    "@types/node": "^10.0.3"
+  }
+}
