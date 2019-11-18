@@ -1,5 +1,12 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+### [4.1.1](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v4.1.0...v4.1.1) (2019-11-18)
+
+
+### Bug Fixes
+
+* **docs:** add jsdoc-region-tag plugin ([#783](https://www.github.com/googleapis/cloud-debug-nodejs/issues/783)) ([94e7255](https://www.github.com/googleapis/cloud-debug-nodejs/commit/94e72554efe8d62db81f2cbce51551212f07fc79))
+
 ## [4.1.0](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v4.0.4...v4.1.0) (2019-11-08)
 
 
