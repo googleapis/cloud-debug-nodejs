@@ -246,9 +246,7 @@ describe('v8debugapi', () => {
     forceNewAgent_: true,
     javascriptFileExtensions: ['.js', '.jsz'],
   });
-  const logger = consoleLogLevel({
-    level: Debuglet.logLevelToName(config.logLevel),
-  });
+  const logger = new MockLogger();
   let api: DebugApi;
 
   beforeEach(done => {
@@ -288,6 +286,7 @@ describe('v8debugapi', () => {
     }
   });
   afterEach(() => {
+    logger.clear();
     assert(stateIsClean(api));
   });
 
@@ -435,6 +434,32 @@ describe('v8debugapi', () => {
         assert.ok(bp.status!.isError);
         assert(
           bp.status!.description.format === utils.messages.SOURCE_FILE_AMBIGUOUS
+        );
+
+        // Verify that a log message is emitted.
+        assert.strictEqual(
+          logger.warns.length,
+          1,
+          `Expected 1 warning log message, got ${logger.allCalls.length}`
+        );
+        const message = logger.warns[0].args[0];
+        let expectedSubstring = path.join('fixtures', 'a', 'hello.js');
+        assert.notStrictEqual(
+          message.indexOf(expectedSubstring),
+          -1,
+          `Missing text '${expectedSubstring}' in '${message}'`
+        );
+        expectedSubstring = path.join('fixtures', 'b', 'hello.js');
+        assert.notStrictEqual(
+          message.indexOf(expectedSubstring),
+          -1,
+          `Missing text '${expectedSubstring}' in '${message}'`
+        );
+        expectedSubstring = 'Unable to unambiguously find';
+        assert.notStrictEqual(
+          message.indexOf(expectedSubstring),
+          -1,
+          `Missing text '${expectedSubstring}' in '${message}'`
         );
         done();
       });
@@ -1977,6 +2002,23 @@ describe('v8debugapi.findScripts', () => {
         'hello.js'
       ),
     ]);
+    assert.strictEqual(logger.allCalls().length, 0);
+  });
+
+  it('should prefer exact path matches to ones involving subdirectories', () => {
+    const config = extend(true, {}, undefined!, {
+      workingDirectory: path.join('root'),
+    });
+
+    const logger = new MockLogger();
+
+    const fakeFileStats = {
+      [path.join('root', 'hello.js')]: {hash: 'fake', lines: 5},
+      [path.join('root', 'subdir', 'hello.js')]: {hash: 'fake', lines: 50},
+    };
+    const scriptPath = 'hello.js';
+    const result = utils.findScripts(scriptPath, config, fakeFileStats, logger);
+    assert.deepStrictEqual(result, [path.join('root', 'hello.js')]);
     assert.strictEqual(logger.allCalls().length, 0);
   });
 

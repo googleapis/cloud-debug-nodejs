@@ -335,12 +335,13 @@ export class V8DebugApi implements debugapi.DebugApi {
     // debuglet, we are going to assume that repository root === the starting
     // working directory.
     let matchingScript;
+    const scriptPath = mapInfo
+      ? mapInfo.file
+      : path.normalize(
+          (breakpoint.location as stackdriver.SourceLocation).path
+        );
     const scripts = utils.findScripts(
-      mapInfo
-        ? mapInfo.file
-        : path.normalize(
-            (breakpoint.location as stackdriver.SourceLocation).path
-          ),
+      scriptPath,
       this.config,
       this.fileStats,
       this.logger
@@ -356,6 +357,9 @@ export class V8DebugApi implements debugapi.DebugApi {
       // Found the script
       matchingScript = scripts[0];
     } else {
+      this.logger.warn(
+        `Unable to unambiguously find ${scriptPath}. Potential matches: ${scripts}`
+      );
       return utils.setErrorStatusAndCallback(
         cb,
         breakpoint,
