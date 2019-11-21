@@ -1,5 +1,17 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## [4.2.0](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v4.1.0...v4.2.0) (2019-11-21)
+
+
+### Features
+
+* improve experience when multiple files match a breakpoint location ([#784](https://www.github.com/googleapis/cloud-debug-nodejs/issues/784)) ([8b50f38](https://www.github.com/googleapis/cloud-debug-nodejs/commit/8b50f387f1376a438cf315adb8a40a01a7ddfced))
+
+
+### Bug Fixes
+
+* **docs:** add jsdoc-region-tag plugin ([#783](https://www.github.com/googleapis/cloud-debug-nodejs/issues/783)) ([94e7255](https://www.github.com/googleapis/cloud-debug-nodejs/commit/94e72554efe8d62db81f2cbce51551212f07fc79))
+
 ## [4.1.0](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v4.0.4...v4.1.0) (2019-11-08)
 
 
