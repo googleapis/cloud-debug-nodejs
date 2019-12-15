@@ -1,5 +1,13 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+### [4.2.1](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v4.2.0...v4.2.1) (2019-12-15)
+
+
+### Bug Fixes
+
+* **deps:** pin TypeScript below 3.7.0 ([35589fb](https://www.github.com/googleapis/cloud-debug-nodejs/commit/35589fb467a115fb25c5a2ecf44cfb06cf5b8df4))
+* **deps:** update dependency semver to v7 ([#800](https://www.github.com/googleapis/cloud-debug-nodejs/issues/800)) ([70edb78](https://www.github.com/googleapis/cloud-debug-nodejs/commit/70edb7886569067ed3e44a037f2f26277ec6d8b6))
+
 ## [4.2.0](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v4.1.0...v4.2.0) (2019-11-21)
 
 
