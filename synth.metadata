@@ -1,5 +1,5 @@
 {
-  "updateTime": "2019-11-15T06:08:56.296900Z",
+  "updateTime": "2019-12-21T12:07:50.842238Z",
   "sources": [
     {
       "template": {
@@ -7,6 +7,4316 @@
         "origin": "synthtool.gcp",
         "version": "2019.10.17"
       }
+    }
+  ],
+  "newFiles": [
+    {
+      "path": ".repo-metadata.json"
+    },
+    {
+      "path": "README.md"
+    },
+    {
+      "path": "package.json"
+    },
+    {
+      "path": "scripts-tsconfig.json"
+    },
+    {
+      "path": "CHANGELOG.md"
+    },
+    {
+      "path": ".gitignore"
+    },
+    {
+      "path": "CODE_OF_CONDUCT.md"
+    },
+    {
+      "path": "CONTRIBUTING.md"
+    },
+    {
+      "path": ".prettierrc"
+    },
+    {
+      "path": "package-lock.json"
+    },
+    {
+      "path": ".eslintignore"
+    },
+    {
+      "path": "linkinator.config.json"
+    },
+    {
+      "path": ".eslintrc.yml"
+    },
+    {
+      "path": "renovate.json"
+    },
+    {
+      "path": ".editorconfig"
+    },
+    {
+      "path": "synth.metadata"
+    },
+    {
+      "path": ".compodocrc"
+    },
+    {
+      "path": ".prettierignore"
+    },
+    {
+      "path": "synth.py"
+    },
+    {
+      "path": "codecov.yaml"
+    },
+    {
+      "path": ".jsdoc.js"
+    },
+    {
+      "path": "LICENSE"
+    },
+    {
+      "path": ".nycrc"
+    },
+    {
+      "path": "tsconfig.json"
+    },
+    {
+      "path": "src/index.ts"
+    },
+    {
+      "path": "src/debuggee.ts"
+    },
+    {
+      "path": "src/client/stackdriver/status-message.ts"
+    },
+    {
+      "path": "src/client/stackdriver/debug.ts"
+    },
+    {
+      "path": "src/agent/controller.ts"
+    },
+    {
+      "path": "src/agent/debuglet.ts"
+    },
+    {
+      "path": "src/agent/config.ts"
+    },
+    {
+      "path": "src/agent/state/inspector-state.ts"
+    },
+    {
+      "path": "src/agent/state/legacy-state.ts"
+    },
+    {
+      "path": "src/agent/v8/legacy-debugapi.ts"
+    },
+    {
+      "path": "src/agent/v8/v8inspector.ts"
+    },
+    {
+      "path": "src/agent/v8/debugapi.ts"
+    },
+    {
+      "path": "src/agent/v8/inspector-debugapi.ts"
+    },
+    {
+      "path": "src/agent/io/sourcemapper.ts"
+    },
+    {
+      "path": "src/agent/io/scanner.ts"
+    },
+    {
+      "path": "src/agent/util/utils.ts"
+    },
+    {
+      "path": "src/agent/util/validator.ts"
+    },
+    {
+      "path": "src/agent/util/debug-assert.ts"
+    },
+    {
+      "path": "src/types/stackdriver.d.ts"
+    },
+    {
+      "path": "src/types/v8.d.ts"
+    },
+    {
+      "path": "build/src/index.d.ts"
+    },
+    {
+      "path": "build/src/debuggee.js.map"
+    },
+    {
+      "path": "build/src/index.js.map"
+    },
+    {
+      "path": "build/src/debuggee.d.ts"
+    },
+    {
+      "path": "build/src/debuggee.js"
+    },
+    {
+      "path": "build/src/index.js"
+    },
+    {
+      "path": "build/src/client/stackdriver/debug.js.map"
+    },
+    {
+      "path": "build/src/client/stackdriver/debug.js"
+    },
+    {
+      "path": "build/src/client/stackdriver/status-message.d.ts"
+    },
+    {
+      "path": "build/src/client/stackdriver/status-message.js"
+    },
+    {
+      "path": "build/src/client/stackdriver/debug.d.ts"
+    },
+    {
+      "path": "build/src/client/stackdriver/status-message.js.map"
+    },
+    {
+      "path": "build/src/agent/controller.js"
+    },
+    {
+      "path": "build/src/agent/config.d.ts"
+    },
+    {
+      "path": "build/src/agent/config.js.map"
+    },
+    {
+      "path": "build/src/agent/debuglet.js"
+    },
+    {
+      "path": "build/src/agent/controller.js.map"
+    },
+    {
+      "path": "build/src/agent/debuglet.js.map"
+    },
+    {
+      "path": "build/src/agent/config.js"
+    },
+    {
+      "path": "build/src/agent/debuglet.d.ts"
+    },
+    {
+      "path": "build/src/agent/controller.d.ts"
+    },
+    {
+      "path": "build/src/agent/state/legacy-state.d.ts"
+    },
+    {
+      "path": "build/src/agent/state/inspector-state.d.ts"
+    },
+    {
+      "path": "build/src/agent/state/legacy-state.js.map"
+    },
+    {
+      "path": "build/src/agent/state/inspector-state.js.map"
+    },
+    {
+      "path": "build/src/agent/state/legacy-state.js"
+    },
+    {
+      "path": "build/src/agent/state/inspector-state.js"
+    },
+    {
+      "path": "build/src/agent/v8/inspector-debugapi.d.ts"
+    },
+    {
+      "path": "build/src/agent/v8/legacy-debugapi.js.map"
+    },
+    {
+      "path": "build/src/agent/v8/legacy-debugapi.js"
+    },
+    {
+      "path": "build/src/agent/v8/debugapi.js.map"
+    },
+    {
+      "path": "build/src/agent/v8/v8inspector.d.ts"
+    },
+    {
+      "path": "build/src/agent/v8/v8inspector.js.map"
+    },
+    {
+      "path": "build/src/agent/v8/inspector-debugapi.js"
+    },
+    {
+      "path": "build/src/agent/v8/v8inspector.js"
+    },
+    {
+      "path": "build/src/agent/v8/legacy-debugapi.d.ts"
+    },
+    {
+      "path": "build/src/agent/v8/debugapi.d.ts"
+    },
+    {
+      "path": "build/src/agent/v8/debugapi.js"
+    },
+    {
+      "path": "build/src/agent/v8/inspector-debugapi.js.map"
+    },
+    {
+      "path": "build/src/agent/io/sourcemapper.js.map"
+    },
+    {
+      "path": "build/src/agent/io/scanner.js.map"
+    },
+    {
+      "path": "build/src/agent/io/sourcemapper.d.ts"
+    },
+    {
+      "path": "build/src/agent/io/scanner.d.ts"
+    },
+    {
+      "path": "build/src/agent/io/sourcemapper.js"
+    },
+    {
+      "path": "build/src/agent/io/scanner.js"
+    },
+    {
+      "path": "build/src/agent/util/debug-assert.d.ts"
+    },
+    {
+      "path": "build/src/agent/util/validator.d.ts"
+    },
+    {
+      "path": "build/src/agent/util/debug-assert.js.map"
+    },
+    {
+      "path": "build/src/agent/util/validator.js.map"
+    },
+    {
+      "path": "build/src/agent/util/utils.js.map"
+    },
+    {
+      "path": "build/src/agent/util/utils.d.ts"
+    },
+    {
+      "path": "build/src/agent/util/debug-assert.js"
+    },
+    {
+      "path": "build/src/agent/util/utils.js"
+    },
+    {
+      "path": "build/src/agent/util/validator.js"
+    },
+    {
+      "path": "build/src/types/stackdriver.d.ts"
+    },
+    {
+      "path": "build/src/types/v8.d.ts"
+    },
+    {
+      "path": "build/test/nocks.js"
+    },
+    {
+      "path": "build/test/test-try-catch.d.ts"
+    },
+    {
+      "path": "build/test/test-debug-assert.d.ts"
+    },
+    {
+      "path": "build/test/test-try-catch.ts"
+    },
+    {
+      "path": "build/test/test-max-data-size-code.js"
+    },
+    {
+      "path": "build/test/mock-logger.ts"
+    },
+    {
+      "path": "build/test/test-duplicate-nested-expressions.ts"
+    },
+    {
+      "path": "build/test/debugger.js"
+    },
+    {
+      "path": "build/test/test-circular.d.ts"
+    },
+    {
+      "path": "build/test/test-v8debugapi.js"
+    },
+    {
+      "path": "build/test/test-scanner.js.map"
+    },
+    {
+      "path": "build/test/test-duplicate-expressions.js"
+    },
+    {
+      "path": "build/test/test-duplicate-expressions-code.js"
+    },
+    {
+      "path": "build/test/test-options-credentials.ts"
+    },
+    {
+      "path": "build/test/debugger.ts"
+    },
+    {
+      "path": "build/test/test-duplicate-nested-expressions-code.js"
+    },
+    {
+      "path": "build/test/test-state.js.map"
+    },
+    {
+      "path": "build/test/test-fat-arrow.d.ts"
+    },
+    {
+      "path": "build/test/test-options-credentials.js.map"
+    },
+    {
+      "path": "build/test/test-scanner.d.ts"
+    },
+    {
+      "path": "build/test/test-debuglet.d.ts"
+    },
+    {
+      "path": "build/test/test-state.d.ts"
+    },
+    {
+      "path": "build/test/test-evaluated-expressions.js"
+    },
+    {
+      "path": "build/test/test-v8debugapi-ts-code.ts"
+    },
+    {
+      "path": "build/test/test-circular.js.map"
+    },
+    {
+      "path": "build/test/nocks.ts"
+    },
+    {
+      "path": "build/test/nocks.d.ts"
+    },
+    {
+      "path": "build/test/test-try-catch.js"
+    },
+    {
+      "path": "build/test/mock-logger.d.ts"
+    },
+    {
+      "path": "build/test/test-fat-arrow.js"
+    },
+    {
+      "path": "build/test/test-v8debugapi.js.map"
+    },
+    {
+      "path": "build/test/test-debug-assert.js"
+    },
+    {
+      "path": "build/test/test-debuggee.js.map"
+    },
+    {
+      "path": "build/test/test-this-context-code.js"
+    },
+    {
+      "path": "build/test/test-debuglet.js.map"
+    },
+    {
+      "path": "build/test/test-module.d.ts"
+    },
+    {
+      "path": "build/test/test-fat-arrow.ts"
+    },
+    {
+      "path": "build/test/test-evaluated-expressions-code.js"
+    },
+    {
+      "path": "build/test/test-expression-side-effect.js.map"
+    },
+    {
+      "path": "build/test/test-module.js"
+    },
+    {
+      "path": "build/test/test-duplicate-expressions.d.ts"
+    },
+    {
+      "path": "build/test/test-max-data-size.ts"
+    },
+    {
+      "path": "build/test/test-this-context.d.ts"
+    },
+    {
+      "path": "build/test/test-controller.d.ts"
+    },
+    {
+      "path": "build/test/test-this-context.js.map"
+    },
+    {
+      "path": "build/test/test-circular-code.js"
+    },
+    {
+      "path": "build/test/test-scanner.ts"
+    },
+    {
+      "path": "build/test/test-sourcemapper.js.map"
+    },
+    {
+      "path": "build/test/test-this-context.ts"
+    },
+    {
+      "path": "build/test/test-module.ts"
+    },
+    {
+      "path": "build/test/test-expression-side-effect-code.js"
+    },
+    {
+      "path": "build/test/debugger.js.map"
+    },
+    {
+      "path": "build/test/test-v8debugapi.d.ts"
+    },
+    {
+      "path": "build/test/test-evaluated-expressions.d.ts"
+    },
+    {
+      "path": "build/test/test-options-credentials.d.ts"
+    },
+    {
+      "path": "build/test/test-expression-side-effect.d.ts"
+    },
+    {
+      "path": "build/test/test-debuggee.d.ts"
+    },
+    {
+      "path": "build/test/test-duplicate-expressions.js.map"
+    },
+    {
+      "path": "build/test/test-v8debugapi-ts-code.js.map"
+    },
+    {
+      "path": "build/test/test-options-credentials.js"
+    },
+    {
+      "path": "build/test/test-try-catch.js.map"
+    },
+    {
+      "path": "build/test/test-duplicate-nested-expressions.d.ts"
+    },
+    {
+      "path": "build/test/test-max-data-size.d.ts"
+    },
+    {
+      "path": "build/test/test-debug-assert.js.map"
+    },
+    {
+      "path": "build/test/test-debug-assert.ts"
+    },
+    {
+      "path": "build/test/test-v8debugapi-ts-code.js"
+    },
+    {
+      "path": "build/test/test-duplicate-nested-expressions.js.map"
+    },
+    {
+      "path": "build/test/test-sourcemapper.js"
+    },
+    {
+      "path": "build/test/test-duplicate-nested-expressions.js"
+    },
+    {
+      "path": "build/test/test-module.js.map"
+    },
+    {
+      "path": "build/test/test-evaluated-expressions.js.map"
+    },
+    {
+      "path": "build/test/test-v8debugapi-ts-code.d.ts"
+    },
+    {
+      "path": "build/test/test-fat-arrow.js.map"
+    },
+    {
+      "path": "build/test/test-debuglet.ts"
+    },
+    {
+      "path": "build/test/test-sourcemapper.ts"
+    },
+    {
+      "path": "build/test/mock-logger.js"
+    },
+    {
+      "path": "build/test/test-debuglet.js"
+    },
+    {
+      "path": "build/test/test-try-catch-code.js"
+    },
+    {
+      "path": "build/test/test-controller.js.map"
+    },
+    {
+      "path": "build/test/test-expression-side-effect.js"
+    },
+    {
+      "path": "build/test/test-controller.ts"
+    },
+    {
+      "path": "build/test/test-scanner.js"
+    },
+    {
+      "path": "build/test/test-v8debugapi-code.js"
+    },
+    {
+      "path": "build/test/test-state.ts"
+    },
+    {
+      "path": "build/test/mock-logger.js.map"
+    },
+    {
+      "path": "build/test/test-circular.ts"
+    },
+    {
+      "path": "build/test/test-sourcemapper.d.ts"
+    },
+    {
+      "path": "build/test/test-debuggee.ts"
+    },
+    {
+      "path": "build/test/test-v8debugapi.ts"
+    },
+    {
+      "path": "build/test/test-expression-side-effect.ts"
+    },
+    {
+      "path": "build/test/test-circular.js"
+    },
+    {
+      "path": "build/test/test-duplicate-expressions.ts"
+    },
+    {
+      "path": "build/test/test-debuggee.js"
+    },
+    {
+      "path": "build/test/test-max-data-size.js"
+    },
+    {
+      "path": "build/test/nocks.js.map"
+    },
+    {
+      "path": "build/test/test-controller.js"
+    },
+    {
+      "path": "build/test/mocha.opts"
+    },
+    {
+      "path": "build/test/debugger.d.ts"
+    },
+    {
+      "path": "build/test/test-state.js"
+    },
+    {
+      "path": "build/test/test-max-data-size.js.map"
+    },
+    {
+      "path": "build/test/test-this-context.js"
+    },
+    {
+      "path": "build/test/test-evaluated-expressions.ts"
+    },
+    {
+      "path": "build/test/misc/bench.ts"
+    },
+    {
+      "path": "build/test/misc/test-leak.ts"
+    },
+    {
+      "path": "build/test/misc/bench.js.map"
+    },
+    {
+      "path": "build/test/misc/bench.d.ts"
+    },
+    {
+      "path": "build/test/misc/test-leak.js.map"
+    },
+    {
+      "path": "build/test/misc/bench.js"
+    },
+    {
+      "path": "build/test/misc/test-leak.js"
+    },
+    {
+      "path": "build/test/misc/bench-code.js"
+    },
+    {
+      "path": "build/test/misc/test-leak.d.ts"
+    },
+    {
+      "path": "build/test/fixtures/fib.js"
+    },
+    {
+      "path": "build/test/fixtures/fat-arrow.js"
+    },
+    {
+      "path": "build/test/fixtures/hello.jsz"
+    },
+    {
+      "path": "build/test/fixtures/key-bad.json"
+    },
+    {
+      "path": "build/test/fixtures/foo.js"
+    },
+    {
+      "path": "build/test/fixtures/gcloud-credentials.json"
+    },
+    {
+      "path": "build/test/fixtures/hello.js"
+    },
+    {
+      "path": "build/test/fixtures/expensive-capture.js"
+    },
+    {
+      "path": "build/test/fixtures/test-config.js"
+    },
+    {
+      "path": "build/test/fixtures/transpiled-shorter/in.js.map"
+    },
+    {
+      "path": "build/test/fixtures/transpiled-shorter/in.js"
+    },
+    {
+      "path": "build/test/fixtures/transpiled-shorter/in.coffee"
+    },
+    {
+      "path": "build/test/fixtures/transpiled-shorter/build.sh"
+    },
+    {
+      "path": "build/test/fixtures/b/hello.js"
+    },
+    {
+      "path": "build/test/fixtures/es6/transpile.js"
+    },
+    {
+      "path": "build/test/fixtures/es6/transpile.js.map"
+    },
+    {
+      "path": "build/test/fixtures/es6/transpile.es6"
+    },
+    {
+      "path": "build/test/fixtures/sourcemaps/js-map-file.js.map"
+    },
+    {
+      "path": "build/test/fixtures/sourcemaps/css-file.css"
+    },
+    {
+      "path": "build/test/fixtures/sourcemaps/js-file.js"
+    },
+    {
+      "path": "build/test/fixtures/sourcemaps/css-map-file.css.map"
+    },
+    {
+      "path": "build/test/fixtures/a/hello.js"
+    },
+    {
+      "path": "build/test/fixtures/coffee/transpile.js"
+    },
+    {
+      "path": "build/test/fixtures/coffee/transpile.js.map"
+    },
+    {
+      "path": "build/test/fixtures/coffee/transpile.coffee"
+    },
+    {
+      "path": "build/test/fixtures/sourcemapper/webpack-ts/package.json"
+    },
+    {
+      "path": "build/test/fixtures/sourcemapper/webpack-ts/out.js.map"
+    },
+    {
+      "path": "build/test/fixtures/sourcemapper/webpack-ts/webpack.config.js"
+    },
+    {
+      "path": "build/test/fixtures/sourcemapper/webpack-ts/out.js"
+    },
+    {
+      "path": "build/test/fixtures/sourcemapper/webpack-ts/in.ts_"
+    },
+    {
+      "path": "build/test/fixtures/sourcemapper/coffeescript/in.js.map"
+    },
+    {
+      "path": "build/test/fixtures/sourcemapper/coffeescript/in.js"
+    },
+    {
+      "path": "build/test/fixtures/sourcemapper/coffeescript/in.coffee"
+    },
+    {
+      "path": "build/test/fixtures/sourcemapper/coffeescript/build.sh"
+    },
+    {
+      "path": "build/test/fixtures/sourcemapper/typescript/out.js.map"
+    },
+    {
+      "path": "build/test/fixtures/sourcemapper/typescript/out.js"
+    },
+    {
+      "path": "build/test/fixtures/sourcemapper/typescript/in.ts_"
+    },
+    {
+      "path": "build/test/fixtures/sourcemapper/typescript/build.sh"
+    },
+    {
+      "path": "build/test/fixtures/sourcemapper/babel/package.json"
+    },
+    {
+      "path": "build/test/fixtures/sourcemapper/babel/out.js.map"
+    },
+    {
+      "path": "build/test/fixtures/sourcemapper/babel/in.js"
+    },
+    {
+      "path": "build/test/fixtures/sourcemapper/babel/out.js"
+    },
+    {
+      "path": "build/test/fixtures/sourcemapper/babel/build.sh"
+    },
+    {
+      "path": "build/test/fixtures/ts/async.js"
+    },
+    {
+      "path": "build/test/fixtures/ts/async.ts_"
+    },
+    {
+      "path": "build/test/fixtures/nojs/README.md"
+    },
+    {
+      "path": "build/system-test/test-install.d.ts"
+    },
+    {
+      "path": "build/system-test/test-install.js"
+    },
+    {
+      "path": "build/system-test/test-e2e.js"
+    },
+    {
+      "path": "build/system-test/test-controller.d.ts"
+    },
+    {
+      "path": "build/system-test/test-e2e.js.map"
+    },
+    {
+      "path": "build/system-test/test-install.js.map"
+    },
+    {
+      "path": "build/system-test/test-e2e.ts"
+    },
+    {
+      "path": "build/system-test/test-e2e.d.ts"
+    },
+    {
+      "path": "build/system-test/test-controller.js.map"
+    },
+    {
+      "path": "build/system-test/test-controller.ts"
+    },
+    {
+      "path": "build/system-test/test-install.ts"
+    },
+    {
+      "path": "build/system-test/test-controller.js"
+    },
+    {
+      "path": "build/system-test/fixtures/sample/package.json"
+    },
+    {
+      "path": "build/system-test/fixtures/sample/tslint.json"
+    },
+    {
+      "path": "build/system-test/fixtures/sample/tsconfig.json"
+    },
+    {
+      "path": "build/system-test/fixtures/sample/src/partialCapture.ts"
+    },
+    {
+      "path": "build/system-test/fixtures/sample/src/import.ts"
+    },
+    {
+      "path": "build/system-test/fixtures/sample/src/allowExpressionsJs.js"
+    },
+    {
+      "path": "build/system-test/fixtures/sample/src/noargs.ts"
+    },
+    {
+      "path": "build/system-test/fixtures/sample/src/completeServiceContext.ts"
+    },
+    {
+      "path": "build/system-test/fixtures/sample/src/partialServiceContext.ts"
+    },
+    {
+      "path": "build/system-test/fixtures/sample/src/allowExpressions.ts"
+    },
+    {
+      "path": "build/system-test/fixtures/sample/src/start.js"
+    },
+    {
+      "path": "build/system-test/fixtures/sample/src/startEmpty.js"
+    },
+    {
+      "path": "build/scripts/setup-build-dir.js"
+    },
+    {
+      "path": "build/scripts/setup-build-dir.d.ts"
+    },
+    {
+      "path": "build/scripts/setup-build-dir.js.map"
+    },
+    {
+      "path": "__pycache__/synth.cpython-36.pyc"
+    },
+    {
+      "path": "samples/README.md"
+    },
+    {
+      "path": "samples/package.json"
+    },
+    {
+      "path": "samples/app.yaml"
+    },
+    {
+      "path": "samples/.eslintrc.yml"
+    },
+    {
+      "path": "samples/snippets.js"
+    },
+    {
+      "path": "samples/app.js"
+    },
+    {
+      "path": "samples/test/test.js"
+    },
+    {
+      "path": "doc/images/breakpoint-hit.png"
+    },
+    {
+      "path": "doc/images/breakpoint-set.png"
+    },
+    {
+      "path": "doc/images/debug-ui.png"
+    },
+    {
+      "path": ".github/CONTRIBUTING.md"
+    },
+    {
+      "path": ".github/PULL_REQUEST_TEMPLATE.md"
+    },
+    {
+      "path": ".github/release-please.yml"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/support_request.md"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/feature_request.md"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/bug_report.md"
+    },
+    {
+      "path": ".kokoro/test.sh"
+    },
+    {
+      "path": ".kokoro/docs.sh"
+    },
+    {
+      "path": ".kokoro/samples-test.sh"
+    },
+    {
+      "path": ".kokoro/.gitattributes"
+    },
+    {
+      "path": ".kokoro/trampoline.sh"
+    },
+    {
+      "path": ".kokoro/lint.sh"
+    },
+    {
+      "path": ".kokoro/publish.sh"
+    },
+    {
+      "path": ".kokoro/test.bat"
+    },
+    {
+      "path": ".kokoro/common.cfg"
+    },
+    {
+      "path": ".kokoro/system-test.sh"
+    },
+    {
+      "path": ".kokoro/release/docs.cfg"
+    },
+    {
+      "path": ".kokoro/release/docs.sh"
+    },
+    {
+      "path": ".kokoro/release/publish.cfg"
+    },
+    {
+      "path": ".kokoro/release/common.cfg"
+    },
+    {
+      "path": ".kokoro/continuous/node10/lint.cfg"
+    },
+    {
+      "path": ".kokoro/continuous/node10/docs.cfg"
+    },
+    {
+      "path": ".kokoro/continuous/node10/test.cfg"
+    },
+    {
+      "path": ".kokoro/continuous/node10/system-test.cfg"
+    },
+    {
+      "path": ".kokoro/continuous/node10/samples-test.cfg"
+    },
+    {
+      "path": ".kokoro/continuous/node10/common.cfg"
+    },
+    {
+      "path": ".kokoro/continuous/node8/test.cfg"
+    },
+    {
+      "path": ".kokoro/continuous/node8/common.cfg"
+    },
+    {
+      "path": ".kokoro/continuous/node12/test.cfg"
+    },
+    {
+      "path": ".kokoro/continuous/node12/common.cfg"
+    },
+    {
+      "path": ".kokoro/presubmit/node10/lint.cfg"
+    },
+    {
+      "path": ".kokoro/presubmit/node10/docs.cfg"
+    },
+    {
+      "path": ".kokoro/presubmit/node10/test.cfg"
+    },
+    {
+      "path": ".kokoro/presubmit/node10/system-test.cfg"
+    },
+    {
+      "path": ".kokoro/presubmit/node10/samples-test.cfg"
+    },
+    {
+      "path": ".kokoro/presubmit/node10/common.cfg"
+    },
+    {
+      "path": ".kokoro/presubmit/node8/test.cfg"
+    },
+    {
+      "path": ".kokoro/presubmit/node8/common.cfg"
+    },
+    {
+      "path": ".kokoro/presubmit/node12/test.cfg"
+    },
+    {
+      "path": ".kokoro/presubmit/node12/common.cfg"
+    },
+    {
+      "path": ".kokoro/presubmit/windows/test.cfg"
+    },
+    {
+      "path": ".kokoro/presubmit/windows/common.cfg"
+    },
+    {
+      "path": ".git/packed-refs"
+    },
+    {
+      "path": ".git/HEAD"
+    },
+    {
+      "path": ".git/config"
+    },
+    {
+      "path": ".git/index"
+    },
+    {
+      "path": ".git/shallow"
+    },
+    {
+      "path": ".git/logs/HEAD"
+    },
+    {
+      "path": ".git/logs/refs/remotes/origin/HEAD"
+    },
+    {
+      "path": ".git/logs/refs/heads/autosynth"
+    },
+    {
+      "path": ".git/logs/refs/heads/master"
+    },
+    {
+      "path": ".git/refs/tags/v4.2.1"
+    },
+    {
+      "path": ".git/refs/remotes/origin/HEAD"
+    },
+    {
+      "path": ".git/refs/heads/autosynth"
+    },
+    {
+      "path": ".git/refs/heads/master"
+    },
+    {
+      "path": ".git/objects/pack/pack-8df8f6b5d985e04c18113dfa69cb18b0b3248932.idx"
+    },
+    {
+      "path": ".git/objects/pack/pack-8df8f6b5d985e04c18113dfa69cb18b0b3248932.pack"
+    },
+    {
+      "path": "test/test-try-catch.ts"
+    },
+    {
+      "path": "test/test-max-data-size-code.js"
+    },
+    {
+      "path": "test/mock-logger.ts"
+    },
+    {
+      "path": "test/test-duplicate-nested-expressions.ts"
+    },
+    {
+      "path": "test/test-duplicate-expressions-code.js"
+    },
+    {
+      "path": "test/test-options-credentials.ts"
+    },
+    {
+      "path": "test/debugger.ts"
+    },
+    {
+      "path": "test/test-duplicate-nested-expressions-code.js"
+    },
+    {
+      "path": "test/test-v8debugapi-ts-code.ts"
+    },
+    {
+      "path": "test/nocks.ts"
+    },
+    {
+      "path": "test/test-this-context-code.js"
+    },
+    {
+      "path": "test/test-fat-arrow.ts"
+    },
+    {
+      "path": "test/test-evaluated-expressions-code.js"
+    },
+    {
+      "path": "test/test-max-data-size.ts"
+    },
+    {
+      "path": "test/test-circular-code.js"
+    },
+    {
+      "path": "test/test-scanner.ts"
+    },
+    {
+      "path": "test/test-this-context.ts"
+    },
+    {
+      "path": "test/test-module.ts"
+    },
+    {
+      "path": "test/test-expression-side-effect-code.js"
+    },
+    {
+      "path": "test/test-debug-assert.ts"
+    },
+    {
+      "path": "test/test-debuglet.ts"
+    },
+    {
+      "path": "test/test-sourcemapper.ts"
+    },
+    {
+      "path": "test/test-try-catch-code.js"
+    },
+    {
+      "path": "test/test-controller.ts"
+    },
+    {
+      "path": "test/test-v8debugapi-code.js"
+    },
+    {
+      "path": "test/test-state.ts"
+    },
+    {
+      "path": "test/test-circular.ts"
+    },
+    {
+      "path": "test/test-debuggee.ts"
+    },
+    {
+      "path": "test/test-v8debugapi.ts"
+    },
+    {
+      "path": "test/test-expression-side-effect.ts"
+    },
+    {
+      "path": "test/test-duplicate-expressions.ts"
+    },
+    {
+      "path": "test/mocha.opts"
+    },
+    {
+      "path": "test/test-evaluated-expressions.ts"
+    },
+    {
+      "path": "test/misc/bench.ts"
+    },
+    {
+      "path": "test/misc/test-leak.ts"
+    },
+    {
+      "path": "test/misc/bench-code.js"
+    },
+    {
+      "path": "test/fixtures/fib.js"
+    },
+    {
+      "path": "test/fixtures/fat-arrow.js"
+    },
+    {
+      "path": "test/fixtures/hello.jsz"
+    },
+    {
+      "path": "test/fixtures/key-bad.json"
+    },
+    {
+      "path": "test/fixtures/foo.js"
+    },
+    {
+      "path": "test/fixtures/gcloud-credentials.json"
+    },
+    {
+      "path": "test/fixtures/hello.js"
+    },
+    {
+      "path": "test/fixtures/expensive-capture.js"
+    },
+    {
+      "path": "test/fixtures/test-config.js"
+    },
+    {
+      "path": "test/fixtures/transpiled-shorter/in.js.map"
+    },
+    {
+      "path": "test/fixtures/transpiled-shorter/in.js"
+    },
+    {
+      "path": "test/fixtures/transpiled-shorter/in.coffee"
+    },
+    {
+      "path": "test/fixtures/transpiled-shorter/build.sh"
+    },
+    {
+      "path": "test/fixtures/b/hello.js"
+    },
+    {
+      "path": "test/fixtures/es6/transpile.js"
+    },
+    {
+      "path": "test/fixtures/es6/transpile.js.map"
+    },
+    {
+      "path": "test/fixtures/es6/transpile.es6"
+    },
+    {
+      "path": "test/fixtures/sourcemaps/js-map-file.js.map"
+    },
+    {
+      "path": "test/fixtures/sourcemaps/css-file.css"
+    },
+    {
+      "path": "test/fixtures/sourcemaps/js-file.js"
+    },
+    {
+      "path": "test/fixtures/sourcemaps/css-map-file.css.map"
+    },
+    {
+      "path": "test/fixtures/a/hello.js"
+    },
+    {
+      "path": "test/fixtures/coffee/transpile.js"
+    },
+    {
+      "path": "test/fixtures/coffee/transpile.js.map"
+    },
+    {
+      "path": "test/fixtures/coffee/transpile.coffee"
+    },
+    {
+      "path": "test/fixtures/sourcemapper/webpack-ts/package.json"
+    },
+    {
+      "path": "test/fixtures/sourcemapper/webpack-ts/out.js.map"
+    },
+    {
+      "path": "test/fixtures/sourcemapper/webpack-ts/webpack.config.js"
+    },
+    {
+      "path": "test/fixtures/sourcemapper/webpack-ts/out.js"
+    },
+    {
+      "path": "test/fixtures/sourcemapper/webpack-ts/in.ts_"
+    },
+    {
+      "path": "test/fixtures/sourcemapper/coffeescript/in.js.map"
+    },
+    {
+      "path": "test/fixtures/sourcemapper/coffeescript/in.js"
+    },
+    {
+      "path": "test/fixtures/sourcemapper/coffeescript/in.coffee"
+    },
+    {
+      "path": "test/fixtures/sourcemapper/coffeescript/build.sh"
+    },
+    {
+      "path": "test/fixtures/sourcemapper/typescript/out.js.map"
+    },
+    {
+      "path": "test/fixtures/sourcemapper/typescript/out.js"
+    },
+    {
+      "path": "test/fixtures/sourcemapper/typescript/in.ts_"
+    },
+    {
+      "path": "test/fixtures/sourcemapper/typescript/build.sh"
+    },
+    {
+      "path": "test/fixtures/sourcemapper/babel/package.json"
+    },
+    {
+      "path": "test/fixtures/sourcemapper/babel/out.js.map"
+    },
+    {
+      "path": "test/fixtures/sourcemapper/babel/in.js"
+    },
+    {
+      "path": "test/fixtures/sourcemapper/babel/out.js"
+    },
+    {
+      "path": "test/fixtures/sourcemapper/babel/build.sh"
+    },
+    {
+      "path": "test/fixtures/ts/async.js"
+    },
+    {
+      "path": "test/fixtures/ts/async.ts_"
+    },
+    {
+      "path": "test/fixtures/nojs/README.md"
+    },
+    {
+      "path": "system-test/test-e2e.ts"
+    },
+    {
+      "path": "system-test/test-controller.ts"
+    },
+    {
+      "path": "system-test/test-install.ts"
+    },
+    {
+      "path": "system-test/fixtures/sample/package.json"
+    },
+    {
+      "path": "system-test/fixtures/sample/tslint.json"
+    },
+    {
+      "path": "system-test/fixtures/sample/tsconfig.json"
+    },
+    {
+      "path": "system-test/fixtures/sample/src/partialCapture.ts"
+    },
+    {
+      "path": "system-test/fixtures/sample/src/import.ts"
+    },
+    {
+      "path": "system-test/fixtures/sample/src/allowExpressionsJs.js"
+    },
+    {
+      "path": "system-test/fixtures/sample/src/noargs.ts"
+    },
+    {
+      "path": "system-test/fixtures/sample/src/completeServiceContext.ts"
+    },
+    {
+      "path": "system-test/fixtures/sample/src/partialServiceContext.ts"
+    },
+    {
+      "path": "system-test/fixtures/sample/src/allowExpressions.ts"
+    },
+    {
+      "path": "system-test/fixtures/sample/src/start.js"
+    },
+    {
+      "path": "system-test/fixtures/sample/src/startEmpty.js"
+    },
+    {
+      "path": "node_modules/strip-bom/package.json"
+    },
+    {
+      "path": "node_modules/string-width/package.json"
+    },
+    {
+      "path": "node_modules/string-width/node_modules/strip-ansi/package.json"
+    },
+    {
+      "path": "node_modules/is-callable/package.json"
+    },
+    {
+      "path": "node_modules/copy-descriptor/package.json"
+    },
+    {
+      "path": "node_modules/util-deprecate/package.json"
+    },
+    {
+      "path": "node_modules/gts/package.json"
+    },
+    {
+      "path": "node_modules/gts/node_modules/has-flag/package.json"
+    },
+    {
+      "path": "node_modules/gts/node_modules/color-name/package.json"
+    },
+    {
+      "path": "node_modules/gts/node_modules/color-convert/package.json"
+    },
+    {
+      "path": "node_modules/gts/node_modules/supports-color/package.json"
+    },
+    {
+      "path": "node_modules/gts/node_modules/ansi-styles/package.json"
+    },
+    {
+      "path": "node_modules/gts/node_modules/chalk/package.json"
+    },
+    {
+      "path": "node_modules/require-directory/package.json"
+    },
+    {
+      "path": "node_modules/update-notifier/package.json"
+    },
+    {
+      "path": "node_modules/esprima/package.json"
+    },
+    {
+      "path": "node_modules/tiny-inflate/package.json"
+    },
+    {
+      "path": "node_modules/string_decoder/package.json"
+    },
+    {
+      "path": "node_modules/mocha/package.json"
+    },
+    {
+      "path": "node_modules/mocha/node_modules/locate-path/package.json"
+    },
+    {
+      "path": "node_modules/mocha/node_modules/ansi-colors/package.json"
+    },
+    {
+      "path": "node_modules/mocha/node_modules/find-up/package.json"
+    },
+    {
+      "path": "node_modules/mocha/node_modules/diff/package.json"
+    },
+    {
+      "path": "node_modules/mocha/node_modules/yargs-parser/package.json"
+    },
+    {
+      "path": "node_modules/mocha/node_modules/supports-color/package.json"
+    },
+    {
+      "path": "node_modules/mocha/node_modules/camelcase/package.json"
+    },
+    {
+      "path": "node_modules/mocha/node_modules/p-locate/package.json"
+    },
+    {
+      "path": "node_modules/mocha/node_modules/glob/package.json"
+    },
+    {
+      "path": "node_modules/mocha/node_modules/ms/package.json"
+    },
+    {
+      "path": "node_modules/arr-diff/package.json"
+    },
+    {
+      "path": "node_modules/split/package.json"
+    },
+    {
+      "path": "node_modules/is-arguments/package.json"
+    },
+    {
+      "path": "node_modules/istanbul-lib-source-maps/package.json"
+    },
+    {
+      "path": "node_modules/istanbul-lib-source-maps/node_modules/rimraf/package.json"
+    },
+    {
+      "path": "node_modules/istanbul-lib-source-maps/node_modules/semver/package.json"
+    },
+    {
+      "path": "node_modules/istanbul-lib-source-maps/node_modules/pify/package.json"
+    },
+    {
+      "path": "node_modules/istanbul-lib-source-maps/node_modules/make-dir/package.json"
+    },
+    {
+      "path": "node_modules/istanbul-lib-source-maps/node_modules/debug/package.json"
+    },
+    {
+      "path": "node_modules/pause-stream/package.json"
+    },
+    {
+      "path": "node_modules/osenv/README.md"
+    },
+    {
+      "path": "node_modules/osenv/package.json"
+    },
+    {
+      "path": "node_modules/osenv/osenv.js"
+    },
+    {
+      "path": "node_modules/osenv/LICENSE"
+    },
+    {
+      "path": "node_modules/on-headers/package.json"
+    },
+    {
+      "path": "node_modules/core-util-is/package.json"
+    },
+    {
+      "path": "node_modules/wrap-ansi/package.json"
+    },
+    {
+      "path": "node_modules/wrap-ansi/node_modules/string-width/package.json"
+    },
+    {
+      "path": "node_modules/wrap-ansi/node_modules/emoji-regex/package.json"
+    },
+    {
+      "path": "node_modules/wrap-ansi/node_modules/is-fullwidth-code-point/package.json"
+    },
+    {
+      "path": "node_modules/minimist-options/package.json"
+    },
+    {
+      "path": "node_modules/minimist-options/node_modules/arrify/package.json"
+    },
+    {
+      "path": "node_modules/array-uniq/package.json"
+    },
+    {
+      "path": "node_modules/type-detect/package.json"
+    },
+    {
+      "path": "node_modules/lodash.flattendeep/package.json"
+    },
+    {
+      "path": "node_modules/keyv/package.json"
+    },
+    {
+      "path": "node_modules/glob-parent/package.json"
+    },
+    {
+      "path": "node_modules/global-dirs/package.json"
+    },
+    {
+      "path": "node_modules/has-flag/package.json"
+    },
+    {
+      "path": "node_modules/locate-path/package.json"
+    },
+    {
+      "path": "node_modules/fill-keys/package.json"
+    },
+    {
+      "path": "node_modules/ts-simple-ast/package.json"
+    },
+    {
+      "path": "node_modules/ts-simple-ast/node_modules/glob-parent/package.json"
+    },
+    {
+      "path": "node_modules/ts-simple-ast/node_modules/is-glob/package.json"
+    },
+    {
+      "path": "node_modules/ts-simple-ast/node_modules/typescript/package.json"
+    },
+    {
+      "path": "node_modules/ts-simple-ast/node_modules/fs-extra/package.json"
+    },
+    {
+      "path": "node_modules/html-entities/package.json"
+    },
+    {
+      "path": "node_modules/empower-assert/package.json"
+    },
+    {
+      "path": "node_modules/convert-source-map/package.json"
+    },
+    {
+      "path": "node_modules/require-main-filename/package.json"
+    },
+    {
+      "path": "node_modules/string.prototype.trimleft/package.json"
+    },
+    {
+      "path": "node_modules/range-parser/package.json"
+    },
+    {
+      "path": "node_modules/npm-package-arg/package.json"
+    },
+    {
+      "path": "node_modules/npm-package-arg/node_modules/semver/package.json"
+    },
+    {
+      "path": "node_modules/espower-loader/package.json"
+    },
+    {
+      "path": "node_modules/espower-loader/node_modules/source-map/package.json"
+    },
+    {
+      "path": "node_modules/espower-loader/node_modules/source-map-support/package.json"
+    },
+    {
+      "path": "node_modules/defer-to-connect/package.json"
+    },
+    {
+      "path": "node_modules/duplexer3/package.json"
+    },
+    {
+      "path": "node_modules/indent-string/package.json"
+    },
+    {
+      "path": "node_modules/append-transform/package.json"
+    },
+    {
+      "path": "node_modules/got/package.json"
+    },
+    {
+      "path": "node_modules/got/node_modules/@sindresorhus/is/package.json"
+    },
+    {
+      "path": "node_modules/estraverse/package.json"
+    },
+    {
+      "path": "node_modules/brfs/package.json"
+    },
+    {
+      "path": "node_modules/brfs/node_modules/through2/package.json"
+    },
+    {
+      "path": "node_modules/resolve-from/package.json"
+    },
+    {
+      "path": "node_modules/pascalcase/package.json"
+    },
+    {
+      "path": "node_modules/assign-symbols/package.json"
+    },
+    {
+      "path": "node_modules/type-name/package.json"
+    },
+    {
+      "path": "node_modules/lodash/package.json"
+    },
+    {
+      "path": "node_modules/strip-ansi/package.json"
+    },
+    {
+      "path": "node_modules/strip-ansi/node_modules/ansi-regex/package.json"
+    },
+    {
+      "path": "node_modules/safe-buffer/package.json"
+    },
+    {
+      "path": "node_modules/lodash.pickby/package.json"
+    },
+    {
+      "path": "node_modules/@szmarczak/http-timer/package.json"
+    },
+    {
+      "path": "node_modules/object-keys/package.json"
+    },
+    {
+      "path": "node_modules/split-string/package.json"
+    },
+    {
+      "path": "node_modules/base/package.json"
+    },
+    {
+      "path": "node_modules/base/node_modules/is-data-descriptor/package.json"
+    },
+    {
+      "path": "node_modules/base/node_modules/is-descriptor/package.json"
+    },
+    {
+      "path": "node_modules/base/node_modules/is-accessor-descriptor/package.json"
+    },
+    {
+      "path": "node_modules/base/node_modules/define-property/package.json"
+    },
+    {
+      "path": "node_modules/console-log-level/package.json"
+    },
+    {
+      "path": "node_modules/validate-npm-package-name/package.json"
+    },
+    {
+      "path": "node_modules/callsite/package.json"
+    },
+    {
+      "path": "node_modules/configstore/package.json"
+    },
+    {
+      "path": "node_modules/configstore/node_modules/write-file-atomic/package.json"
+    },
+    {
+      "path": "node_modules/acorn-node/package.json"
+    },
+    {
+      "path": "node_modules/dot-prop/package.json"
+    },
+    {
+      "path": "node_modules/spdx-compare/package.json"
+    },
+    {
+      "path": "node_modules/tsutils/package.json"
+    },
+    {
+      "path": "node_modules/import-fresh/package.json"
+    },
+    {
+      "path": "node_modules/mute-stream/package.json"
+    },
+    {
+      "path": "node_modules/cosmiconfig/package.json"
+    },
+    {
+      "path": "node_modules/wide-align/package.json"
+    },
+    {
+      "path": "node_modules/wide-align/node_modules/string-width/package.json"
+    },
+    {
+      "path": "node_modules/wide-align/node_modules/strip-ansi/package.json"
+    },
+    {
+      "path": "node_modules/wide-align/node_modules/ansi-regex/package.json"
+    },
+    {
+      "path": "node_modules/wide-align/node_modules/is-fullwidth-code-point/package.json"
+    },
+    {
+      "path": "node_modules/readdirp/package.json"
+    },
+    {
+      "path": "node_modules/cache-base/package.json"
+    },
+    {
+      "path": "node_modules/is-promise/package.json"
+    },
+    {
+      "path": "node_modules/es6-map/package.json"
+    },
+    {
+      "path": "node_modules/loglevel-plugin-prefix/package.json"
+    },
+    {
+      "path": "node_modules/p-finally/package.json"
+    },
+    {
+      "path": "node_modules/snapdragon-node/package.json"
+    },
+    {
+      "path": "node_modules/snapdragon-node/node_modules/is-data-descriptor/package.json"
+    },
+    {
+      "path": "node_modules/snapdragon-node/node_modules/is-descriptor/package.json"
+    },
+    {
+      "path": "node_modules/snapdragon-node/node_modules/is-accessor-descriptor/package.json"
+    },
+    {
+      "path": "node_modules/snapdragon-node/node_modules/define-property/package.json"
+    },
+    {
+      "path": "node_modules/es6-set/package.json"
+    },
+    {
+      "path": "node_modules/es6-set/node_modules/es6-symbol/package.json"
+    },
+    {
+      "path": "node_modules/array-find/package.json"
+    },
+    {
+      "path": "node_modules/arr-flatten/package.json"
+    },
+    {
+      "path": "node_modules/has-value/package.json"
+    },
+    {
+      "path": "node_modules/istanbul-reports/package.json"
+    },
+    {
+      "path": "node_modules/get-value/package.json"
+    },
+    {
+      "path": "node_modules/is-directory/package.json"
+    },
+    {
+      "path": "node_modules/globby/package.json"
+    },
+    {
+      "path": "node_modules/is-data-descriptor/package.json"
+    },
+    {
+      "path": "node_modules/is-data-descriptor/node_modules/kind-of/package.json"
+    },
+    {
+      "path": "node_modules/registry-url/package.json"
+    },
+    {
+      "path": "node_modules/json-stringify-safe/package.json"
+    },
+    {
+      "path": "node_modules/windows-release/package.json"
+    },
+    {
+      "path": "node_modules/windows-release/node_modules/is-stream/package.json"
+    },
+    {
+      "path": "node_modules/windows-release/node_modules/execa/package.json"
+    },
+    {
+      "path": "node_modules/class-utils/package.json"
+    },
+    {
+      "path": "node_modules/class-utils/node_modules/define-property/package.json"
+    },
+    {
+      "path": "node_modules/dfa/package.json"
+    },
+    {
+      "path": "node_modules/mimic-response/package.json"
+    },
+    {
+      "path": "node_modules/figures/package.json"
+    },
+    {
+      "path": "node_modules/argparse/package.json"
+    },
+    {
+      "path": "node_modules/type/package.json"
+    },
+    {
+      "path": "node_modules/domhandler/package.json"
+    },
+    {
+      "path": "node_modules/error-ex/package.json"
+    },
+    {
+      "path": "node_modules/to-object-path/package.json"
+    },
+    {
+      "path": "node_modules/to-object-path/node_modules/kind-of/package.json"
+    },
+    {
+      "path": "node_modules/ansi-colors/package.json"
+    },
+    {
+      "path": "node_modules/safer-buffer/package.json"
+    },
+    {
+      "path": "node_modules/merge2/package.json"
+    },
+    {
+      "path": "node_modules/object.pick/package.json"
+    },
+    {
+      "path": "node_modules/type-fest/package.json"
+    },
+    {
+      "path": "node_modules/browserify-optional/package.json"
+    },
+    {
+      "path": "node_modules/human-signals/package.json"
+    },
+    {
+      "path": "node_modules/posix-character-classes/package.json"
+    },
+    {
+      "path": "node_modules/strip-indent/package.json"
+    },
+    {
+      "path": "node_modules/boxen/package.json"
+    },
+    {
+      "path": "node_modules/boxen/node_modules/string-width/package.json"
+    },
+    {
+      "path": "node_modules/boxen/node_modules/type-fest/package.json"
+    },
+    {
+      "path": "node_modules/boxen/node_modules/camelcase/package.json"
+    },
+    {
+      "path": "node_modules/boxen/node_modules/emoji-regex/package.json"
+    },
+    {
+      "path": "node_modules/boxen/node_modules/is-fullwidth-code-point/package.json"
+    },
+    {
+      "path": "node_modules/release-zalgo/package.json"
+    },
+    {
+      "path": "node_modules/has-symbols/package.json"
+    },
+    {
+      "path": "node_modules/gcp-metadata/package.json"
+    },
+    {
+      "path": "node_modules/http-auth/package.json"
+    },
+    {
+      "path": "node_modules/deep-eql/package.json"
+    },
+    {
+      "path": "node_modules/ansi-wrap/package.json"
+    },
+    {
+      "path": "node_modules/apache-md5/package.json"
+    },
+    {
+      "path": "node_modules/ansi-align/package.json"
+    },
+    {
+      "path": "node_modules/ansi-align/node_modules/string-width/package.json"
+    },
+    {
+      "path": "node_modules/ansi-align/node_modules/emoji-regex/package.json"
+    },
+    {
+      "path": "node_modules/ansi-align/node_modules/is-fullwidth-code-point/package.json"
+    },
+    {
+      "path": "node_modules/findit2/package.json"
+    },
+    {
+      "path": "node_modules/fontkit/package.json"
+    },
+    {
+      "path": "node_modules/fontkit/node_modules/brfs/package.json"
+    },
+    {
+      "path": "node_modules/fontkit/node_modules/static-module/package.json"
+    },
+    {
+      "path": "node_modules/fontkit/node_modules/through2/package.json"
+    },
+    {
+      "path": "node_modules/fontkit/node_modules/unicode-trie/package.json"
+    },
+    {
+      "path": "node_modules/find-up/package.json"
+    },
+    {
+      "path": "node_modules/duplexer/package.json"
+    },
+    {
+      "path": "node_modules/log-symbols/package.json"
+    },
+    {
+      "path": "node_modules/merge-estraverse-visitors/package.json"
+    },
+    {
+      "path": "node_modules/is-extglob/package.json"
+    },
+    {
+      "path": "node_modules/is-relative/package.json"
+    },
+    {
+      "path": "node_modules/prettier/package.json"
+    },
+    {
+      "path": "node_modules/jsonexport/package.json"
+    },
+    {
+      "path": "node_modules/safe-regex/package.json"
+    },
+    {
+      "path": "node_modules/wrappy/package.json"
+    },
+    {
+      "path": "node_modules/spdx-ranges/package.json"
+    },
+    {
+      "path": "node_modules/npm-run-path/package.json"
+    },
+    {
+      "path": "node_modules/istanbul-lib-instrument/package.json"
+    },
+    {
+      "path": "node_modules/istanbul-lib-instrument/node_modules/semver/package.json"
+    },
+    {
+      "path": "node_modules/map-obj/package.json"
+    },
+    {
+      "path": "node_modules/term-size/package.json"
+    },
+    {
+      "path": "node_modules/term-size/node_modules/cross-spawn/package.json"
+    },
+    {
+      "path": "node_modules/term-size/node_modules/get-stream/package.json"
+    },
+    {
+      "path": "node_modules/term-size/node_modules/lru-cache/package.json"
+    },
+    {
+      "path": "node_modules/term-size/node_modules/yallist/package.json"
+    },
+    {
+      "path": "node_modules/term-size/node_modules/is-stream/package.json"
+    },
+    {
+      "path": "node_modules/term-size/node_modules/execa/package.json"
+    },
+    {
+      "path": "node_modules/time-stamp/package.json"
+    },
+    {
+      "path": "node_modules/destroy/package.json"
+    },
+    {
+      "path": "node_modules/growl/package.json"
+    },
+    {
+      "path": "node_modules/http-proxy-agent/package.json"
+    },
+    {
+      "path": "node_modules/http-proxy-agent/node_modules/agent-base/package.json"
+    },
+    {
+      "path": "node_modules/http-proxy-agent/node_modules/debug/package.json"
+    },
+    {
+      "path": "node_modules/cross-spawn/README.md"
+    },
+    {
+      "path": "node_modules/cross-spawn/package.json"
+    },
+    {
+      "path": "node_modules/cross-spawn/CHANGELOG.md"
+    },
+    {
+      "path": "node_modules/cross-spawn/index.js"
+    },
+    {
+      "path": "node_modules/cross-spawn/LICENSE"
+    },
+    {
+      "path": "node_modules/cross-spawn/lib/parse.js"
+    },
+    {
+      "path": "node_modules/cross-spawn/lib/enoent.js"
+    },
+    {
+      "path": "node_modules/cross-spawn/lib/util/escape.js"
+    },
+    {
+      "path": "node_modules/cross-spawn/lib/util/resolveCommand.js"
+    },
+    {
+      "path": "node_modules/cross-spawn/lib/util/readShebang.js"
+    },
+    {
+      "path": "node_modules/cross-spawn/node_modules/semver/package.json"
+    },
+    {
+      "path": "node_modules/merge-stream/package.json"
+    },
+    {
+      "path": "node_modules/loud-rejection/package.json"
+    },
+    {
+      "path": "node_modules/is-glob/package.json"
+    },
+    {
+      "path": "node_modules/array-union/package.json"
+    },
+    {
+      "path": "node_modules/get-stream/package.json"
+    },
+    {
+      "path": "node_modules/from/package.json"
+    },
+    {
+      "path": "node_modules/uglify-js/package.json"
+    },
+    {
+      "path": "node_modules/uglify-js/node_modules/commander/package.json"
+    },
+    {
+      "path": "node_modules/duplexer2/package.json"
+    },
+    {
+      "path": "node_modules/coffeescript/package.json"
+    },
+    {
+      "path": "node_modules/repeat-element/package.json"
+    },
+    {
+      "path": "node_modules/nyc/package.json"
+    },
+    {
+      "path": "node_modules/nyc/node_modules/locate-path/package.json"
+    },
+    {
+      "path": "node_modules/nyc/node_modules/resolve-from/package.json"
+    },
+    {
+      "path": "node_modules/nyc/node_modules/find-up/package.json"
+    },
+    {
+      "path": "node_modules/nyc/node_modules/merge-source-map/package.json"
+    },
+    {
+      "path": "node_modules/nyc/node_modules/rimraf/package.json"
+    },
+    {
+      "path": "node_modules/nyc/node_modules/yargs-parser/package.json"
+    },
+    {
+      "path": "node_modules/nyc/node_modules/semver/package.json"
+    },
+    {
+      "path": "node_modules/nyc/node_modules/pify/package.json"
+    },
+    {
+      "path": "node_modules/nyc/node_modules/camelcase/package.json"
+    },
+    {
+      "path": "node_modules/nyc/node_modules/p-locate/package.json"
+    },
+    {
+      "path": "node_modules/nyc/node_modules/make-dir/package.json"
+    },
+    {
+      "path": "node_modules/optimist/package.json"
+    },
+    {
+      "path": "node_modules/optimist/node_modules/minimist/package.json"
+    },
+    {
+      "path": "node_modules/merge-source-map/package.json"
+    },
+    {
+      "path": "node_modules/merge-source-map/node_modules/source-map/package.json"
+    },
+    {
+      "path": "node_modules/cacheable-request/package.json"
+    },
+    {
+      "path": "node_modules/cacheable-request/node_modules/get-stream/package.json"
+    },
+    {
+      "path": "node_modules/cacheable-request/node_modules/lowercase-keys/package.json"
+    },
+    {
+      "path": "node_modules/nock/package.json"
+    },
+    {
+      "path": "node_modules/nock/node_modules/debug/package.json"
+    },
+    {
+      "path": "node_modules/is-ci/package.json"
+    },
+    {
+      "path": "node_modules/server-destroy/package.json"
+    },
+    {
+      "path": "node_modules/loglevel/package.json"
+    },
+    {
+      "path": "node_modules/acorn-walk/package.json"
+    },
+    {
+      "path": "node_modules/json-parse-better-errors/package.json"
+    },
+    {
+      "path": "node_modules/core-js/package.json"
+    },
+    {
+      "path": "node_modules/set-blocking/package.json"
+    },
+    {
+      "path": "node_modules/pathval/package.json"
+    },
+    {
+      "path": "node_modules/@mrmlnc/readdir-enhanced/package.json"
+    },
+    {
+      "path": "node_modules/next-tick/package.json"
+    },
+    {
+      "path": "node_modules/rimraf/package.json"
+    },
+    {
+      "path": "node_modules/babel-runtime/package.json"
+    },
+    {
+      "path": "node_modules/babel-runtime/node_modules/regenerator-runtime/package.json"
+    },
+    {
+      "path": "node_modules/agent-base/package.json"
+    },
+    {
+      "path": "node_modules/json-bigint/package.json"
+    },
+    {
+      "path": "node_modules/spdx-exceptions/package.json"
+    },
+    {
+      "path": "node_modules/color-name/package.json"
+    },
+    {
+      "path": "node_modules/through/package.json"
+    },
+    {
+      "path": "node_modules/ent/package.json"
+    },
+    {
+      "path": "node_modules/braces/package.json"
+    },
+    {
+      "path": "node_modules/jws/package.json"
+    },
+    {
+      "path": "node_modules/inquirer/package.json"
+    },
+    {
+      "path": "node_modules/jsonfile/package.json"
+    },
+    {
+      "path": "node_modules/urix/package.json"
+    },
+    {
+      "path": "node_modules/etag/package.json"
+    },
+    {
+      "path": "node_modules/to-regex-range/package.json"
+    },
+    {
+      "path": "node_modules/color-convert/package.json"
+    },
+    {
+      "path": "node_modules/assertion-error/package.json"
+    },
+    {
+      "path": "node_modules/escope/package.json"
+    },
+    {
+      "path": "node_modules/ansi-regex/package.json"
+    },
+    {
+      "path": "node_modules/istanbul-lib-hook/package.json"
+    },
+    {
+      "path": "node_modules/chai/package.json"
+    },
+    {
+      "path": "node_modules/is-installed-globally/package.json"
+    },
+    {
+      "path": "node_modules/redent/package.json"
+    },
+    {
+      "path": "node_modules/is-unc-path/package.json"
+    },
+    {
+      "path": "node_modules/is-buffer/package.json"
+    },
+    {
+      "path": "node_modules/esrecurse/package.json"
+    },
+    {
+      "path": "node_modules/tslint/package.json"
+    },
+    {
+      "path": "node_modules/tslint/node_modules/semver/package.json"
+    },
+    {
+      "path": "node_modules/tslint/node_modules/commander/package.json"
+    },
+    {
+      "path": "node_modules/decamelize/package.json"
+    },
+    {
+      "path": "node_modules/@compodoc/ngd-transformer/package.json"
+    },
+    {
+      "path": "node_modules/@compodoc/ngd-transformer/node_modules/fs-extra/package.json"
+    },
+    {
+      "path": "node_modules/@compodoc/compodoc/package.json"
+    },
+    {
+      "path": "node_modules/@compodoc/compodoc/node_modules/semver/package.json"
+    },
+    {
+      "path": "node_modules/@compodoc/ngd-core/package.json"
+    },
+    {
+      "path": "node_modules/@compodoc/ngd-core/node_modules/typescript/package.json"
+    },
+    {
+      "path": "node_modules/parse-json/package.json"
+    },
+    {
+      "path": "node_modules/mime/package.json"
+    },
+    {
+      "path": "node_modules/google-auth-library/package.json"
+    },
+    {
+      "path": "node_modules/decode-uri-component/package.json"
+    },
+    {
+      "path": "node_modules/caller-path/package.json"
+    },
+    {
+      "path": "node_modules/js-green-licenses/package.json"
+    },
+    {
+      "path": "node_modules/js-green-licenses/node_modules/strip-json-comments/package.json"
+    },
+    {
+      "path": "node_modules/ignore/package.json"
+    },
+    {
+      "path": "node_modules/utils-merge/package.json"
+    },
+    {
+      "path": "node_modules/depd/package.json"
+    },
+    {
+      "path": "node_modules/union-value/package.json"
+    },
+    {
+      "path": "node_modules/camelcase-keys/package.json"
+    },
+    {
+      "path": "node_modules/ansi-escapes/package.json"
+    },
+    {
+      "path": "node_modules/concat-stream/package.json"
+    },
+    {
+      "path": "node_modules/is-descriptor/package.json"
+    },
+    {
+      "path": "node_modules/is-descriptor/node_modules/kind-of/package.json"
+    },
+    {
+      "path": "node_modules/expand-brackets/package.json"
+    },
+    {
+      "path": "node_modules/expand-brackets/node_modules/extend-shallow/package.json"
+    },
+    {
+      "path": "node_modules/expand-brackets/node_modules/define-property/package.json"
+    },
+    {
+      "path": "node_modules/expand-brackets/node_modules/ms/package.json"
+    },
+    {
+      "path": "node_modules/expand-brackets/node_modules/debug/package.json"
+    },
+    {
+      "path": "node_modules/decompress-response/package.json"
+    },
+    {
+      "path": "node_modules/is-negated-glob/package.json"
+    },
+    {
+      "path": "node_modules/end-of-stream/package.json"
+    },
+    {
+      "path": "node_modules/amdefine/package.json"
+    },
+    {
+      "path": "node_modules/event-emitter/package.json"
+    },
+    {
+      "path": "node_modules/has-values/package.json"
+    },
+    {
+      "path": "node_modules/has-values/node_modules/kind-of/package.json"
+    },
+    {
+      "path": "node_modules/has-values/node_modules/is-number/package.json"
+    },
+    {
+      "path": "node_modules/has-values/node_modules/is-number/node_modules/kind-of/package.json"
+    },
+    {
+      "path": "node_modules/is-windows/package.json"
+    },
+    {
+      "path": "node_modules/diff/package.json"
+    },
+    {
+      "path": "node_modules/tmp/package.json"
+    },
+    {
+      "path": "node_modules/source-map/package.json"
+    },
+    {
+      "path": "node_modules/is-obj/package.json"
+    },
+    {
+      "path": "node_modules/bcryptjs/package.json"
+    },
+    {
+      "path": "node_modules/cp-file/package.json"
+    },
+    {
+      "path": "node_modules/cp-file/node_modules/semver/package.json"
+    },
+    {
+      "path": "node_modules/cp-file/node_modules/pify/package.json"
+    },
+    {
+      "path": "node_modules/cp-file/node_modules/make-dir/package.json"
+    },
+    {
+      "path": "node_modules/yargs-parser/package.json"
+    },
+    {
+      "path": "node_modules/teeny-request/package.json"
+    },
+    {
+      "path": "node_modules/teeny-request/node_modules/agent-base/package.json"
+    },
+    {
+      "path": "node_modules/teeny-request/node_modules/https-proxy-agent/package.json"
+    },
+    {
+      "path": "node_modules/teeny-request/node_modules/debug/package.json"
+    },
+    {
+      "path": "node_modules/escape-string-regexp/package.json"
+    },
+    {
+      "path": "node_modules/es-abstract/package.json"
+    },
+    {
+      "path": "node_modules/es-abstract/node_modules/object-inspect/package.json"
+    },
+    {
+      "path": "node_modules/linkinator/package.json"
+    },
+    {
+      "path": "node_modules/linkinator/node_modules/has-flag/package.json"
+    },
+    {
+      "path": "node_modules/linkinator/node_modules/color-name/package.json"
+    },
+    {
+      "path": "node_modules/linkinator/node_modules/color-convert/package.json"
+    },
+    {
+      "path": "node_modules/linkinator/node_modules/supports-color/package.json"
+    },
+    {
+      "path": "node_modules/linkinator/node_modules/ansi-styles/package.json"
+    },
+    {
+      "path": "node_modules/linkinator/node_modules/chalk/package.json"
+    },
+    {
+      "path": "node_modules/strip-final-newline/package.json"
+    },
+    {
+      "path": "node_modules/import-lazy/package.json"
+    },
+    {
+      "path": "node_modules/inflight/package.json"
+    },
+    {
+      "path": "node_modules/use/package.json"
+    },
+    {
+      "path": "node_modules/concat-map/package.json"
+    },
+    {
+      "path": "node_modules/static-module/package.json"
+    },
+    {
+      "path": "node_modules/static-module/node_modules/through2/package.json"
+    },
+    {
+      "path": "node_modules/ansi-gray/package.json"
+    },
+    {
+      "path": "node_modules/object.assign/package.json"
+    },
+    {
+      "path": "node_modules/es6-symbol/package.json"
+    },
+    {
+      "path": "node_modules/semver/package.json"
+    },
+    {
+      "path": "node_modules/slash/package.json"
+    },
+    {
+      "path": "node_modules/tmp-promise/package.json"
+    },
+    {
+      "path": "node_modules/tmp-promise/node_modules/rimraf/package.json"
+    },
+    {
+      "path": "node_modules/tmp-promise/node_modules/tmp/package.json"
+    },
+    {
+      "path": "node_modules/is-typedarray/package.json"
+    },
+    {
+      "path": "node_modules/multimatch/package.json"
+    },
+    {
+      "path": "node_modules/multimatch/node_modules/arrify/package.json"
+    },
+    {
+      "path": "node_modules/htmlparser2/package.json"
+    },
+    {
+      "path": "node_modules/htmlparser2/node_modules/readable-stream/package.json"
+    },
+    {
+      "path": "node_modules/png-js/package.json"
+    },
+    {
+      "path": "node_modules/cli-boxes/package.json"
+    },
+    {
+      "path": "node_modules/stubs/package.json"
+    },
+    {
+      "path": "node_modules/supports-color/package.json"
+    },
+    {
+      "path": "node_modules/path-key/package.json"
+    },
+    {
+      "path": "node_modules/lru-cache/package.json"
+    },
+    {
+      "path": "node_modules/module-not-found-error/package.json"
+    },
+    {
+      "path": "node_modules/rc/package.json"
+    },
+    {
+      "path": "node_modules/yargs-unparser/package.json"
+    },
+    {
+      "path": "node_modules/extend-shallow/package.json"
+    },
+    {
+      "path": "node_modules/extend-shallow/node_modules/is-extendable/package.json"
+    },
+    {
+      "path": "node_modules/abort-controller/package.json"
+    },
+    {
+      "path": "node_modules/map-stream/package.json"
+    },
+    {
+      "path": "node_modules/http-errors/package.json"
+    },
+    {
+      "path": "node_modules/marked/package.json"
+    },
+    {
+      "path": "node_modules/is-plain-obj/package.json"
+    },
+    {
+      "path": "node_modules/minimatch/package.json"
+    },
+    {
+      "path": "node_modules/send/package.json"
+    },
+    {
+      "path": "node_modules/send/node_modules/mime/package.json"
+    },
+    {
+      "path": "node_modules/send/node_modules/ms/package.json"
+    },
+    {
+      "path": "node_modules/send/node_modules/debug/package.json"
+    },
+    {
+      "path": "node_modules/send/node_modules/debug/node_modules/ms/package.json"
+    },
+    {
+      "path": "node_modules/css-select/package.json"
+    },
+    {
+      "path": "node_modules/google-p12-pem/package.json"
+    },
+    {
+      "path": "node_modules/is-accessor-descriptor/package.json"
+    },
+    {
+      "path": "node_modules/is-accessor-descriptor/node_modules/kind-of/package.json"
+    },
+    {
+      "path": "node_modules/buffer-equal/package.json"
+    },
+    {
+      "path": "node_modules/component-emitter/package.json"
+    },
+    {
+      "path": "node_modules/macos-release/package.json"
+    },
+    {
+      "path": "node_modules/spdx-license-ids/package.json"
+    },
+    {
+      "path": "node_modules/yallist/package.json"
+    },
+    {
+      "path": "node_modules/setprototypeof/package.json"
+    },
+    {
+      "path": "node_modules/stream-combiner/package.json"
+    },
+    {
+      "path": "node_modules/hosted-git-info/package.json"
+    },
+    {
+      "path": "node_modules/argv/package.json"
+    },
+    {
+      "path": "node_modules/package-json/package.json"
+    },
+    {
+      "path": "node_modules/package-json/node_modules/semver/package.json"
+    },
+    {
+      "path": "node_modules/write-file-atomic/package.json"
+    },
+    {
+      "path": "node_modules/array-unique/package.json"
+    },
+    {
+      "path": "node_modules/external-editor/package.json"
+    },
+    {
+      "path": "node_modules/external-editor/node_modules/iconv-lite/package.json"
+    },
+    {
+      "path": "node_modules/get-assigned-identifiers/package.json"
+    },
+    {
+      "path": "node_modules/colors/package.json"
+    },
+    {
+      "path": "node_modules/@sindresorhus/is/package.json"
+    },
+    {
+      "path": "node_modules/unix-crypt-td-js/package.json"
+    },
+    {
+      "path": "node_modules/path-dirname/package.json"
+    },
+    {
+      "path": "node_modules/arrify/package.json"
+    },
+    {
+      "path": "node_modules/default-require-extensions/package.json"
+    },
+    {
+      "path": "node_modules/ansi-styles/package.json"
+    },
+    {
+      "path": "node_modules/parseurl/package.json"
+    },
+    {
+      "path": "node_modules/boolbase/package.json"
+    },
+    {
+      "path": "node_modules/cliui/package.json"
+    },
+    {
+      "path": "node_modules/cliui/node_modules/string-width/package.json"
+    },
+    {
+      "path": "node_modules/cliui/node_modules/emoji-regex/package.json"
+    },
+    {
+      "path": "node_modules/cliui/node_modules/is-fullwidth-code-point/package.json"
+    },
+    {
+      "path": "node_modules/balanced-match/package.json"
+    },
+    {
+      "path": "node_modules/acorn/package.json"
+    },
+    {
+      "path": "node_modules/caller/package.json"
+    },
+    {
+      "path": "node_modules/load-json-file/package.json"
+    },
+    {
+      "path": "node_modules/builtin-modules/package.json"
+    },
+    {
+      "path": "node_modules/chokidar/package.json"
+    },
+    {
+      "path": "node_modules/atob/package.json"
+    },
+    {
+      "path": "node_modules/snapdragon/README.md"
+    },
+    {
+      "path": "node_modules/snapdragon/package.json"
+    },
+    {
+      "path": "node_modules/snapdragon/index.js"
+    },
+    {
+      "path": "node_modules/snapdragon/LICENSE"
+    },
+    {
+      "path": "node_modules/snapdragon/lib/compiler.js"
+    },
+    {
+      "path": "node_modules/snapdragon/lib/position.js"
+    },
+    {
+      "path": "node_modules/snapdragon/lib/parser.js"
+    },
+    {
+      "path": "node_modules/snapdragon/lib/source-maps.js"
+    },
+    {
+      "path": "node_modules/snapdragon/lib/utils.js"
+    },
+    {
+      "path": "node_modules/snapdragon/node_modules/source-map/package.json"
+    },
+    {
+      "path": "node_modules/snapdragon/node_modules/extend-shallow/package.json"
+    },
+    {
+      "path": "node_modules/snapdragon/node_modules/define-property/package.json"
+    },
+    {
+      "path": "node_modules/snapdragon/node_modules/ms/package.json"
+    },
+    {
+      "path": "node_modules/snapdragon/node_modules/debug/package.json"
+    },
+    {
+      "path": "node_modules/widest-line/package.json"
+    },
+    {
+      "path": "node_modules/widest-line/node_modules/string-width/package.json"
+    },
+    {
+      "path": "node_modules/widest-line/node_modules/strip-ansi/package.json"
+    },
+    {
+      "path": "node_modules/widest-line/node_modules/ansi-regex/package.json"
+    },
+    {
+      "path": "node_modules/widest-line/node_modules/is-fullwidth-code-point/package.json"
+    },
+    {
+      "path": "node_modules/which/package.json"
+    },
+    {
+      "path": "node_modules/connect/package.json"
+    },
+    {
+      "path": "node_modules/connect/node_modules/ms/package.json"
+    },
+    {
+      "path": "node_modules/connect/node_modules/debug/package.json"
+    },
+    {
+      "path": "node_modules/object-inspect/package.json"
+    },
+    {
+      "path": "node_modules/retry-request/package.json"
+    },
+    {
+      "path": "node_modules/retry-request/node_modules/debug/package.json"
+    },
+    {
+      "path": "node_modules/is-arrayish/package.json"
+    },
+    {
+      "path": "node_modules/shebang-regex/package.json"
+    },
+    {
+      "path": "node_modules/clone-response/package.json"
+    },
+    {
+      "path": "node_modules/deep-is/package.json"
+    },
+    {
+      "path": "node_modules/hasha/package.json"
+    },
+    {
+      "path": "node_modules/hasha/node_modules/is-stream/package.json"
+    },
+    {
+      "path": "node_modules/node-forge/package.json"
+    },
+    {
+      "path": "node_modules/pako/package.json"
+    },
+    {
+      "path": "node_modules/path-is-absolute/package.json"
+    },
+    {
+      "path": "node_modules/ignore-walk/package.json"
+    },
+    {
+      "path": "node_modules/finalhandler/package.json"
+    },
+    {
+      "path": "node_modules/finalhandler/node_modules/ms/package.json"
+    },
+    {
+      "path": "node_modules/finalhandler/node_modules/debug/package.json"
+    },
+    {
+      "path": "node_modules/source-map-support/package.json"
+    },
+    {
+      "path": "node_modules/stream-events/package.json"
+    },
+    {
+      "path": "node_modules/buffer-equal-constant-time/package.json"
+    },
+    {
+      "path": "node_modules/source-map-resolve/package.json"
+    },
+    {
+      "path": "node_modules/path-parse/package.json"
+    },
+    {
+      "path": "node_modules/binary-extensions/package.json"
+    },
+    {
+      "path": "node_modules/decamelize-keys/package.json"
+    },
+    {
+      "path": "node_modules/decamelize-keys/node_modules/map-obj/package.json"
+    },
+    {
+      "path": "node_modules/os-tmpdir/package.json"
+    },
+    {
+      "path": "node_modules/kind-of/package.json"
+    },
+    {
+      "path": "node_modules/url-parse-lax/package.json"
+    },
+    {
+      "path": "node_modules/decache/package.json"
+    },
+    {
+      "path": "node_modules/os-name/package.json"
+    },
+    {
+      "path": "node_modules/merge-descriptors/package.json"
+    },
+    {
+      "path": "node_modules/brotli/package.json"
+    },
+    {
+      "path": "node_modules/async-each/package.json"
+    },
+    {
+      "path": "node_modules/minimist/package.json"
+    },
+    {
+      "path": "node_modules/fresh/package.json"
+    },
+    {
+      "path": "node_modules/unc-path-regex/package.json"
+    },
+    {
+      "path": "node_modules/is-stream/package.json"
+    },
+    {
+      "path": "node_modules/call-matcher/package.json"
+    },
+    {
+      "path": "node_modules/inside/package.json"
+    },
+    {
+      "path": "node_modules/os-homedir/package.json"
+    },
+    {
+      "path": "node_modules/onetime/package.json"
+    },
+    {
+      "path": "node_modules/spdx-correct/package.json"
+    },
+    {
+      "path": "node_modules/readable-stream/package.json"
+    },
+    {
+      "path": "node_modules/xdg-basedir/package.json"
+    },
+    {
+      "path": "node_modules/is-absolute/package.json"
+    },
+    {
+      "path": "node_modules/dir-glob/package.json"
+    },
+    {
+      "path": "node_modules/dir-glob/node_modules/arrify/package.json"
+    },
+    {
+      "path": "node_modules/callsites/package.json"
+    },
+    {
+      "path": "node_modules/pify/package.json"
+    },
+    {
+      "path": "node_modules/source-map-url/package.json"
+    },
+    {
+      "path": "node_modules/snapdragon-util/package.json"
+    },
+    {
+      "path": "node_modules/snapdragon-util/node_modules/kind-of/package.json"
+    },
+    {
+      "path": "node_modules/pdfkit/package.json"
+    },
+    {
+      "path": "node_modules/stream-shift/package.json"
+    },
+    {
+      "path": "node_modules/crypto-random-string/package.json"
+    },
+    {
+      "path": "node_modules/escodegen/package.json"
+    },
+    {
+      "path": "node_modules/escodegen/node_modules/esprima/package.json"
+    },
+    {
+      "path": "node_modules/entities/package.json"
+    },
+    {
+      "path": "node_modules/object.getownpropertydescriptors/package.json"
+    },
+    {
+      "path": "node_modules/call-me-maybe/package.json"
+    },
+    {
+      "path": "node_modules/define-property/package.json"
+    },
+    {
+      "path": "node_modules/define-property/node_modules/is-data-descriptor/package.json"
+    },
+    {
+      "path": "node_modules/define-property/node_modules/is-descriptor/package.json"
+    },
+    {
+      "path": "node_modules/define-property/node_modules/is-accessor-descriptor/package.json"
+    },
+    {
+      "path": "node_modules/unpipe/package.json"
+    },
+    {
+      "path": "node_modules/archy/package.json"
+    },
+    {
+      "path": "node_modules/es6-error/package.json"
+    },
+    {
+      "path": "node_modules/strip-eof/package.json"
+    },
+    {
+      "path": "node_modules/map-cache/package.json"
+    },
+    {
+      "path": "node_modules/is-path-inside/package.json"
+    },
+    {
+      "path": "node_modules/ini/package.json"
+    },
+    {
+      "path": "node_modules/currently-unhandled/package.json"
+    },
+    {
+      "path": "node_modules/package-hash/package.json"
+    },
+    {
+      "path": "node_modules/validate-npm-package-license/package.json"
+    },
+    {
+      "path": "node_modules/fill-range/package.json"
+    },
+    {
+      "path": "node_modules/bignumber.js/package.json"
+    },
+    {
+      "path": "node_modules/is-yarn-global/package.json"
+    },
+    {
+      "path": "node_modules/batch/package.json"
+    },
+    {
+      "path": "node_modules/camelcase/package.json"
+    },
+    {
+      "path": "node_modules/vlq/package.json"
+    },
+    {
+      "path": "node_modules/prelude-ls/package.json"
+    },
+    {
+      "path": "node_modules/codecov/package.json"
+    },
+    {
+      "path": "node_modules/codecov/node_modules/teeny-request/package.json"
+    },
+    {
+      "path": "node_modules/codecov/node_modules/https-proxy-agent/package.json"
+    },
+    {
+      "path": "node_modules/es6-promise/package.json"
+    },
+    {
+      "path": "node_modules/path-exists/package.json"
+    },
+    {
+      "path": "node_modules/deep-extend/package.json"
+    },
+    {
+      "path": "node_modules/nth-check/package.json"
+    },
+    {
+      "path": "node_modules/regex-not/package.json"
+    },
+    {
+      "path": "node_modules/isarray/package.json"
+    },
+    {
+      "path": "node_modules/es-to-primitive/package.json"
+    },
+    {
+      "path": "node_modules/https-proxy-agent/package.json"
+    },
+    {
+      "path": "node_modules/to-regex/package.json"
+    },
+    {
+      "path": "node_modules/path-type/package.json"
+    },
+    {
+      "path": "node_modules/p-locate/package.json"
+    },
+    {
+      "path": "node_modules/p-locate/node_modules/p-limit/package.json"
+    },
+    {
+      "path": "node_modules/p-locate/node_modules/p-try/package.json"
+    },
+    {
+      "path": "node_modules/websocket-driver/package.json"
+    },
+    {
+      "path": "node_modules/intelli-espower-loader/package.json"
+    },
+    {
+      "path": "node_modules/node-fetch/package.json"
+    },
+    {
+      "path": "node_modules/registry-auth-token/package.json"
+    },
+    {
+      "path": "node_modules/repeat-string/package.json"
+    },
+    {
+      "path": "node_modules/fragment-cache/package.json"
+    },
+    {
+      "path": "node_modules/esutils/package.json"
+    },
+    {
+      "path": "node_modules/which-module/package.json"
+    },
+    {
+      "path": "node_modules/restructure/package.json"
+    },
+    {
+      "path": "node_modules/jsesc/package.json"
+    },
+    {
+      "path": "node_modules/function-bind/package.json"
+    },
+    {
+      "path": "node_modules/map-visit/package.json"
+    },
+    {
+      "path": "node_modules/http-parser-js/package.json"
+    },
+    {
+      "path": "node_modules/trim-newlines/package.json"
+    },
+    {
+      "path": "node_modules/event-target-shim/package.json"
+    },
+    {
+      "path": "node_modules/commondir/package.json"
+    },
+    {
+      "path": "node_modules/unset-value/package.json"
+    },
+    {
+      "path": "node_modules/unset-value/node_modules/has-value/package.json"
+    },
+    {
+      "path": "node_modules/unset-value/node_modules/has-value/node_modules/isobject/package.json"
+    },
+    {
+      "path": "node_modules/unset-value/node_modules/has-values/package.json"
+    },
+    {
+      "path": "node_modules/on-finished/package.json"
+    },
+    {
+      "path": "node_modules/spdx-satisfies/package.json"
+    },
+    {
+      "path": "node_modules/y18n/package.json"
+    },
+    {
+      "path": "node_modules/quick-lru/package.json"
+    },
+    {
+      "path": "node_modules/proxy-middleware/package.json"
+    },
+    {
+      "path": "node_modules/static-eval/package.json"
+    },
+    {
+      "path": "node_modules/static-eval/node_modules/esprima/package.json"
+    },
+    {
+      "path": "node_modules/static-eval/node_modules/escodegen/package.json"
+    },
+    {
+      "path": "node_modules/js-yaml/package.json"
+    },
+    {
+      "path": "node_modules/flat/package.json"
+    },
+    {
+      "path": "node_modules/flat/node_modules/is-buffer/package.json"
+    },
+    {
+      "path": "node_modules/normalize-package-data/package.json"
+    },
+    {
+      "path": "node_modules/normalize-package-data/node_modules/semver/package.json"
+    },
+    {
+      "path": "node_modules/es6-iterator/package.json"
+    },
+    {
+      "path": "node_modules/get-func-name/package.json"
+    },
+    {
+      "path": "node_modules/opencollective-postinstall/package.json"
+    },
+    {
+      "path": "node_modules/remove-trailing-separator/package.json"
+    },
+    {
+      "path": "node_modules/typescript/package.json"
+    },
+    {
+      "path": "node_modules/universalify/package.json"
+    },
+    {
+      "path": "node_modules/svg-to-pdfkit/package.json"
+    },
+    {
+      "path": "node_modules/mkdirp/package.json"
+    },
+    {
+      "path": "node_modules/mkdirp/node_modules/minimist/package.json"
+    },
+    {
+      "path": "node_modules/@dsherret/to-absolute-glob/package.json"
+    },
+    {
+      "path": "node_modules/negotiator/package.json"
+    },
+    {
+      "path": "node_modules/fast-text-encoding/package.json"
+    },
+    {
+      "path": "node_modules/acorn-es7-plugin/package.json"
+    },
+    {
+      "path": "node_modules/through2/package.json"
+    },
+    {
+      "path": "node_modules/fs-extra/package.json"
+    },
+    {
+      "path": "node_modules/glob/package.json"
+    },
+    {
+      "path": "node_modules/pdfmake/package.json"
+    },
+    {
+      "path": "node_modules/inherits/package.json"
+    },
+    {
+      "path": "node_modules/object-copy/package.json"
+    },
+    {
+      "path": "node_modules/object-copy/node_modules/kind-of/package.json"
+    },
+    {
+      "path": "node_modules/object-copy/node_modules/define-property/package.json"
+    },
+    {
+      "path": "node_modules/string.prototype.trimright/package.json"
+    },
+    {
+      "path": "node_modules/es5-ext/package.json"
+    },
+    {
+      "path": "node_modules/browser-resolve/package.json"
+    },
+    {
+      "path": "node_modules/browser-resolve/node_modules/resolve/package.json"
+    },
+    {
+      "path": "node_modules/is-date-object/package.json"
+    },
+    {
+      "path": "node_modules/sprintf-js/package.json"
+    },
+    {
+      "path": "node_modules/ast-types/package.json"
+    },
+    {
+      "path": "node_modules/is-npm/package.json"
+    },
+    {
+      "path": "node_modules/has-yarn/package.json"
+    },
+    {
+      "path": "node_modules/extglob/package.json"
+    },
+    {
+      "path": "node_modules/extglob/node_modules/is-data-descriptor/package.json"
+    },
+    {
+      "path": "node_modules/extglob/node_modules/is-descriptor/package.json"
+    },
+    {
+      "path": "node_modules/extglob/node_modules/extend-shallow/package.json"
+    },
+    {
+      "path": "node_modules/extglob/node_modules/is-accessor-descriptor/package.json"
+    },
+    {
+      "path": "node_modules/extglob/node_modules/define-property/package.json"
+    },
+    {
+      "path": "node_modules/basic-auth/package.json"
+    },
+    {
+      "path": "node_modules/shebang-command/package.json"
+    },
+    {
+      "path": "node_modules/imurmurhash/package.json"
+    },
+    {
+      "path": "node_modules/globals/package.json"
+    },
+    {
+      "path": "node_modules/latest-version/package.json"
+    },
+    {
+      "path": "node_modules/websocket-extensions/package.json"
+    },
+    {
+      "path": "node_modules/commander/package.json"
+    },
+    {
+      "path": "node_modules/path-is-inside/package.json"
+    },
+    {
+      "path": "node_modules/rxjs/package.json"
+    },
+    {
+      "path": "node_modules/node-environment-flags/package.json"
+    },
+    {
+      "path": "node_modules/node-environment-flags/node_modules/semver/package.json"
+    },
+    {
+      "path": "node_modules/quote-stream/package.json"
+    },
+    {
+      "path": "node_modules/quote-stream/node_modules/through2/package.json"
+    },
+    {
+      "path": "node_modules/p-limit/package.json"
+    },
+    {
+      "path": "node_modules/foreach/package.json"
+    },
+    {
+      "path": "node_modules/istanbul-lib-coverage/package.json"
+    },
+    {
+      "path": "node_modules/falafel/package.json"
+    },
+    {
+      "path": "node_modules/falafel/node_modules/acorn/package.json"
+    },
+    {
+      "path": "node_modules/falafel/node_modules/isarray/package.json"
+    },
+    {
+      "path": "node_modules/neo-async/package.json"
+    },
+    {
+      "path": "node_modules/caller-callsite/package.json"
+    },
+    {
+      "path": "node_modules/foreground-child/package.json"
+    },
+    {
+      "path": "node_modules/foreground-child/node_modules/cross-spawn/package.json"
+    },
+    {
+      "path": "node_modules/foreground-child/node_modules/lru-cache/package.json"
+    },
+    {
+      "path": "node_modules/foreground-child/node_modules/yallist/package.json"
+    },
+    {
+      "path": "node_modules/he/package.json"
+    },
+    {
+      "path": "node_modules/mime-types/package.json"
+    },
+    {
+      "path": "node_modules/meow/package.json"
+    },
+    {
+      "path": "node_modules/toidentifier/package.json"
+    },
+    {
+      "path": "node_modules/execa/package.json"
+    },
+    {
+      "path": "node_modules/execa/node_modules/p-finally/package.json"
+    },
+    {
+      "path": "node_modules/execa/node_modules/npm-run-path/package.json"
+    },
+    {
+      "path": "node_modules/execa/node_modules/cross-spawn/package.json"
+    },
+    {
+      "path": "node_modules/execa/node_modules/get-stream/package.json"
+    },
+    {
+      "path": "node_modules/execa/node_modules/path-key/package.json"
+    },
+    {
+      "path": "node_modules/execa/node_modules/which/package.json"
+    },
+    {
+      "path": "node_modules/execa/node_modules/shebang-regex/package.json"
+    },
+    {
+      "path": "node_modules/execa/node_modules/shebang-command/package.json"
+    },
+    {
+      "path": "node_modules/opn/package.json"
+    },
+    {
+      "path": "node_modules/require-inject/package.json"
+    },
+    {
+      "path": "node_modules/levn/package.json"
+    },
+    {
+      "path": "node_modules/unique-string/package.json"
+    },
+    {
+      "path": "node_modules/gaxios/package.json"
+    },
+    {
+      "path": "node_modules/code-block-writer/package.json"
+    },
+    {
+      "path": "node_modules/browser-stdout/package.json"
+    },
+    {
+      "path": "node_modules/regexp.prototype.flags/package.json"
+    },
+    {
+      "path": "node_modules/fancy-log/package.json"
+    },
+    {
+      "path": "node_modules/run-async/package.json"
+    },
+    {
+      "path": "node_modules/cheerio/package.json"
+    },
+    {
+      "path": "node_modules/prepend-http/package.json"
+    },
+    {
+      "path": "node_modules/urlgrey/package.json"
+    },
+    {
+      "path": "node_modules/live-server/package.json"
+    },
+    {
+      "path": "node_modules/live-server/node_modules/glob-parent/package.json"
+    },
+    {
+      "path": "node_modules/live-server/node_modules/glob-parent/node_modules/is-glob/package.json"
+    },
+    {
+      "path": "node_modules/live-server/node_modules/readdirp/package.json"
+    },
+    {
+      "path": "node_modules/live-server/node_modules/braces/package.json"
+    },
+    {
+      "path": "node_modules/live-server/node_modules/to-regex-range/package.json"
+    },
+    {
+      "path": "node_modules/live-server/node_modules/extend-shallow/package.json"
+    },
+    {
+      "path": "node_modules/live-server/node_modules/colors/package.json"
+    },
+    {
+      "path": "node_modules/live-server/node_modules/chokidar/package.json"
+    },
+    {
+      "path": "node_modules/live-server/node_modules/binary-extensions/package.json"
+    },
+    {
+      "path": "node_modules/live-server/node_modules/kind-of/package.json"
+    },
+    {
+      "path": "node_modules/live-server/node_modules/fill-range/package.json"
+    },
+    {
+      "path": "node_modules/live-server/node_modules/is-binary-path/package.json"
+    },
+    {
+      "path": "node_modules/live-server/node_modules/anymatch/package.json"
+    },
+    {
+      "path": "node_modules/live-server/node_modules/anymatch/node_modules/normalize-path/package.json"
+    },
+    {
+      "path": "node_modules/live-server/node_modules/is-number/package.json"
+    },
+    {
+      "path": "node_modules/define-properties/package.json"
+    },
+    {
+      "path": "node_modules/regenerator-runtime/package.json"
+    },
+    {
+      "path": "node_modules/p-timeout/package.json"
+    },
+    {
+      "path": "node_modules/cli-cursor/package.json"
+    },
+    {
+      "path": "node_modules/pump/package.json"
+    },
+    {
+      "path": "node_modules/glob-to-regexp/package.json"
+    },
+    {
+      "path": "node_modules/shallow-copy/package.json"
+    },
+    {
+      "path": "node_modules/espower-location-detector/package.json"
+    },
+    {
+      "path": "node_modules/espower-location-detector/node_modules/source-map/package.json"
+    },
+    {
+      "path": "node_modules/escape-html/package.json"
+    },
+    {
+      "path": "node_modules/http-cache-semantics/package.json"
+    },
+    {
+      "path": "node_modules/to-readable-stream/package.json"
+    },
+    {
+      "path": "node_modules/crypto-js/package.json"
+    },
+    {
+      "path": "node_modules/cross-env/package.json"
+    },
+    {
+      "path": "node_modules/cross-env/node_modules/cross-spawn/package.json"
+    },
+    {
+      "path": "node_modules/cross-env/node_modules/path-key/package.json"
+    },
+    {
+      "path": "node_modules/cross-env/node_modules/which/package.json"
+    },
+    {
+      "path": "node_modules/cross-env/node_modules/shebang-regex/package.json"
+    },
+    {
+      "path": "node_modules/cross-env/node_modules/shebang-command/package.json"
+    },
+    {
+      "path": "node_modules/chardet/package.json"
+    },
+    {
+      "path": "node_modules/propagate/package.json"
+    },
+    {
+      "path": "node_modules/js-tokens/package.json"
+    },
+    {
+      "path": "node_modules/chalk/package.json"
+    },
+    {
+      "path": "node_modules/estree-is-function/package.json"
+    },
+    {
+      "path": "node_modules/is-regex/package.json"
+    },
+    {
+      "path": "node_modules/spdx-expression-parse/package.json"
+    },
+    {
+      "path": "node_modules/cli-width/package.json"
+    },
+    {
+      "path": "node_modules/linebreak/package.json"
+    },
+    {
+      "path": "node_modules/linebreak/node_modules/base64-js/package.json"
+    },
+    {
+      "path": "node_modules/fast-glob/package.json"
+    },
+    {
+      "path": "node_modules/fast-glob/node_modules/glob-parent/package.json"
+    },
+    {
+      "path": "node_modules/fast-glob/node_modules/glob-parent/node_modules/is-glob/package.json"
+    },
+    {
+      "path": "node_modules/ms/package.json"
+    },
+    {
+      "path": "node_modules/istanbul-lib-report/package.json"
+    },
+    {
+      "path": "node_modules/istanbul-lib-report/node_modules/semver/package.json"
+    },
+    {
+      "path": "node_modules/istanbul-lib-report/node_modules/supports-color/package.json"
+    },
+    {
+      "path": "node_modules/istanbul-lib-report/node_modules/pify/package.json"
+    },
+    {
+      "path": "node_modules/istanbul-lib-report/node_modules/make-dir/package.json"
+    },
+    {
+      "path": "node_modules/base64-js/package.json"
+    },
+    {
+      "path": "node_modules/encodeurl/package.json"
+    },
+    {
+      "path": "node_modules/micromatch/README.md"
+    },
+    {
+      "path": "node_modules/micromatch/package.json"
+    },
+    {
+      "path": "node_modules/micromatch/CHANGELOG.md"
+    },
+    {
+      "path": "node_modules/micromatch/index.js"
+    },
+    {
+      "path": "node_modules/micromatch/LICENSE"
+    },
+    {
+      "path": "node_modules/micromatch/lib/parsers.js"
+    },
+    {
+      "path": "node_modules/micromatch/lib/.DS_Store"
+    },
+    {
+      "path": "node_modules/micromatch/lib/utils.js"
+    },
+    {
+      "path": "node_modules/micromatch/lib/compilers.js"
+    },
+    {
+      "path": "node_modules/micromatch/lib/cache.js"
+    },
+    {
+      "path": "node_modules/micromatch/node_modules/braces/package.json"
+    },
+    {
+      "path": "node_modules/micromatch/node_modules/braces/node_modules/extend-shallow/package.json"
+    },
+    {
+      "path": "node_modules/micromatch/node_modules/to-regex-range/package.json"
+    },
+    {
+      "path": "node_modules/micromatch/node_modules/fill-range/package.json"
+    },
+    {
+      "path": "node_modules/micromatch/node_modules/fill-range/node_modules/extend-shallow/package.json"
+    },
+    {
+      "path": "node_modules/micromatch/node_modules/is-number/package.json"
+    },
+    {
+      "path": "node_modules/micromatch/node_modules/is-number/node_modules/kind-of/package.json"
+    },
+    {
+      "path": "node_modules/json-buffer/package.json"
+    },
+    {
+      "path": "node_modules/mixin-deep/package.json"
+    },
+    {
+      "path": "node_modules/mixin-deep/node_modules/is-extendable/package.json"
+    },
+    {
+      "path": "node_modules/is-binary-path/package.json"
+    },
+    {
+      "path": "node_modules/ast-transform/package.json"
+    },
+    {
+      "path": "node_modules/ast-transform/node_modules/esprima/package.json"
+    },
+    {
+      "path": "node_modules/ast-transform/node_modules/estraverse/package.json"
+    },
+    {
+      "path": "node_modules/ast-transform/node_modules/source-map/package.json"
+    },
+    {
+      "path": "node_modules/ast-transform/node_modules/escodegen/package.json"
+    },
+    {
+      "path": "node_modules/ast-transform/node_modules/esutils/package.json"
+    },
+    {
+      "path": "node_modules/gtoken/package.json"
+    },
+    {
+      "path": "node_modules/dom-serializer/package.json"
+    },
+    {
+      "path": "node_modules/is-symbol/package.json"
+    },
+    {
+      "path": "node_modules/picomatch/package.json"
+    },
+    {
+      "path": "node_modules/@babel/generator/package.json"
+    },
+    {
+      "path": "node_modules/@babel/generator/node_modules/source-map/package.json"
+    },
+    {
+      "path": "node_modules/@babel/helper-function-name/package.json"
+    },
+    {
+      "path": "node_modules/@babel/template/package.json"
+    },
+    {
+      "path": "node_modules/@babel/helper-split-export-declaration/package.json"
+    },
+    {
+      "path": "node_modules/@babel/parser/package.json"
+    },
+    {
+      "path": "node_modules/@babel/runtime/package.json"
+    },
+    {
+      "path": "node_modules/@babel/helper-get-function-arity/package.json"
+    },
+    {
+      "path": "node_modules/@babel/types/package.json"
+    },
+    {
+      "path": "node_modules/@babel/highlight/package.json"
+    },
+    {
+      "path": "node_modules/@babel/traverse/package.json"
+    },
+    {
+      "path": "node_modules/@babel/traverse/node_modules/debug/package.json"
+    },
+    {
+      "path": "node_modules/@babel/code-frame/package.json"
+    },
+    {
+      "path": "node_modules/check-error/package.json"
+    },
+    {
+      "path": "node_modules/scope-analyzer/package.json"
+    },
+    {
+      "path": "node_modules/type-check/package.json"
+    },
+    {
+      "path": "node_modules/parse-node-version/package.json"
+    },
+    {
+      "path": "node_modules/nanomatch/package.json"
+    },
+    {
+      "path": "node_modules/iconv-lite/package.json"
+    },
+    {
+      "path": "node_modules/is-url/package.json"
+    },
+    {
+      "path": "node_modules/unicode-properties/package.json"
+    },
+    {
+      "path": "node_modules/unicode-properties/node_modules/unicode-trie/package.json"
+    },
+    {
+      "path": "node_modules/domutils/package.json"
+    },
+    {
+      "path": "node_modules/accepts/package.json"
+    },
+    {
+      "path": "node_modules/p-queue/package.json"
+    },
+    {
+      "path": "node_modules/eventemitter3/package.json"
+    },
+    {
+      "path": "node_modules/object-visit/package.json"
+    },
+    {
+      "path": "node_modules/ext/package.json"
+    },
+    {
+      "path": "node_modules/ext/node_modules/type/package.json"
+    },
+    {
+      "path": "node_modules/pkg-dir/package.json"
+    },
+    {
+      "path": "node_modules/pkg-dir/node_modules/locate-path/package.json"
+    },
+    {
+      "path": "node_modules/pkg-dir/node_modules/find-up/package.json"
+    },
+    {
+      "path": "node_modules/pkg-dir/node_modules/p-locate/package.json"
+    },
+    {
+      "path": "node_modules/magic-string/index.d.ts"
+    },
+    {
+      "path": "node_modules/magic-string/README.md"
+    },
+    {
+      "path": "node_modules/magic-string/package.json"
+    },
+    {
+      "path": "node_modules/magic-string/CHANGELOG.md"
+    },
+    {
+      "path": "node_modules/magic-string/dist/magic-string.es.js.map"
+    },
+    {
+      "path": "node_modules/magic-string/dist/magic-string.cjs.js.map"
+    },
+    {
+      "path": "node_modules/magic-string/dist/magic-string.cjs.js"
+    },
+    {
+      "path": "node_modules/magic-string/dist/magic-string.es.js"
+    },
+    {
+      "path": "node_modules/magic-string/dist/magic-string.umd.js.map"
+    },
+    {
+      "path": "node_modules/magic-string/dist/magic-string.umd.js"
+    },
+    {
+      "path": "node_modules/deep-equal/package.json"
+    },
+    {
+      "path": "node_modules/mime-db/package.json"
+    },
+    {
+      "path": "node_modules/parse5/package.json"
+    },
+    {
+      "path": "node_modules/collection-visit/package.json"
+    },
+    {
+      "path": "node_modules/for-in/package.json"
+    },
+    {
+      "path": "node_modules/once/package.json"
+    },
+    {
+      "path": "node_modules/anymatch/package.json"
+    },
+    {
+      "path": "node_modules/brace-expansion/package.json"
+    },
+    {
+      "path": "node_modules/faye-websocket/package.json"
+    },
+    {
+      "path": "node_modules/is-number/package.json"
+    },
+    {
+      "path": "node_modules/traverse/package.json"
+    },
+    {
+      "path": "node_modules/restore-cursor/package.json"
+    },
+    {
+      "path": "node_modules/cors/package.json"
+    },
+    {
+      "path": "node_modules/graceful-fs/package.json"
+    },
+    {
+      "path": "node_modules/isobject/package.json"
+    },
+    {
+      "path": "node_modules/responselike/package.json"
+    },
+    {
+      "path": "node_modules/pseudomap/package.json"
+    },
+    {
+      "path": "node_modules/espurify/package.json"
+    },
+    {
+      "path": "node_modules/color-support/package.json"
+    },
+    {
+      "path": "node_modules/word-wrap/package.json"
+    },
+    {
+      "path": "node_modules/espower-source/package.json"
+    },
+    {
+      "path": "node_modules/espower-source/node_modules/esprima/package.json"
+    },
+    {
+      "path": "node_modules/espower-source/node_modules/acorn/package.json"
+    },
+    {
+      "path": "node_modules/espower-source/node_modules/escodegen/package.json"
+    },
+    {
+      "path": "node_modules/normalize-url/package.json"
+    },
+    {
+      "path": "node_modules/wordwrap/package.json"
+    },
+    {
+      "path": "node_modules/ee-first/package.json"
+    },
+    {
+      "path": "node_modules/handlebars/package.json"
+    },
+    {
+      "path": "node_modules/object-assign/package.json"
+    },
+    {
+      "path": "node_modules/es6-weak-map/package.json"
+    },
+    {
+      "path": "node_modules/to-fast-properties/package.json"
+    },
+    {
+      "path": "node_modules/normalize-path/package.json"
+    },
+    {
+      "path": "node_modules/espower/package.json"
+    },
+    {
+      "path": "node_modules/espower/node_modules/source-map/package.json"
+    },
+    {
+      "path": "node_modules/strip-json-comments/package.json"
+    },
+    {
+      "path": "node_modules/process-nextick-args/package.json"
+    },
+    {
+      "path": "node_modules/uuid/package.json"
+    },
+    {
+      "path": "node_modules/array-find-index/package.json"
+    },
+    {
+      "path": "node_modules/test-exclude/package.json"
+    },
+    {
+      "path": "node_modules/test-exclude/node_modules/locate-path/package.json"
+    },
+    {
+      "path": "node_modules/test-exclude/node_modules/find-up/package.json"
+    },
+    {
+      "path": "node_modules/test-exclude/node_modules/p-locate/package.json"
+    },
+    {
+      "path": "node_modules/test-exclude/node_modules/read-pkg-up/package.json"
+    },
+    {
+      "path": "node_modules/es6-promisify/package.json"
+    },
+    {
+      "path": "node_modules/proxyquire/package.json"
+    },
+    {
+      "path": "node_modules/p-try/package.json"
+    },
+    {
+      "path": "node_modules/optionator/package.json"
+    },
+    {
+      "path": "node_modules/is-plain-object/package.json"
+    },
+    {
+      "path": "node_modules/apache-crypt/package.json"
+    },
+    {
+      "path": "node_modules/fast-levenshtein/package.json"
+    },
+    {
+      "path": "node_modules/statuses/package.json"
+    },
+    {
+      "path": "node_modules/semver-diff/package.json"
+    },
+    {
+      "path": "node_modules/semver-diff/node_modules/semver/package.json"
+    },
+    {
+      "path": "node_modules/signal-exit/package.json"
+    },
+    {
+      "path": "node_modules/builtins/package.json"
+    },
+    {
+      "path": "node_modules/resolve-url/package.json"
+    },
+    {
+      "path": "node_modules/duplexify/package.json"
+    },
+    {
+      "path": "node_modules/array-from/package.json"
+    },
+    {
+      "path": "node_modules/dot/package.json"
+    },
+    {
+      "path": "node_modules/ret/package.json"
+    },
+    {
+      "path": "node_modules/object-is/package.json"
+    },
+    {
+      "path": "node_modules/tslib/package.json"
+    },
+    {
+      "path": "node_modules/extend/package.json"
+    },
+    {
+      "path": "node_modules/is-wsl/package.json"
+    },
+    {
+      "path": "node_modules/nested-error-stacks/package.json"
+    },
+    {
+      "path": "node_modules/css-what/package.json"
+    },
+    {
+      "path": "node_modules/ecdsa-sig-formatter/package.json"
+    },
+    {
+      "path": "node_modules/typedarray-to-buffer/README.md"
+    },
+    {
+      "path": "node_modules/typedarray-to-buffer/package.json"
+    },
+    {
+      "path": "node_modules/typedarray-to-buffer/.travis.yml"
+    },
+    {
+      "path": "node_modules/typedarray-to-buffer/index.js"
+    },
+    {
+      "path": "node_modules/typedarray-to-buffer/.airtap.yml"
+    },
+    {
+      "path": "node_modules/typedarray-to-buffer/LICENSE"
+    },
+    {
+      "path": "node_modules/typedarray-to-buffer/test/basic.js"
+    },
+    {
+      "path": "node_modules/spawn-wrap/package.json"
+    },
+    {
+      "path": "node_modules/spawn-wrap/node_modules/rimraf/package.json"
+    },
+    {
+      "path": "node_modules/upath/package.json"
+    },
+    {
+      "path": "node_modules/clone/package.json"
+    },
+    {
+      "path": "node_modules/tslint-config-prettier/package.json"
+    },
+    {
+      "path": "node_modules/event-stream/package.json"
+    },
+    {
+      "path": "node_modules/event-stream/node_modules/split/package.json"
+    },
+    {
+      "path": "node_modules/buffer-from/package.json"
+    },
+    {
+      "path": "node_modules/domelementtype/package.json"
+    },
+    {
+      "path": "node_modules/ci-info/package.json"
+    },
+    {
+      "path": "node_modules/@types/mocha/package.json"
+    },
+    {
+      "path": "node_modules/@types/lodash/package.json"
+    },
+    {
+      "path": "node_modules/@types/lodash.pickby/package.json"
+    },
+    {
+      "path": "node_modules/@types/console-log-level/package.json"
+    },
+    {
+      "path": "node_modules/@types/color-name/package.json"
+    },
+    {
+      "path": "node_modules/@types/tmp/package.json"
+    },
+    {
+      "path": "node_modules/@types/semver/package.json"
+    },
+    {
+      "path": "node_modules/@types/acorn/package.json"
+    },
+    {
+      "path": "node_modules/@types/mkdirp/package.json"
+    },
+    {
+      "path": "node_modules/@types/estree/package.json"
+    },
+    {
+      "path": "node_modules/@types/node/package.json"
+    },
+    {
+      "path": "node_modules/@types/uuid/package.json"
+    },
+    {
+      "path": "node_modules/@types/proxyquire/package.json"
+    },
+    {
+      "path": "node_modules/@types/extend/package.json"
+    },
+    {
+      "path": "node_modules/@types/ncp/package.json"
+    },
+    {
+      "path": "node_modules/@types/mv/package.json"
+    },
+    {
+      "path": "node_modules/serve-static/package.json"
+    },
+    {
+      "path": "node_modules/make-dir/package.json"
+    },
+    {
+      "path": "node_modules/caching-transform/package.json"
+    },
+    {
+      "path": "node_modules/caching-transform/node_modules/semver/package.json"
+    },
+    {
+      "path": "node_modules/caching-transform/node_modules/write-file-atomic/package.json"
+    },
+    {
+      "path": "node_modules/caching-transform/node_modules/pify/package.json"
+    },
+    {
+      "path": "node_modules/caching-transform/node_modules/make-dir/package.json"
+    },
+    {
+      "path": "node_modules/ncp/package.json"
+    },
+    {
+      "path": "node_modules/emoji-regex/package.json"
+    },
+    {
+      "path": "node_modules/set-value/package.json"
+    },
+    {
+      "path": "node_modules/set-value/node_modules/extend-shallow/package.json"
+    },
+    {
+      "path": "node_modules/read-pkg/package.json"
+    },
+    {
+      "path": "node_modules/xtend/package.json"
+    },
+    {
+      "path": "node_modules/resolve/package.json"
+    },
+    {
+      "path": "node_modules/i18next/package.json"
+    },
+    {
+      "path": "node_modules/unicode-trie/package.json"
+    },
+    {
+      "path": "node_modules/lowercase-keys/package.json"
+    },
+    {
+      "path": "node_modules/is-fullwidth-code-point/package.json"
+    },
+    {
+      "path": "node_modules/is-extendable/package.json"
+    },
+    {
+      "path": "node_modules/read-pkg-up/package.json"
+    },
+    {
+      "path": "node_modules/@google-cloud/projectify/package.json"
+    },
+    {
+      "path": "node_modules/@google-cloud/common/package.json"
+    },
+    {
+      "path": "node_modules/@google-cloud/promisify/package.json"
+    },
+    {
+      "path": "node_modules/p-cancelable/package.json"
+    },
+    {
+      "path": "node_modules/d/package.json"
+    },
+    {
+      "path": "node_modules/serve-index/package.json"
+    },
+    {
+      "path": "node_modules/serve-index/node_modules/http-errors/package.json"
+    },
+    {
+      "path": "node_modules/serve-index/node_modules/setprototypeof/package.json"
+    },
+    {
+      "path": "node_modules/serve-index/node_modules/inherits/package.json"
+    },
+    {
+      "path": "node_modules/serve-index/node_modules/ms/package.json"
+    },
+    {
+      "path": "node_modules/serve-index/node_modules/debug/package.json"
+    },
+    {
+      "path": "node_modules/debug/package.json"
+    },
+    {
+      "path": "node_modules/viz.js/package.json"
+    },
+    {
+      "path": "node_modules/vary/package.json"
+    },
+    {
+      "path": "node_modules/mimic-fn/package.json"
+    },
+    {
+      "path": "node_modules/@nodelib/fs.stat/package.json"
+    },
+    {
+      "path": "node_modules/arr-union/package.json"
+    },
+    {
+      "path": "node_modules/is-object/package.json"
+    },
+    {
+      "path": "node_modules/mv/package.json"
+    },
+    {
+      "path": "node_modules/mv/node_modules/rimraf/package.json"
+    },
+    {
+      "path": "node_modules/mv/node_modules/glob/package.json"
+    },
+    {
+      "path": "node_modules/typedarray/package.json"
+    },
+    {
+      "path": "node_modules/isexe/package.json"
+    },
+    {
+      "path": "node_modules/multi-stage-sourcemap/package.json"
+    },
+    {
+      "path": "node_modules/multi-stage-sourcemap/node_modules/source-map/package.json"
+    },
+    {
+      "path": "node_modules/find-cache-dir/package.json"
+    },
+    {
+      "path": "node_modules/find-cache-dir/node_modules/semver/package.json"
+    },
+    {
+      "path": "node_modules/find-cache-dir/node_modules/pify/package.json"
+    },
+    {
+      "path": "node_modules/find-cache-dir/node_modules/make-dir/package.json"
+    },
+    {
+      "path": "node_modules/fs.realpath/package.json"
+    },
+    {
+      "path": "node_modules/morgan/package.json"
+    },
+    {
+      "path": "node_modules/morgan/node_modules/ms/package.json"
+    },
+    {
+      "path": "node_modules/morgan/node_modules/debug/package.json"
+    },
+    {
+      "path": "node_modules/lunr/package.json"
+    },
+    {
+      "path": "node_modules/yargs/package.json"
+    },
+    {
+      "path": "node_modules/yargs/node_modules/string-width/package.json"
+    },
+    {
+      "path": "node_modules/yargs/node_modules/locate-path/package.json"
+    },
+    {
+      "path": "node_modules/yargs/node_modules/find-up/package.json"
+    },
+    {
+      "path": "node_modules/yargs/node_modules/yargs-parser/package.json"
+    },
+    {
+      "path": "node_modules/yargs/node_modules/camelcase/package.json"
+    },
+    {
+      "path": "node_modules/yargs/node_modules/p-locate/package.json"
+    },
+    {
+      "path": "node_modules/yargs/node_modules/emoji-regex/package.json"
+    },
+    {
+      "path": "node_modules/yargs/node_modules/is-fullwidth-code-point/package.json"
+    },
+    {
+      "path": "node_modules/nice-try/package.json"
+    },
+    {
+      "path": "node_modules/array-differ/package.json"
+    },
+    {
+      "path": "node_modules/static-extend/package.json"
+    },
+    {
+      "path": "node_modules/static-extend/node_modules/define-property/package.json"
+    },
+    {
+      "path": "node_modules/has/package.json"
+    },
+    {
+      "path": "node_modules/escallmatch/package.json"
+    },
+    {
+      "path": "node_modules/escallmatch/node_modules/esprima/package.json"
+    },
+    {
+      "path": "node_modules/get-caller-file/package.json"
+    },
+    {
+      "path": "node_modules/jwa/package.json"
+    },
+    {
+      "path": "node_modules/json5/package.json"
+    },
+    {
+      "path": "scripts/setup-build-dir.ts"
     }
   ]
 }
