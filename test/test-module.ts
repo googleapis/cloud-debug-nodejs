@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import * as assert from 'assert';
+import {describe, it} from 'mocha';
 const m: NodeModule & {
   start: Function;
   get: () => Debuglet | undefined;
