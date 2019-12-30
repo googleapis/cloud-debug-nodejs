@@ -30,6 +30,7 @@ const breakpointInFoo: stackdriver.Breakpoint = {
 const MAX_INT = 2147483647; // Max signed int32.
 
 import * as assert from 'assert';
+import {describe, it} from 'mocha';
 import * as extend from 'extend';
 import * as debugapi from '../src/agent/v8/debugapi';
 import {defaultConfig, DebugAgentConfig} from '../src/agent/config';

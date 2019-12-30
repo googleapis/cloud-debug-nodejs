@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import * as assert from 'assert';
+import {describe, it} from 'mocha';
 import * as utils from '../src/agent/util/utils';
 
 const describeFn = utils.satisfies(process.version, '>=10')

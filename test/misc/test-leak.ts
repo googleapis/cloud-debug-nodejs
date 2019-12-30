@@ -3,6 +3,7 @@
 const v8debugapi = require('../src/v8debugapi.js');
 const config = require('../config.js').default;
 import * as assert from 'assert';
+import {describe, it} from 'mocha';
 import * as util from 'util';
 
 // tslint:disable:variable-name

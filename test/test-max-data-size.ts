@@ -18,6 +18,7 @@ import consoleLogLevel = require('console-log-level');
 import * as stackdriver from '../src/types/stackdriver';
 
 import * as assert from 'assert';
+import {describe, it} from 'mocha';
 import * as extend from 'extend';
 import * as debugapi from '../src/agent/v8/debugapi';
 import * as SourceMapper from '../src/agent/io/sourcemapper';

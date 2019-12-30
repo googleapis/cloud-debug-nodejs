@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import * as assert from 'assert';
+import {describe, it} from 'mocha';
 import {Debuggee} from '../src/debuggee';
 
 const agentVersion = `SomeName/client/SomeVersion`;
