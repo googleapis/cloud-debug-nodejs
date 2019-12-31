@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import * as assert from 'assert';
+import {describe, it} from 'mocha';
 
 import {defaultConfig} from '../src/agent/config';
 import {Debuglet} from '../src/agent/debuglet';
