@@ -20,11 +20,7 @@ import subprocess
 logging.basicConfig(level=logging.DEBUG)
 common_templates = gcp.CommonTemplates()
 templates = common_templates.node_library()
-# stop excluding '.kokoro/test.bat' as soon as we figure out why Node 10 tests
-# have issues on Windows (see #686).
-s.copy(templates, excludes=[
-  '.kokoro/test.bat'
-])
+s.copy(templates)
 
 subprocess.run(['npm', 'install'])
 subprocess.run(['npm', 'run', 'fix'])
