@@ -494,9 +494,10 @@ export class InspectorDebugApi implements debugapi.DebugApi {
         : matchingScript;
       // on windows the url must start with file:/// (notice 3 slashes)
       // and have all backslashes converted into forward slashes
-      const url = process.platform === 'win32'
-        ? rawUrl.replace(/^file:\/\//, 'file:///').replace(/\\/g, '/')
-        : rawUrl;
+      const url =
+        process.platform === 'win32'
+          ? rawUrl.replace(/^file:\/\//, 'file:///').replace(/\\/g, '/')
+          : rawUrl;
       const res = this.v8Inspector.setBreakpointByUrl({
         lineNumber: line - 1,
         url,
