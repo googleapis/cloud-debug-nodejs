@@ -36,6 +36,10 @@ const FILE_PROTOCOL = 'file://';
 // on windows on Node 11+ the file protocol needs to have three slashes
 const WINDOWS_FILE_PROTOCOL = 'file:///';
 
+// Used to match paths like file:///C:/... on windows
+// but do not match paths like file:///home/... on linux
+const WINDOWS_URL_REGEX = RegExp(`^${WINDOWS_FILE_PROTOCOL}[a-zA-Z]+:`);
+
 const STABLE_OBJECT_ID_PROPERTY = '[[StableObjectId]]';
 const NO_STABLE_OBJECT_ID = -1;
 
@@ -334,9 +338,7 @@ class StateResolver {
 
   static stripFileProtocol_(path: string) {
     const lowerPath = path.toLowerCase();
-    // match paths like file:///C:/... on windows
-    // but do not match paths like file:///home/... on linux
-    if (RegExp(`^${WINDOWS_FILE_PROTOCOL}[a-zA-Z]+:`).test(lowerPath)) {
+    if (WINDOWS_URL_REGEX.test(lowerPath)) {
       return path.substr(WINDOWS_FILE_PROTOCOL.length);
     }
 
