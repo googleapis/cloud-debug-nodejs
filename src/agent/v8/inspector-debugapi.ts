@@ -496,7 +496,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       // (notice 3 slashes) and have all backslashes converted into forward slashes
       const url =
         process.platform === 'win32' &&
-        utils.satisfies(process.version, '11.x.x')
+        utils.satisfies(process.version, '>=11')
           ? rawUrl.replace(/^file:\/\//, 'file:///').replace(/\\/g, '/')
           : rawUrl;
       const res = this.v8Inspector.setBreakpointByUrl({
