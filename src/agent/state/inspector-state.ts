@@ -33,6 +33,8 @@ const GETTER_MESSAGE_INDEX = 2;
 const ARG_LOCAL_LIMIT_MESSAGE_INDEX = 3;
 
 const FILE_PROTOCOL = 'file://';
+// on windows the file protocol needs to have three slashes
+const WINDOWS_FILE_PROTOCOL = 'file:///';
 
 const STABLE_OBJECT_ID_PROPERTY = '[[StableObjectId]]';
 const NO_STABLE_OBJECT_ID = -1;
@@ -316,7 +318,13 @@ class StateResolver {
     const scriptUrl = this.scriptmapper[scriptId].url;
     // In Node 11+, non-internal files are formatted as URLs, so get just the
     // path.
-    return StateResolver.stripFileProtocol_(scriptUrl);
+    const strippedUrl = StateResolver.stripFileProtocol_(scriptUrl);
+    if (process.platform === 'win32') {
+      // on windows the script url provided to v8 uses forward slashes
+      // convert them back to backslashes
+      return strippedUrl.replace(/\//g, '\\');
+    }
+    return strippedUrl;
   }
 
   resolveRelativePath_(frame: inspector.Debugger.CallFrame): string {
@@ -325,9 +333,16 @@ class StateResolver {
   }
 
   static stripFileProtocol_(path: string) {
-    return path.toLowerCase().startsWith(FILE_PROTOCOL)
-      ? path.substr(FILE_PROTOCOL.length)
-      : path;
+    const lowerPath = path.toLowerCase();
+    if (lowerPath.startsWith(WINDOWS_FILE_PROTOCOL)) {
+      return path.substr(WINDOWS_FILE_PROTOCOL.length);
+    }
+
+    if (lowerPath.startsWith(FILE_PROTOCOL)) {
+      return path.substr(FILE_PROTOCOL.length);
+    }
+
+    return path;
   }
 
   stripCurrentWorkingDirectory_(path: string): string {
