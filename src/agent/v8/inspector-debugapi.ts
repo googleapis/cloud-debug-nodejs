@@ -492,10 +492,11 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       const rawUrl = this.inspectorOptions.useWellFormattedUrl
         ? `file://${matchingScript}`
         : matchingScript;
-      // on windows the url must start with file:/// (notice 3 slashes)
-      // and have all backslashes converted into forward slashes
+      // on windows on Node 11+, the url must start with file:///
+      // (notice 3 slashes) and have all backslashes converted into forward slashes
       const url =
-        process.platform === 'win32'
+        process.platform === 'win32' &&
+        utils.satisfies(process.version, '11.x.x')
           ? rawUrl.replace(/^file:\/\//, 'file:///').replace(/\\/g, '/')
           : rawUrl;
       const res = this.v8Inspector.setBreakpointByUrl({

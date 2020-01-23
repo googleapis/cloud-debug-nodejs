@@ -33,7 +33,7 @@ const GETTER_MESSAGE_INDEX = 2;
 const ARG_LOCAL_LIMIT_MESSAGE_INDEX = 3;
 
 const FILE_PROTOCOL = 'file://';
-// on windows the file protocol needs to have three slashes
+// on windows on Node 11+ the file protocol needs to have three slashes
 const WINDOWS_FILE_PROTOCOL = 'file:///';
 
 const STABLE_OBJECT_ID_PROPERTY = '[[StableObjectId]]';
