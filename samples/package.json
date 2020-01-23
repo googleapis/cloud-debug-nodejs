@@ -14,7 +14,7 @@
     "test": "mocha"
   },
   "dependencies": {
-    "@google-cloud/debug-agent": "^4.2.1",
+    "@google-cloud/debug-agent": "^4.2.2",
     "express": "4.17.1"
   },
   "devDependencies": {
