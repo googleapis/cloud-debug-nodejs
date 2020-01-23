@@ -334,7 +334,9 @@ class StateResolver {
 
   static stripFileProtocol_(path: string) {
     const lowerPath = path.toLowerCase();
-    if (lowerPath.startsWith(WINDOWS_FILE_PROTOCOL)) {
+    // match paths like file:///C:/... on windows
+    // but do not match paths like file:///home/... on linux
+    if (RegExp(`^${WINDOWS_FILE_PROTOCOL}[a-zA-Z]+:`).test(lowerPath)) {
       return path.substr(WINDOWS_FILE_PROTOCOL.length);
     }
 
