@@ -489,9 +489,15 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     let v8BreakpointId; // v8/inspector breakpoint id
     if (!this.locationMapper[locationStr]) {
       // The first time when a breakpoint was set to this location.
-      const url = this.inspectorOptions.useWellFormattedUrl
+      const rawUrl = this.inspectorOptions.useWellFormattedUrl
         ? `file://${matchingScript}`
         : matchingScript;
+      // on windows on Node 11+, the url must start with file:///
+      // (notice 3 slashes) and have all backslashes converted into forward slashes
+      const url =
+        process.platform === 'win32' && utils.satisfies(process.version, '>=11')
+          ? rawUrl.replace(/^file:\/\//, 'file:///').replace(/\\/g, '/')
+          : rawUrl;
       const res = this.v8Inspector.setBreakpointByUrl({
         lineNumber: line - 1,
         url,
