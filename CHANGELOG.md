@@ -1,5 +1,12 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+### [4.2.2](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v4.2.1...v4.2.2) (2020-01-23)
+
+
+### Bug Fixes
+
+* breakpoints work on windows ([#815](https://www.github.com/googleapis/cloud-debug-nodejs/issues/815)) ([8309839](https://www.github.com/googleapis/cloud-debug-nodejs/commit/8309839290985b16d9e7b4586cf7e7db10f7676b)), closes [#795](https://www.github.com/googleapis/cloud-debug-nodejs/issues/795)
+
 ### [4.2.1](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v4.2.0...v4.2.1) (2019-12-15)
 
 
