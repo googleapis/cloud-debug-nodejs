@@ -139,7 +139,18 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       line: breakpoint.location.line,
       column: breakpoint.location.column || 1, // TODO: sort out indexing.
     };
-    if (!this.sourcemapper.hasMappingInfo(mapInfo.file)) {
+    if (this.sourcemapper.hasMappingInfo(mapInfo.file)) {
+      // There is a sourcemap on the filesystem that refers to the requested file.
+      const mappedLocation = this.sourcemapper.mappingInfo(
+        mapInfo.file,
+        mapInfo.line,
+        mapInfo.column
+      );
+      if (mappedLocation) {
+        mapInfo = mappedLocation;
+      }
+    } else {
+      // The file may be present on the filesystem.
       const extension = path.extname(mapInfo.file);
       if (!this.config.javascriptFileExtensions.includes(extension)) {
         return utils.setErrorStatusAndCallback(
@@ -149,36 +160,26 @@ export class InspectorDebugApi implements debugapi.DebugApi {
           utils.messages.COULD_NOT_FIND_OUTPUT_FILE
         );
       }
-
-      this.setInternal(breakpoint, mapInfo, null /* compile */, cb);
-    } else {
-      const mappedLocation = this.sourcemapper.mappingInfo(
-        mapInfo.file,
-        mapInfo.line,
-        mapInfo.column
-      );
-      if (mappedLocation) {
-        mapInfo = mappedLocation;
-      }
-
-      const compile = utils.getBreakpointCompiler(breakpoint);
-      if (breakpoint.condition && compile) {
-        try {
-          breakpoint.condition = compile(breakpoint.condition);
-        } catch (e) {
-          this.logger.info(
-            'Unable to compile condition >> ' + breakpoint.condition + ' <<'
-          );
-          return utils.setErrorStatusAndCallback(
-            cb,
-            breakpoint,
-            StatusMessage.BREAKPOINT_CONDITION,
-            utils.messages.ERROR_COMPILING_CONDITION
-          );
-        }
-      }
-      this.setInternal(breakpoint, mapInfo, compile, cb);
     }
+
+    // Try compiling the condition (if applicable).
+    const compile = utils.getBreakpointCompiler(breakpoint);
+    if (breakpoint.condition && compile) {
+      try {
+        breakpoint.condition = compile(breakpoint.condition);
+      } catch (e) {
+        this.logger.info(
+          'Unable to compile condition >> ' + breakpoint.condition + ' <<'
+        );
+        return utils.setErrorStatusAndCallback(
+          cb,
+          breakpoint,
+          StatusMessage.BREAKPOINT_CONDITION,
+          utils.messages.ERROR_COMPILING_CONDITION
+        );
+      }
+    }
+    this.setInternal(breakpoint, mapInfo, compile, cb);
   }
 
   clear(
@@ -411,16 +412,15 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     }
 
     let column = mapInfo.column || 1; // TODO: Why 1??
-    const line = mapInfo.line;
     // In older versions of Node, since Node.js wraps modules with a function
     // expression, we need to special case breakpoints on the first line.
-    if (USE_MODULE_PREFIX && line === 1) {
+    if (USE_MODULE_PREFIX && mapInfo.line === 1) {
       column += debugapi.MODULE_WRAP_PREFIX_LENGTH - 1;
     }
 
     // TODO: Address the case where `breakpoint.location` is `null`.
     // TODO: Address the case where `fileStats[matchingScript]` is `null`.
-    if (line >= (this.fileStats[mapInfo.file] as FileStats).lines) {
+    if (mapInfo.line >= (this.fileStats[mapInfo.file] as FileStats).lines) {
       return utils.setErrorStatusAndCallback(
         cb,
         breakpoint,
@@ -428,7 +428,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
         utils.messages.INVALID_LINE_NUMBER +
           mapInfo.file +
           ':' +
-          line +
+          mapInfo.line +
           '. Loaded script contained ' +
           (this.fileStats[mapInfo.file] as FileStats).lines +
           ' lines. Please ensure' +
@@ -439,7 +439,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
 
     const result = this.setAndStoreBreakpoint(
       breakpoint,
-      line,
+      mapInfo.line,
       column,
       mapInfo.file
     );
