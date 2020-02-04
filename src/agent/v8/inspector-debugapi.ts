@@ -132,9 +132,13 @@ export class InspectorDebugApi implements debugapi.DebugApi {
         utils.messages.INVALID_BREAKPOINT
       );
     }
-    const baseScriptPath = path.normalize(breakpoint.location.path);
-    if (!this.sourcemapper.hasMappingInfo(baseScriptPath)) {
-      const extension = path.extname(baseScriptPath);
+    let mapInfo = {
+      file: path.normalize(breakpoint.location.path),
+      line: breakpoint.location.line,
+      column: breakpoint.location.column || 0, // TODO: sort out indexing.
+    };
+    if (!this.sourcemapper.hasMappingInfo(mapInfo.file)) {
+      const extension = path.extname(mapInfo.file);
       if (!this.config.javascriptFileExtensions.includes(extension)) {
         return utils.setErrorStatusAndCallback(
           cb,
@@ -144,15 +148,16 @@ export class InspectorDebugApi implements debugapi.DebugApi {
         );
       }
 
-      this.setInternal(breakpoint, null /* mapInfo */, null /* compile */, cb);
+      this.setInternal(breakpoint, mapInfo, null /* compile */, cb);
     } else {
-      const line = breakpoint.location.line;
-      const column = 0;
-      const mapInfo = this.sourcemapper.mappingInfo(
-        baseScriptPath,
-        line,
-        column
+      const mappedLocation = this.sourcemapper.mappingInfo(
+        mapInfo.file,
+        mapInfo.line,
+        mapInfo.column
       );
+      if (mappedLocation) {
+        mapInfo = mappedLocation;
+      }
 
       const compile = utils.getBreakpointCompiler(breakpoint);
       if (breakpoint.condition && compile) {

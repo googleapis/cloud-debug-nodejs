@@ -38,7 +38,7 @@ export interface MapInfoInput {
 export interface MapInfoOutput {
   file: string;
   line: number;
-  column?: number;
+  column: number;
 }
 
 /**
