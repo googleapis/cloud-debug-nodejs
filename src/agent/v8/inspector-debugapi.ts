@@ -132,10 +132,12 @@ export class InspectorDebugApi implements debugapi.DebugApi {
         utils.messages.INVALID_BREAKPOINT
       );
     }
+    // NOTE: Turns out that this needs more **understanding**.
+    // 0 or 1 indexing both "work" according to tests.
     let mapInfo = {
       file: path.normalize(breakpoint.location.path),
       line: breakpoint.location.line,
-      column: breakpoint.location.column || 0, // TODO: sort out indexing.
+      column: breakpoint.location.column || 1, // TODO: sort out indexing.
     };
     if (!this.sourcemapper.hasMappingInfo(mapInfo.file)) {
       const extension = path.extname(mapInfo.file);
@@ -322,7 +324,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
    * maps (if necessary), and scriptPath happens to be a JavaScript path.
    *
    * @param {!Breakpoint} breakpoint Debug API Breakpoint object
-   * @param {!MapInfoOutput|null} mapInfo A map that has a "file" attribute for
+   * @param {!MapInfoOutput} mapInfo A map that has a "file" attribute for
    *    the path of the output file associated with the given input file
    * @param {function(string)=} compile optional compile function that can be
    *    be used to compile source expressions to JavaScript
@@ -332,7 +334,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
   // TODO: Unify this function with setInternal in v8debugapi.ts.
   private setInternal(
     breakpoint: stackdriver.Breakpoint,
-    mapInfo: MapInfoOutput | null,
+    mapInfo: MapInfoOutput,
     compile: ((src: string) => string) | null,
     cb: (err: Error | null) => void
   ): void {
@@ -379,15 +381,9 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     // different directory. Until this is addressed between the server and the
     // debuglet, we are going to assume that repository root === the starting
     // working directory.
-    let matchingScript;
     // TODO: Address the case where `breakpoint.location` is `null`.
-    const scriptPath = mapInfo
-      ? mapInfo.file
-      : path.normalize(
-          (breakpoint.location as stackdriver.SourceLocation).path
-        );
     const scripts = utils.findScripts(
-      scriptPath,
+      mapInfo.file,
       this.config,
       this.fileStats,
       this.logger
@@ -401,10 +397,10 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       );
     } else if (scripts.length === 1) {
       // Found the script
-      matchingScript = scripts[0];
+      mapInfo.file = scripts[0];
     } else {
       this.logger.warn(
-        `Unable to unambiguously find ${scriptPath}. Potential matches: ${scripts}`
+        `Unable to unambiguously find ${mapInfo.file}. Potential matches: ${scripts}`
       );
       return utils.setErrorStatusAndCallback(
         cb,
@@ -414,16 +410,8 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       );
     }
 
-    // The breakpoint protobuf message presently doesn't have a column
-    // property but it may have one in the future.
-    // TODO: Address the case where `breakpoint.location` is `null`.
-    let column =
-      mapInfo && mapInfo.column
-        ? mapInfo.column
-        : (breakpoint.location as stackdriver.SourceLocation).column || 1;
-    const line = mapInfo
-      ? mapInfo.line
-      : (breakpoint.location as stackdriver.SourceLocation).line;
+    let column = mapInfo.column || 1; // TODO: Why 1??
+    const line = mapInfo.line;
     // In older versions of Node, since Node.js wraps modules with a function
     // expression, we need to special case breakpoints on the first line.
     if (USE_MODULE_PREFIX && line === 1) {
@@ -432,17 +420,17 @@ export class InspectorDebugApi implements debugapi.DebugApi {
 
     // TODO: Address the case where `breakpoint.location` is `null`.
     // TODO: Address the case where `fileStats[matchingScript]` is `null`.
-    if (line >= (this.fileStats[matchingScript] as FileStats).lines) {
+    if (line >= (this.fileStats[mapInfo.file] as FileStats).lines) {
       return utils.setErrorStatusAndCallback(
         cb,
         breakpoint,
         StatusMessage.BREAKPOINT_SOURCE_LOCATION,
         utils.messages.INVALID_LINE_NUMBER +
-          matchingScript +
+          mapInfo.file +
           ':' +
           line +
           '. Loaded script contained ' +
-          (this.fileStats[matchingScript] as FileStats).lines +
+          (this.fileStats[mapInfo.file] as FileStats).lines +
           ' lines. Please ensure' +
           ' that the snapshot was set in the same code version as the' +
           ' deployed source.'
@@ -453,7 +441,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       breakpoint,
       line,
       column,
-      matchingScript
+      mapInfo.file
     );
     if (!result) {
       return utils.setErrorStatusAndCallback(
