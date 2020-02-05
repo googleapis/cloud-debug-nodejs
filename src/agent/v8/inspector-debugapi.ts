@@ -142,13 +142,19 @@ export class InspectorDebugApi implements debugapi.DebugApi {
 
     if (this.sourcemapper.hasMappingInfo(mapInfo.file)) {
       // There is a sourcemap on the filesystem that refers to the requested file.
+      // mappingInfo expects 0-based line & column.
       const mappedLocation = this.sourcemapper.mappingInfo(
         mapInfo.file,
-        mapInfo.line,
-        mapInfo.column
+        mapInfo.line - 1,
+        mapInfo.column - 1
       );
       if (mappedLocation) {
-        mapInfo = mappedLocation;
+        // mappingInfo returns 0-based line & column.  Map it back to 1-based.
+        mapInfo = {
+          file: mappedLocation.file,
+          line: mappedLocation.line + 1,
+          column: mappedLocation.column + 1,
+        };
       }
     } else {
       // The file may be present on the filesystem.
@@ -197,16 +203,16 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       this.fileStats,
       this.logger
     );
-    if (scripts.length === 0) {
+    if (scripts.length === 1) {
+      // Found the script
+      mapInfo.file = scripts[0];
+    } else if (scripts.length === 0) {
       return utils.setErrorStatusAndCallback(
         cb,
         breakpoint,
         StatusMessage.BREAKPOINT_SOURCE_LOCATION,
         utils.messages.SOURCE_FILE_NOT_FOUND
       );
-    } else if (scripts.length === 1) {
-      // Found the script
-      mapInfo.file = scripts[0];
     } else {
       this.logger.warn(
         `Unable to unambiguously find ${mapInfo.file}. Potential matches: ${scripts}`
@@ -413,8 +419,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       }
     }
 
-    // TODO: Fix this indexing nonsense.
-    mapInfo.column = mapInfo.column || 1;
+    // Assertion: mapInfo line & column are both 1-indexed.
     // In older versions of Node, since Node.js wraps modules with a function
     // expression, we need to special case breakpoints on the first line.
     if (USE_MODULE_PREFIX && mapInfo.line === 1) {
@@ -440,12 +445,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       );
     }
 
-    const result = this.setAndStoreBreakpoint(
-      breakpoint,
-      mapInfo.line,
-      mapInfo.column,
-      mapInfo.file
-    );
+    const result = this.setAndStoreBreakpoint(breakpoint, mapInfo);
     if (!result) {
       return utils.setErrorStatusAndCallback(
         cb,
@@ -469,11 +469,10 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     }); // success.
   }
 
+  // mapInfo line & column should be 1-indexed.
   private setAndStoreBreakpoint(
     breakpoint: stackdriver.Breakpoint,
-    line: number,
-    column: number,
-    matchingScript: string
+    mapInfo: MapInfoOutput
   ): {
     v8BreakpointId: inspector.Debugger.BreakpointId;
     locationStr: string;
@@ -481,13 +480,14 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     // location Str will be a JSON string of Stackdriver breakpoint location.
     // It will be used as key at locationmapper to ensure there will be no
     // duplicate breakpoints at the same location.
+    // TODO: adjust this to be based on mapInfo for better consistency.
     const locationStr = JSON.stringify(breakpoint.location);
     let v8BreakpointId; // v8/inspector breakpoint id
     if (!this.locationMapper[locationStr]) {
       // The first time when a breakpoint was set to this location.
       const rawUrl = this.inspectorOptions.useWellFormattedUrl
-        ? `file://${matchingScript}`
-        : matchingScript;
+        ? `file://${mapInfo.file}`
+        : mapInfo.file;
       // on windows on Node 11+, the url must start with file:///
       // (notice 3 slashes) and have all backslashes converted into forward slashes
       const url =
@@ -495,9 +495,9 @@ export class InspectorDebugApi implements debugapi.DebugApi {
           ? rawUrl.replace(/^file:\/\//, 'file:///').replace(/\\/g, '/')
           : rawUrl;
       const res = this.v8Inspector.setBreakpointByUrl({
-        lineNumber: line - 1,
+        lineNumber: mapInfo.line - 1,
         url,
-        columnNumber: column - 1,
+        columnNumber: mapInfo.column - 1,
         condition: breakpoint.condition || undefined,
       });
       if (res.error || !res.response) {

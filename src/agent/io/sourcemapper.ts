@@ -194,9 +194,9 @@ export class SourceMapper {
    * @param {string} inputPath The path to an input file that could possibly
    *  be the input to a transpilation process.  The path should be relative to
    *  the process's current working directory
-   * @param {number} The line number in the input file where the line number is
+   * @param {number} lineNumber The line number in the input file where the line number is
    *   zero-based.
-   * @param {number} (Optional) The column number in the line of the file
+   * @param {number} colNumber The column number in the line of the file
    *   specified where the column number is zero-based.
    * @return {Object} The object returned has a "file" attribute for the
    *   path of the output file associated with the given input file (where the
@@ -205,6 +205,7 @@ export class SourceMapper {
    *   the given line number for the input file, and an optional "column" number
    *   of the column number of the output file associated with the given file
    *   and line information.
+   *   Line and column will be zero-based.
    *
    *   If the given input file does not have mapping information associated
    *   with it then null is returned.
@@ -271,10 +272,7 @@ export class SourceMapper {
       //       attribute and not a `col` attribute.  Determine if the type
       //       definition or this code is correct.
       column: ((mappedPos as {}) as {col: number}).col, // SourceMapConsumer uses
-      // zero-based column
-      // numbers which is the
-      // same as the expected
-      // output
+      // zero-based column numbers which is the same as the expected output
     };
   }
 }
