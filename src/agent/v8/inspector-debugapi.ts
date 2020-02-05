@@ -29,6 +29,8 @@ import * as utils from '../util/utils';
 import * as debugapi from './debugapi';
 import {V8Inspector} from './v8inspector';
 
+import * as assert from 'assert';
+
 /**
  * An interface that describes options that set behavior when interacting with
  * the V8 Inspector API.
@@ -155,17 +157,6 @@ export class InspectorDebugApi implements debugapi.DebugApi {
           line: mappedLocation.line + 1,
           column: mappedLocation.column + 1,
         };
-      }
-    } else {
-      // The file may be present on the filesystem.
-      const extension = path.extname(mapInfo.file);
-      if (!this.config.javascriptFileExtensions.includes(extension)) {
-        return utils.setErrorStatusAndCallback(
-          cb,
-          breakpoint,
-          StatusMessage.BREAKPOINT_SOURCE_LOCATION,
-          utils.messages.COULD_NOT_FIND_OUTPUT_FILE
-        );
       }
     }
 

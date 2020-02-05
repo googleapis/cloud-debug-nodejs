@@ -271,7 +271,7 @@ export class SourceMapper {
       // TODO: The `sourceMap.Position` type definition has a `column`
       //       attribute and not a `col` attribute.  Determine if the type
       //       definition or this code is correct.
-      column: ((mappedPos as {}) as {col: number}).col, // SourceMapConsumer uses
+      column: ((mappedPos as {}) as {col: number}).col || 0, // SourceMapConsumer uses
       // zero-based column numbers which is the same as the expected output
     };
   }
