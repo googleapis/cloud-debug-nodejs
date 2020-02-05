@@ -132,13 +132,14 @@ export class InspectorDebugApi implements debugapi.DebugApi {
         utils.messages.INVALID_BREAKPOINT
       );
     }
-    // NOTE: Turns out that this needs more **understanding**.
-    // 0 or 1 indexing both "work" according to tests.
+
+    // breakpoint.location line & column are 1-based per API documentation.
     let mapInfo = {
       file: path.normalize(breakpoint.location.path),
       line: breakpoint.location.line,
-      column: breakpoint.location.column || 1, // TODO: sort out indexing.
+      column: breakpoint.location.column || 1,
     };
+
     if (this.sourcemapper.hasMappingInfo(mapInfo.file)) {
       // There is a sourcemap on the filesystem that refers to the requested file.
       const mappedLocation = this.sourcemapper.mappingInfo(
@@ -179,6 +180,45 @@ export class InspectorDebugApi implements debugapi.DebugApi {
         );
       }
     }
+
+    // Presently it is not possible to precisely disambiguate the script
+    // path from the path provided by the debug server. The issue is that we
+    // don't know the repository root relative to the root filesystem or
+    // relative to the working-directory of the process. We want to make sure
+    // that we are setting the breakpoint that the user intended instead of a
+    // breakpoint in a file that happens to have the same name but is in a
+    // different directory. Until this is addressed between the server and the
+    // debuglet, we are going to assume that repository root === the starting
+    // working directory.
+    // TODO: Address the case where `breakpoint.location` is `null`.
+    const scripts = utils.findScripts(
+      mapInfo.file,
+      this.config,
+      this.fileStats,
+      this.logger
+    );
+    if (scripts.length === 0) {
+      return utils.setErrorStatusAndCallback(
+        cb,
+        breakpoint,
+        StatusMessage.BREAKPOINT_SOURCE_LOCATION,
+        utils.messages.SOURCE_FILE_NOT_FOUND
+      );
+    } else if (scripts.length === 1) {
+      // Found the script
+      mapInfo.file = scripts[0];
+    } else {
+      this.logger.warn(
+        `Unable to unambiguously find ${mapInfo.file}. Potential matches: ${scripts}`
+      );
+      return utils.setErrorStatusAndCallback(
+        cb,
+        breakpoint,
+        StatusMessage.BREAKPOINT_SOURCE_LOCATION,
+        utils.messages.SOURCE_FILE_AMBIGUOUS
+      );
+    }
+
     this.setInternal(breakpoint, mapInfo, compile, cb);
   }
 
@@ -373,49 +413,12 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       }
     }
 
-    // Presently it is not possible to precisely disambiguate the script
-    // path from the path provided by the debug server. The issue is that we
-    // don't know the repository root relative to the root filesystem or
-    // relative to the working-directory of the process. We want to make sure
-    // that we are setting the breakpoint that the user intended instead of a
-    // breakpoint in a file that happens to have the same name but is in a
-    // different directory. Until this is addressed between the server and the
-    // debuglet, we are going to assume that repository root === the starting
-    // working directory.
-    // TODO: Address the case where `breakpoint.location` is `null`.
-    const scripts = utils.findScripts(
-      mapInfo.file,
-      this.config,
-      this.fileStats,
-      this.logger
-    );
-    if (scripts.length === 0) {
-      return utils.setErrorStatusAndCallback(
-        cb,
-        breakpoint,
-        StatusMessage.BREAKPOINT_SOURCE_LOCATION,
-        utils.messages.SOURCE_FILE_NOT_FOUND
-      );
-    } else if (scripts.length === 1) {
-      // Found the script
-      mapInfo.file = scripts[0];
-    } else {
-      this.logger.warn(
-        `Unable to unambiguously find ${mapInfo.file}. Potential matches: ${scripts}`
-      );
-      return utils.setErrorStatusAndCallback(
-        cb,
-        breakpoint,
-        StatusMessage.BREAKPOINT_SOURCE_LOCATION,
-        utils.messages.SOURCE_FILE_AMBIGUOUS
-      );
-    }
-
-    let column = mapInfo.column || 1; // TODO: Why 1??
+    // TODO: Fix this indexing nonsense.
+    mapInfo.column = mapInfo.column || 1;
     // In older versions of Node, since Node.js wraps modules with a function
     // expression, we need to special case breakpoints on the first line.
     if (USE_MODULE_PREFIX && mapInfo.line === 1) {
-      column += debugapi.MODULE_WRAP_PREFIX_LENGTH - 1;
+      mapInfo.column += debugapi.MODULE_WRAP_PREFIX_LENGTH - 1;
     }
 
     // TODO: Address the case where `breakpoint.location` is `null`.
@@ -440,7 +443,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     const result = this.setAndStoreBreakpoint(
       breakpoint,
       mapInfo.line,
-      column,
+      mapInfo.column,
       mapInfo.file
     );
     if (!result) {
