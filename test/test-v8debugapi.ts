@@ -2357,4 +2357,20 @@ describe('v8debugapi in-memory support', () => {
       });
     });
   });
+
+  it('should set error for breakpoint on missing files', done => {
+    const bp = ({
+      id: 0,
+      location: {line: 1, path: path.join('fixtures', 'this-does-not-exist.js')},
+    } as {}) as stackdriver.Breakpoint;
+    api.set(bp, err => {
+      assert.ok(err, 'should return an error');
+      assert.ok(bp.status);
+      assert.ok(bp.status instanceof StatusMessage);
+      assert.strictEqual(bp.status!.refersTo, 'BREAKPOINT_SOURCE_LOCATION');
+      assert.ok(bp.status!.isError);
+      done();
+    });
+  });
+
 });
