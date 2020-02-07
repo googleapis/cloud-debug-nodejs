@@ -309,3 +309,27 @@ export function satisfies(nodeVersion: string, semverRange: string) {
 export function isJavaScriptFile(filepath: string) {
   return path.extname(filepath).toLowerCase() === '.js';
 }
+
+/**
+ * Requires a module and returns it only if it is already loaded.
+ * Returns null if the module is not already loaded or doesn't exist.
+ *
+ * @param moduleName The name of the module to try to require.
+ */
+export function safeRequire(moduleName: string): unknown | null {
+  let modulePath: string;
+  try {
+    modulePath = require.resolve(moduleName);
+  } catch (e) {
+    // module is not available.
+    return null;
+  }
+  const cachedModule = require.cache[modulePath];
+  if (!cachedModule || !cachedModule['loaded']) {
+    // module is available but not loaded.
+    return null;
+  }
+
+  // module is already loaded.  Can require it without side effects.
+  return require(moduleName);
+}
