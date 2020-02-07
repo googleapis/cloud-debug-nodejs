@@ -2361,7 +2361,10 @@ describe('v8debugapi in-memory support', () => {
   it('should set error for breakpoint on missing files', done => {
     const bp = ({
       id: 0,
-      location: {line: 1, path: path.join('fixtures', 'this-does-not-exist.js')},
+      location: {
+        line: 1,
+        path: path.join('fixtures', 'this-does-not-exist.js'),
+      },
     } as {}) as stackdriver.Breakpoint;
     api.set(bp, err => {
       assert.ok(err, 'should return an error');
@@ -2372,5 +2375,4 @@ describe('v8debugapi in-memory support', () => {
       done();
     });
   });
-
 });
