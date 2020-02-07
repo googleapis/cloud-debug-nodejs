@@ -188,6 +188,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     // debuglet, we are going to assume that repository root === the starting
     // working directory.
     // TODO: Address the case where `breakpoint.location` is `null`.
+    // Search for the script based on the filesystem scan (javascript only).
     const scripts = utils.findScripts(
       mapInfo.file,
       this.config,
@@ -195,18 +196,29 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       this.logger
     );
     if (scripts.length === 1) {
-      // Found the script
+      // Found the script.
       mapInfo.file = scripts[0];
-    } else if (scripts.length === 0) {
-      return utils.setErrorStatusAndCallback(
-        cb,
-        breakpoint,
-        StatusMessage.BREAKPOINT_SOURCE_LOCATION,
-        utils.messages.SOURCE_FILE_NOT_FOUND
-      );
-    } else {
+      // Do a quick sanity check on the line number.
+      if (mapInfo.line >= (this.fileStats[mapInfo.file] as FileStats).lines) {
+        return utils.setErrorStatusAndCallback(
+          cb,
+          breakpoint,
+          StatusMessage.BREAKPOINT_SOURCE_LOCATION,
+          utils.messages.INVALID_LINE_NUMBER +
+            mapInfo.file +
+            ':' +
+            mapInfo.line +
+            '. Loaded script contained ' +
+            (this.fileStats[mapInfo.file] as FileStats).lines +
+            ' lines. Please ensure' +
+            ' that the snapshot was set in the same code version as the' +
+            ' deployed source.'
+        );
+      }
+    } else if (scripts.length > 1) {
+      // Ambigious.  Panic and return.
       this.logger.warn(
-        `Unable to unambiguously find ${mapInfo.file}. Potential matches: ${scripts}`
+        `Unable to unambiguously find ${mapInfo.file} on disk. Potential matches: ${scripts}`
       );
       return utils.setErrorStatusAndCallback(
         cb,
@@ -214,6 +226,50 @@ export class InspectorDebugApi implements debugapi.DebugApi {
         StatusMessage.BREAKPOINT_SOURCE_LOCATION,
         utils.messages.SOURCE_FILE_AMBIGUOUS
       );
+    } else {
+      // Did not find the script.  Try the require cache!
+      // TODO: Understand this more.  Javascript files work fine,
+      // but non-js need to have been transpiled for this to make sense.
+      // For now, only allow this to proceed if the file is javascript.
+      const extension = path.extname(mapInfo.file);
+      if (!this.config.javascriptFileExtensions.includes(extension)) {
+        return utils.setErrorStatusAndCallback(
+          cb,
+          breakpoint,
+          StatusMessage.BREAKPOINT_SOURCE_LOCATION,
+          utils.messages.COULD_NOT_FIND_OUTPUT_FILE
+        );
+      }
+
+      // Now look in the require cache.
+      const cachePaths: string[] = [];
+      Object.keys(require.cache).forEach(path => {
+        cachePaths.push(path);
+      });
+      const matches = utils.findScriptsFuzzy(mapInfo.file, cachePaths);
+      if (matches.length === 1) {
+        // Found the script
+        mapInfo.file = matches[0];
+      } else if (matches.length > 1) {
+        // Ambigious.  Panic and return.
+        this.logger.warn(
+          `Unable to unambiguously find ${mapInfo.file} in memory. Potential matches: ${matches}`
+        );
+        return utils.setErrorStatusAndCallback(
+          cb,
+          breakpoint,
+          StatusMessage.BREAKPOINT_SOURCE_LOCATION,
+          utils.messages.SOURCE_FILE_AMBIGUOUS
+        );
+      } else {
+        // Still did not find the script.  Give up.
+        return utils.setErrorStatusAndCallback(
+          cb,
+          breakpoint,
+          StatusMessage.BREAKPOINT_SOURCE_LOCATION,
+          utils.messages.SOURCE_FILE_NOT_FOUND
+        );
+      }
     }
 
     this.setInternal(breakpoint, mapInfo, compile, cb);
@@ -415,25 +471,6 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     // expression, we need to special case breakpoints on the first line.
     if (USE_MODULE_PREFIX && mapInfo.line === 1) {
       mapInfo.column += debugapi.MODULE_WRAP_PREFIX_LENGTH - 1;
-    }
-
-    // TODO: Address the case where `breakpoint.location` is `null`.
-    // TODO: Address the case where `fileStats[matchingScript]` is `null`.
-    if (mapInfo.line >= (this.fileStats[mapInfo.file] as FileStats).lines) {
-      return utils.setErrorStatusAndCallback(
-        cb,
-        breakpoint,
-        StatusMessage.BREAKPOINT_SOURCE_LOCATION,
-        utils.messages.INVALID_LINE_NUMBER +
-          mapInfo.file +
-          ':' +
-          mapInfo.line +
-          '. Loaded script contained ' +
-          (this.fileStats[mapInfo.file] as FileStats).lines +
-          ' lines. Please ensure' +
-          ' that the snapshot was set in the same code version as the' +
-          ' deployed source.'
-      );
     }
 
     const result = this.setAndStoreBreakpoint(breakpoint, mapInfo);
