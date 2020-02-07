@@ -2302,3 +2302,59 @@ describe('v8debugapi.findScriptsFuzzy', () => {
     });
   });
 });
+
+describe('v8debugapi in-memory support', () => {
+  const config: ResolvedDebugAgentConfig = extend({}, defaultConfig, {
+    workingDirectory: __dirname,
+    forceNewAgent_: true,
+    javascriptFileExtensions: ['.js', '.jsz'],
+  });
+  const logger = new MockLogger();
+  let api: DebugApi;
+
+  beforeEach(done => {
+    if (!api) {
+      api = debugapi.create(
+        logger,
+        config,
+        {},
+        new SourceMapper.SourceMapper()
+      ) as DebugApi;
+      assert.ok(api, 'should be able to create the api');
+
+      // monkey-patch wait to add validation of the breakpoints.
+      const origWait = api.wait.bind(api);
+      api.wait = (bp, callback) => {
+        origWait(bp, (err2?: Error) => {
+          validateBreakpoint(bp);
+          callback(err2);
+        });
+      };
+
+      done();
+    } else {
+      assert(stateIsClean(api));
+      done();
+    }
+  });
+  afterEach(() => {
+    logger.clear();
+    assert(stateIsClean(api));
+  });
+
+  it('should accept breakpoints on javascript files', done => {
+    require('./fixtures/hello.js');
+    const bp: stackdriver.Breakpoint = ({
+      id: 0,
+      location: {line: 1, path: path.join('fixtures', 'hello.js')},
+    } as {}) as stackdriver.Breakpoint;
+
+    api.set(bp, err1 => {
+      assert.ifError(err1);
+      api.clear(bp, err2 => {
+        assert.ifError(err2);
+        done();
+      });
+    });
+  });
+});
