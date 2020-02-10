@@ -2394,4 +2394,27 @@ describe('v8debugapi in-memory support', () => {
       done();
     });
   });
+
+  it('should accept breakpoints on babel-register transpiled files', done => {
+    require('@babel/register')({
+      only: [
+        (filepath: string): boolean => {
+          return filepath.endsWith('transpile.es6');
+        },
+      ],
+    });
+    require('./fixtures/es6/transpile.es6');
+    const bp: stackdriver.Breakpoint = ({
+      id: 0,
+      location: {line: 1, path: 'transpile.es6'},
+    } as {}) as stackdriver.Breakpoint;
+
+    api.set(bp, err1 => {
+      assert.ifError(err1);
+      api.clear(bp, err2 => {
+        assert.ifError(err2);
+        done();
+      });
+    });
+  });
 });

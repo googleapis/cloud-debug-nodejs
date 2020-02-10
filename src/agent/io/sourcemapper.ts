@@ -18,7 +18,7 @@ import * as path from 'path';
 import {promisify} from 'util';
 import * as sourceMap from 'source-map';
 
-import {findScriptsFuzzy} from '../util/utils';
+import * as utils from '../util/utils';
 
 const CONCURRENCY = 10;
 const WEBPACK_PREFIX = 'webpack://';
@@ -39,6 +39,23 @@ export interface MapInfoOutput {
   file: string;
   line: number;
   column: number;
+}
+
+/** Interfaces pulled from source-map-support. */
+interface Position {
+  source: string;
+  line: number;
+  column: number;
+}
+
+interface UrlAndMap {
+  url: string;
+  map: string | Buffer;
+}
+
+interface SourceMapSupport {
+  retrieveSourceMap(source: string): UrlAndMap | null;
+  mapSourcePosition(position: Position): Position;
 }
 
 /**
@@ -162,7 +179,7 @@ export class SourceMapper {
       return this.infoMap.get(inputPath) as MapInfoInput;
     }
 
-    const matches = findScriptsFuzzy(
+    const matches = utils.findScriptsFuzzy(
       inputPath,
       Array.from(this.infoMap.keys())
     );
@@ -274,6 +291,53 @@ export class SourceMapper {
       column: ((mappedPos as {}) as {col: number}).col || 0, // SourceMapConsumer uses
       // zero-based column numbers which is the same as the expected output
     };
+  }
+
+  /**
+   * Require and return the 'source-map-support' module if it is already present.  Otherwise, return null.
+   */
+  safeRequireSourceMapSupport(): SourceMapSupport | null {
+    return utils.safeRequire('source-map-support') as SourceMapSupport;
+  }
+
+  /**
+   * Returns true if a sourcemap is available via source-map-support for the specified file.
+   */
+  canMapViaSourceMapSupport(inputPath: string): boolean {
+    const sms = this.safeRequireSourceMapSupport();
+    if (!sms) {
+      return false;
+    }
+    return sms.retrieveSourceMap(inputPath) !== null;
+  }
+
+  /**
+   * Maps a location from a source file & location to the location that exists in node memory.
+   * Returns null if 'source-map-support' is not available.
+   * @param inputPath full path for the file that has been transpiled
+   * @param lineNumber 0-indexed line number in the source file
+   * @param colNumber 0-indexed column number in the source file.
+   */
+  mapViaSourceMapSupport(
+    inputPath: string,
+    lineNumber: number,
+    colNumber: number
+  ): MapInfoOutput | null {
+    const sms = this.safeRequireSourceMapSupport();
+    if (sms) {
+      const inputPosition: Position = {
+        source: inputPath,
+        line: lineNumber + 1, // 1-indexed line number is expected.
+        column: colNumber, // 0-indexed.
+      };
+      const outputPosition = sms.mapSourcePosition(inputPosition);
+      return {
+        file: outputPosition.source,
+        line: outputPosition.line - 1, // Convert to 0-indexed line number.
+        column: outputPosition.column, // 0-indexed.
+      };
+    }
+    return null;
   }
 }
 

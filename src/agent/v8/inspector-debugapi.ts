@@ -228,20 +228,6 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       );
     } else {
       // Did not find the script.  Try the require cache!
-      // TODO: Understand this more.  Javascript files work fine,
-      // but non-js need to have been transpiled for this to make sense.
-      // For now, only allow this to proceed if the file is javascript.
-      const extension = path.extname(mapInfo.file);
-      if (!this.config.javascriptFileExtensions.includes(extension)) {
-        return utils.setErrorStatusAndCallback(
-          cb,
-          breakpoint,
-          StatusMessage.BREAKPOINT_SOURCE_LOCATION,
-          utils.messages.COULD_NOT_FIND_OUTPUT_FILE
-        );
-      }
-
-      // Now look in the require cache.
       const cachePaths: string[] = [];
       Object.keys(require.cache).forEach(path => {
         cachePaths.push(path);
@@ -250,6 +236,37 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       if (matches.length === 1) {
         // Found the script
         mapInfo.file = matches[0];
+        // Try using SourceMapSupport for mapping (regardless of filetype).
+        if (this.sourcemapper.canMapViaSourceMapSupport(mapInfo.file)) {
+          const mappedLocation = this.sourcemapper.mapViaSourceMapSupport(
+            mapInfo.file,
+            mapInfo.line,
+            mapInfo.column
+          );
+          if (mappedLocation === null) {
+            // This shouldn't happen; we already checked via canMapViaSourceMapSupport.
+            // Just let it pass through without mapping.
+            return utils.setErrorStatusAndCallback(
+              cb,
+              breakpoint,
+              StatusMessage.BREAKPOINT_SOURCE_LOCATION,
+              utils.messages.INVALID_BREAKPOINT // FIXME: Temporary just to check code flow.
+            );
+          } else {
+            mapInfo = mappedLocation;
+          }
+        } else {
+          // Error out if this is not raw javascript; we've run out of ways to handle this.
+          const extension = path.extname(mapInfo.file);
+          if (!this.config.javascriptFileExtensions.includes(extension)) {
+            return utils.setErrorStatusAndCallback(
+              cb,
+              breakpoint,
+              StatusMessage.BREAKPOINT_SOURCE_LOCATION,
+              utils.messages.COULD_NOT_FIND_OUTPUT_FILE
+            );
+          }
+        }
       } else if (matches.length > 1) {
         // Ambigious.  Panic and return.
         this.logger.warn(
