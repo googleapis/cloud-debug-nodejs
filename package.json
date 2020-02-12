@@ -45,7 +45,8 @@
     "lint": "npm run check",
     "docs": "compodoc src/",
     "docs-test": "linkinator docs",
-    "predocs-test": "npm run docs"
+    "predocs-test": "npm run docs",
+    "prelint": "cd samples; npm link ../"
   },
   "dependencies": {
     "@google-cloud/common": "^2.0.0",
