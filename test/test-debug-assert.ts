@@ -34,7 +34,8 @@ describe('debug-assert', () => {
       Object.keys(realAssert).forEach(key => {
         realAssert.strictEqual(
           typeof ((assert as {}) as {[key: string]: Function})[key],
-          'function'
+          'function',
+          `${key} does not exist on the debug assert library`
         );
       });
     });

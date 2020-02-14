@@ -32,6 +32,8 @@ export interface FakeAssert {
   rejects: Function;
   doesNotReject: Function;
   strict: Function;
+  match: Function;
+  doesNotMatch: Function;
 }
 
 const nop = (_: {}) => _;
@@ -54,6 +56,8 @@ const fakeAssert: FakeAssert = {
   rejects: nop,
   doesNotReject: nop,
   strict: nop,
+  match: nop,
+  doesNotMatch: nop,
 };
 
 export function debugAssert(enableAssertions: boolean): FakeAssert {
