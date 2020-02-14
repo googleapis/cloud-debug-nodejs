@@ -308,7 +308,6 @@ export class SourceMapper {
       return false;
     }
     const sourceMap = sms.retrieveSourceMap(inputPath);
-    console.log('sourceMap is: ', sourceMap);
     return sourceMap !== null;
   }
 

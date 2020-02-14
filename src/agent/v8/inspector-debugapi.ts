@@ -120,7 +120,6 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     breakpoint: stackdriver.Breakpoint,
     cb: (err: Error | null) => void
   ): void {
-    console.log('setting a breakpoint: ', breakpoint);
     if (
       !breakpoint ||
       typeof breakpoint.id === 'undefined' || // 0 is a valid id
@@ -128,7 +127,6 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       !breakpoint.location.path ||
       !breakpoint.location.line
     ) {
-      console.log('Invalid :(');
       return utils.setErrorStatusAndCallback(
         cb,
         breakpoint,
@@ -145,7 +143,6 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     };
 
     if (this.sourcemapper.hasMappingInfo(mapInfo.file)) {
-      console.log('There is a sourcemap!');
       // There is a sourcemap on the filesystem that refers to the requested file.
       // mappingInfo expects 0-based line & column.
       const mappedLocation = this.sourcemapper.mappingInfo(
@@ -166,7 +163,6 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     // Try compiling the condition (if applicable).
     const compile = utils.getBreakpointCompiler(breakpoint);
     if (breakpoint.condition && compile) {
-      console.log('Compiling a condition');
       try {
         breakpoint.condition = compile(breakpoint.condition);
       } catch (e) {
@@ -200,7 +196,6 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       this.logger
     );
     if (scripts.length === 1) {
-      console.log('Script is on disk.');
       // Found the script.
       mapInfo.file = scripts[0];
       // Do a quick sanity check on the line number.
@@ -221,7 +216,6 @@ export class InspectorDebugApi implements debugapi.DebugApi {
         );
       }
     } else if (scripts.length > 1) {
-      console.log('Ambigious resolution on disk.');
       // Ambigious.  Panic and return.
       this.logger.warn(
         `Unable to unambiguously find ${mapInfo.file} on disk. Potential matches: ${scripts}`
@@ -233,7 +227,6 @@ export class InspectorDebugApi implements debugapi.DebugApi {
         utils.messages.SOURCE_FILE_AMBIGUOUS
       );
     } else {
-      console.log('Not found on disk; trying cache lookup.');
       // Did not find the script.  Try the require cache!
       const cachePaths: string[] = [];
       Object.keys(require.cache).forEach(path => {
@@ -241,12 +234,10 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       });
       const matches = utils.findScriptsFuzzy(mapInfo.file, cachePaths);
       if (matches.length === 1) {
-        console.log('Found in require cache.');
         // Found the script
         mapInfo.file = matches[0];
         // Try using SourceMapSupport for mapping (regardless of filetype).
         if (this.sourcemapper.canMapViaSourceMapSupport(mapInfo.file)) {
-          console.log('There is a sourcemap in source-map-support!');
           const mappedLocation = this.sourcemapper.mapViaSourceMapSupport(
             mapInfo.file,
             mapInfo.line,
@@ -262,15 +253,12 @@ export class InspectorDebugApi implements debugapi.DebugApi {
               utils.messages.INVALID_BREAKPOINT // FIXME: Temporary just to check code flow.
             );
           } else {
-            console.log('mapped location was: ', mappedLocation);
             mapInfo = mappedLocation;
           }
         } else {
-          console.log('There is no sourcemap; I hope it is javascript');
           // Error out if this is not raw javascript; we've run out of ways to handle this.
           const extension = path.extname(mapInfo.file);
           if (!this.config.javascriptFileExtensions.includes(extension)) {
-            console.log('It was not.');
             return utils.setErrorStatusAndCallback(
               cb,
               breakpoint,
@@ -278,10 +266,8 @@ export class InspectorDebugApi implements debugapi.DebugApi {
               utils.messages.COULD_NOT_FIND_OUTPUT_FILE
             );
           }
-          console.log('It was!');
         }
       } else if (matches.length > 1) {
-        console.log('Ambiguous in require cache.');
         // Ambigious.  Panic and return.
         this.logger.warn(
           `Unable to unambiguously find ${mapInfo.file} in memory. Potential matches: ${matches}`
@@ -293,7 +279,6 @@ export class InspectorDebugApi implements debugapi.DebugApi {
           utils.messages.SOURCE_FILE_AMBIGUOUS
         );
       } else {
-        console.log('Very not found.');
         // Still did not find the script.  Give up.
         return utils.setErrorStatusAndCallback(
           cb,
@@ -304,7 +289,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       }
     }
 
-    console.log('Here we go setting the breakpoint for real at: ', mapInfo);
+    console.log('Setting a breakpoint at: ', mapInfo);
     this.setInternal(breakpoint, mapInfo, compile, cb);
   }
 
