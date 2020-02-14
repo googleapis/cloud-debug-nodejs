@@ -55,7 +55,6 @@ interface UrlAndMap {
 
 interface SourceMapSupport {
   retrieveSourceMap(source: string): UrlAndMap | null;
-  mapSourcePosition(position: Position): Position;
 }
 
 /**
@@ -308,7 +307,9 @@ export class SourceMapper {
     if (!sms) {
       return false;
     }
-    return sms.retrieveSourceMap(inputPath) !== null;
+    const sourceMap = sms.retrieveSourceMap(inputPath);
+    console.log('sourceMap is: ', sourceMap);
+    return sourceMap !== null;
   }
 
   /**
@@ -327,15 +328,24 @@ export class SourceMapper {
     if (sms) {
       const inputPosition: Position = {
         source: inputPath,
-        line: lineNumber + 1, // 1-indexed line number is expected.
+        line: lineNumber, // 1-indexed line number is expected.  FIXME: Seems that we're getting 1-indexed as input!
         column: colNumber, // 0-indexed.
       };
-      const outputPosition = sms.mapSourcePosition(inputPosition);
+
+      const rawMap = sms.retrieveSourceMap(inputPath);
+      const consumer = new sourceMap.SourceMapConsumer((rawMap!.map as unknown) as sourceMap.RawSourceMap);
+      const allPos = consumer.allGeneratedPositionsFor(inputPosition);
+      const mappedPos: sourceMap.Position = allPos && allPos.length > 0 ?
+        allPos.reduce((accumulator, value) => {
+            return value.line < accumulator.line ? value : accumulator;
+          })
+        : consumer.generatedPositionFor(inputPosition);
+
       return {
-        file: outputPosition.source,
-        line: outputPosition.line - 1, // Convert to 0-indexed line number.
-        column: outputPosition.column, // 0-indexed.
-      };
+        file: inputPath,
+        line: mappedPos.line - 1,  // Replicating the logic above.
+        column: mappedPos.column || 1 // FIXME: Totally making stuff up here.
+      }
     }
     return null;
   }
