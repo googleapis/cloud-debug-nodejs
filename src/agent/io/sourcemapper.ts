@@ -333,19 +333,22 @@ export class SourceMapper {
       };
 
       const rawMap = sms.retrieveSourceMap(inputPath);
-      const consumer = new sourceMap.SourceMapConsumer((rawMap!.map as unknown) as sourceMap.RawSourceMap);
+      const consumer = new sourceMap.SourceMapConsumer(
+        (rawMap!.map as unknown) as sourceMap.RawSourceMap
+      );
       const allPos = consumer.allGeneratedPositionsFor(inputPosition);
-      const mappedPos: sourceMap.Position = allPos && allPos.length > 0 ?
-        allPos.reduce((accumulator, value) => {
-            return value.line < accumulator.line ? value : accumulator;
-          })
-        : consumer.generatedPositionFor(inputPosition);
+      const mappedPos: sourceMap.Position =
+        allPos && allPos.length > 0
+          ? allPos.reduce((accumulator, value) => {
+              return value.line < accumulator.line ? value : accumulator;
+            })
+          : consumer.generatedPositionFor(inputPosition);
 
       return {
         file: inputPath,
-        line: mappedPos.line - 1,  // Replicating the logic above.
-        column: mappedPos.column || 1 // FIXME: Totally making stuff up here.
-      }
+        line: mappedPos.line - 1, // Replicating the logic above.
+        column: mappedPos.column || 1, // FIXME: Totally making stuff up here.
+      };
     }
     return null;
   }
