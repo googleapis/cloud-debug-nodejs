@@ -327,7 +327,7 @@ export class SourceMapper {
     if (sms) {
       const inputPosition: Position = {
         source: inputPath,
-        line: lineNumber, // 1-indexed line number is expected.  FIXME: Seems that we're getting 1-indexed as input!
+        line: lineNumber + 1, // 1-indexed line number is expected
         column: colNumber, // 0-indexed.
       };
 
@@ -345,8 +345,8 @@ export class SourceMapper {
 
       return {
         file: inputPath,
-        line: mappedPos.line - 1, // Replicating the logic above.
-        column: mappedPos.column || 1, // FIXME: Totally making stuff up here.
+        line: mappedPos.line - 1, // map back to 0-indexed output.
+        column: mappedPos.column,
       };
     }
     return null;

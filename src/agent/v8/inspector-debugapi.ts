@@ -238,10 +238,11 @@ export class InspectorDebugApi implements debugapi.DebugApi {
         mapInfo.file = matches[0];
         // Try using SourceMapSupport for mapping (regardless of filetype).
         if (this.sourcemapper.canMapViaSourceMapSupport(mapInfo.file)) {
+          // Input is expected to be 0-indexed.
           const mappedLocation = this.sourcemapper.mapViaSourceMapSupport(
             mapInfo.file,
-            mapInfo.line,
-            mapInfo.column
+            mapInfo.line - 1,
+            mapInfo.column - 1
           );
           if (mappedLocation === null) {
             // This shouldn't happen; we already checked via canMapViaSourceMapSupport.
@@ -253,7 +254,12 @@ export class InspectorDebugApi implements debugapi.DebugApi {
               utils.messages.INVALID_BREAKPOINT // FIXME: Temporary just to check code flow.
             );
           } else {
-            mapInfo = mappedLocation;
+            // Input was 0-indexed; map it back to 1-indexed.
+            mapInfo = {
+              file: mappedLocation.file,
+              line: mappedLocation.line + 1,
+              column: mappedLocation.column + 1,
+            };
           }
         } else {
           // Error out if this is not raw javascript; we've run out of ways to handle this.
