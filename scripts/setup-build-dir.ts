@@ -14,10 +14,9 @@
 
 import * as path from 'path';
 import {promisify} from 'util';
-import * as rawMkdirp from 'mkdirp';
+import * as mkdirp from 'mkdirp';
 import * as rawNcp from 'ncp';
 
-const mkdirp = promisify(rawMkdirp);
 const ncp = promisify(rawNcp as {} as Function);
 
 const TEST = 'test';
