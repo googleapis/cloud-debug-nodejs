@@ -712,7 +712,7 @@ export class Debuglet extends EventEmitter {
         (err, response, body) => {
           if (err) {
             that.logger.error(
-              'Unable to fetch breakpoints – stopping fetcher',
+              'Error fetching breakpoints – scheduling retry',
               err
             );
             that.fetcherActive = false;
