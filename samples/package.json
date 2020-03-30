@@ -6,7 +6,7 @@
   "author": "Google LLC",
   "repository": "googleapis/cloud-debug-nodejs",
   "engines": {
-    "node": ">=8"
+    "node": ">=10"
   },
   "scripts": {
     "deploy": "gcloud app deploy",
