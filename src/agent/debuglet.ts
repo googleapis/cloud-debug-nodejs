@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import is from '@sindresorhus/is';
 import * as assert from 'assert';
 import * as consoleLogLevel from 'console-log-level';
 import * as crypto from 'crypto';
@@ -546,7 +545,7 @@ export class Debuglet extends EventEmitter {
 
     if (serviceContext) {
       if (
-        is.string(serviceContext.service) &&
+        typeof serviceContext.service === 'string' &&
         serviceContext.service !== 'default'
       ) {
         // As per app-engine-ids, the module label is not reported
@@ -555,12 +554,12 @@ export class Debuglet extends EventEmitter {
         desc += ' module:' + serviceContext.service;
       }
 
-      if (is.string(serviceContext.version)) {
+      if (typeof serviceContext.version === 'string') {
         labels.version = serviceContext.version;
         desc += ' version:' + serviceContext.version;
       }
 
-      if (is.string(serviceContext.minorVersion_)) {
+      if (typeof serviceContext.minorVersion_ === 'string') {
         //          v--- intentional lowercase
         labels.minorversion = serviceContext.minorVersion_;
       }
