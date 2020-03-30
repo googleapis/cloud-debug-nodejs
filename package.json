@@ -34,6 +34,7 @@
     "compile": "tsc -p .",
     "compile-scripts": "tsc -p scripts-tsconfig.json",
     "fix": "gts fix",
+    "fix-eslint": "eslint --fix test/*.js",
     "pretest": "npm run compile",
     "prepack": "npm run compile",
     "lint": "gts check",
@@ -88,6 +89,10 @@
     "teeny-request": "^6.0.0",
     "tmp-promise": "^2.0.2",
     "typescript": "^3.8.3",
-    "uuid": "^7.0.0"
+    "uuid": "^7.0.0",
+    "eslint": "^6.0.0",
+    "eslint-config-prettier": "^6.0.0",
+    "eslint-plugin-node": "^11.0.0",
+    "eslint-plugin-prettier": "^3.0.0"
   }
 }
