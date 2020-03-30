@@ -14,9 +14,14 @@
 
 export declare type Action = 'CAPTURE' | 'LOG';
 
-export declare type Reference = 'UNSPECIFIED' | 'BREAKPOINT_SOURCE_LOCATION' |
-    'BREAKPOINT_CONDITION' | 'BREAKPOINT_EXPRESSION' | 'BREAKPOINT_AGE' |
-    'VARIABLE_NAME' | 'VARIABLE_VALUE';
+export declare type Reference =
+  | 'UNSPECIFIED'
+  | 'BREAKPOINT_SOURCE_LOCATION'
+  | 'BREAKPOINT_CONDITION'
+  | 'BREAKPOINT_EXPRESSION'
+  | 'BREAKPOINT_AGE'
+  | 'VARIABLE_NAME'
+  | 'VARIABLE_VALUE';
 
 export interface FormatMessage {
   format: string;
@@ -64,16 +69,16 @@ export interface StackFrame {
 //       Determine if this is actually needed or if the create(d)Time attribute
 //       should only be a string.
 export interface Timestamp {
-  seconds: string;  // int64
-  nano: string;     // int32
+  seconds: string; // int64
+  nano: string; // int32
 }
 
 export interface Breakpoint {
   stackFrames: StackFrame[];
   // TODO: Update the code so that `|null` is not needed.
-  evaluatedExpressions: Array<Variable|null>;
+  evaluatedExpressions: Array<Variable | null>;
   // TODO: Update the code so that `|null` is not needed.
-  variableTable: Array<Variable|null>;
+  variableTable: Array<Variable | null>;
   id: BreakpointId;
   // TODO: The debug code assumes the rest of these members
   //       are optional.  Determine if this is correct.
@@ -96,7 +101,7 @@ export interface Breakpoint {
   userEmail?: string;
   status?: StatusMessage;
   labels?: {
-    [key: string]: string,
+    [key: string]: string;
   };
 }
 

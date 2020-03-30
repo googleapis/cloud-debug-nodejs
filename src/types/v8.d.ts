@@ -17,10 +17,28 @@
 
 // See https://github.com/v8/v8/blob/master/src/debug/mirrors.js
 
-export declare type MirrorType = 'undefined' | 'null' | 'boolean' | 'number' |
-    'string' | 'symbol' | 'object' | 'function' | 'regexp' | 'error' |
-    'property' | 'internalProperty' | 'frame' | 'script' | 'context' | 'scope' |
-    'promise' | 'map' | 'set' | 'iterator' | 'generator';
+export declare type MirrorType =
+  | 'undefined'
+  | 'null'
+  | 'boolean'
+  | 'number'
+  | 'string'
+  | 'symbol'
+  | 'object'
+  | 'function'
+  | 'regexp'
+  | 'error'
+  | 'property'
+  | 'internalProperty'
+  | 'frame'
+  | 'script'
+  | 'context'
+  | 'scope'
+  | 'promise'
+  | 'map'
+  | 'set'
+  | 'iterator'
+  | 'generator';
 
 export interface Mirror {
   type: () => MirrorType;
@@ -117,16 +135,14 @@ export interface FrameDetails {
   //       The code at https://github.com/v8/v8/blob/master/src/debug/mirrors.js
   //       seems to suggest that these fields should exist.  Make sure that is
   //       the case.
-  arguments: Array < {
+  arguments: Array<{
     name: string;
     value: any;
-  }
-  > ;
-  locals: Array < {
+  }>;
+  locals: Array<{
     name: string;
     value: any;
-  }
-  > ;
+  }>;
   break_id_: number;
   // TODO: Determine the type of details_ and the methods in this interface
   details_: any;
@@ -282,7 +298,9 @@ export interface BreakPoint {
 }
 
 // TODO: Add the rest of the methods in this interface
-export interface ScriptBreakPoint { number: () => number; }
+export interface ScriptBreakPoint {
+  number: () => number;
+}
 
 // TODO: Verify the return types of these methods
 export interface BreakEvent {
@@ -308,9 +326,13 @@ export interface Debug {
   DebugEvent: DebugEvent;
   setListener: (listener: any, opt_data?: any) => void;
   clearBreakPoint: (break_point_number: number) => void;
-  setScriptBreakPointByRegExp:
-      (script_regexp: RegExp, opt_line?: number, opt_column?: number,
-       opt_condition?: any, opt_groupId?: number) => number;
+  setScriptBreakPointByRegExp: (
+    script_regexp: RegExp,
+    opt_line?: number,
+    opt_column?: number,
+    opt_condition?: any,
+    opt_groupId?: number
+  ) => number;
   findBreakPoint: (break_point_number: number, remove?: boolean) => BreakPoint;
   MakeMirror: (value: any) => Mirror;
 }

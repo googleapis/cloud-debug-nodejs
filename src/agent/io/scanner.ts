@@ -163,10 +163,7 @@ function computeStats(
       // Sort the hashes to get a deterministic order as the files may
       // not be in the same order each time we scan the disk.
       const buffer = hashes.sort().join();
-      const sha1 = crypto
-        .createHash('sha1')
-        .update(buffer)
-        .digest('hex');
+      const sha1 = crypto.createHash('sha1').update(buffer).digest('hex');
       hash = 'SHA1-' + sha1;
     } else {
       hash = precomputedHash!;

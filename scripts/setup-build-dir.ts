@@ -17,7 +17,7 @@ import {promisify} from 'util';
 import * as mkdirp from 'mkdirp';
 import * as rawNcp from 'ncp';
 
-const ncp = promisify(rawNcp as {} as Function);
+const ncp = promisify((rawNcp as {}) as Function);
 
 const TEST = 'test';
 const SYSTEM_TEST = 'system-test';
@@ -56,8 +56,7 @@ async function main(): Promise<void> {
     await copyTypes();
     await setupUnitTests();
     await setupSystemTests();
-  }
-  catch (e) {
+  } catch (e) {
     console.error(e);
     process.exit(1);
   }

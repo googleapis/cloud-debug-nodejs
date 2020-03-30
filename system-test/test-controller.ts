@@ -38,7 +38,7 @@ const agentVersion = `${packageInfo.name}/client/${packageInfo.version}`;
 
 const debug = new Debug({}, packageInfo);
 
-describe('Controller', function() {
+describe('Controller', function () {
   this.timeout(60 * 1000);
 
   it('should register successfully', done => {

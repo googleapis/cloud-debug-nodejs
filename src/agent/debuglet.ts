@@ -1169,9 +1169,6 @@ export class Debuglet extends EventEmitter {
       uid +
       JSON.stringify(sourceContext) +
       JSON.stringify(labels);
-    return crypto
-      .createHash('sha1')
-      .update(uniquifier)
-      .digest('hex');
+    return crypto.createHash('sha1').update(uniquifier).digest('hex');
   }
 }

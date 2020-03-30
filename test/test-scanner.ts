@@ -45,7 +45,7 @@ describe('scanner', () => {
       });
     });
 
-    it('should ignore broken links', function(done) {
+    it('should ignore broken links', function (done) {
       if (process.platform === 'win32') {
         this.skip();
       }
