@@ -1029,7 +1029,7 @@ describe('Debuglet', () => {
         .get(BPS_PATH + '?successOnTimeout=true')
         .reply(200, {breakpoints: [bp]});
 
-      debuglet.once('registered', function reg(id: string) {
+      debuglet.once('registered', (id: string) => {
         assert.strictEqual(id, DEBUGGEE_ID);
         setTimeout(() => {
           assert.deepStrictEqual(debuglet.activeBreakpointMap.test, bp);
@@ -1064,7 +1064,7 @@ describe('Debuglet', () => {
         .twice()
         .reply(200, {breakpoints: [breakpoint]});
       const debugPromise = debuglet.isReadyManager.isReady();
-      debuglet.once('registered', function reg(id: string) {
+      debuglet.once('registered', (id: string) => {
         debugPromise.then(() => {
           // Once debugPromise is resolved, debuggee must be registered.
           assert(debuglet.debuggee);
@@ -1139,7 +1139,7 @@ describe('Debuglet', () => {
         )
         .reply(200);
 
-      debuglet.once('registered', function reg(id: string) {
+      debuglet.once('registered', (id: string) => {
         assert.strictEqual(id, DEBUGGEE_ID);
         setTimeout(() => {
           assert.ok(!debuglet.activeBreakpointMap.test);
@@ -1182,7 +1182,7 @@ describe('Debuglet', () => {
         )
         .reply(200);
 
-      debuglet.once('registered', function reg(id: string) {
+      debuglet.once('registered', (id: string) => {
         assert.strictEqual(id, DEBUGGEE_ID);
         setTimeout(() => {
           assert.ok(!debuglet.activeBreakpointMap.test);
@@ -1229,7 +1229,7 @@ describe('Debuglet', () => {
         )
         .reply(200);
 
-      debuglet.once('registered', function reg(id: string) {
+      debuglet.once('registered', (id: string) => {
         assert.strictEqual(id, DEBUGGEE_ID);
         setTimeout(() => {
           assert.deepStrictEqual(debuglet.activeBreakpointMap.test, bp);

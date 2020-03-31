@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// eslint-disable-next-line node/no-unsupported-features/node-builtins
 import * as inspector from 'inspector';
 import * as path from 'path';
 import * as semver from 'semver';
@@ -245,6 +246,7 @@ export function getBreakpointCompiler(
   ) {
     case 'coffee':
       return uncompiled => {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
         const comp = require('coffeescript');
         const compiled = comp.compile('0 || (' + uncompiled + ')');
         // Strip out coffeescript scoping wrapper to get translated condition

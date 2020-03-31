@@ -19,9 +19,11 @@ import * as path from 'path';
 import pickBy = require('lodash.pickby');
 
 // TODO: Make this more precise.
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const findit: (dir: string) => events.EventEmitter = require('findit2');
 
 // TODO: Make this more precise.
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const split: () => fs.WriteStream = require('split');
 
 export interface FileStats {
@@ -134,6 +136,7 @@ function computeStats(
   fileList: string[],
   precomputedHash?: string
 ): Promise<ScanResults> {
+  // eslint-disable-next-line no-async-promise-executor
   return new Promise<ScanResults>(async (resolve, reject) => {
     // return a valid, if fake, result when there are no js files to hash.
     if (fileList.length === 0) {
