@@ -3,5 +3,6 @@ src/**/doc/*
 build/
 docs/
 protos/
+test/fixtures/fib.js
 test/fixtures/foo.js
 test/*.js
