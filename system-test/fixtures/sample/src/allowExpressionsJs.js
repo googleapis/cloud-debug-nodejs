@@ -12,5 +12,5 @@
 // limitations under the License.
 
 require('@google-cloud/debug-agent').start({
-  allowExpressions: true
+  allowExpressions: true,
 });
