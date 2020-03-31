@@ -76,6 +76,7 @@ export interface ValueMirror extends Mirror {
   value: () => any;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface UndefinedMirror extends ValueMirror {}
 
 export interface InternalPropertyMirror extends Mirror {
@@ -256,10 +257,12 @@ export interface ScriptMirror {
   name: () => string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface Location {
   // TODO: Determine the members of this interface
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface ContextMirror {
   // TODO: Determine the members of this interface
 }
