@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {before, describe, it} from 'mocha';
 import * as extend from 'extend';
 
 import {defaultConfig} from '../src/agent/config';
@@ -25,6 +25,7 @@ import {StatusMessage} from '../src/client/stackdriver/status-message';
 import consoleLogLevel = require('console-log-level');
 import * as stackdriver from '../src/types/stackdriver';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const code = require('./test-expression-side-effect-code.js');
 
 // the inspector protocol is only used on Node >= 10 and thus isn't

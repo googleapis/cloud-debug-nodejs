@@ -18,13 +18,14 @@ import consoleLogLevel = require('console-log-level');
 import * as stackdriver from '../src/types/stackdriver';
 
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {before, describe, it} from 'mocha';
 import * as extend from 'extend';
 import * as debugapi from '../src/agent/v8/debugapi';
 import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as scanner from '../src/agent/io/scanner';
 import {Debuglet} from '../src/agent/debuglet';
 import {defaultConfig} from '../src/agent/config';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const foo = require('./test-max-data-size-code.js');
 let api: debugapi.DebugApi;
 

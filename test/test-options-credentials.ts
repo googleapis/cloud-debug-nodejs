@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {afterEach, beforeEach, describe, it} from 'mocha';
 import * as extend from 'extend';
 import * as nock from 'nock';
 import * as path from 'path';
@@ -49,6 +49,7 @@ describe('test-options-credentials', () => {
   });
 
   it('should use the keyFilename field of the options object', done => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const credentials = require('./fixtures/gcloud-credentials.json');
     const options = extend(
       {},
@@ -108,6 +109,7 @@ describe('test-options-credentials', () => {
   });
 
   it('should ignore keyFilename if credentials is provided', done => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const fileCredentials = require('./fixtures/gcloud-credentials.json');
     const credentials: {[key: string]: string | undefined} = {
       client_id: 'a',
@@ -138,8 +140,8 @@ describe('test-options-credentials', () => {
     });
     nocks.projectId('project-via-metadata');
     ['client_id', 'client_secret', 'refresh_token'].forEach(field => {
-      assert(fileCredentials.hasOwnProperty(field));
-      assert(options.credentials.hasOwnProperty(field));
+      assert(Object.prototype.hasOwnProperty.call(fileCredentials, field));
+      assert(Object.prototype.hasOwnProperty.call(options.credentials, field));
       assert.notStrictEqual(options.credentials[field], fileCredentials[field]);
     });
     // TODO: Determine how to remove this cast.

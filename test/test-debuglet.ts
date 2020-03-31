@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {after, afterEach, before, beforeEach, describe, it} from 'mocha';
 import * as fs from 'fs';
 import * as gcpMetadata from 'gcp-metadata';
 import * as path from 'path';
@@ -37,6 +37,7 @@ const REGISTER_PATH = '/v2/controller/debuggees/register';
 const BPS_PATH = '/v2/controller/debuggees/' + DEBUGGEE_ID + '/breakpoints';
 const EXPRESSIONS_REGEX = /Expressions and conditions are not allowed.*https:\/\/goo\.gl\/ShSm6r/;
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const fakeCredentials = require('./fixtures/gcloud-credentials.json');
 
 const packageInfo = {

@@ -13,10 +13,11 @@
 // limitations under the License.
 
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {before, describe, it} from 'mocha';
 const m: NodeModule & {
   start: Function;
   get: () => Debuglet | undefined;
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
 } = require('../..');
 import * as nock from 'nock';
 import * as nocks from './nocks';
@@ -56,6 +57,7 @@ describe('Debug module without start() called', () => {
     const m: NodeModule & {
       start: Function;
       get: () => Debuglet | undefined;
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
     } = require('../..');
     const agent = m.get();
     assert.strictEqual(

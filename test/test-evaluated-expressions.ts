@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {before, describe, it} from 'mocha';
 import * as extend from 'extend';
 
 import {defaultConfig} from '../src/agent/config';
@@ -24,6 +24,7 @@ import * as debugapi from '../src/agent/v8/debugapi';
 import consoleLogLevel = require('console-log-level');
 import * as stackdriver from '../src/types/stackdriver';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const code = require('./test-evaluated-expressions-code.js');
 
 describe('debugger provides useful information', () => {

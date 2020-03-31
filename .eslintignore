@@ -4,3 +4,4 @@ build/
 docs/
 protos/
 test/fixtures/foo.js
+test/*.js
