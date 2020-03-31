@@ -11,4 +11,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// eslint-disable-next-line node/no-missing-require
 require('@google-cloud/debug-agent').start({});

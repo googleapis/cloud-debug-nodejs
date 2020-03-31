@@ -14,7 +14,9 @@
 
 'use strict';
 
+// eslint-disable-next-line node/no-unpublished-require
 const execa = require('execa');
+// eslint-disable-next-line node/no-unpublished-require
 const {describe, it} = require('mocha');
 
 describe('debug samples', () => {
