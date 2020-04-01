@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import is from '@sindresorhus/is';
 import * as assert from 'assert';
 import * as consoleLogLevel from 'console-log-level';
 import * as crypto from 'crypto';
@@ -545,7 +546,7 @@ export class Debuglet extends EventEmitter {
 
     if (serviceContext) {
       if (
-        typeof serviceContext.service === 'string' &&
+        is.string(serviceContext.service) &&
         serviceContext.service !== 'default'
       ) {
         // As per app-engine-ids, the module label is not reported
@@ -554,12 +555,12 @@ export class Debuglet extends EventEmitter {
         desc += ' module:' + serviceContext.service;
       }
 
-      if (typeof serviceContext.version === 'string') {
+      if (is.string(serviceContext.version)) {
         labels.version = serviceContext.version;
         desc += ' version:' + serviceContext.version;
       }
 
-      if (typeof serviceContext.minorVersion_ === 'string') {
+      if (is.string(serviceContext.minorVersion_)) {
         //          v--- intentional lowercase
         labels.minorversion = serviceContext.minorVersion_;
       }
@@ -711,7 +712,7 @@ export class Debuglet extends EventEmitter {
         (err, response, body) => {
           if (err) {
             that.logger.error(
-              'Error fetching breakpoints – scheduling retry',
+              'Unable to fetch breakpoints – stopping fetcher',
               err
             );
             that.fetcherActive = false;

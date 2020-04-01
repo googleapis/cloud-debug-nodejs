@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import is from '@sindresorhus/is';
 import * as util from 'util';
 import * as vm from 'vm';
 
@@ -365,7 +366,7 @@ class StateResolver {
       // in locals which will include any applicable arguments from the
       // invocation.
       locals = this.resolveLocalsList_(frame);
-      if (Array.isArray(locals) && locals.length === 0) {
+      if (is.emptyArray(locals)) {
         locals = [];
       }
     }

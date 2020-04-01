@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import is from '@sindresorhus/is';
+
 import {PackageInfo} from './client/stackdriver/debug';
 import {StatusMessage} from './client/stackdriver/status-message';
 
@@ -81,13 +83,13 @@ export class Debuggee {
 
     properties = properties || {};
 
-    if (typeof properties.project !== 'string') {
+    if (!is.string(properties.project)) {
       throw new Error('properties.project must be a string');
     }
-    if (typeof properties.uniquifier !== 'string') {
+    if (!is.string(properties.uniquifier)) {
       throw new Error('properties.uniquifier must be a string');
     }
-    if (typeof properties.description !== 'string') {
+    if (!is.string(properties.description)) {
       throw new Error('properties.description must be a string');
     }
 

@@ -14,6 +14,7 @@
 
 // TODO: Unify some common code with state.ts in future PRs.
 
+import is from '@sindresorhus/is';
 import * as inspector from 'inspector';
 import * as util from 'util';
 
@@ -386,7 +387,7 @@ class StateResolver {
     } else {
       locals = this.resolveLocalsList_(frame);
 
-      if (Array.isArray(locals) && locals.length === 0) {
+      if (is.emptyArray(locals)) {
         locals = [];
       }
     }
@@ -452,13 +453,7 @@ class StateResolver {
         objectId: frame.scopeChain[i].object.objectId as string,
       });
       // TODO: Handle when result.error exists.
-      if (
-        result.response &&
-        !(
-          Array.isArray(result.response.result) &&
-          result.response.result.length === 0
-        )
-      ) {
+      if (result.response && !is.emptyArray(result.response.result)) {
         for (let j = 0; j < result.response.result.length; ++j) {
           if (!usedNames[result.response.result[j].name]) {
             // It's a valid variable that belongs in the locals list
