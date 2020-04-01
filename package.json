@@ -61,7 +61,7 @@
     "@compodoc/compodoc": "1.1.11",
     "@types/acorn": "^4.0.2",
     "@types/console-log-level": "^1.4.0",
-    "@types/estree": "0.0.42",
+    "@types/estree": "0.0.44",
     "@types/extend": "^3.0.0",
     "@types/lodash.pickby": "^4.6.4",
     "@types/mkdirp": "^1.0.0",
