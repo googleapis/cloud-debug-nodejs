@@ -20,7 +20,7 @@ import * as path from 'path';
 import * as proxyquire from 'proxyquire';
 import * as stream from 'stream';
 
-const fixtureDir = path.join(__dirname, './fixtures');
+const fixtureDir = './test/fixtures';
 const fixture = (file: string): string => {
   return path.join(fixtureDir, file);
 };
