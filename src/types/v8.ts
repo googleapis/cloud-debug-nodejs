@@ -13,7 +13,6 @@
 // limitations under the License.
 
 // TODO: Determine if the use of snake case should be allowed in this file.
-// tslint:disable:variable-name
 
 // See https://github.com/v8/v8/blob/master/src/debug/mirrors.js
 
