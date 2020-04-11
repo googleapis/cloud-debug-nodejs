@@ -19,7 +19,7 @@
   ],
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=8.10.0"
+    "node": ">=10"
   },
   "files": [
     "build/src"
@@ -30,9 +30,8 @@
     "presystem-test": "npm run compile",
     "system-test": "mocha build/system-test --timeout 600000",
     "test": "cross-env CLOUD_DEBUG_ASSERTIONS=1 mocha build/test",
-    "precompile": "npm run compile-scripts && node build/scripts/setup-build-dir.js",
     "compile": "tsc -p .",
-    "compile-scripts": "tsc -p scripts-tsconfig.json",
+    "postcompile": "cpy test/*.js test/**/*.js test/fixtures build --parents",
     "fix": "gts fix",
     "pretest": "npm run compile",
     "prepack": "npm run compile",
@@ -43,14 +42,13 @@
     "prelint": "cd samples; npm link ../; npm i"
   },
   "dependencies": {
-    "@google-cloud/common": "^2.0.0",
-    "@sindresorhus/is": "^1.0.0",
+    "@google-cloud/common": "^3.0.0",
     "acorn": "^7.0.0",
     "coffeescript": "^2.0.0",
     "console-log-level": "^1.4.0",
     "extend": "^3.0.2",
     "findit2": "^2.2.3",
-    "gcp-metadata": "^3.0.0",
+    "gcp-metadata": "^4.0.0",
     "lodash.pickby": "^4.6.0",
     "p-limit": "^2.2.0",
     "semver": "^7.0.0",
@@ -63,7 +61,7 @@
     "@compodoc/compodoc": "1.1.11",
     "@types/acorn": "^4.0.2",
     "@types/console-log-level": "^1.4.0",
-    "@types/estree": "0.0.42",
+    "@types/estree": "0.0.44",
     "@types/extend": "^3.0.0",
     "@types/lodash.pickby": "^4.6.4",
     "@types/mkdirp": "^1.0.0",
@@ -76,6 +74,7 @@
     "@types/tmp": "^0.1.0",
     "@types/uuid": "^7.0.0",
     "codecov": "^3.0.4",
+    "cpy-cli": "^3.1.0",
     "cross-env": "^7.0.0",
     "execa": "^4.0.0",
     "gts": "^1.0.0",

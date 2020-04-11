@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import is from '@sindresorhus/is';
 import * as inspector from 'inspector';
 import * as path from 'path';
 import * as semver from 'semver';
@@ -65,7 +64,7 @@ export function findScripts(
   // (path: string, knownFiles: string[], resolved: string[]) => string[]
   const resolved = resolveScripts(scriptPath, config, fileStats);
   if (config.pathResolver) {
-    if (!is.function_(config.pathResolver)) {
+    if (typeof config.pathResolver !== 'function') {
       logger.warn(
         `The 'pathResolver' config must be a function.  Continuing ` +
           `with the agent's default behavior.`
