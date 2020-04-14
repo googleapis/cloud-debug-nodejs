@@ -214,7 +214,7 @@ describe('scanner', () => {
           }
 
           throw new Error(
-            `'findit' should have been called with ` +
+            "'findit' should have been called with " +
               `'${MOCKED_DIRECTORY}' but encountered '${dir}'`
           );
         },
@@ -233,7 +233,7 @@ describe('scanner', () => {
               assert.ok(
                 found,
                 `The file ${filename} should not be read ` +
-                  `because it doesn't have a mock`
+                  "because it doesn't have a mock"
               );
             });
             return rs;

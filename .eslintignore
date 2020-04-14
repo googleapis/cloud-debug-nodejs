@@ -4,6 +4,6 @@ test/fixtures
 build/
 docs/
 protos/
-test/fixtures/fib.js
-test/fixtures/foo.js
+test/fixtures
+system-test/fixtures
 test/*.js

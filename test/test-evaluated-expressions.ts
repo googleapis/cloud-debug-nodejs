@@ -67,7 +67,7 @@ describe('debugger provides useful information', () => {
 
     throw new Error(
       `The variable ${JSON.stringify(exp, null, 2)} ` +
-        `does not have a 'value' nor a 'varTableIndex' property`
+        "does not have a 'value' nor a 'varTableIndex' property"
     );
   }
 
@@ -132,7 +132,7 @@ describe('debugger provides useful information', () => {
     }
   }
 
-  it(`should provide data about plain objects`, done => {
+  it('should provide data about plain objects', done => {
     const bp: stackdriver.Breakpoint = {
       id: 'fake-id-123',
       location: {
@@ -161,7 +161,7 @@ describe('debugger provides useful information', () => {
     });
   });
 
-  it(`should provide data about arrays`, done => {
+  it('should provide data about arrays', done => {
     const bp: stackdriver.Breakpoint = {
       id: 'fake-id-123',
       location: {
@@ -192,7 +192,7 @@ describe('debugger provides useful information', () => {
     });
   });
 
-  it(`should provide data about regexes`, done => {
+  it('should provide data about regexes', done => {
     const bp: stackdriver.Breakpoint = {
       id: 'fake-id-123',
       location: {
@@ -216,7 +216,7 @@ describe('debugger provides useful information', () => {
     });
   });
 
-  it(`should provide data about responses`, done => {
+  it('should provide data about responses', done => {
     const bp: stackdriver.Breakpoint = {
       id: 'fake-id-123',
       location: {

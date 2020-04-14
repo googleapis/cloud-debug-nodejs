@@ -14,6 +14,7 @@
 
 import * as util from 'util';
 import * as vm from 'vm';
+import * as acorn from 'acorn';
 
 import {StatusMessage} from '../../client/stackdriver/status-message';
 import * as stackdriver from '../../types/stackdriver';
@@ -40,8 +41,6 @@ export function evaluate(
   frame: v8.FrameMirror
 ): {error: string | null; mirror?: v8.ValueMirror} {
   // First validate the expression to make sure it doesn't mutate state
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const acorn = require('acorn');
   try {
     const ast = acorn.parse(expression, {sourceType: 'script'});
     // eslint-disable-next-line @typescript-eslint/no-var-requires

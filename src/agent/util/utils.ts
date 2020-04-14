@@ -67,8 +67,8 @@ export function findScripts(
   if (config.pathResolver) {
     if (typeof config.pathResolver !== 'function') {
       logger.warn(
-        `The 'pathResolver' config must be a function.  Continuing ` +
-          `with the agent's default behavior.`
+        "The 'pathResolver' config must be a function.  Continuing " +
+          "with the agent's default behavior."
       );
       return resolved;
     }
@@ -85,9 +85,9 @@ export function findScripts(
 
     if (!calculatedPaths || !Array.isArray(calculatedPaths)) {
       logger.warn(
-        `The 'pathResolver' config function returned a value ` +
-          `other than 'undefined' or an array of strings. Continuing with ` +
-          `the agent's default behavior.`
+        "The 'pathResolver' config function returned a value " +
+          "other than 'undefined' or an array of strings. Continuing with " +
+          "the agent's default behavior."
       );
       return resolved;
     }
@@ -95,11 +95,11 @@ export function findScripts(
     for (const path of calculatedPaths) {
       if (knownFiles.indexOf(path) === -1) {
         logger.warn(
-          `The 'pathResolver' config function returned a path ` +
+          "The 'pathResolver' config function returned a path " +
             `'${path}' that is not in the list of paths known to the debug agent ` +
             JSON.stringify(knownFiles, null, 2) +
-            ` only known paths can be returned. Continuing with the agent's ` +
-            `default behavior.`
+            " only known paths can be returned. Continuing with the agent's " +
+            'default behavior.'
         );
         return resolved;
       }
