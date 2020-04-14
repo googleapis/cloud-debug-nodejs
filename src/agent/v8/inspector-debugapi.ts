@@ -14,6 +14,7 @@
 
 import * as acorn from 'acorn';
 import * as estree from 'estree';
+// eslint-disable-next-line node/no-unsupported-features/node-builtins
 import * as inspector from 'inspector';
 import * as path from 'path';
 
@@ -345,6 +346,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
           sourceType: 'script',
           ecmaVersion: 6,
         });
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
         const validator = require('../util/validator.js');
         if (!validator.isValid(ast)) {
           return utils.setErrorStatusAndCallback(
@@ -552,6 +554,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     callFrames: inspector.Debugger.CallFrame[]
   ): void {
     const expressionErrors: Array<stackdriver.Variable | null> = [];
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
     // TODO: Address the case where `breakpoint.id` is `null`.
     if (breakpoint.expressions && this.breakpoints[breakpoint.id].compile) {

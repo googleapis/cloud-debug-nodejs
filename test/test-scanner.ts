@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {before, describe, it} from 'mocha';
 import * as events from 'events';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -45,7 +45,7 @@ describe('scanner', () => {
       });
     });
 
-    it('should ignore broken links', function(done) {
+    it('should ignore broken links', function (done) {
       if (process.platform === 'win32') {
         this.skip();
       }
@@ -214,7 +214,7 @@ describe('scanner', () => {
           }
 
           throw new Error(
-            `'findit' should have been called with ` +
+            "'findit' should have been called with " +
               `'${MOCKED_DIRECTORY}' but encountered '${dir}'`
           );
         },
@@ -233,7 +233,7 @@ describe('scanner', () => {
               assert.ok(
                 found,
                 `The file ${filename} should not be read ` +
-                  `because it doesn't have a mock`
+                  "because it doesn't have a mock"
               );
             });
             return rs;

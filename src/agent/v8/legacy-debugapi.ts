@@ -208,6 +208,7 @@ export class V8DebugApi implements debugapi.DebugApi {
     breakpoint: stackdriver.Breakpoint,
     callback: (err?: Error) => void
   ): void {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
     const num = that.breakpoints[breakpoint.id].v8Breakpoint.number();
     const listener = this.onBreakpointHit.bind(
@@ -232,6 +233,7 @@ export class V8DebugApi implements debugapi.DebugApi {
     print: (format: string, exps: string[]) => void,
     shouldStop: () => boolean
   ): void {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
     const num = that.breakpoints[breakpoint.id].v8Breakpoint.number();
     let logsThisSecond = 0;
@@ -305,6 +307,7 @@ export class V8DebugApi implements debugapi.DebugApi {
           sourceType: 'script',
           ecmaVersion: 6,
         });
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
         const validator = require('../util/validator.js');
         if (!validator.isValid(ast)) {
           return utils.setErrorStatusAndCallback(

@@ -1,29 +1,35 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var Animal = (function () {
-    function Animal(name, sound) {
-        this.name = name;
-        this.sound = sound;
-        this.name = name;
-        this.sound = sound;
+const __extends =
+  (this && this.__extends) ||
+  function (d, b) {
+    for (const p in b)
+      if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+    function __() {
+      this.constructor = d;
     }
-    Animal.prototype.hello = function () {
-        return "The " + this.name + " says " + this.sound;
-    };
-    return Animal;
-}());
-var Lion = (function (_super) {
-    __extends(Lion, _super);
-    function Lion() {
-        _super.call(this, 'Lion', 'roar');
-    }
-    return Lion;
-}(Animal));
+    d.prototype =
+      b === null ? Object.create(b) : ((__.prototype = b.prototype), new __());
+  };
+const Animal = (function () {
+  function Animal(name, sound) {
+    this.name = name;
+    this.sound = sound;
+    this.name = name;
+    this.sound = sound;
+  }
+  Animal.prototype.hello = function () {
+    return 'The ' + this.name + ' says ' + this.sound;
+  };
+  return Animal;
+})();
+const Lion = (function (_super) {
+  __extends(Lion, _super);
+  function Lion() {
+    _super.call(this, 'Lion', 'roar');
+  }
+  return Lion;
+})(Animal);
 function hello(name) {
-    return 'Hello ' + name;
+  return 'Hello ' + name;
 }
 hello('you');
 new Lion().hello();

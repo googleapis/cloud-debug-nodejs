@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {afterEach, before, beforeEach, describe, it} from 'mocha';
 import * as cp from 'child_process';
 import * as util from 'util';
 import * as uuid from 'uuid';
@@ -57,7 +57,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     api = new Debugger(new Debug({}, packageInfo));
   });
 
-  beforeEach(function() {
+  beforeEach(function () {
     this.timeout(10 * 1000);
     return new Promise((resolve, reject) => {
       let numChildrenReady = 0;
@@ -124,7 +124,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     });
   });
 
-  afterEach(function() {
+  afterEach(function () {
     this.timeout(5 * 1000);
     // Create a promise for each child that resolves when that child exits.
     const childExitPromises = children.map(child => {
@@ -280,7 +280,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     console.log('-- test passed');
   }
 
-  it('should set breakpoints correctly', async function() {
+  it('should set breakpoints correctly', async function () {
     this.timeout(90 * 1000);
     await verifyDebuggeeFound();
     await verifyDeleteBreakpoints();
@@ -289,7 +289,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     await verifyHitLogpoint();
   });
 
-  it('should throttle logs correctly', async function() {
+  it('should throttle logs correctly', async function () {
     this.timeout(15 * 1000);
 
     await verifyDebuggeeFound();

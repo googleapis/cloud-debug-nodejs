@@ -54,14 +54,18 @@ interface DebugApiConstructor {
 let debugApiConstructor: DebugApiConstructor;
 
 export function willUseInspector(nodeVersion?: string) {
+  // checking for null and undefined.
+  // eslint-disable-next-line eqeqeq
   const version = nodeVersion != null ? nodeVersion : process.version;
   return utils.satisfies(version, '>=10');
 }
 
 if (willUseInspector()) {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const inspectorapi = require('./inspector-debugapi');
   debugApiConstructor = inspectorapi.InspectorDebugApi;
 } else {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const v8debugapi = require('./legacy-debugapi');
   debugApiConstructor = v8debugapi.V8DebugApi;
 }

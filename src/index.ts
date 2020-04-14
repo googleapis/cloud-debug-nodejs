@@ -16,6 +16,7 @@ import {DebugAgentConfig, StackdriverConfig} from './agent/config';
 import {Debuglet, IsReady} from './agent/debuglet';
 import {Debug} from './client/stackdriver/debug';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const pjson = require('../../package.json');
 
 // Singleton.

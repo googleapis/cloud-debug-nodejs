@@ -14,6 +14,7 @@
 
 import * as realAssert from 'assert';
 import {debugAssert} from '../src/agent/util/debug-assert';
+import {describe, it} from 'mocha';
 
 describe('debug-assert', () => {
   it('should fire assertions when enabled', () => {

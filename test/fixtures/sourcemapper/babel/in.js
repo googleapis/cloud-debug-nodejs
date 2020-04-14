@@ -1,10 +1,10 @@
-
 // arrow functions
-var f = (x, y, z) => {
-  var a = x + 1;
-  var b = y - 1;
-  var c = z * 2;
-  var result = a + 2*b - c;
+// eslint-disable-next-line no-unused-vars
+const f = (x, y, z) => {
+  const a = x + 1;
+  const b = y - 1;
+  const c = z * 2;
+  const result = a + 2 * b - c;
 
   return result;
 };
@@ -26,6 +26,7 @@ class Point2D {
   }
 }
 
+// eslint-disable-next-line no-unused-vars
 class Point3D extends Point2D {
   constructor(x, y, z) {
     super(x, y);
@@ -43,24 +44,25 @@ class Point3D extends Point2D {
 }
 
 // enhanced object literals
-var someOb = {
+const someOb = {
   // short for someOb : someOb
   someOb,
 
   // dynamic property names
-  ["property" + (1 + 41)] : 42
-}
+  ['property' + (1 + 41)]: 42,
+};
 
 // template strings
-var animal = 'cat';
-var hobby = 'sleep';
+const animal = 'cat';
+const hobby = 'sleep';
 console.log(`The ${animal} likes to ${hobby}`);
 
 // destructuring
-var [x, y, z] = [1, 2, 3];
+// eslint-disable-next-line no-unused-vars
+const [x, y, z] = [1, 2, 3];
 
 // default values
-function someFunction(x, y=32){
+function someFunction(x, y = 32) {
   return x + y;
 }
 
@@ -71,12 +73,12 @@ function varArgsFunction(x, ...y) {
   return x + y.length;
 }
 
-console.log(varArgsFunction(10, 1, 2, 3 , 4, 5) === 15);
+console.log(varArgsFunction(10, 1, 2, 3, 4, 5) === 15);
 console.log(varArgsFunction(...[10, 1, 2, 3, 4, 5]) === 15);
 
 // let and const
 const SOME_VALUE = 10;
-for (let i=0; i<10; i++){
+for (let i = 0; i < 10; i++) {
   console.log(SOME_VALUE + i);
 }
 

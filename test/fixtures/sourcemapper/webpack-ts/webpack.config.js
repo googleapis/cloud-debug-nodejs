@@ -1,4 +1,3 @@
-
 const path = require('path');
 
 module.exports = {
@@ -6,10 +5,10 @@ module.exports = {
   entry: './in.ts_',
   output: {
     path: path.resolve(__dirname),
-    filename: 'out.js'
+    filename: 'out.js',
   },
   devtool: 'source-map',
   optimization: {
-    nodeEnv: false
-  }
+    nodeEnv: false,
+  },
 };

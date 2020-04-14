@@ -99,6 +99,7 @@ export class Controller extends ServiceObject {
       body?: stackdriver.ListBreakpointsResponse
     ) => void
   ): void {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
     assert(debuggee.id, 'should have a registered debuggee');
     const query: stackdriver.ListBreakpointsQuery = {successOnTimeout: true};

@@ -22,13 +22,14 @@ const breakpointInFoo: stackdriver.Breakpoint = {
 } as stackdriver.Breakpoint;
 
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {afterEach, beforeEach, describe, it} from 'mocha';
 import * as extend from 'extend';
 import * as debugapi from '../src/agent/v8/debugapi';
 import {defaultConfig} from '../src/agent/config';
 import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as scanner from '../src/agent/io/scanner';
 import {Debuglet} from '../src/agent/debuglet';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const foo = require('./test-duplicate-expressions-code.js');
 
 // TODO: Determine why this must be named `stateIsClean1`.
