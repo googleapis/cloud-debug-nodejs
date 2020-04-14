@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// eslint-disable-next-line node/no-unsupported-features/node-builtins
 import * as inspector from 'inspector';
 
 export class V8Inspector {

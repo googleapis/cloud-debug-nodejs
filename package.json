@@ -75,7 +75,7 @@
     "cpy-cli": "^3.1.0",
     "cross-env": "^7.0.0",
     "execa": "^4.0.0",
-    "gts": "^1.0.0",
+    "gts": "^2.0.0",
     "linkinator": "^2.0.0",
     "mkdirp": "^1.0.3",
     "mocha": "^7.0.0",
@@ -87,7 +87,7 @@
     "require-inject": "^1.4.3",
     "teeny-request": "^6.0.0",
     "tmp-promise": "^2.0.2",
-    "typescript": "3.6.4",
+    "typescript": "^3.8.3",
     "uuid": "^7.0.0"
   }
 }

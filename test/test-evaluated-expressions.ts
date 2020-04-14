@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {before, describe, it} from 'mocha';
 import * as extend from 'extend';
 
 import {defaultConfig} from '../src/agent/config';
@@ -24,6 +24,7 @@ import * as debugapi from '../src/agent/v8/debugapi';
 import consoleLogLevel = require('console-log-level');
 import * as stackdriver from '../src/types/stackdriver';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const code = require('./test-evaluated-expressions-code.js');
 
 describe('debugger provides useful information', () => {
@@ -66,7 +67,7 @@ describe('debugger provides useful information', () => {
 
     throw new Error(
       `The variable ${JSON.stringify(exp, null, 2)} ` +
-        `does not have a 'value' nor a 'varTableIndex' property`
+        "does not have a 'value' nor a 'varTableIndex' property"
     );
   }
 
@@ -131,7 +132,7 @@ describe('debugger provides useful information', () => {
     }
   }
 
-  it(`should provide data about plain objects`, done => {
+  it('should provide data about plain objects', done => {
     const bp: stackdriver.Breakpoint = {
       id: 'fake-id-123',
       location: {
@@ -160,7 +161,7 @@ describe('debugger provides useful information', () => {
     });
   });
 
-  it(`should provide data about arrays`, done => {
+  it('should provide data about arrays', done => {
     const bp: stackdriver.Breakpoint = {
       id: 'fake-id-123',
       location: {
@@ -191,7 +192,7 @@ describe('debugger provides useful information', () => {
     });
   });
 
-  it(`should provide data about regexes`, done => {
+  it('should provide data about regexes', done => {
     const bp: stackdriver.Breakpoint = {
       id: 'fake-id-123',
       location: {
@@ -215,7 +216,7 @@ describe('debugger provides useful information', () => {
     });
   });
 
-  it(`should provide data about responses`, done => {
+  it('should provide data about responses', done => {
     const bp: stackdriver.Breakpoint = {
       id: 'fake-id-123',
       location: {

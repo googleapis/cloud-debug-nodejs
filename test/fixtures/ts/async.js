@@ -1,3 +1,4 @@
+/* eslint-disable prefer-arrow-callback, no-var, prettier/prettier, no-unused-vars */
 // compile with
 // $ tsc --lib es6 --target es5 async.ts
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {

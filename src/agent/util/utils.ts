@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// eslint-disable-next-line node/no-unsupported-features/node-builtins
 import * as inspector from 'inspector';
 import * as path from 'path';
 import * as semver from 'semver';
@@ -66,8 +67,8 @@ export function findScripts(
   if (config.pathResolver) {
     if (typeof config.pathResolver !== 'function') {
       logger.warn(
-        `The 'pathResolver' config must be a function.  Continuing ` +
-          `with the agent's default behavior.`
+        "The 'pathResolver' config must be a function.  Continuing " +
+          "with the agent's default behavior."
       );
       return resolved;
     }
@@ -84,9 +85,9 @@ export function findScripts(
 
     if (!calculatedPaths || !Array.isArray(calculatedPaths)) {
       logger.warn(
-        `The 'pathResolver' config function returned a value ` +
-          `other than 'undefined' or an array of strings. Continuing with ` +
-          `the agent's default behavior.`
+        "The 'pathResolver' config function returned a value " +
+          "other than 'undefined' or an array of strings. Continuing with " +
+          "the agent's default behavior."
       );
       return resolved;
     }
@@ -94,11 +95,11 @@ export function findScripts(
     for (const path of calculatedPaths) {
       if (knownFiles.indexOf(path) === -1) {
         logger.warn(
-          `The 'pathResolver' config function returned a path ` +
+          "The 'pathResolver' config function returned a path " +
             `'${path}' that is not in the list of paths known to the debug agent ` +
             JSON.stringify(knownFiles, null, 2) +
-            ` only known paths can be returned. Continuing with the agent's ` +
-            `default behavior.`
+            " only known paths can be returned. Continuing with the agent's " +
+            'default behavior.'
         );
         return resolved;
       }
@@ -245,6 +246,7 @@ export function getBreakpointCompiler(
   ) {
     case 'coffee':
       return uncompiled => {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
         const comp = require('coffeescript');
         const compiled = comp.compile('0 || (' + uncompiled + ')');
         // Strip out coffeescript scoping wrapper to get translated condition

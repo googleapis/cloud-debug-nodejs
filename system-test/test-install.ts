@@ -12,6 +12,7 @@
 // limitations under the License.
 
 import * as execa from 'execa';
+import {after, before, describe, it} from 'mocha';
 import * as mv from 'mv';
 import {ncp} from 'ncp';
 import * as tmp from 'tmp-promise';
@@ -21,6 +22,7 @@ const mvp = (promisify(mv) as {}) as (...args: string[]) => Promise<void>;
 const ncpp = promisify(ncp);
 const stagingDir = tmp.dirSync({keep: false, unsafeCleanup: true});
 const stagingPath = stagingDir.name;
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const pkg = require('../../package.json');
 
 async function run(path: string) {

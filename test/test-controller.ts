@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {before, describe, it} from 'mocha';
 import * as nock from 'nock';
 
 import {Debug} from '../src/client/stackdriver/debug';
@@ -29,7 +29,7 @@ delete process.env.GCLOUD_PROJECT;
 import {Controller} from '../src/agent/controller';
 // TODO: Fix fakeDebug to actually implement Debug.
 const fakeDebug = ({
-  apiEndpoint: `clouddebugger.googleapis.com`,
+  apiEndpoint: 'clouddebugger.googleapis.com',
   request: (options: t.Options, cb: t.RequestCallback) => {
     teenyRequest(options, (err, r) => {
       cb(err, r ? r.body : undefined, r);
@@ -37,7 +37,7 @@ const fakeDebug = ({
   },
 } as {}) as Debug;
 
-const agentVersion = `SomeName/client/SomeVersion`;
+const agentVersion = 'SomeName/client/SomeVersion';
 const url = 'https://clouddebugger.googleapis.com';
 const api = '/v2/controller';
 

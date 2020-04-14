@@ -8,6 +8,9 @@
   "engines": {
     "node": ">=10"
   },
+  "files": [
+    "*.js"
+  ],
   "scripts": {
     "deploy": "gcloud app deploy",
     "start": "node app.js",

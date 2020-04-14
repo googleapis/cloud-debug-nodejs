@@ -1,7 +1,7 @@
-"use strict";
-var i = 1;
-var foo = function foo(j) {
-  return i + j + "hi";
+'use strict';
+const i = 1;
+const foo = function foo(j) {
+  return i + j + 'hi';
 };
 
 module.exports.foo = foo;

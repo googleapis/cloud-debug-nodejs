@@ -12,15 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const v8debugapi = require('../src/v8debugapi.js');
 const config = require('../config.js').default;
 import * as assert from 'assert';
 import {describe, it} from 'mocha';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const pretty = require('pretty-hrtime');
-// const util = require('util');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const fib = require('./bench-code.js');
 
 // tslint:disable:variable-name
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const Logger = require('../src/logger.js');
 const logger = new Logger(config.logLevel);
 assert.ok(v8debugapi.init(logger, config));

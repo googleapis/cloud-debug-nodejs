@@ -25,6 +25,7 @@ describeFn('state', () => {
   // minimal unit tests here.
 
   it('should have assertions enabled', () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const state = require('../src/agent/state/legacy-state');
 
     // this test makes sure that the necessary environment variables to enable
@@ -44,6 +45,7 @@ describeFn('state', () => {
   it('should not throw if vm is not an object', () => {
     // test for
     // https://github.com/googleapis/cloud-debug-nodejs/issues/503
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const inject = require('require-inject');
     const state = inject('../src/agent/state/legacy-state', {vm: false});
     assert.ok(state);

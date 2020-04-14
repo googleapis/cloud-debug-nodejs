@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {after, afterEach, before, beforeEach, describe, it} from 'mocha';
 import * as fs from 'fs';
 import * as gcpMetadata from 'gcp-metadata';
 import * as path from 'path';
@@ -37,6 +37,7 @@ const REGISTER_PATH = '/v2/controller/debuggees/register';
 const BPS_PATH = '/v2/controller/debuggees/' + DEBUGGEE_ID + '/breakpoints';
 const EXPRESSIONS_REGEX = /Expressions and conditions are not allowed.*https:\/\/goo\.gl\/ShSm6r/;
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const fakeCredentials = require('./fixtures/gcloud-credentials.json');
 
 const packageInfo = {
@@ -75,7 +76,7 @@ function verifyBreakpointRejection(
 }
 
 describe('CachedPromise', () => {
-  it('CachedPromise.get() will resolve after CachedPromise.resolve()', function(done) {
+  it('CachedPromise.get() will resolve after CachedPromise.resolve()', function (done) {
     this.timeout(2000);
     const cachedPromise = new CachedPromise();
     cachedPromise.get().then(() => {
@@ -592,7 +593,7 @@ describe('Debuglet', () => {
       });
     });
 
-    it('should retry on failed registration', function(done) {
+    it('should retry on failed registration', function (done) {
       this.timeout(10000);
       const debug = new Debug(
         {projectId: '11020304f2934', credentials: fakeCredentials},
@@ -929,7 +930,7 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should de-activate when the server responds with isDisabled', function(done) {
+    it('should de-activate when the server responds with isDisabled', function (done) {
       this.timeout(4000);
       const debug = new Debug(
         {projectId: 'fake-project', credentials: fakeCredentials},
@@ -954,7 +955,7 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should retry after a isDisabled request', function(done) {
+    it('should retry after a isDisabled request', function (done) {
       this.timeout(4000);
       const debug = new Debug(
         {projectId: 'fake-project', credentials: fakeCredentials},
@@ -1014,7 +1015,7 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should fetch and add breakpoints', function(done) {
+    it('should fetch and add breakpoints', function (done) {
       this.timeout(2000);
       const debug = new Debug(
         {projectId: 'fake-project', credentials: fakeCredentials},
@@ -1028,7 +1029,7 @@ describe('Debuglet', () => {
         .get(BPS_PATH + '?successOnTimeout=true')
         .reply(200, {breakpoints: [bp]});
 
-      debuglet.once('registered', function reg(id: string) {
+      debuglet.once('registered', (id: string) => {
         assert.strictEqual(id, DEBUGGEE_ID);
         setTimeout(() => {
           assert.deepStrictEqual(debuglet.activeBreakpointMap.test, bp);
@@ -1041,7 +1042,7 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should have breakpoints fetched when promise is resolved', function(done) {
+    it('should have breakpoints fetched when promise is resolved', function (done) {
       this.timeout(2000);
       const breakpoint: stackdriver.Breakpoint = {
         id: 'test1',
@@ -1063,7 +1064,7 @@ describe('Debuglet', () => {
         .twice()
         .reply(200, {breakpoints: [breakpoint]});
       const debugPromise = debuglet.isReadyManager.isReady();
-      debuglet.once('registered', function reg(id: string) {
+      debuglet.once('registered', (id: string) => {
         debugPromise.then(() => {
           // Once debugPromise is resolved, debuggee must be registered.
           assert(debuglet.debuggee);
@@ -1082,7 +1083,7 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should resolve breakpointFetched promise when registration expires', function(done) {
+    it('should resolve breakpointFetched promise when registration expires', function (done) {
       this.timeout(2000);
       const debug = new Debug(
         {projectId: 'fake-project', credentials: fakeCredentials},
@@ -1109,7 +1110,7 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should reject breakpoints with conditions when allowExpressions=false', function(done) {
+    it('should reject breakpoints with conditions when allowExpressions=false', function (done) {
       this.timeout(2000);
       const debug = new Debug(
         {projectId: 'fake-project', credentials: fakeCredentials},
@@ -1138,7 +1139,7 @@ describe('Debuglet', () => {
         )
         .reply(200);
 
-      debuglet.once('registered', function reg(id: string) {
+      debuglet.once('registered', (id: string) => {
         assert.strictEqual(id, DEBUGGEE_ID);
         setTimeout(() => {
           assert.ok(!debuglet.activeBreakpointMap.test);
@@ -1152,7 +1153,7 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should reject breakpoints with expressions when allowExpressions=false', function(done) {
+    it('should reject breakpoints with expressions when allowExpressions=false', function (done) {
       this.timeout(2000);
       const debug = new Debug(
         {projectId: 'fake-project', credentials: fakeCredentials},
@@ -1181,7 +1182,7 @@ describe('Debuglet', () => {
         )
         .reply(200);
 
-      debuglet.once('registered', function reg(id: string) {
+      debuglet.once('registered', (id: string) => {
         assert.strictEqual(id, DEBUGGEE_ID);
         setTimeout(() => {
           assert.ok(!debuglet.activeBreakpointMap.test);
@@ -1195,7 +1196,7 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should re-fetch breakpoints on error', function(done) {
+    it('should re-fetch breakpoints on error', function (done) {
       this.timeout(6000);
 
       const debug = new Debug(
@@ -1228,7 +1229,7 @@ describe('Debuglet', () => {
         )
         .reply(200);
 
-      debuglet.once('registered', function reg(id: string) {
+      debuglet.once('registered', (id: string) => {
         assert.strictEqual(id, DEBUGGEE_ID);
         setTimeout(() => {
           assert.deepStrictEqual(debuglet.activeBreakpointMap.test, bp);
@@ -1242,7 +1243,7 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should expire stale breakpoints', function(done) {
+    it('should expire stale breakpoints', function (done) {
       const debug = new Debug(
         {projectId: 'fake-project', credentials: fakeCredentials},
         packageInfo
@@ -1295,7 +1296,7 @@ describe('Debuglet', () => {
     // The test expires a breakpoint and then has the api respond with
     // the breakpoint listed as active. It validates that the breakpoint
     // is only expired with the server once.
-    it('should not update expired breakpoints', function(done) {
+    it('should not update expired breakpoints', function (done) {
       const debug = new Debug(
         {projectId: 'fake-project', credentials: fakeCredentials},
         packageInfo

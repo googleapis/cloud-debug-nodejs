@@ -14,6 +14,7 @@
 
 import * as util from 'util';
 import * as vm from 'vm';
+import * as acorn from 'acorn';
 
 import {StatusMessage} from '../../client/stackdriver/status-message';
 import * as stackdriver from '../../types/stackdriver';
@@ -40,9 +41,9 @@ export function evaluate(
   frame: v8.FrameMirror
 ): {error: string | null; mirror?: v8.ValueMirror} {
   // First validate the expression to make sure it doesn't mutate state
-  const acorn = require('acorn');
   try {
     const ast = acorn.parse(expression, {sourceType: 'script'});
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const validator = require('../util/validator');
     if (!validator.isValid(ast)) {
       return {error: 'Expression not allowed'};
@@ -156,6 +157,7 @@ class StateResolver {
    *         evaluatedExpressions fields
    */
   capture_(): stackdriver.Breakpoint {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
 
     // Evaluate the watch expressions
@@ -246,6 +248,7 @@ class StateResolver {
   ): void {
     this.resolvedVariableTable.splice(fromIndex); // remove the remaining entries
 
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
     const processBufferFull = (variables: stackdriver.Variable[]) => {
       variables.forEach(variable => {
@@ -409,6 +412,7 @@ class StateResolver {
    *  variables
    */
   resolveLocalsList_(frame: v8.FrameMirror): stackdriver.Variable[] {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     const usedNames: {[name: string]: boolean} = {};
     const makeMirror = this.ctx.MakeMirror;
