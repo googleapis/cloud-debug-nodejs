@@ -195,7 +195,7 @@ describe('Controller API', () => {
       const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
       const controller = new Controller(fakeDebug);
       // TODO: Determine if the result parameter should be used.
-      controller.listBreakpoints(debuggee, (err, response, result) => {
+      controller.listBreakpoints(debuggee, (err, response) => {
         // TODO: Fix this incorrect method signature.
         (assert as {ifError: Function}).ifError(err, 'not expecting an error');
         // TODO: Fix this error that states `body` is not a property

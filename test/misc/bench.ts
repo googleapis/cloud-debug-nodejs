@@ -16,7 +16,6 @@
 const v8debugapi = require('../src/v8debugapi.js');
 const config = require('../config.js').default;
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pretty = require('pretty-hrtime');
 // eslint-disable-next-line @typescript-eslint/no-var-requires

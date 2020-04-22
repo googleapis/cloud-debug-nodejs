@@ -21,7 +21,6 @@ import * as proxyquire from 'proxyquire';
 
 import {DebugAgentConfig, ResolvedDebugAgentConfig} from '../src/agent/config';
 import {defaultConfig as DEFAULT_CONFIG} from '../src/agent/config';
-import * as utils from '../src/agent/util/utils';
 import {Debuggee} from '../src/debuggee';
 import * as stackdriver from '../src/types/stackdriver';
 
@@ -275,10 +274,10 @@ describe('Debuglet', () => {
               all: () => {
                 return {};
               },
-              selectStats: (regex: RegExp) => {
+              selectStats: () => {
                 return {};
               },
-              selectFiles: (regex: RegExp, baseDir: string) => {
+              selectFiles: () => {
                 return [];
               },
               hash: precomputedHash || 'fake-hash',
@@ -300,7 +299,7 @@ describe('Debuglet', () => {
         text += s;
       };
 
-      debuglet.on('initError', (err: Error) => {
+      debuglet.on('initError', () => {
         assert.fail('It should not fail for files it cannot read');
       });
 
@@ -584,7 +583,7 @@ describe('Debuglet', () => {
           .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
         // TODO: Determine if the id parameter should be used.
-        debuglet.once('registered', (id: string) => {
+        debuglet.once('registered', () => {
           debuglet.stop();
           scope.done();
           done();
@@ -720,8 +719,7 @@ describe('Debuglet', () => {
       // Don't actually scan the entire filesystem.  Act like the filesystem
       // is empty.
       mockedDebuglet.Debuglet.findFiles = (
-        config: ResolvedDebugAgentConfig,
-        precomputedHash?: string
+        config: ResolvedDebugAgentConfig
       ): Promise<FindFilesResult> => {
         const baseDir = config.workingDirectory;
         assert.strictEqual(baseDir, root);
@@ -1064,7 +1062,7 @@ describe('Debuglet', () => {
         .twice()
         .reply(200, {breakpoints: [breakpoint]});
       const debugPromise = debuglet.isReadyManager.isReady();
-      debuglet.once('registered', (id: string) => {
+      debuglet.once('registered', () => {
         debugPromise.then(() => {
           // Once debugPromise is resolved, debuggee must be registered.
           assert(debuglet.debuggee);

@@ -40,7 +40,7 @@ describe('scanner', () => {
 
     it('should error when called on a bad path', done => {
       // TODO: Determine if the err parameter should be used.
-      scanner.scan('./this directory does not exist', /.js$/).catch(err => {
+      scanner.scan('./this directory does not exist', /.js$/).catch(() => {
         done();
       });
     });

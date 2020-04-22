@@ -262,41 +262,37 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     let logsThisSecond = 0;
     let timesliceEnd = Date.now() + 1000;
     // TODO: Determine why the Error argument is not used.
-    const listener = this.onBreakpointHit.bind(
-      this,
-      breakpoint,
-      (err: Error | null) => {
-        const currTime = Date.now();
-        if (currTime > timesliceEnd) {
-          logsThisSecond = 0;
-          timesliceEnd = currTime + 1000;
-        }
-        print(
-          // TODO: Address the case where `breakpoint.logMessageFormat` is
-          // `null`.
-          breakpoint.logMessageFormat as string,
-          breakpoint.evaluatedExpressions.map(
-            (obj: stackdriver.Variable | null) => JSON.stringify(obj)
-          )
-        );
-        logsThisSecond++;
-        if (shouldStop()) {
+    const listener = this.onBreakpointHit.bind(this, breakpoint, () => {
+      const currTime = Date.now();
+      if (currTime > timesliceEnd) {
+        logsThisSecond = 0;
+        timesliceEnd = currTime + 1000;
+      }
+      print(
+        // TODO: Address the case where `breakpoint.logMessageFormat` is
+        // `null`.
+        breakpoint.logMessageFormat as string,
+        breakpoint.evaluatedExpressions.map(
+          (obj: stackdriver.Variable | null) => JSON.stringify(obj)
+        )
+      );
+      logsThisSecond++;
+      if (shouldStop()) {
+        this.listeners[breakpoint.id].enabled = false;
+      } else {
+        if (logsThisSecond >= this.config.log.maxLogsPerSecond) {
           this.listeners[breakpoint.id].enabled = false;
-        } else {
-          if (logsThisSecond >= this.config.log.maxLogsPerSecond) {
-            this.listeners[breakpoint.id].enabled = false;
-            setTimeout(() => {
-              // listeners[num] may have been deleted by `clear` during the
-              // async hop. Make sure it is valid before setting a property
-              // on it.
-              if (!shouldStop() && this.listeners[breakpoint.id]) {
-                this.listeners[breakpoint.id].enabled = true;
-              }
-            }, this.config.log.logDelaySeconds * 1000);
-          }
+          setTimeout(() => {
+            // listeners[num] may have been deleted by `clear` during the
+            // async hop. Make sure it is valid before setting a property
+            // on it.
+            if (!shouldStop() && this.listeners[breakpoint.id]) {
+              this.listeners[breakpoint.id].enabled = true;
+            }
+          }, this.config.log.logDelaySeconds * 1000);
         }
       }
-    );
+    });
     this.listeners[breakpoint.id] = {enabled: true, listener};
   }
 
