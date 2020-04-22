@@ -69,7 +69,7 @@ describe('Controller', function () {
       agentVersion,
     });
     // TODO: Determine if the body parameter should be used.
-    controller.register(debuggee, (err1, body1) => {
+    controller.register(debuggee, err1 => {
       assert.ifError(err1);
 
       // TODO: Determine if the response parameter should be used.
@@ -93,7 +93,7 @@ describe('Controller', function () {
       agentVersion,
     });
     // TODO: Determine if the body parameter should be used.
-    controller.register(debuggee, (err, body) => {
+    controller.register(debuggee, err => {
       assert.ifError(err);
 
       // First list should set the wait token
