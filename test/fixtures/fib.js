@@ -1,7 +1,10 @@
 /* KEEP THIS CODE AT THE TOP SO THAT THE BREAKPOINT LINE NUMBERS DON'T CHANGE */
 'use strict';
 function fib(n) {
-  if (n < 2) { return n; } var o = { a: [1, 'hi', true] };
+  if (n < 2) {
+    return n;
+  }
+  const o = {a: [1, 'hi', true]};
   return fib(n - 1, o) + fib(n - 2, o); // adding o to appease linter.
 }
 

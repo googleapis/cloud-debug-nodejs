@@ -1,9 +1,5 @@
 **/node_modules
-**/coverage
-test/fixtures
+src/**/doc/*
 build/
 docs/
 protos/
-test/fixtures
-system-test/fixtures
-test/*.js
