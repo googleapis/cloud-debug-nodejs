@@ -15,6 +15,7 @@
 import * as assert from 'assert';
 import {describe, it} from 'mocha';
 import * as utils from '../src/agent/util/utils';
+import * as proxyquire from 'proxyquire';
 
 const describeFn = utils.satisfies(process.version, '>=10')
   ? describe.skip
@@ -46,8 +47,7 @@ describeFn('state', () => {
     // test for
     // https://github.com/googleapis/cloud-debug-nodejs/issues/503
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const inject = require('require-inject');
-    const state = inject('../src/agent/state/legacy-state', {vm: false});
+    const state = proxyquire('../src/agent/state/legacy-state', {vm: false});
     assert.ok(state);
   });
 });
