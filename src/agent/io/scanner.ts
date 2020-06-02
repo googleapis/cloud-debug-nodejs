@@ -16,7 +16,6 @@ import * as crypto from 'crypto';
 import * as events from 'events';
 import * as fs from 'fs';
 import * as path from 'path';
-import pickBy = require('lodash.pickby');
 
 // TODO: Make this more precise.
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -84,7 +83,13 @@ class ScanResultsImpl implements ScanResults {
    *  should be included in the returned results.
    */
   selectStats(regex: RegExp): ScanStats | {} {
-    return pickBy(this.stats, (_, key) => regex.test(key));
+    const obj = {} as {[index: string]: {} | undefined};
+    Object.keys(this.stats).forEach(key => {
+      if (regex.test(key)) {
+        obj[key] = this.stats[key];
+      }
+    });
+    return obj;
   }
 
   /**
