@@ -24,7 +24,7 @@ import * as util from 'util';
 
 import {Debug, PackageInfo} from '../client/stackdriver/debug';
 import {StatusMessage} from '../client/stackdriver/status-message';
-import {Debuggee, DebuggeeProperties} from '../debuggee';
+import {CanaryMode, Debuggee, DebuggeeProperties} from '../debuggee';
 import * as stackdriver from '../types/stackdriver';
 
 import {defaultConfig} from './config';
@@ -517,6 +517,8 @@ export class Debuglet extends EventEmitter {
       service?: string;
       version?: string;
       minorVersion_?: string;
+      enableCanary?: boolean;
+      allowCanaryOverride?: boolean;
     },
     sourceContext: SourceContext | undefined,
     onGCP: boolean,
@@ -594,6 +596,7 @@ export class Debuglet extends EventEmitter {
       labels,
       statusMessage,
       packageInfo,
+      canaryMode: Debuglet._getCanaryMode(serviceContext),
     };
     if (sourceContext) {
       properties.sourceContexts = [sourceContext];
@@ -1176,5 +1179,25 @@ export class Debuglet extends EventEmitter {
       JSON.stringify(sourceContext) +
       JSON.stringify(labels);
     return crypto.createHash('sha1').update(uniquifier).digest('hex');
+  }
+
+  static _getCanaryMode(serviceContext: {
+    enableCanary?: boolean;
+    allowCanaryOverride?: boolean;
+  }): CanaryMode {
+    const enableCanary = serviceContext ? serviceContext.enableCanary : false;
+    const allowCanaryOverride = serviceContext
+      ? serviceContext.allowCanaryOverride
+      : false;
+
+    if (enableCanary && allowCanaryOverride) {
+      return 'CANARY_MODE_DEFAULT_ENABLED';
+    } else if (enableCanary && !allowCanaryOverride) {
+      return 'CANARY_MODE_ALWAYS_ENABLED';
+    } else if (!enableCanary && allowCanaryOverride) {
+      return 'CANARY_MODE_DEFAULT_DISABLED';
+    } else {
+      return 'CANARY_MODE_ALWAYS_DISABLED';
+    }
   }
 }

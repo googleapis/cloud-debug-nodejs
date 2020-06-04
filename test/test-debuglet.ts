@@ -251,6 +251,35 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
+    it('should enable breakpoint canary when enableCanary is set', done => {
+      const debug = new Debug(
+        {projectId: 'fake-project', credentials: fakeCredentials},
+        packageInfo
+      );
+      nocks.oauth2();
+
+      const config = debugletConfig();
+      config.serviceContext.enableCanary = true;
+      const debuglet = new Debuglet(debug, config);
+      const scope = nock(config.apiUrl)
+        .post(REGISTER_PATH)
+        .reply(200, {
+          debuggee: {id: DEBUGGEE_ID},
+        });
+
+      debuglet.once('registered', () => {
+        assert.strictEqual(
+          (debuglet.debuggee as Debuggee).canaryMode,
+          'CANARY_MODE_ALWAYS_ENABLED'
+        );
+        debuglet.stop();
+        scope.done();
+        done();
+      });
+
+      debuglet.start();
+    });
+
     it('should not fail if files cannot be read', done => {
       const MOCKED_DIRECTORY = process.cwd();
       const errors: Array<{filename: string; error: string}> = [];
@@ -1464,6 +1493,54 @@ describe('Debuglet', () => {
       );
       assert.ok(debuggee);
       assert.ok(debuggee.statusMessage);
+    });
+
+    it('should be in CANARY_MODE_DEFAULT_ENABLED canaryMode', () => {
+      const debuggee = Debuglet.createDebuggee(
+        'some project',
+        'id',
+        {enableCanary: true, allowCanaryOverride: true},
+        {},
+        false,
+        packageInfo
+      );
+      assert.strictEqual(debuggee.canaryMode, 'CANARY_MODE_DEFAULT_ENABLED');
+    });
+
+    it('should be in CANARY_MODE_ALWAYS_ENABLED canaryMode', () => {
+      const debuggee = Debuglet.createDebuggee(
+        'some project',
+        'id',
+        {enableCanary: true, allowCanaryOverride: false},
+        {},
+        false,
+        packageInfo
+      );
+      assert.strictEqual(debuggee.canaryMode, 'CANARY_MODE_ALWAYS_ENABLED');
+    });
+
+    it('should be in CANARY_MODE_DEFAULT_DISABLED canaryMode', () => {
+      const debuggee = Debuglet.createDebuggee(
+        'some project',
+        'id',
+        {enableCanary: false, allowCanaryOverride: true},
+        {},
+        false,
+        packageInfo
+      );
+      assert.strictEqual(debuggee.canaryMode, 'CANARY_MODE_DEFAULT_DISABLED');
+    });
+
+    it('should be in CANARY_MODE_ALWAYS_DISABLED canaryMode', () => {
+      const debuggee = Debuglet.createDebuggee(
+        'some project',
+        'id',
+        {enableCanary: false, allowCanaryOverride: false},
+        {},
+        false,
+        packageInfo
+      );
+      assert.strictEqual(debuggee.canaryMode, 'CANARY_MODE_ALWAYS_DISABLED');
     });
   });
 
