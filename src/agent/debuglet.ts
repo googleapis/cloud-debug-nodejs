@@ -555,7 +555,7 @@ export class Debuglet extends EventEmitter {
       'agent.name': packageInfo.name,
       'agent.version': packageInfo.version,
       projectid: projectId,
-      platform: Debuglet.getPlatform()
+      platform: Debuglet.getPlatform(),
     };
 
     if (serviceContext) {
@@ -616,7 +616,7 @@ export class Debuglet extends EventEmitter {
     return new Debuggee(properties);
   }
 
-  /** 
+  /**
    * Use environment vars to infer the current platform.
    * For now this is only Cloud Functions and other.
    */

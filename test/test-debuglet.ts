@@ -26,7 +26,12 @@ import * as stackdriver from '../src/types/stackdriver';
 
 DEFAULT_CONFIG.allowExpressions = true;
 DEFAULT_CONFIG.workingDirectory = path.join(__dirname, '..', '..');
-import {Debuglet, CachedPromise, FindFilesResult, Platforms} from '../src/agent/debuglet';
+import {
+  Debuglet,
+  CachedPromise,
+  FindFilesResult,
+  Platforms,
+} from '../src/agent/debuglet';
 import {ScanResults} from '../src/agent/io/scanner';
 import * as extend from 'extend';
 import {Debug} from '../src/client/stackdriver/debug';
@@ -1478,7 +1483,6 @@ describe('Debuglet', () => {
       assert.ok(debuggee.labels);
       assert.strictEqual(debuggee.labels!.module, undefined);
       assert.strictEqual(debuggee.labels!.version, 'yellow.5');
-      assert.strictEqual
     });
 
     it('should have an error statusMessage with the appropriate arg', () => {
@@ -1558,7 +1562,7 @@ describe('Debuglet', () => {
 
     it('should correctly identify GCF (legacy) platform.', () => {
       // GCF sets this env var on older runtimes.
-      process.env.FUNCTION_NAME = "mock";
+      process.env.FUNCTION_NAME = 'mock';
       const debuggee = Debuglet.createDebuggee(
         'some project',
         'id',
@@ -1573,7 +1577,7 @@ describe('Debuglet', () => {
 
     it('should correctly identify GCF (modern) platform.', () => {
       // GCF sets this env var on modern runtimes.
-      process.env.FUNCTION_TARGET = "mock";
+      process.env.FUNCTION_TARGET = 'mock';
       const debuggee = Debuglet.createDebuggee(
         'some project',
         'id',
