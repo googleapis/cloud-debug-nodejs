@@ -69,6 +69,17 @@ interface SourceContext {
 }
 
 /**
+ * Environments that this system might be running in.
+ * Helps provide platform-specific information and integration.
+ */
+export enum Platforms {
+  /** Google Cloud Functions */
+  CLOUD_FUNCTION = 'cloud_function',
+  /** Any other platform. */
+  DEFAULT = 'default',
+}
+
+/**
  * Formats a breakpoint object prefixed with a provided message as a string
  * intended for logging.
  * @param {string} msg The message that prefixes the formatted breakpoint.
@@ -544,6 +555,7 @@ export class Debuglet extends EventEmitter {
       'agent.name': packageInfo.name,
       'agent.version': packageInfo.version,
       projectid: projectId,
+      platform: Debuglet.getPlatform()
     };
 
     if (serviceContext) {
@@ -602,6 +614,19 @@ export class Debuglet extends EventEmitter {
       properties.sourceContexts = [sourceContext];
     }
     return new Debuggee(properties);
+  }
+
+  /** 
+   * Use environment vars to infer the current platform.
+   * For now this is only Cloud Functions and other.
+   */
+  private static getPlatform(): Platforms {
+    const {FUNCTION_NAME, FUNCTION_TARGET} = process.env;
+    // (In theory) only the Google Cloud Functions environment will have these env vars.
+    if (FUNCTION_NAME || FUNCTION_TARGET) {
+      return Platforms.CLOUD_FUNCTION;
+    }
+    return Platforms.DEFAULT;
   }
 
   static runningOnGCP(): Promise<boolean> {
