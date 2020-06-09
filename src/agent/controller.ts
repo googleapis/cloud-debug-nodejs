@@ -73,21 +73,25 @@ export class Controller extends ServiceObject {
       json: true,
       body: {debuggee},
     };
-    this.request(options, (err, body: {debuggee: Debuggee}, response) => {
-      if (err) {
-        callback(err);
-      } else if (response!.statusCode !== 200) {
-        callback(
-          new Error('unable to register, statusCode ' + response!.statusCode)
-        );
-      } else if (!body.debuggee) {
-        callback(new Error('invalid response body from server'));
-      } else {
-        debuggee.id = body.debuggee.id;
-        that.agentId = body.agentId;
-        callback(null, body);
+    this.request(
+      options,
+      (err, body: {debuggee: Debuggee; agentId: string}, response) => {
+        if (err) {
+          callback(err);
+        } else if (response!.statusCode !== 200) {
+          callback(
+            new Error('unable to register, statusCode ' + response!.statusCode)
+          );
+        } else if (!body.debuggee) {
+          callback(new Error('invalid response body from server'));
+        } else {
+          debuggee.id = body.debuggee.id;
+          this.agentId = body.agentId;
+          callback(null, body);
+        }
       }
-    });
+    );
+  }
 
   /**
    * Fetch the list of breakpoints from the server. Assumes we have registered.

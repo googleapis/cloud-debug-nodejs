@@ -1185,10 +1185,8 @@ export class Debuglet extends EventEmitter {
     enableCanary?: boolean;
     allowCanaryOverride?: boolean;
   }): CanaryMode {
-    const enableCanary = serviceContext ? serviceContext.enableCanary : false;
-    const allowCanaryOverride = serviceContext
-      ? serviceContext.allowCanaryOverride
-      : false;
+    const enableCanary = serviceContext?.enableCanary;
+    const allowCanaryOverride = serviceContext?.allowCanaryOverride;
 
     if (enableCanary && allowCanaryOverride) {
       return 'CANARY_MODE_DEFAULT_ENABLED';
