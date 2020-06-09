@@ -110,6 +110,7 @@ export type BreakpointId = string;
 export interface ListBreakpointsQuery {
   waitToken?: string;
   successOnTimeout?: boolean;
+  agentId?: string;
 }
 
 export interface ListBreakpointsResponse {
