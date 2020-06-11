@@ -8,10 +8,7 @@
 [![npm version](https://img.shields.io/npm/v/@google-cloud/debug-agent.svg)](https://www.npmjs.org/package/@google-cloud/debug-agent)
 [![codecov](https://img.shields.io/codecov/c/github/googleapis/cloud-debug-nodejs/master.svg?style=flat)](https://codecov.io/gh/googleapis/cloud-debug-nodejs)
 
-
-
-
-Stackdriver Debug Agent for Node.js
+Cloud Debug Agent for Node.js
 
 
 * [Stackdriver Debugger Node.js Client API Reference][client-docs]
