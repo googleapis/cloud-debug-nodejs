@@ -15,6 +15,13 @@
 import {PackageInfo} from './client/stackdriver/debug';
 import {StatusMessage} from './client/stackdriver/status-message';
 
+export declare type CanaryMode =
+  | 'CANARY_MODE_UNSPECIFIED'
+  | 'CANARY_MODE_ALWAYS_ENABLED'
+  | 'CANARY_MODE_ALWAYS_DISABLED'
+  | 'CANARY_MODE_DEFAULT_ENABLED'
+  | 'CANARY_MODE_DEFAULT_DISABLED';
+
 // TODO: Determine how to get this interface to satisfy both the code and the
 // docs
 //       In particular, the comments below state some of the properties are
@@ -30,6 +37,7 @@ export interface DebuggeeProperties {
   sourceContexts?: Array<{[key: string]: {}}>;
   statusMessage?: StatusMessage;
   packageInfo?: PackageInfo;
+  canaryMode?: CanaryMode;
 }
 
 export class Debuggee {
@@ -49,6 +57,7 @@ export class Debuggee {
   //       debuglet.ts file.
   isDisabled?: boolean;
   isInactive?: boolean;
+  canaryMode?: CanaryMode;
 
   /**
    * Creates a Debuggee service object.
@@ -95,6 +104,7 @@ export class Debuggee {
     this.uniquifier = properties.uniquifier;
     this.description = properties.description;
     this.agentVersion = properties.agentVersion;
+    this.canaryMode = properties.canaryMode;
     if (properties.labels) {
       this.labels = properties.labels;
     }
