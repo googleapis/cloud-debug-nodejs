@@ -1511,7 +1511,7 @@ describe('Debuglet', () => {
       );
       assert.strictEqual(debuggee.canaryMode, 'CANARY_MODE_DEFAULT_ENABLED');
     });
-    
+
     it('should be in CANARY_MODE_ALWAYS_ENABLED canaryMode', () => {
       const debuggee = Debuglet.createDebuggee(
         'some project',
