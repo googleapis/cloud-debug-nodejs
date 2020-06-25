@@ -1,5 +1,13 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## [5.1.0](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v5.0.0...v5.1.0) (2020-06-25)
+
+
+### Features
+
+* add auto-inferred platform label ([#886](https://www.github.com/googleapis/cloud-debug-nodejs/issues/886)) ([cb1743b](https://www.github.com/googleapis/cloud-debug-nodejs/commit/cb1743bc7058ba9c8e717db6d6ba37bfc27a93a5))
+* add support to breakpoint canary ([#883](https://www.github.com/googleapis/cloud-debug-nodejs/issues/883)) ([692d0a7](https://www.github.com/googleapis/cloud-debug-nodejs/commit/692d0a7a2d875cf048dc3b5c5c9a224ddc962e60))
+
 ## [5.0.0](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v4.2.2...v5.0.0) (2020-05-20)
 
 
