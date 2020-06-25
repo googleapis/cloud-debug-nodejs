@@ -26,7 +26,12 @@ import * as stackdriver from '../src/types/stackdriver';
 
 DEFAULT_CONFIG.allowExpressions = true;
 DEFAULT_CONFIG.workingDirectory = path.join(__dirname, '..', '..');
-import {Debuglet, CachedPromise, FindFilesResult} from '../src/agent/debuglet';
+import {
+  Debuglet,
+  CachedPromise,
+  FindFilesResult,
+  Platforms,
+} from '../src/agent/debuglet';
 import {ScanResults} from '../src/agent/io/scanner';
 import * as extend from 'extend';
 import {Debug} from '../src/client/stackdriver/debug';
@@ -1541,6 +1546,48 @@ describe('Debuglet', () => {
         packageInfo
       );
       assert.strictEqual(debuggee.canaryMode, 'CANARY_MODE_ALWAYS_DISABLED');
+    });
+
+    it('should correctly identify default platform.', () => {
+      const debuggee = Debuglet.createDebuggee(
+        'some project',
+        'id',
+        {service: 'some-service', version: 'production'},
+        {},
+        false,
+        packageInfo
+      );
+      assert.ok(debuggee.labels!.platform === Platforms.DEFAULT);
+    });
+
+    it('should correctly identify GCF (legacy) platform.', () => {
+      // GCF sets this env var on older runtimes.
+      process.env.FUNCTION_NAME = 'mock';
+      const debuggee = Debuglet.createDebuggee(
+        'some project',
+        'id',
+        {service: 'some-service', version: 'production'},
+        {},
+        false,
+        packageInfo
+      );
+      assert.ok(debuggee.labels!.platform === Platforms.CLOUD_FUNCTION);
+      delete process.env.FUNCTION_NAME; // Don't contaminate test environment.
+    });
+
+    it('should correctly identify GCF (modern) platform.', () => {
+      // GCF sets this env var on modern runtimes.
+      process.env.FUNCTION_TARGET = 'mock';
+      const debuggee = Debuglet.createDebuggee(
+        'some project',
+        'id',
+        {service: 'some-service', version: 'production'},
+        {},
+        false,
+        packageInfo
+      );
+      assert.ok(debuggee.labels!.platform === Platforms.CLOUD_FUNCTION);
+      delete process.env.FUNCTION_TARGET; // Don't contaminate test environment.
     });
   });
 
