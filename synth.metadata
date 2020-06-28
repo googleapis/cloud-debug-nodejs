@@ -4,14 +4,14 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/cloud-debug-nodejs.git",
-        "sha": "d5bd2a93fbfc58d5c8af4d5be7278c0b99cd1815"
+        "sha": "3da43780af68b3b0879f42acc0b2102a951a91b9"
       }
     },
     {
       "git": {
         "name": "synthtool",
         "remote": "https://github.com/googleapis/synthtool.git",
-        "sha": "b10590a4a1568548dd13cfcea9aa11d40898144b"
+        "sha": "dc9caca650c77b7039e2bbc3339ffb34ae78e5b7"
       }
     }
   ]
