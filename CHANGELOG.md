@@ -1,5 +1,12 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+### [5.1.1](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v5.1.0...v5.1.1) (2020-07-07)
+
+
+### Bug Fixes
+
+* **dep:** update dependency p-limit to v3 ([#902](https://www.github.com/googleapis/cloud-debug-nodejs/issues/902)) ([cf8b0c7](https://www.github.com/googleapis/cloud-debug-nodejs/commit/cf8b0c764376244fb12fbf018f34985575191de8))
+
 ## [5.1.0](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v5.0.0...v5.1.0) (2020-06-25)
 
 
