@@ -1,5 +1,12 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+### [5.1.2](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v5.1.1...v5.1.2) (2020-07-09)
+
+
+### Bug Fixes
+
+* typeo in nodejs .gitattribute ([#904](https://www.github.com/googleapis/cloud-debug-nodejs/issues/904)) ([3f7e99a](https://www.github.com/googleapis/cloud-debug-nodejs/commit/3f7e99a67a26ecee164e3a6881a58a720a8b790c))
+
 ### [5.1.1](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v5.1.0...v5.1.1) (2020-07-07)
 
 
