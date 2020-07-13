@@ -69,6 +69,31 @@ describe('Controller API', () => {
       });
     });
 
+    it('should get an agentId', done => {
+      const scope = nock(url)
+        .post(api + '/debuggees/register')
+        .reply(200, {
+          debuggee: {id: 'fake-debuggee'},
+          agentId: 'fake-agent-id',
+          activePeriodSec: 600,
+        });
+      const debuggee = new Debuggee({
+        project: 'fake-project',
+        uniquifier: 'fake-id',
+        description: 'unit test',
+        agentVersion,
+      });
+      const controller = new Controller(fakeDebug);
+      // TODO: Determine if this type signature is correct.
+      controller.register(debuggee, (err, result) => {
+        assert(!err, 'not expecting an error');
+        assert.ok(result);
+        assert.strictEqual(result!.agentId, 'fake-agent-id');
+        scope.done();
+        done();
+      });
+    });
+
     it('should not return an error when the debuggee isDisabled', done => {
       const scope = nock(url)
         .post(api + '/debuggees/register')
@@ -206,6 +231,38 @@ describe('Controller API', () => {
         );
         scope.done();
         done();
+      });
+    });
+
+    it('should work with agentId provided from registration', done => {
+      const scope = nock(url)
+        .post(api + '/debuggees/register')
+        .reply(200, {
+          debuggee: {id: 'fake-debuggee'},
+          agentId: 'fake-agent-id',
+          activePeriodSec: 600,
+        })
+        .get(
+          api +
+            '/debuggees/fake-debuggee/breakpoints?successOnTimeout=true&agentId=fake-agent-id'
+        )
+        .reply(200, {waitExpired: true});
+      const debuggee = new Debuggee({
+        project: 'fake-project',
+        uniquifier: 'fake-id',
+        description: 'unit test',
+        agentVersion,
+      });
+      const controller = new Controller(fakeDebug);
+      controller.register(debuggee, (err1 /*, response1*/) => {
+        assert.ifError(err1);
+        const debuggeeWithId: Debuggee = {id: 'fake-debuggee'} as Debuggee;
+        // TODO: Determine if the result parameter should be used.
+        controller.listBreakpoints(debuggeeWithId, (err2 /*, response2*/) => {
+          assert.ifError(err2);
+          scope.done();
+          done();
+        });
       });
     });
 

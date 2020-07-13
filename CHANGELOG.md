@@ -1,5 +1,52 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+### [5.1.2](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v5.1.1...v5.1.2) (2020-07-09)
+
+
+### Bug Fixes
+
+* typeo in nodejs .gitattribute ([#904](https://www.github.com/googleapis/cloud-debug-nodejs/issues/904)) ([3f7e99a](https://www.github.com/googleapis/cloud-debug-nodejs/commit/3f7e99a67a26ecee164e3a6881a58a720a8b790c))
+
+### [5.1.1](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v5.1.0...v5.1.1) (2020-07-07)
+
+
+### Bug Fixes
+
+* **dep:** update dependency p-limit to v3 ([#902](https://www.github.com/googleapis/cloud-debug-nodejs/issues/902)) ([cf8b0c7](https://www.github.com/googleapis/cloud-debug-nodejs/commit/cf8b0c764376244fb12fbf018f34985575191de8))
+
+## [5.1.0](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v5.0.0...v5.1.0) (2020-06-25)
+
+
+### Features
+
+* add auto-inferred platform label ([#886](https://www.github.com/googleapis/cloud-debug-nodejs/issues/886)) ([cb1743b](https://www.github.com/googleapis/cloud-debug-nodejs/commit/cb1743bc7058ba9c8e717db6d6ba37bfc27a93a5))
+* add support to breakpoint canary ([#883](https://www.github.com/googleapis/cloud-debug-nodejs/issues/883)) ([692d0a7](https://www.github.com/googleapis/cloud-debug-nodejs/commit/692d0a7a2d875cf048dc3b5c5c9a224ddc962e60))
+
+## [5.0.0](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v4.2.2...v5.0.0) (2020-05-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* drop support for node.js 8.x (#851)
+* require node 10 in engines field (#852)
+
+### Features
+
+* require node 10 in engines field ([#852](https://www.github.com/googleapis/cloud-debug-nodejs/issues/852)) ([01dc0e2](https://www.github.com/googleapis/cloud-debug-nodejs/commit/01dc0e263a57914e7f7320feac950dfedeeb7099))
+
+
+### Bug Fixes
+
+* **deps:** update dependency @google-cloud/common to v3 ([#853](https://www.github.com/googleapis/cloud-debug-nodejs/issues/853)) ([79bbc9c](https://www.github.com/googleapis/cloud-debug-nodejs/commit/79bbc9c9ad9c763166e6a96ba254c8521d485f12))
+* **deps:** update dependency gcp-metadata to v4 ([#844](https://www.github.com/googleapis/cloud-debug-nodejs/issues/844)) ([8b4040e](https://www.github.com/googleapis/cloud-debug-nodejs/commit/8b4040e933676535fb75c135be931c70fc8bad37))
+* apache license URL ([#468](https://www.github.com/googleapis/cloud-debug-nodejs/issues/468)) ([#863](https://www.github.com/googleapis/cloud-debug-nodejs/issues/863)) ([87553b2](https://www.github.com/googleapis/cloud-debug-nodejs/commit/87553b267df9e0008584645a80c41ef820c11689))
+* reduce set of dependencies ([#876](https://www.github.com/googleapis/cloud-debug-nodejs/issues/876)) ([6c2722e](https://www.github.com/googleapis/cloud-debug-nodejs/commit/6c2722e59bb7113cf7a4bf065434b2be3aff50ca))
+
+
+### Build System
+
+* drop support for node.js 8.x ([#851](https://www.github.com/googleapis/cloud-debug-nodejs/issues/851)) ([3130ad3](https://www.github.com/googleapis/cloud-debug-nodejs/commit/3130ad320dc69b01d43d8e39d31ce158a13311f1))
+
 ### [4.2.2](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v4.2.1...v4.2.2) (2020-01-23)
 
 

@@ -26,7 +26,12 @@ import * as stackdriver from '../src/types/stackdriver';
 
 DEFAULT_CONFIG.allowExpressions = true;
 DEFAULT_CONFIG.workingDirectory = path.join(__dirname, '..', '..');
-import {Debuglet, CachedPromise, FindFilesResult} from '../src/agent/debuglet';
+import {
+  Debuglet,
+  CachedPromise,
+  FindFilesResult,
+  Platforms,
+} from '../src/agent/debuglet';
 import {ScanResults} from '../src/agent/io/scanner';
 import * as extend from 'extend';
 import {Debug} from '../src/client/stackdriver/debug';
@@ -243,6 +248,35 @@ describe('Debuglet', () => {
         assert.strictEqual(id, DEBUGGEE_ID);
         // TODO: Handle the case where debuglet.debuggee is undefined
         assert.strictEqual((debuglet.debuggee as Debuggee).project, projectId);
+        debuglet.stop();
+        scope.done();
+        done();
+      });
+
+      debuglet.start();
+    });
+
+    it('should enable breakpoint canary when enableCanary is set', done => {
+      const debug = new Debug(
+        {projectId: 'fake-project', credentials: fakeCredentials},
+        packageInfo
+      );
+      nocks.oauth2();
+
+      const config = debugletConfig();
+      config.serviceContext.enableCanary = true;
+      const debuglet = new Debuglet(debug, config);
+      const scope = nock(config.apiUrl)
+        .post(REGISTER_PATH)
+        .reply(200, {
+          debuggee: {id: DEBUGGEE_ID},
+        });
+
+      debuglet.once('registered', () => {
+        assert.strictEqual(
+          (debuglet.debuggee as Debuggee).canaryMode,
+          'CANARY_MODE_ALWAYS_ENABLED'
+        );
         debuglet.stop();
         scope.done();
         done();
@@ -1464,6 +1498,96 @@ describe('Debuglet', () => {
       );
       assert.ok(debuggee);
       assert.ok(debuggee.statusMessage);
+    });
+
+    it('should be in CANARY_MODE_DEFAULT_ENABLED canaryMode', () => {
+      const debuggee = Debuglet.createDebuggee(
+        'some project',
+        'id',
+        {enableCanary: true, allowCanaryOverride: true},
+        {},
+        false,
+        packageInfo
+      );
+      assert.strictEqual(debuggee.canaryMode, 'CANARY_MODE_DEFAULT_ENABLED');
+    });
+
+    it('should be in CANARY_MODE_ALWAYS_ENABLED canaryMode', () => {
+      const debuggee = Debuglet.createDebuggee(
+        'some project',
+        'id',
+        {enableCanary: true, allowCanaryOverride: false},
+        {},
+        false,
+        packageInfo
+      );
+      assert.strictEqual(debuggee.canaryMode, 'CANARY_MODE_ALWAYS_ENABLED');
+    });
+
+    it('should be in CANARY_MODE_DEFAULT_DISABLED canaryMode', () => {
+      const debuggee = Debuglet.createDebuggee(
+        'some project',
+        'id',
+        {enableCanary: false, allowCanaryOverride: true},
+        {},
+        false,
+        packageInfo
+      );
+      assert.strictEqual(debuggee.canaryMode, 'CANARY_MODE_DEFAULT_DISABLED');
+    });
+
+    it('should be in CANARY_MODE_ALWAYS_DISABLED canaryMode', () => {
+      const debuggee = Debuglet.createDebuggee(
+        'some project',
+        'id',
+        {enableCanary: false, allowCanaryOverride: false},
+        {},
+        false,
+        packageInfo
+      );
+      assert.strictEqual(debuggee.canaryMode, 'CANARY_MODE_ALWAYS_DISABLED');
+    });
+
+    it('should correctly identify default platform.', () => {
+      const debuggee = Debuglet.createDebuggee(
+        'some project',
+        'id',
+        {service: 'some-service', version: 'production'},
+        {},
+        false,
+        packageInfo
+      );
+      assert.ok(debuggee.labels!.platform === Platforms.DEFAULT);
+    });
+
+    it('should correctly identify GCF (legacy) platform.', () => {
+      // GCF sets this env var on older runtimes.
+      process.env.FUNCTION_NAME = 'mock';
+      const debuggee = Debuglet.createDebuggee(
+        'some project',
+        'id',
+        {service: 'some-service', version: 'production'},
+        {},
+        false,
+        packageInfo
+      );
+      assert.ok(debuggee.labels!.platform === Platforms.CLOUD_FUNCTION);
+      delete process.env.FUNCTION_NAME; // Don't contaminate test environment.
+    });
+
+    it('should correctly identify GCF (modern) platform.', () => {
+      // GCF sets this env var on modern runtimes.
+      process.env.FUNCTION_TARGET = 'mock';
+      const debuggee = Debuglet.createDebuggee(
+        'some project',
+        'id',
+        {service: 'some-service', version: 'production'},
+        {},
+        false,
+        packageInfo
+      );
+      assert.ok(debuggee.labels!.platform === Platforms.CLOUD_FUNCTION);
+      delete process.env.FUNCTION_TARGET; // Don't contaminate test environment.
     });
   });
 

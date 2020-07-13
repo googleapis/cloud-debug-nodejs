@@ -24,7 +24,7 @@ import * as util from 'util';
 
 import {Debug, PackageInfo} from '../client/stackdriver/debug';
 import {StatusMessage} from '../client/stackdriver/status-message';
-import {Debuggee, DebuggeeProperties} from '../debuggee';
+import {CanaryMode, Debuggee, DebuggeeProperties} from '../debuggee';
 import * as stackdriver from '../types/stackdriver';
 
 import {defaultConfig} from './config';
@@ -66,6 +66,17 @@ const PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS = ((40 + 540) / 2) * 1000;
 
 interface SourceContext {
   [key: string]: string;
+}
+
+/**
+ * Environments that this system might be running in.
+ * Helps provide platform-specific information and integration.
+ */
+export enum Platforms {
+  /** Google Cloud Functions */
+  CLOUD_FUNCTION = 'cloud_function',
+  /** Any other platform. */
+  DEFAULT = 'default',
 }
 
 /**
@@ -517,6 +528,8 @@ export class Debuglet extends EventEmitter {
       service?: string;
       version?: string;
       minorVersion_?: string;
+      enableCanary?: boolean;
+      allowCanaryOverride?: boolean;
     },
     sourceContext: SourceContext | undefined,
     onGCP: boolean,
@@ -542,6 +555,7 @@ export class Debuglet extends EventEmitter {
       'agent.name': packageInfo.name,
       'agent.version': packageInfo.version,
       projectid: projectId,
+      platform: Debuglet.getPlatform(),
     };
 
     if (serviceContext) {
@@ -594,11 +608,25 @@ export class Debuglet extends EventEmitter {
       labels,
       statusMessage,
       packageInfo,
+      canaryMode: Debuglet._getCanaryMode(serviceContext),
     };
     if (sourceContext) {
       properties.sourceContexts = [sourceContext];
     }
     return new Debuggee(properties);
+  }
+
+  /**
+   * Use environment vars to infer the current platform.
+   * For now this is only Cloud Functions and other.
+   */
+  private static getPlatform(): Platforms {
+    const {FUNCTION_NAME, FUNCTION_TARGET} = process.env;
+    // (In theory) only the Google Cloud Functions environment will have these env vars.
+    if (FUNCTION_NAME || FUNCTION_TARGET) {
+      return Platforms.CLOUD_FUNCTION;
+    }
+    return Platforms.DEFAULT;
   }
 
   static runningOnGCP(): Promise<boolean> {
@@ -1176,5 +1204,23 @@ export class Debuglet extends EventEmitter {
       JSON.stringify(sourceContext) +
       JSON.stringify(labels);
     return crypto.createHash('sha1').update(uniquifier).digest('hex');
+  }
+
+  static _getCanaryMode(serviceContext: {
+    enableCanary?: boolean;
+    allowCanaryOverride?: boolean;
+  }): CanaryMode {
+    const enableCanary = serviceContext?.enableCanary;
+    const allowCanaryOverride = serviceContext?.allowCanaryOverride;
+
+    if (enableCanary && allowCanaryOverride) {
+      return 'CANARY_MODE_DEFAULT_ENABLED';
+    } else if (enableCanary && !allowCanaryOverride) {
+      return 'CANARY_MODE_ALWAYS_ENABLED';
+    } else if (!enableCanary && allowCanaryOverride) {
+      return 'CANARY_MODE_DEFAULT_DISABLED';
+    } else {
+      return 'CANARY_MODE_ALWAYS_DISABLED';
+    }
   }
 }

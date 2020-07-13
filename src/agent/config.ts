@@ -147,6 +147,17 @@ export interface ResolvedDebugAgentConfig extends GoogleAuthOptions {
      * A unique deployment identifier. This is used internally only.
      */
     minorVersion_?: string;
+
+    /**
+     * The flag to decide whether to enable breakpoint canary.
+     */
+    enableCanary?: boolean;
+
+    /**
+     * The flag to decide whether to allow individual setbreakpoint request to
+     * override the canary behavior.
+     */
+    allowCanaryOverride?: boolean;
   };
 
   /**
@@ -366,6 +377,8 @@ export const defaultConfig: ResolvedDebugAgentConfig = {
     service: undefined,
     version: undefined,
     minorVersion_: undefined,
+    enableCanary: undefined,
+    allowCanaryOverride: undefined,
   },
 
   appPathRelativeToRepository: undefined,
