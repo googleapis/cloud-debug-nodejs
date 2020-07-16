@@ -4,7 +4,7 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/cloud-debug-nodejs.git",
-        "sha": "604a8de890cbff344206dbe6462f8e6c33a6a28c"
+        "sha": "c4472ecf27f8b22e8cdbfd3debe93bfaf1849ab2"
       }
     },
     {
