@@ -47,7 +47,7 @@
   },
   "dependencies": {
     "@google-cloud/common": "^3.0.0",
-    "acorn": "^7.0.0",
+    "acorn": "^8.0.0",
     "coffeescript": "^2.0.0",
     "console-log-level": "^1.4.0",
     "extend": "^3.0.2",
