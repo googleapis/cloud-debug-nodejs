@@ -14,6 +14,9 @@
 Stackdriver Debug Agent for Node.js
 
 
+A comprehensive list of changes in each version may be found in
+[the CHANGELOG](https://github.com/googleapis/cloud-debug-nodejs/blob/master/CHANGELOG.md).
+
 * [Stackdriver Debugger Node.js Client API Reference][client-docs]
 * [Stackdriver Debugger Documentation][product-docs]
 * [github.com/googleapis/cloud-debug-nodejs](https://github.com/googleapis/cloud-debug-nodejs)
