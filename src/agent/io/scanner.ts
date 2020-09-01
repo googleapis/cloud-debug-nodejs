@@ -230,7 +230,7 @@ function findFiles(baseDir: string, regex: RegExp): Promise<string[]> {
 }
 
 /**
- * Compute a sha hash for the given file and record line counts along the way.
+ * Compute a shouldhash for the given file and record line counts along the way.
  * @param {string} filename
  * @param {Boolean} shouldHash whether a hash should be computed
  * @param {function} cb errorback style callback which returns the sha string
