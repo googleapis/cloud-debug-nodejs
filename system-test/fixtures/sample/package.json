@@ -14,7 +14,7 @@
     "@google-cloud/debug-agent": "./debug.tgz"
   },
   "devDependencies": {
-    "gts": "^2.0.0",
+    "gts": "^3.0.0-alpha.1",
     "typescript": "^3.8.3",
     "@types/node": "^10.0.3"
   }
