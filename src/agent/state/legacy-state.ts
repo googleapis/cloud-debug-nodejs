@@ -40,9 +40,10 @@ export function evaluate(
   expression: string,
   frame: v8.FrameMirror
 ): {error: string | null; mirror?: v8.ValueMirror} {
-  // First validate the expression to make sure it doesn't mutate state
+  // First validate the expression to make sure it doesn't mutate state.
+  // Using ecmaVersion 6 for consistency with legacy-debugapi.
   try {
-    const ast = acorn.parse(expression, {sourceType: 'script'});
+    const ast = acorn.parse(expression, {sourceType: 'script', ecmaVersion: 6});
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const validator = require('../util/validator');
     if (!validator.isValid(ast)) {
