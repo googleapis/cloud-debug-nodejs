@@ -23,7 +23,7 @@ AUTOSYNTH_MULTIPLE_COMMITS = True
 
 common_templates = gcp.CommonTemplates()
 templates = common_templates.node_library()
-s.copy(templates, excludes=['.eslintignore'])
+s.copy(templates, excludes=['.eslintignore', '.mocharc.js', '.github/workflows/ci.yaml'])
 
 node.install()
 node.fix()

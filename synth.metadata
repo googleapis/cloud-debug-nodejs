@@ -3,15 +3,8 @@
     {
       "git": {
         "name": ".",
-        "remote": "https://github.com/googleapis/cloud-debug-nodejs.git",
-        "sha": "3f3c8d2001bdef16ba27a7cb899d496661510b19"
-      }
-    },
-    {
-      "git": {
-        "name": "synthtool",
-        "remote": "https://github.com/googleapis/synthtool.git",
-        "sha": "8cf6d2834ad14318e64429c3b94f6443ae83daf9"
+        "remote": "git@github.com:googleapis/cloud-debug-nodejs.git",
+        "sha": "1e77a61516a7630937e288b3a2837fac8e44c5f7"
       }
     }
   ],
@@ -53,16 +46,20 @@
     ".kokoro/test.bat",
     ".kokoro/test.sh",
     ".kokoro/trampoline.sh",
+    ".kokoro/trampoline_v2.sh",
     ".mocharc.js",
     ".nycrc",
     ".prettierignore",
     ".prettierrc.js",
+    ".trampolinerc",
     "CODE_OF_CONDUCT.md",
     "CONTRIBUTING.md",
     "LICENSE",
     "README.md",
     "api-extractor.json",
+    "package-lock.json.1040401231",
     "renovate.json",
-    "samples/README.md"
+    "samples/README.md",
+    "samples/package-lock.json.3021948336"
   ]
 }
