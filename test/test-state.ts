@@ -15,6 +15,7 @@
 import * as assert from 'assert';
 import {describe, it} from 'mocha';
 import * as utils from '../src/agent/util/utils';
+import * as proxyquire from 'proxyquire';
 
 const describeFn = utils.satisfies(process.version, '>=10')
   ? describe.skip
@@ -25,6 +26,7 @@ describeFn('state', () => {
   // minimal unit tests here.
 
   it('should have assertions enabled', () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const state = require('../src/agent/state/legacy-state');
 
     // this test makes sure that the necessary environment variables to enable
@@ -44,8 +46,8 @@ describeFn('state', () => {
   it('should not throw if vm is not an object', () => {
     // test for
     // https://github.com/googleapis/cloud-debug-nodejs/issues/503
-    const inject = require('require-inject');
-    const state = inject('../src/agent/state/legacy-state', {vm: false});
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const state = proxyquire('../src/agent/state/legacy-state', {vm: false});
     assert.ok(state);
   });
 });

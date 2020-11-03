@@ -14,6 +14,7 @@
 
 import * as acorn from 'acorn';
 import * as estree from 'estree';
+// eslint-disable-next-line node/no-unsupported-features/node-builtins
 import * as inspector from 'inspector';
 import * as path from 'path';
 
@@ -386,41 +387,37 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     let logsThisSecond = 0;
     let timesliceEnd = Date.now() + 1000;
     // TODO: Determine why the Error argument is not used.
-    const listener = this.onBreakpointHit.bind(
-      this,
-      breakpoint,
-      (err: Error | null) => {
-        const currTime = Date.now();
-        if (currTime > timesliceEnd) {
-          logsThisSecond = 0;
-          timesliceEnd = currTime + 1000;
-        }
-        print(
-          // TODO: Address the case where `breakpoint.logMessageFormat` is
-          // `null`.
-          breakpoint.logMessageFormat as string,
-          breakpoint.evaluatedExpressions.map(
-            (obj: stackdriver.Variable | null) => JSON.stringify(obj)
-          )
-        );
-        logsThisSecond++;
-        if (shouldStop()) {
+    const listener = this.onBreakpointHit.bind(this, breakpoint, () => {
+      const currTime = Date.now();
+      if (currTime > timesliceEnd) {
+        logsThisSecond = 0;
+        timesliceEnd = currTime + 1000;
+      }
+      print(
+        // TODO: Address the case where `breakpoint.logMessageFormat` is
+        // `null`.
+        breakpoint.logMessageFormat as string,
+        breakpoint.evaluatedExpressions.map(
+          (obj: stackdriver.Variable | null) => JSON.stringify(obj)
+        )
+      );
+      logsThisSecond++;
+      if (shouldStop()) {
+        this.listeners[breakpoint.id].enabled = false;
+      } else {
+        if (logsThisSecond >= this.config.log.maxLogsPerSecond) {
           this.listeners[breakpoint.id].enabled = false;
-        } else {
-          if (logsThisSecond >= this.config.log.maxLogsPerSecond) {
-            this.listeners[breakpoint.id].enabled = false;
-            setTimeout(() => {
-              // listeners[num] may have been deleted by `clear` during the
-              // async hop. Make sure it is valid before setting a property
-              // on it.
-              if (!shouldStop() && this.listeners[breakpoint.id]) {
-                this.listeners[breakpoint.id].enabled = true;
-              }
-            }, this.config.log.logDelaySeconds * 1000);
-          }
+          setTimeout(() => {
+            // listeners[num] may have been deleted by `clear` during the
+            // async hop. Make sure it is valid before setting a property
+            // on it.
+            if (!shouldStop() && this.listeners[breakpoint.id]) {
+              this.listeners[breakpoint.id].enabled = true;
+            }
+          }, this.config.log.logDelaySeconds * 1000);
         }
       }
-    );
+    });
     this.listeners[breakpoint.id] = {enabled: true, listener};
   }
 
@@ -470,6 +467,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
           sourceType: 'script',
           ecmaVersion: 6,
         });
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
         const validator = require('../util/validator.js');
         if (!validator.isValid(ast)) {
           return utils.setErrorStatusAndCallback(
@@ -601,6 +599,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     callFrames: inspector.Debugger.CallFrame[]
   ): void {
     const expressionErrors: Array<stackdriver.Variable | null> = [];
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
     // TODO: Address the case where `breakpoint.id` is `null`.
     if (breakpoint.expressions && this.breakpoints[breakpoint.id].compile) {

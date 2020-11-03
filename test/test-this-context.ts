@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {afterEach, beforeEach, describe, it} from 'mocha';
 import * as extend from 'extend';
 
 import {defaultConfig} from '../src/agent/config';
@@ -25,6 +25,7 @@ import consoleLogLevel = require('console-log-level');
 import * as stackdriver from '../src/types/stackdriver';
 import * as utils from '../src/agent/util/utils';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const code = require('./test-this-context-code.js');
 
 function stateIsClean(api: debugapi.DebugApi): boolean {

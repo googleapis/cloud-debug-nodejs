@@ -14,6 +14,7 @@
 
 // TODO: Unify some common code with state.ts in future PRs.
 
+// eslint-disable-next-line node/no-unsupported-features/node-builtins
 import * as inspector from 'inspector';
 import * as util from 'util';
 
@@ -252,6 +253,7 @@ class StateResolver {
   ): void {
     this.resolvedVariableTable.splice(fromIndex); // remove the remaining entries
 
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
     const processBufferFull = (variables: stackdriver.Variable[]) => {
       variables.forEach(variable => {

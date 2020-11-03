@@ -26,7 +26,7 @@ module.exports = {
       service: 'test service name',
 
       // An identifier for the current code's version
-      version: 'test version'
+      version: 'test version',
     },
 
     // Log levels: 0-disabled,1-error,2-warn,3-info,4-debug.
@@ -40,9 +40,9 @@ module.exports = {
     // This is only for testing the config priority
     testPriority: 'from the config file',
 
-  // These configuration options are for internal experimentation only.
-  internal: {
-    registerDelayOnFetcherErrorSec: 300 // 5 minutes.
-  }
-}
+    // These configuration options are for internal experimentation only.
+    internal: {
+      registerDelayOnFetcherErrorSec: 300, // 5 minutes.
+    },
+  },
 };

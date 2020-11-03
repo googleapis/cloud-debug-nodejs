@@ -13,11 +13,9 @@
 // limitations under the License.
 
 // TODO: Determine if the use of snake case should be allowed in this file.
-// tslint:disable:variable-name
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 // See https://github.com/v8/v8/blob/master/src/debug/mirrors.js
-
-// tslint:disable:no-any
 
 export declare type MirrorType =
   | 'undefined'
@@ -78,6 +76,7 @@ export interface ValueMirror extends Mirror {
   value: () => any;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface UndefinedMirror extends ValueMirror {}
 
 export interface InternalPropertyMirror extends Mirror {
@@ -258,10 +257,12 @@ export interface ScriptMirror {
   name: () => string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface Location {
   // TODO: Determine the members of this interface
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface ContextMirror {
   // TODO: Determine the members of this interface
 }

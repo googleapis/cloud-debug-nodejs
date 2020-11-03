@@ -208,6 +208,7 @@ export class V8DebugApi implements debugapi.DebugApi {
     breakpoint: stackdriver.Breakpoint,
     callback: (err?: Error) => void
   ): void {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
     const num = that.breakpoints[breakpoint.id].v8Breakpoint.number();
     const listener = this.onBreakpointHit.bind(
@@ -232,44 +233,41 @@ export class V8DebugApi implements debugapi.DebugApi {
     print: (format: string, exps: string[]) => void,
     shouldStop: () => boolean
   ): void {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
     const num = that.breakpoints[breakpoint.id].v8Breakpoint.number();
     let logsThisSecond = 0;
     let timesliceEnd = Date.now() + 1000;
     // TODO: Determine why the Error argument is not used.
-    const listener = this.onBreakpointHit.bind(
-      this,
-      breakpoint,
-      (err: Error | null) => {
-        const currTime = Date.now();
-        if (currTime > timesliceEnd) {
-          logsThisSecond = 0;
-          timesliceEnd = currTime + 1000;
-        }
-        print(
-          // TODO: Address the case where `breakpoint.logMessageFormat` is
-          // null
-          breakpoint.logMessageFormat!,
-          breakpoint.evaluatedExpressions.map(obj => JSON.stringify(obj))
-        );
-        logsThisSecond++;
-        if (shouldStop()) {
+    const listener = this.onBreakpointHit.bind(this, breakpoint, () => {
+      const currTime = Date.now();
+      if (currTime > timesliceEnd) {
+        logsThisSecond = 0;
+        timesliceEnd = currTime + 1000;
+      }
+      print(
+        // TODO: Address the case where `breakpoint.logMessageFormat` is
+        // null
+        breakpoint.logMessageFormat!,
+        breakpoint.evaluatedExpressions.map(obj => JSON.stringify(obj))
+      );
+      logsThisSecond++;
+      if (shouldStop()) {
+        that.listeners[num].enabled = false;
+      } else {
+        if (logsThisSecond >= that.config.log.maxLogsPerSecond) {
           that.listeners[num].enabled = false;
-        } else {
-          if (logsThisSecond >= that.config.log.maxLogsPerSecond) {
-            that.listeners[num].enabled = false;
-            setTimeout(() => {
-              // listeners[num] may have been deleted by `clear` during the
-              // async hop. Make sure it is valid before setting a property
-              // on it.
-              if (!shouldStop() && that.listeners[num]) {
-                that.listeners[num].enabled = true;
-              }
-            }, that.config.log.logDelaySeconds * 1000);
-          }
+          setTimeout(() => {
+            // listeners[num] may have been deleted by `clear` during the
+            // async hop. Make sure it is valid before setting a property
+            // on it.
+            if (!shouldStop() && that.listeners[num]) {
+              that.listeners[num].enabled = true;
+            }
+          }, that.config.log.logDelaySeconds * 1000);
         }
       }
-    );
+    });
     that.listeners[num] = {enabled: true, listener};
   }
 
@@ -305,6 +303,7 @@ export class V8DebugApi implements debugapi.DebugApi {
           sourceType: 'script',
           ecmaVersion: 6,
         });
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
         const validator = require('../util/validator.js');
         if (!validator.isValid(ast)) {
           return utils.setErrorStatusAndCallback(

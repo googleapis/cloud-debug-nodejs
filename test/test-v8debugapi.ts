@@ -30,17 +30,16 @@ const breakpointInFoo: stackdriver.Breakpoint = {
 const MAX_INT = 2147483647; // Max signed int32.
 
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {after, afterEach, before, beforeEach, describe, it} from 'mocha';
 import * as extend from 'extend';
 import * as debugapi from '../src/agent/v8/debugapi';
-import {defaultConfig, DebugAgentConfig} from '../src/agent/config';
+import {defaultConfig} from '../src/agent/config';
 import {StatusMessage} from '../src/client/stackdriver/status-message';
 import * as scanner from '../src/agent/io/scanner';
-import {ScanStats} from '../src/agent/io/scanner';
 import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as path from 'path';
 import * as utils from '../src/agent/util/utils';
-import {debugAssert} from '../src/agent/util/debug-assert';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const code = require('./test-v8debugapi-code.js');
 import {dist} from './test-v8debugapi-ts-code';
 
@@ -170,10 +169,6 @@ describe('debugapi selection', () => {
   const logger = consoleLogLevel({
     level: Debuglet.logLevelToName(config.logLevel),
   });
-  let logText = '';
-  logger.warn = (s: string) => {
-    logText += s;
-  };
   it('should use the correct debugapi and have appropriate warning', done => {
     let api: DebugApi;
     scanner
@@ -193,9 +188,11 @@ describe('debugapi selection', () => {
           mapper as SourceMapper.SourceMapper
         ) as DebugApi;
         if (debugapi.willUseInspector()) {
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
           const inspectorapi = require('../src/agent/v8/inspector-debugapi');
           assert.ok(api instanceof inspectorapi.InspectorDebugApi);
         } else {
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
           const v8debugapi = require('../src/agent/v8/legacy-debugapi');
           assert.ok(api instanceof v8debugapi.V8DebugApi);
         }
@@ -216,11 +213,6 @@ describeFn('debugapi selection on Node >=10', () => {
     level: Debuglet.logLevelToName(config.logLevel),
   });
 
-  let logText = '';
-  logger.warn = (s: string) => {
-    logText += s;
-  };
-
   it('should always use the inspector api', done => {
     let api: DebugApi;
     scanner
@@ -232,6 +224,7 @@ describeFn('debugapi selection on Node >=10', () => {
         const mapper = await SourceMapper.create(mapFiles);
         assert(mapper);
         api = debugapi.create(logger, config, jsStats, mapper!);
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
         const inspectorapi = require('../src/agent/v8/inspector-debugapi');
         assert.ok(api instanceof inspectorapi.InspectorDebugApi);
         done();
@@ -802,6 +795,7 @@ describe('v8debugapi', () => {
     });
 
     it('should hit breakpoints in shorter transpiled files', done => {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const someFunction = require('./fixtures/transpiled-shorter/in.js');
       const bp: stackdriver.Breakpoint = {
         id: 'fake-id-shorter-transpiled',
@@ -1092,7 +1086,7 @@ describe('v8debugapi', () => {
           assert.strictEqual(procEnv!.name, 'process.env');
           const envVal = bp.variableTable[procEnv!.varTableIndex!];
           envVal!.members!.forEach((member: stackdriver.Variable) => {
-            if (member.hasOwnProperty('varTableIndex')) {
+            if (Object.prototype.hasOwnProperty.call(member, 'varTableIndex')) {
               assert(bp.variableTable[member.varTableIndex!]!.status!.isError);
             }
           });
@@ -1605,6 +1599,7 @@ describe('v8debugapi', () => {
         },
         condition: 'if n == 3 then true else false',
       } as {}) as stackdriver.Breakpoint;
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const tt = require('./fixtures/coffee/transpile');
       api.set(bp, err1 => {
         assert.ifError(err1);
@@ -1669,6 +1664,7 @@ describe('v8debugapi', () => {
         },
         condition: 'i + j === 3',
       } as {}) as stackdriver.Breakpoint;
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const tt = require('./fixtures/es6/transpile');
       api.set(bp, err1 => {
         assert.ifError(err1);
@@ -1710,6 +1706,7 @@ describe('v8debugapi', () => {
         },
         expressions: ['if n == 3 then Math.PI * n else n'],
       } as {}) as stackdriver.Breakpoint;
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const tt = require('./fixtures/coffee/transpile');
       api.set(bp, err1 => {
         assert.ifError(err1);
@@ -1761,6 +1758,7 @@ describe('v8debugapi', () => {
           'return',
         ],
       } as {}) as stackdriver.Breakpoint;
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const tt = require('./fixtures/coffee/transpile');
       api.set(bp, err => {
         assert.ifError(err);
@@ -1860,6 +1858,7 @@ describe('v8debugapi', () => {
     });
 
     it('should correctly stop on line-1 breakpoints', done => {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const foo = require('./fixtures/foo.js');
       // TODO(dominickramer): Have this actually implement Breakpoint
       const bp: stackdriver.Breakpoint = ({
@@ -1907,7 +1906,7 @@ describe('v8debugapi', () => {
       api.set(bp, err1 => {
         assert.ifError(err1);
         // TODO(dominickramer): Determine if the err parameter should be used.
-        api.wait(bp, err2 => {
+        api.wait(bp, () => {
           api.clear(bp, err3 => {
             assert.ifError(err3);
             throw new Error(message);
@@ -1928,6 +1927,7 @@ describe('v8debugapi', () => {
         },
       } as {}) as stackdriver.Breakpoint;
 
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const run = require('./fixtures/ts/async.js');
       api.set(bp, err1 => {
         assert.ifError(err1);
@@ -2023,11 +2023,7 @@ describe('v8debugapi.findScripts', () => {
 
   it('should invoke pathResolver if provided', () => {
     const config = extend(true, {}, undefined!, {
-      pathResolver(
-        scriptPath: string,
-        knownFiles: string[],
-        resolved: string[]
-      ) {
+      pathResolver(scriptPath: string) {
         return [path.join('build', scriptPath)];
       },
     });
@@ -2074,11 +2070,7 @@ describe('v8debugapi.findScripts', () => {
 
   it('should use default resolved paths if pathResolver returns undefined', () => {
     const config = extend(true, {}, undefined!, {
-      pathResolver(
-        scriptPath: string,
-        knownFiles: string[],
-        resolved: string[]
-      ) {
+      pathResolver() {
         return undefined;
       },
     });
@@ -2105,11 +2097,7 @@ describe('v8debugapi.findScripts', () => {
 
   it('should warn if pathResolver returns a path unknown to the agent', () => {
     const config = extend(true, {}, undefined!, {
-      pathResolver(
-        scriptPath: string,
-        knownFiles: string[],
-        resolved: string[]
-      ) {
+      pathResolver() {
         return [path.join('some', 'unknown', 'path')];
       },
     });
@@ -2148,11 +2136,7 @@ describe('v8debugapi.findScripts', () => {
 
   it('should warn if pathResolver returns an invalid return type', () => {
     const config = extend(true, {}, undefined!, {
-      pathResolver(
-        scriptPath: string,
-        knownFiles: string[],
-        resolved: string[]
-      ) {
+      pathResolver() {
         return {x: 'some value', y: 'some other value'};
       },
     });
@@ -2188,11 +2172,7 @@ describe('v8debugapi.findScripts', () => {
 
   it('should warn if pathResolver returns an array containing a non-string', () => {
     const config = extend(true, {}, undefined!, {
-      pathResolver(
-        scriptPath: string,
-        knownFiles: string[],
-        resolved: string[]
-      ) {
+      pathResolver() {
         return [{x: 'some value', y: 'some other value'}];
       },
     });

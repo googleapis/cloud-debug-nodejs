@@ -16,7 +16,7 @@ import * as assert from 'assert';
 import {describe, it} from 'mocha';
 import {Debuggee} from '../src/debuggee';
 
-const agentVersion = `SomeName/client/SomeVersion`;
+const agentVersion = 'SomeName/client/SomeVersion';
 
 describe('Debuggee', () => {
   it('should create a Debuggee instance on valid input', () => {
@@ -53,7 +53,7 @@ describe('Debuggee', () => {
       return new Debuggee({project: 'test', agentVersion});
     });
     assert.throws(() => {
-      const _ = new Debuggee({
+      new Debuggee({
         project: 'test',
         uniquifier: undefined,
         agentVersion,

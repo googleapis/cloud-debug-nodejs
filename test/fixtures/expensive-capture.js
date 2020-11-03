@@ -1,5 +1,8 @@
 'use strict';
-var a = new Array(50).map(function() { return ','; });
+// eslint-disable-next-line no-unused-vars
+const a = new Array(50).map(() => {
+  return ',';
+});
 module.exports.rec = function rec(n) {
   if (n === 0) {
     return 5;

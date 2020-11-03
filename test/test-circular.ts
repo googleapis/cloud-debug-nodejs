@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {afterEach, beforeEach, describe, it} from 'mocha';
 
 import {defaultConfig} from '../src/agent/config';
 import {Debuglet} from '../src/agent/debuglet';
@@ -26,6 +26,7 @@ import * as stackdriver from '../src/types/stackdriver';
 import {Variable} from '../src/types/stackdriver';
 import {satisfies} from '../src/agent/util/utils';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const code = require('./test-circular-code.js');
 
 function stateIsClean(api: debugapi.DebugApi): boolean {

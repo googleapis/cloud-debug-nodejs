@@ -24,7 +24,7 @@ import * as util from 'util';
 
 import {Debug, PackageInfo} from '../client/stackdriver/debug';
 import {StatusMessage} from '../client/stackdriver/status-message';
-import {Debuggee, DebuggeeProperties} from '../debuggee';
+import {CanaryMode, Debuggee, DebuggeeProperties} from '../debuggee';
 import * as stackdriver from '../types/stackdriver';
 
 import {defaultConfig} from './config';
@@ -66,6 +66,17 @@ const PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS = ((40 + 540) / 2) * 1000;
 
 interface SourceContext {
   [key: string]: string;
+}
+
+/**
+ * Environments that this system might be running in.
+ * Helps provide platform-specific information and integration.
+ */
+export enum Platforms {
+  /** Google Cloud Functions */
+  CLOUD_FUNCTION = 'cloud_function',
+  /** Any other platform. */
+  DEFAULT = 'default',
 }
 
 /**
@@ -339,6 +350,7 @@ export class Debuglet extends EventEmitter {
    * @private
    */
   async start(): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
     const stat = util.promisify(fs.stat);
 
@@ -516,6 +528,8 @@ export class Debuglet extends EventEmitter {
       service?: string;
       version?: string;
       minorVersion_?: string;
+      enableCanary?: boolean;
+      allowCanaryOverride?: boolean;
     },
     sourceContext: SourceContext | undefined,
     onGCP: boolean,
@@ -541,6 +555,7 @@ export class Debuglet extends EventEmitter {
       'agent.name': packageInfo.name,
       'agent.version': packageInfo.version,
       projectid: projectId,
+      platform: Debuglet.getPlatform(),
     };
 
     if (serviceContext) {
@@ -593,11 +608,25 @@ export class Debuglet extends EventEmitter {
       labels,
       statusMessage,
       packageInfo,
+      canaryMode: Debuglet._getCanaryMode(serviceContext),
     };
     if (sourceContext) {
       properties.sourceContexts = [sourceContext];
     }
     return new Debuggee(properties);
+  }
+
+  /**
+   * Use environment vars to infer the current platform.
+   * For now this is only Cloud Functions and other.
+   */
+  private static getPlatform(): Platforms {
+    const {FUNCTION_NAME, FUNCTION_TARGET} = process.env;
+    // (In theory) only the Google Cloud Functions environment will have these env vars.
+    if (FUNCTION_NAME || FUNCTION_TARGET) {
+      return Platforms.CLOUD_FUNCTION;
+    }
+    return Platforms.DEFAULT;
   }
 
   static runningOnGCP(): Promise<boolean> {
@@ -623,6 +652,7 @@ export class Debuglet extends EventEmitter {
    * @private
    */
   scheduleRegistration_(seconds: number): void {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
 
     function onError(err: Error) {
@@ -691,6 +721,7 @@ export class Debuglet extends EventEmitter {
    * @private
    */
   scheduleBreakpointFetch_(seconds: number, once: boolean): void {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
     if (!once) {
       that.fetcherActive = true;
@@ -751,6 +782,7 @@ export class Debuglet extends EventEmitter {
                 that.scheduleBreakpointFetch_(0 /*immediately*/, once);
                 return;
               }
+              // eslint-disable-next-line no-case-declarations
               const bps = (body.breakpoints || []).filter(
                 (bp: stackdriver.Breakpoint) => {
                   const action = bp.action || 'CAPTURE';
@@ -818,6 +850,7 @@ export class Debuglet extends EventEmitter {
    * @private
    */
   updateActiveBreakpoints_(breakpoints: stackdriver.Breakpoint[]): void {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
     const updatedBreakpointMap = this.convertBreakpointListToMap_(breakpoints);
 
@@ -911,6 +944,7 @@ export class Debuglet extends EventEmitter {
     breakpoint: stackdriver.Breakpoint,
     cb: (ob: Error | string) => void
   ): void {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
 
     if (
@@ -994,6 +1028,7 @@ export class Debuglet extends EventEmitter {
     breakpoint: stackdriver.Breakpoint,
     deleteFromV8 = true
   ): void {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
 
     that.logger.info('\tupdating breakpoint data on server', breakpoint.id);
@@ -1019,6 +1054,7 @@ export class Debuglet extends EventEmitter {
    * @private
    */
   rejectBreakpoint_(breakpoint: stackdriver.Breakpoint): void {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
 
     // TODO: Address the case when `that.debuggee` is `null`.
@@ -1040,6 +1076,7 @@ export class Debuglet extends EventEmitter {
    * @private
    */
   scheduleBreakpointExpiry_(breakpoint: stackdriver.Breakpoint): void {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
 
     const now = Date.now() / 1000;
@@ -1135,10 +1172,7 @@ export class Debuglet extends EventEmitter {
           newAcc.push(acc[j]);
         } else {
           // TODO: Determine how to not have an explicit cast to string here
-          newAcc.push.apply(
-            newAcc,
-            Debuglet._delimit(acc[j] as string, '$' + i)
-          );
+          newAcc.push(...Debuglet._delimit(acc[j] as string, '$' + i));
         }
       }
       acc = newAcc;
@@ -1169,9 +1203,24 @@ export class Debuglet extends EventEmitter {
       uid +
       JSON.stringify(sourceContext) +
       JSON.stringify(labels);
-    return crypto
-      .createHash('sha1')
-      .update(uniquifier)
-      .digest('hex');
+    return crypto.createHash('sha1').update(uniquifier).digest('hex');
+  }
+
+  static _getCanaryMode(serviceContext: {
+    enableCanary?: boolean;
+    allowCanaryOverride?: boolean;
+  }): CanaryMode {
+    const enableCanary = serviceContext?.enableCanary;
+    const allowCanaryOverride = serviceContext?.allowCanaryOverride;
+
+    if (enableCanary && allowCanaryOverride) {
+      return 'CANARY_MODE_DEFAULT_ENABLED';
+    } else if (enableCanary && !allowCanaryOverride) {
+      return 'CANARY_MODE_ALWAYS_ENABLED';
+    } else if (!enableCanary && allowCanaryOverride) {
+      return 'CANARY_MODE_DEFAULT_DISABLED';
+    } else {
+      return 'CANARY_MODE_ALWAYS_DISABLED';
+    }
   }
 }

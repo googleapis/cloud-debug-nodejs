@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {after, afterEach, before, beforeEach, describe, it} from 'mocha';
 import * as fs from 'fs';
 import * as gcpMetadata from 'gcp-metadata';
 import * as path from 'path';
@@ -21,13 +21,17 @@ import * as proxyquire from 'proxyquire';
 
 import {DebugAgentConfig, ResolvedDebugAgentConfig} from '../src/agent/config';
 import {defaultConfig as DEFAULT_CONFIG} from '../src/agent/config';
-import * as utils from '../src/agent/util/utils';
 import {Debuggee} from '../src/debuggee';
 import * as stackdriver from '../src/types/stackdriver';
 
 DEFAULT_CONFIG.allowExpressions = true;
 DEFAULT_CONFIG.workingDirectory = path.join(__dirname, '..', '..');
-import {Debuglet, CachedPromise, FindFilesResult} from '../src/agent/debuglet';
+import {
+  Debuglet,
+  CachedPromise,
+  FindFilesResult,
+  Platforms,
+} from '../src/agent/debuglet';
 import {ScanResults} from '../src/agent/io/scanner';
 import * as extend from 'extend';
 import {Debug} from '../src/client/stackdriver/debug';
@@ -37,6 +41,7 @@ const REGISTER_PATH = '/v2/controller/debuggees/register';
 const BPS_PATH = '/v2/controller/debuggees/' + DEBUGGEE_ID + '/breakpoints';
 const EXPRESSIONS_REGEX = /Expressions and conditions are not allowed.*https:\/\/goo\.gl\/ShSm6r/;
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const fakeCredentials = require('./fixtures/gcloud-credentials.json');
 
 const packageInfo = {
@@ -75,7 +80,7 @@ function verifyBreakpointRejection(
 }
 
 describe('CachedPromise', () => {
-  it('CachedPromise.get() will resolve after CachedPromise.resolve()', function(done) {
+  it('CachedPromise.get() will resolve after CachedPromise.resolve()', function (done) {
     this.timeout(2000);
     const cachedPromise = new CachedPromise();
     cachedPromise.get().then(() => {
@@ -251,6 +256,35 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
+    it('should enable breakpoint canary when enableCanary is set', done => {
+      const debug = new Debug(
+        {projectId: 'fake-project', credentials: fakeCredentials},
+        packageInfo
+      );
+      nocks.oauth2();
+
+      const config = debugletConfig();
+      config.serviceContext.enableCanary = true;
+      const debuglet = new Debuglet(debug, config);
+      const scope = nock(config.apiUrl)
+        .post(REGISTER_PATH)
+        .reply(200, {
+          debuggee: {id: DEBUGGEE_ID},
+        });
+
+      debuglet.once('registered', () => {
+        assert.strictEqual(
+          (debuglet.debuggee as Debuggee).canaryMode,
+          'CANARY_MODE_ALWAYS_ENABLED'
+        );
+        debuglet.stop();
+        scope.done();
+        done();
+      });
+
+      debuglet.start();
+    });
+
     it('should not fail if files cannot be read', done => {
       const MOCKED_DIRECTORY = process.cwd();
       const errors: Array<{filename: string; error: string}> = [];
@@ -274,10 +308,10 @@ describe('Debuglet', () => {
               all: () => {
                 return {};
               },
-              selectStats: (regex: RegExp) => {
+              selectStats: () => {
                 return {};
               },
-              selectFiles: (regex: RegExp, baseDir: string) => {
+              selectFiles: () => {
                 return [];
               },
               hash: precomputedHash || 'fake-hash',
@@ -299,7 +333,7 @@ describe('Debuglet', () => {
         text += s;
       };
 
-      debuglet.on('initError', (err: Error) => {
+      debuglet.on('initError', () => {
         assert.fail('It should not fail for files it cannot read');
       });
 
@@ -583,7 +617,7 @@ describe('Debuglet', () => {
           .reply(200, {debuggee: {id: DEBUGGEE_ID}});
 
         // TODO: Determine if the id parameter should be used.
-        debuglet.once('registered', (id: string) => {
+        debuglet.once('registered', () => {
           debuglet.stop();
           scope.done();
           done();
@@ -592,7 +626,7 @@ describe('Debuglet', () => {
       });
     });
 
-    it('should retry on failed registration', function(done) {
+    it('should retry on failed registration', function (done) {
       this.timeout(10000);
       const debug = new Debug(
         {projectId: '11020304f2934', credentials: fakeCredentials},
@@ -719,8 +753,7 @@ describe('Debuglet', () => {
       // Don't actually scan the entire filesystem.  Act like the filesystem
       // is empty.
       mockedDebuglet.Debuglet.findFiles = (
-        config: ResolvedDebugAgentConfig,
-        precomputedHash?: string
+        config: ResolvedDebugAgentConfig
       ): Promise<FindFilesResult> => {
         const baseDir = config.workingDirectory;
         assert.strictEqual(baseDir, root);
@@ -929,7 +962,7 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should de-activate when the server responds with isDisabled', function(done) {
+    it('should de-activate when the server responds with isDisabled', function (done) {
       this.timeout(4000);
       const debug = new Debug(
         {projectId: 'fake-project', credentials: fakeCredentials},
@@ -954,7 +987,7 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should retry after a isDisabled request', function(done) {
+    it('should retry after a isDisabled request', function (done) {
       this.timeout(4000);
       const debug = new Debug(
         {projectId: 'fake-project', credentials: fakeCredentials},
@@ -1014,7 +1047,7 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should fetch and add breakpoints', function(done) {
+    it('should fetch and add breakpoints', function (done) {
       this.timeout(2000);
       const debug = new Debug(
         {projectId: 'fake-project', credentials: fakeCredentials},
@@ -1028,7 +1061,7 @@ describe('Debuglet', () => {
         .get(BPS_PATH + '?successOnTimeout=true')
         .reply(200, {breakpoints: [bp]});
 
-      debuglet.once('registered', function reg(id: string) {
+      debuglet.once('registered', (id: string) => {
         assert.strictEqual(id, DEBUGGEE_ID);
         setTimeout(() => {
           assert.deepStrictEqual(debuglet.activeBreakpointMap.test, bp);
@@ -1041,7 +1074,7 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should have breakpoints fetched when promise is resolved', function(done) {
+    it('should have breakpoints fetched when promise is resolved', function (done) {
       this.timeout(2000);
       const breakpoint: stackdriver.Breakpoint = {
         id: 'test1',
@@ -1063,7 +1096,7 @@ describe('Debuglet', () => {
         .twice()
         .reply(200, {breakpoints: [breakpoint]});
       const debugPromise = debuglet.isReadyManager.isReady();
-      debuglet.once('registered', function reg(id: string) {
+      debuglet.once('registered', () => {
         debugPromise.then(() => {
           // Once debugPromise is resolved, debuggee must be registered.
           assert(debuglet.debuggee);
@@ -1082,7 +1115,7 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should resolve breakpointFetched promise when registration expires', function(done) {
+    it('should resolve breakpointFetched promise when registration expires', function (done) {
       this.timeout(2000);
       const debug = new Debug(
         {projectId: 'fake-project', credentials: fakeCredentials},
@@ -1109,7 +1142,7 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should reject breakpoints with conditions when allowExpressions=false', function(done) {
+    it('should reject breakpoints with conditions when allowExpressions=false', function (done) {
       this.timeout(2000);
       const debug = new Debug(
         {projectId: 'fake-project', credentials: fakeCredentials},
@@ -1138,7 +1171,7 @@ describe('Debuglet', () => {
         )
         .reply(200);
 
-      debuglet.once('registered', function reg(id: string) {
+      debuglet.once('registered', (id: string) => {
         assert.strictEqual(id, DEBUGGEE_ID);
         setTimeout(() => {
           assert.ok(!debuglet.activeBreakpointMap.test);
@@ -1152,7 +1185,7 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should reject breakpoints with expressions when allowExpressions=false', function(done) {
+    it('should reject breakpoints with expressions when allowExpressions=false', function (done) {
       this.timeout(2000);
       const debug = new Debug(
         {projectId: 'fake-project', credentials: fakeCredentials},
@@ -1181,7 +1214,7 @@ describe('Debuglet', () => {
         )
         .reply(200);
 
-      debuglet.once('registered', function reg(id: string) {
+      debuglet.once('registered', (id: string) => {
         assert.strictEqual(id, DEBUGGEE_ID);
         setTimeout(() => {
           assert.ok(!debuglet.activeBreakpointMap.test);
@@ -1195,7 +1228,7 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should re-fetch breakpoints on error', function(done) {
+    it('should re-fetch breakpoints on error', function (done) {
       this.timeout(6000);
 
       const debug = new Debug(
@@ -1228,7 +1261,7 @@ describe('Debuglet', () => {
         )
         .reply(200);
 
-      debuglet.once('registered', function reg(id: string) {
+      debuglet.once('registered', (id: string) => {
         assert.strictEqual(id, DEBUGGEE_ID);
         setTimeout(() => {
           assert.deepStrictEqual(debuglet.activeBreakpointMap.test, bp);
@@ -1242,7 +1275,7 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    it('should expire stale breakpoints', function(done) {
+    it('should expire stale breakpoints', function (done) {
       const debug = new Debug(
         {projectId: 'fake-project', credentials: fakeCredentials},
         packageInfo
@@ -1295,7 +1328,7 @@ describe('Debuglet', () => {
     // The test expires a breakpoint and then has the api respond with
     // the breakpoint listed as active. It validates that the breakpoint
     // is only expired with the server once.
-    it('should not update expired breakpoints', function(done) {
+    it('should not update expired breakpoints', function (done) {
       const debug = new Debug(
         {projectId: 'fake-project', credentials: fakeCredentials},
         packageInfo
@@ -1465,6 +1498,96 @@ describe('Debuglet', () => {
       );
       assert.ok(debuggee);
       assert.ok(debuggee.statusMessage);
+    });
+
+    it('should be in CANARY_MODE_DEFAULT_ENABLED canaryMode', () => {
+      const debuggee = Debuglet.createDebuggee(
+        'some project',
+        'id',
+        {enableCanary: true, allowCanaryOverride: true},
+        {},
+        false,
+        packageInfo
+      );
+      assert.strictEqual(debuggee.canaryMode, 'CANARY_MODE_DEFAULT_ENABLED');
+    });
+
+    it('should be in CANARY_MODE_ALWAYS_ENABLED canaryMode', () => {
+      const debuggee = Debuglet.createDebuggee(
+        'some project',
+        'id',
+        {enableCanary: true, allowCanaryOverride: false},
+        {},
+        false,
+        packageInfo
+      );
+      assert.strictEqual(debuggee.canaryMode, 'CANARY_MODE_ALWAYS_ENABLED');
+    });
+
+    it('should be in CANARY_MODE_DEFAULT_DISABLED canaryMode', () => {
+      const debuggee = Debuglet.createDebuggee(
+        'some project',
+        'id',
+        {enableCanary: false, allowCanaryOverride: true},
+        {},
+        false,
+        packageInfo
+      );
+      assert.strictEqual(debuggee.canaryMode, 'CANARY_MODE_DEFAULT_DISABLED');
+    });
+
+    it('should be in CANARY_MODE_ALWAYS_DISABLED canaryMode', () => {
+      const debuggee = Debuglet.createDebuggee(
+        'some project',
+        'id',
+        {enableCanary: false, allowCanaryOverride: false},
+        {},
+        false,
+        packageInfo
+      );
+      assert.strictEqual(debuggee.canaryMode, 'CANARY_MODE_ALWAYS_DISABLED');
+    });
+
+    it('should correctly identify default platform.', () => {
+      const debuggee = Debuglet.createDebuggee(
+        'some project',
+        'id',
+        {service: 'some-service', version: 'production'},
+        {},
+        false,
+        packageInfo
+      );
+      assert.ok(debuggee.labels!.platform === Platforms.DEFAULT);
+    });
+
+    it('should correctly identify GCF (legacy) platform.', () => {
+      // GCF sets this env var on older runtimes.
+      process.env.FUNCTION_NAME = 'mock';
+      const debuggee = Debuglet.createDebuggee(
+        'some project',
+        'id',
+        {service: 'some-service', version: 'production'},
+        {},
+        false,
+        packageInfo
+      );
+      assert.ok(debuggee.labels!.platform === Platforms.CLOUD_FUNCTION);
+      delete process.env.FUNCTION_NAME; // Don't contaminate test environment.
+    });
+
+    it('should correctly identify GCF (modern) platform.', () => {
+      // GCF sets this env var on modern runtimes.
+      process.env.FUNCTION_TARGET = 'mock';
+      const debuggee = Debuglet.createDebuggee(
+        'some project',
+        'id',
+        {service: 'some-service', version: 'production'},
+        {},
+        false,
+        packageInfo
+      );
+      assert.ok(debuggee.labels!.platform === Platforms.CLOUD_FUNCTION);
+      delete process.env.FUNCTION_TARGET; // Don't contaminate test environment.
     });
   });
 

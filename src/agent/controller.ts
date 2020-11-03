@@ -29,6 +29,7 @@ import * as stackdriver from '../types/stackdriver';
 
 export class Controller extends ServiceObject {
   private nextWaitToken: string | null;
+  private agentId: string | null;
 
   apiUrl: string;
 
@@ -41,6 +42,7 @@ export class Controller extends ServiceObject {
 
     /** @private {string} */
     this.nextWaitToken = null;
+    this.agentId = null;
 
     this.apiUrl = `https://${debug.apiEndpoint}/v2/controller`;
 
@@ -61,6 +63,7 @@ export class Controller extends ServiceObject {
       err: Error | null,
       result?: {
         debuggee: Debuggee;
+        agentId: string;
       }
     ) => void
   ): void {
@@ -70,20 +73,24 @@ export class Controller extends ServiceObject {
       json: true,
       body: {debuggee},
     };
-    this.request(options, (err, body: {debuggee: Debuggee}, response) => {
-      if (err) {
-        callback(err);
-      } else if (response!.statusCode !== 200) {
-        callback(
-          new Error('unable to register, statusCode ' + response!.statusCode)
-        );
-      } else if (!body.debuggee) {
-        callback(new Error('invalid response body from server'));
-      } else {
-        debuggee.id = body.debuggee.id;
-        callback(null, body);
+    this.request(
+      options,
+      (err, body: {debuggee: Debuggee; agentId: string}, response) => {
+        if (err) {
+          callback(err);
+        } else if (response!.statusCode !== 200) {
+          callback(
+            new Error('unable to register, statusCode ' + response!.statusCode)
+          );
+        } else if (!body.debuggee) {
+          callback(new Error('invalid response body from server'));
+        } else {
+          debuggee.id = body.debuggee.id;
+          this.agentId = body.agentId;
+          callback(null, body);
+        }
       }
-    });
+    );
   }
 
   /**
@@ -99,11 +106,15 @@ export class Controller extends ServiceObject {
       body?: stackdriver.ListBreakpointsResponse
     ) => void
   ): void {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
     assert(debuggee.id, 'should have a registered debuggee');
     const query: stackdriver.ListBreakpointsQuery = {successOnTimeout: true};
     if (that.nextWaitToken) {
       query.waitToken = that.nextWaitToken;
+    }
+    if (that.agentId) {
+      query.agentId = that.agentId;
     }
 
     const uri =

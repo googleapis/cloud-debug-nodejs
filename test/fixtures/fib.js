@@ -20,6 +20,7 @@ function fib(n) {
 // limitations under the License.
 
 const uuid = require('uuid');
+// eslint-disable-next-line node/no-missing-require
 const nocks = require('../nocks.js');
 nocks.projectId('fake-project-id');
 // mock the metadata instance to uniformly make this look like a non-gcp
@@ -28,21 +29,22 @@ nocks.metadataInstance();
 
 const UUID = process.argv[2] || uuid.v4();
 
-var debuglet = require('../../..').start({
+// eslint-disable-next-line node/no-missing-require
+const debuglet = require('../../..').start({
   debug: {
     logLevel: 2,
     log: {
       maxLogsPerSecond: 2,
       logDelaySeconds: 5,
       // Use a custom logpoint function that converts everything lower case.
-      logFunction: (message) => {
-        console.log(message.toLowerCase())
-      }
+      logFunction: message => {
+        console.log(message.toLowerCase());
+      },
     },
     breakpointUpdateIntervalSec: 1,
     testMode_: true,
     allowExpressions: true,
-    description: UUID
+    description: UUID,
   },
 });
 
@@ -51,39 +53,41 @@ if (!process.send) {
   process.send = console.log;
 }
 
-var timedOut = false;
-var registrationTimeout = setTimeout(function() {
+let timedOut = false;
+const registrationTimeout = setTimeout(() => {
   timedOut = true;
-  process.send({ error: 'debuggee didn\'t register in time' });
-  setTimeout(function() {
+  process.send({error: "debuggee didn't register in time"});
+  setTimeout(() => {
+    // eslint-disable-next-line no-process-exit
     process.exit(1);
   }, 2000);
 }, 5000);
 
-debuglet.once('registered', function() {
+debuglet.once('registered', () => {
   if (timedOut) {
     return;
   }
   clearTimeout(registrationTimeout);
 
-  var errorMessage;
+  let errorMessage;
   function setErrorIfNotOk(predicate, message) {
     if (!errorMessage && !predicate) {
       errorMessage = message;
     }
-  };
+  }
 
-  var debuggee = debuglet.debuggee;
+  const debuggee = debuglet.debuggee;
   setErrorIfNotOk(debuggee, 'should create debuggee');
   setErrorIfNotOk(debuggee.project, 'debuggee should have a project');
   setErrorIfNotOk(debuggee.id, 'debuggee should have registered');
   if (!errorMessage) {
     // The parent process needs to know the debuggee and project IDs.
-    process.send({ debuggeeId: debuggee.id, projectId: debuggee.project });
+    process.send({debuggeeId: debuggee.id, projectId: debuggee.project});
     setInterval(fib.bind(null, 12), 2000);
   } else {
-    process.send({ error: errorMessage });
-    setTimeout(function() {
+    process.send({error: errorMessage});
+    setTimeout(() => {
+      // eslint-disable-next-line no-process-exit
       process.exit(1);
     }, 2000);
   }

@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {before, describe, it} from 'mocha';
 import * as nock from 'nock';
 
 import {Debug} from '../src/client/stackdriver/debug';
@@ -29,7 +29,7 @@ delete process.env.GCLOUD_PROJECT;
 import {Controller} from '../src/agent/controller';
 // TODO: Fix fakeDebug to actually implement Debug.
 const fakeDebug = ({
-  apiEndpoint: `clouddebugger.googleapis.com`,
+  apiEndpoint: 'clouddebugger.googleapis.com',
   request: (options: t.Options, cb: t.RequestCallback) => {
     teenyRequest(options, (err, r) => {
       cb(err, r ? r.body : undefined, r);
@@ -37,7 +37,7 @@ const fakeDebug = ({
   },
 } as {}) as Debug;
 
-const agentVersion = `SomeName/client/SomeVersion`;
+const agentVersion = 'SomeName/client/SomeVersion';
 const url = 'https://clouddebugger.googleapis.com';
 const api = '/v2/controller';
 
@@ -64,6 +64,31 @@ describe('Controller API', () => {
         assert(!err, 'not expecting an error');
         assert.ok(result);
         assert.strictEqual(result!.debuggee.id, 'fake-debuggee');
+        scope.done();
+        done();
+      });
+    });
+
+    it('should get an agentId', done => {
+      const scope = nock(url)
+        .post(api + '/debuggees/register')
+        .reply(200, {
+          debuggee: {id: 'fake-debuggee'},
+          agentId: 'fake-agent-id',
+          activePeriodSec: 600,
+        });
+      const debuggee = new Debuggee({
+        project: 'fake-project',
+        uniquifier: 'fake-id',
+        description: 'unit test',
+        agentVersion,
+      });
+      const controller = new Controller(fakeDebug);
+      // TODO: Determine if this type signature is correct.
+      controller.register(debuggee, (err, result) => {
+        assert(!err, 'not expecting an error');
+        assert.ok(result);
+        assert.strictEqual(result!.agentId, 'fake-agent-id');
         scope.done();
         done();
       });
@@ -195,7 +220,7 @@ describe('Controller API', () => {
       const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
       const controller = new Controller(fakeDebug);
       // TODO: Determine if the result parameter should be used.
-      controller.listBreakpoints(debuggee, (err, response, result) => {
+      controller.listBreakpoints(debuggee, (err, response) => {
         // TODO: Fix this incorrect method signature.
         (assert as {ifError: Function}).ifError(err, 'not expecting an error');
         // TODO: Fix this error that states `body` is not a property
@@ -206,6 +231,38 @@ describe('Controller API', () => {
         );
         scope.done();
         done();
+      });
+    });
+
+    it('should work with agentId provided from registration', done => {
+      const scope = nock(url)
+        .post(api + '/debuggees/register')
+        .reply(200, {
+          debuggee: {id: 'fake-debuggee'},
+          agentId: 'fake-agent-id',
+          activePeriodSec: 600,
+        })
+        .get(
+          api +
+            '/debuggees/fake-debuggee/breakpoints?successOnTimeout=true&agentId=fake-agent-id'
+        )
+        .reply(200, {waitExpired: true});
+      const debuggee = new Debuggee({
+        project: 'fake-project',
+        uniquifier: 'fake-id',
+        description: 'unit test',
+        agentVersion,
+      });
+      const controller = new Controller(fakeDebug);
+      controller.register(debuggee, (err1 /*, response1*/) => {
+        assert.ifError(err1);
+        const debuggeeWithId: Debuggee = {id: 'fake-debuggee'} as Debuggee;
+        // TODO: Determine if the result parameter should be used.
+        controller.listBreakpoints(debuggeeWithId, (err2 /*, response2*/) => {
+          assert.ifError(err2);
+          scope.done();
+          done();
+        });
       });
     });
 

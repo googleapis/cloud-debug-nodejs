@@ -35,6 +35,7 @@ const qs: {
     eq?: string,
     name?: string
   ) => string;
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
 } = require('querystring');
 
 /** @const {string} Cloud Debug API endpoint */
