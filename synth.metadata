@@ -4,14 +4,14 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/cloud-debug-nodejs.git",
-        "sha": "59c09a1d9c0e170e3a89ff7af53efb4913269600"
+        "sha": "ea1a2bc6c02abcd7ad71a1452f5c415ba0674350"
       }
     },
     {
       "git": {
         "name": "synthtool",
         "remote": "https://github.com/googleapis/synthtool.git",
-        "sha": "89c849ba5013e45e8fb688b138f33c2ec6083dc5"
+        "sha": "ba9918cd22874245b55734f57470c719b577e591"
       }
     }
   ],
@@ -62,9 +62,7 @@
     "LICENSE",
     "README.md",
     "api-extractor.json",
-    "package-lock.json.1262605802",
     "renovate.json",
-    "samples/README.md",
-    "samples/package-lock.json.640660579"
+    "samples/README.md"
   ]
 }
