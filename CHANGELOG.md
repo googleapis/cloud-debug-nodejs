@@ -1,5 +1,13 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+### [5.1.3](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v5.1.2...v5.1.3) (2020-11-03)
+
+
+### Bug Fixes
+
+* add required parameter to fix build breakage ([#928](https://www.github.com/googleapis/cloud-debug-nodejs/issues/928)) ([1e77a61](https://www.github.com/googleapis/cloud-debug-nodejs/commit/1e77a61516a7630937e288b3a2837fac8e44c5f7))
+* **deps:** update dependency acorn to v8 ([#916](https://www.github.com/googleapis/cloud-debug-nodejs/issues/916)) ([2f2c421](https://www.github.com/googleapis/cloud-debug-nodejs/commit/2f2c4216219be8b8fc22c401a2474eae0e619c0e))
+
 ### [5.1.2](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v5.1.1...v5.1.2) (2020-07-09)
 
 
