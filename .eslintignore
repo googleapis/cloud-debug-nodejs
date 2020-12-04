@@ -4,6 +4,3 @@ test/fixtures
 build/
 docs/
 protos/
-test/fixtures
-system-test/fixtures
-test/*.js
