@@ -16,14 +16,11 @@ import * as crypto from 'crypto';
 import * as events from 'events';
 import * as fs from 'fs';
 import * as path from 'path';
+import split = require('split');
 
 // TODO: Make this more precise.
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const findit: (dir: string) => events.EventEmitter = require('findit2');
-
-// TODO: Make this more precise.
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const split: () => fs.WriteStream = require('split');
 
 export interface FileStats {
   // TODO: Verify that this member should actually be optional.

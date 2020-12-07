@@ -16,7 +16,7 @@ import * as fs from 'fs';
 import pLimit = require('p-limit');
 import * as path from 'path';
 import {promisify} from 'util';
-import * as sourceMap from 'source-map';
+import {RawSourceMap, SourceMapConsumer} from 'source-map';
 
 import {findScriptsFuzzy} from '../util/utils';
 
@@ -29,7 +29,7 @@ const readFilep = promisify(fs.readFile);
 export interface MapInfoInput {
   outputFile: string;
   mapFile: string;
-  mapConsumer: sourceMap.RawSourceMap;
+  mapConsumer: RawSourceMap;
   // the sources are in ascending order from
   // shortest to longest
   sources: string[];
@@ -59,32 +59,20 @@ async function processSourcemap(
   }
   mapPath = path.normalize(mapPath);
 
-  let contents;
+  let contents: string;
   try {
     contents = await readFilep(mapPath, 'utf8');
   } catch (e) {
-    throw new Error('Could not read sourcemap file ' + mapPath + ': ' + e);
+    e.message = `Could not read sourcemap file ${mapPath}: ${e.message}`;
+    throw e;
   }
 
-  let consumer: sourceMap.RawSourceMap;
+  let consumer: RawSourceMap;
   try {
-    // TODO: Determine how to reconsile the type conflict where `consumer`
-    //       is constructed as a SourceMapConsumer but is used as a
-    //       RawSourceMap.
-    // TODO: Resolve the cast of `contents as any` (This is needed because the
-    //       type is expected to be of `RawSourceMap` but the existing
-    //       working code uses a string.)
-    consumer = (new sourceMap.SourceMapConsumer(
-      (contents as {}) as sourceMap.RawSourceMap
-    ) as {}) as sourceMap.RawSourceMap;
+    consumer = JSON.parse(contents);
   } catch (e) {
-    throw new Error(
-      'An error occurred while reading the ' +
-        'sourcemap file ' +
-        mapPath +
-        ': ' +
-        e
-    );
+    e.message = `An error occurred while reading the sourcemap file ${mapPath}: ${e.message}`;
+    throw e;
   }
 
   /*
@@ -93,9 +81,7 @@ async function processSourcemap(
    * containing the map file.  Otherwise, use the name of the output
    * file (with the .map extension removed) as the output file.
    */
-  const outputBase = consumer.file
-    ? consumer.file
-    : path.basename(mapPath, '.map');
+  const outputBase = consumer.file || path.basename(mapPath, '.map');
   const parentDir = path.dirname(mapPath);
   const outputPath = path.normalize(path.join(parentDir, outputBase));
 
@@ -105,13 +91,13 @@ async function processSourcemap(
     .sort((src1, src2) => src1.length - src2.length);
 
   const normalizedSources = nonemptySources
-    .map((src: string) => {
+    .map(src => {
       if (src.toLowerCase().startsWith(WEBPACK_PREFIX)) {
         return src.substring(WEBPACK_PREFIX.length);
       }
       return src;
     })
-    .map((relPath: string) => {
+    .map(relPath => {
       // resolve the paths relative to the map file so that
       // they are relative to the process's current working
       // directory
@@ -119,7 +105,7 @@ async function processSourcemap(
     });
 
   if (normalizedSources.length === 0) {
-    throw new Error('No sources listed in the sourcemap file ' + mapPath);
+    throw new Error(`No sources listed in the sourcemap file ${mapPath}`);
   }
   for (const src of normalizedSources) {
     infoMap.set(path.normalize(src), {
@@ -159,7 +145,7 @@ export class SourceMapper {
    */
   private getMappingInfo(inputPath: string): MapInfoInput | null {
     if (this.infoMap.has(path.normalize(inputPath))) {
-      return this.infoMap.get(inputPath) as MapInfoInput;
+      return this.infoMap.get(inputPath) || null;
     }
 
     const matches = findScriptsFuzzy(
@@ -167,7 +153,7 @@ export class SourceMapper {
       Array.from(this.infoMap.keys())
     );
     if (matches.length === 1) {
-      return this.infoMap.get(matches[0]) as MapInfoInput;
+      return this.infoMap.get(matches[0]) || null;
     }
 
     return null;
@@ -209,11 +195,11 @@ export class SourceMapper {
    *   If the given input file does not have mapping information associated
    *   with it then null is returned.
    */
-  mappingInfo(
+  async mappingInfo(
     inputPath: string,
     lineNumber: number,
     colNumber: number
-  ): MapInfoOutput | null {
+  ): Promise<MapInfoOutput | null> {
     inputPath = path.normalize(inputPath);
     const entry = this.getMappingInfo(inputPath);
     if (entry === null) {
@@ -245,8 +231,7 @@ export class SourceMapper {
       column: colNumber, // to be zero-based
     };
 
-    // TODO: Determine how to remove the explicit cast here.
-    const consumer: sourceMap.SourceMapConsumer = (entry.mapConsumer as {}) as sourceMap.SourceMapConsumer;
+    const consumer = await new SourceMapConsumer(entry.mapConsumer);
     const allPos = consumer.allGeneratedPositionsFor(sourcePos);
     /*
      * Based on testing, it appears that the following code is needed to
@@ -255,22 +240,21 @@ export class SourceMapper {
      * In particular, the generatedPositionFor() alone doesn't appear to
      * give the correct mapping information.
      */
-    const mappedPos: sourceMap.Position =
-      allPos && allPos.length > 0
+    const mappedPos =
+      allPos?.length > 0
         ? allPos.reduce((accumulator, value) => {
-            return value.line < accumulator.line ? value : accumulator;
+            return value.line! < accumulator.line! ? value : accumulator;
           })
         : consumer.generatedPositionFor(sourcePos);
 
+    consumer.destroy();
+
     return {
       file: entry.outputFile,
-      line: mappedPos.line - 1, // convert the one-based line numbers returned
+      line: mappedPos.line! - 1, // convert the one-based line numbers returned
       // by the SourceMapConsumer to the expected
       // zero-based output.
-      // TODO: The `sourceMap.Position` type definition has a `column`
-      //       attribute and not a `col` attribute.  Determine if the type
-      //       definition or this code is correct.
-      column: ((mappedPos as {}) as {col: number}).col, // SourceMapConsumer uses
+      column: mappedPos.column!, // SourceMapConsumer uses
       // zero-based column
       // numbers which is the
       // same as the expected
@@ -288,9 +272,8 @@ export async function create(sourcemapPaths: string[]): Promise<SourceMapper> {
   try {
     await Promise.all(promises);
   } catch (err) {
-    throw new Error(
-      'An error occurred while processing the sourcemap files' + err
-    );
+    err.message = `An error occurred while processing the sourcemap files: ${err.message}`;
+    throw err;
   }
   return mapper;
 }

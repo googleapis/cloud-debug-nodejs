@@ -149,29 +149,30 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     } else {
       const line = breakpoint.location.line;
       const column = 0;
-      const mapInfo = this.sourcemapper.mappingInfo(
-        baseScriptPath,
-        line,
-        column
-      );
-
-      const compile = utils.getBreakpointCompiler(breakpoint);
-      if (breakpoint.condition && compile) {
-        try {
-          breakpoint.condition = compile(breakpoint.condition);
-        } catch (e) {
-          this.logger.info(
-            'Unable to compile condition >> ' + breakpoint.condition + ' <<'
-          );
-          return utils.setErrorStatusAndCallback(
-            cb,
-            breakpoint,
-            StatusMessage.BREAKPOINT_CONDITION,
-            utils.messages.ERROR_COMPILING_CONDITION
-          );
-        }
-      }
-      this.setInternal(breakpoint, mapInfo, compile, cb);
+      this.sourcemapper
+        .mappingInfo(baseScriptPath, line, column)
+        .then(mapInfo => {
+          const compile = utils.getBreakpointCompiler(breakpoint);
+          if (breakpoint.condition && compile) {
+            try {
+              breakpoint.condition = compile(breakpoint.condition);
+            } catch (e) {
+              this.logger.info(
+                'Unable to compile condition >> ' + breakpoint.condition + ' <<'
+              );
+              return utils.setErrorStatusAndCallback(
+                cb,
+                breakpoint,
+                StatusMessage.BREAKPOINT_CONDITION,
+                utils.messages.ERROR_COMPILING_CONDITION
+              );
+            }
+          }
+          this.setInternal(breakpoint, mapInfo, compile, cb);
+        })
+        .catch(err => {
+          cb(err);
+        });
     }
   }
 
