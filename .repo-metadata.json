@@ -8,5 +8,6 @@
   "language": "nodejs",
   "repo": "googleapis/cloud-debug-nodejs",
   "distribution_name": "@google-cloud/debug-agent",
-  "api_id": "clouddebugger.googleapis.com"
+  "api_id": "clouddebugger.googleapis.com",
+  "codeowner_team": "@googleapis/api-debug"
 }
