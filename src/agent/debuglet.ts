@@ -472,6 +472,17 @@ export class Debuglet extends EventEmitter {
       that.logger.warn(NODE_10_CIRC_REF_MESSAGE);
     }
 
+    const platform = Debuglet.getPlatform();
+    let region: string | undefined;
+    if (platform === Platforms.CLOUD_FUNCTION) {
+      try {
+        region = await Debuglet.getRegion();
+      } catch (err) {
+        /* something wrong with the metadata service. */
+        that.logger.warn('Could not infer region: ', err);
+      }
+    }
+
     // We can register as a debuggee now.
     that.logger.debug('Starting debuggee, project', project);
     that.running = true;
@@ -484,9 +495,12 @@ export class Debuglet extends EventEmitter {
       sourceContext,
       onGCP,
       that.debug.packageInfo,
+      platform,
       that.config.description,
-      undefined
+      /*errorMessage=*/ undefined,
+      region
     );
+
     that.scheduleRegistration_(0 /* immediately */);
     that.emit('started');
   }
@@ -534,8 +548,10 @@ export class Debuglet extends EventEmitter {
     sourceContext: SourceContext | undefined,
     onGCP: boolean,
     packageInfo: PackageInfo,
+    platform: string,
     description?: string,
-    errorMessage?: string
+    errorMessage?: string,
+    region?: string
   ): Debuggee {
     const cwd = process.cwd();
     const mainScript = path.relative(cwd, process.argv[1]);
@@ -555,8 +571,12 @@ export class Debuglet extends EventEmitter {
       'agent.name': packageInfo.name,
       'agent.version': packageInfo.version,
       projectid: projectId,
-      platform: Debuglet.getPlatform(),
+      platform,
     };
+
+    if (region) {
+      labels.region = region;
+    }
 
     if (serviceContext) {
       if (
@@ -578,6 +598,10 @@ export class Debuglet extends EventEmitter {
         //          v--- intentional lowercase
         labels.minorversion = serviceContext.minorVersion_;
       }
+    }
+
+    if (region) {
+      desc += region;
     }
 
     if (!description && process.env.FUNCTION_NAME) {
@@ -620,7 +644,7 @@ export class Debuglet extends EventEmitter {
    * Use environment vars to infer the current platform.
    * For now this is only Cloud Functions and other.
    */
-  private static getPlatform(): Platforms {
+  static getPlatform(): Platforms {
     const {FUNCTION_NAME, FUNCTION_TARGET} = process.env;
     // (In theory) only the Google Cloud Functions environment will have these env vars.
     if (FUNCTION_NAME || FUNCTION_TARGET) {
@@ -635,6 +659,14 @@ export class Debuglet extends EventEmitter {
 
   static async getClusterNameFromMetadata(): Promise<string> {
     return (await metadata.instance('attributes/cluster-name')).data as string;
+  }
+
+  static async getRegion(): Promise<string> {
+    if (process.env.FUNCTION_REGION) {
+      return process.env.FUNCTION_REGION;
+    }
+    const segments = ((await metadata.instance('region')) as string).split('/');
+    return segments[segments.length - 1];
   }
 
   static async getSourceContextFromFile(): Promise<SourceContext> {
