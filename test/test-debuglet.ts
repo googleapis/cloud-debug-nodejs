@@ -880,12 +880,47 @@ describe('Debuglet', () => {
           debuggee: {id: DEBUGGEE_ID},
         });
 
-      debuglet.once('registered', (id: string) => {
+      debuglet.once('registered', () => {
         Debuglet.getPlatform = savedGetPlatform;
         assert.strictEqual(
           (debuglet.debuggee as Debuggee).labels?.region,
           'region_name'
         );
+        debuglet.stop();
+        clusterScope.done();
+        scope.done();
+        done();
+      });
+
+      debuglet.start();
+    });
+
+    it('should continue to register when could not get region', done => {
+      const savedGetPlatform = Debuglet.getPlatform;
+      Debuglet.getPlatform = () => Platforms.CLOUD_FUNCTION;
+
+      const clusterScope = nock(gcpMetadata.HOST_ADDRESS)
+        .get('/computeMetadata/v1/instance/region')
+        .once()
+        .reply(400);
+
+      const debug = new Debug(
+        {projectId: 'fake-project', credentials: fakeCredentials},
+        packageInfo
+      );
+
+      nocks.oauth2();
+
+      const config = debugletConfig();
+      const debuglet = new Debuglet(debug, config);
+      const scope = nock(config.apiUrl)
+        .post(REGISTER_PATH)
+        .reply(200, {
+          debuggee: {id: DEBUGGEE_ID},
+        });
+
+      debuglet.once('registered', () => {
+        Debuglet.getPlatform = savedGetPlatform;
         debuglet.stop();
         clusterScope.done();
         scope.done();
@@ -1612,6 +1647,27 @@ describe('Debuglet', () => {
       process.env.FUNCTION_TARGET = 'mock';
       assert.ok(Debuglet.getPlatform() === Platforms.CLOUD_FUNCTION);
       delete process.env.FUNCTION_TARGET; // Don't contaminate test environment.
+    });
+  });
+
+  describe('getRegion', () => {
+    it('should return function region for older GCF runtime', async () => {
+      process.env.FUNCTION_REGION = 'mock';
+
+      assert.ok((await Debuglet.getRegion()) === 'mock');
+
+      delete process.env.FUNCTION_REGION;
+    });
+
+    it('should return region for newer GCF runtime', async () => {
+      const clusterScope = nock(gcpMetadata.HOST_ADDRESS)
+        .get('/computeMetadata/v1/instance/region')
+        .once()
+        .reply(200, '123/456/region_name', gcpMetadata.HEADERS);
+
+      assert.ok((await Debuglet.getRegion()) === 'region_name');
+
+      clusterScope.done();
     });
   });
 
