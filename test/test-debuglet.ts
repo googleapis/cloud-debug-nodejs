@@ -1669,6 +1669,17 @@ describe('Debuglet', () => {
 
       clusterScope.done();
     });
+
+    it('should return undefined when cannot get region metadata', async () => {
+      const clusterScope = nock(gcpMetadata.HOST_ADDRESS)
+        .get('/computeMetadata/v1/instance/region')
+        .once()
+        .reply(400);
+
+      assert.ok((await Debuglet.getRegion()) === undefined);
+
+      clusterScope.done();
+    });
   });
 
   describe('_createUniquifier', () => {

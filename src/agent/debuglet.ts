@@ -475,12 +475,7 @@ export class Debuglet extends EventEmitter {
     const platform = Debuglet.getPlatform();
     let region: string | undefined;
     if (platform === Platforms.CLOUD_FUNCTION) {
-      try {
-        region = await Debuglet.getRegion();
-      } catch (err) {
-        /* something wrong with the metadata service. */
-        that.logger.warn('Could not infer region: ', err);
-      }
+      region = await Debuglet.getRegion();
     }
 
     // We can register as a debuggee now.
@@ -601,7 +596,7 @@ export class Debuglet extends EventEmitter {
     }
 
     if (region) {
-      desc += region;
+      desc += ' region:' + region;
     }
 
     if (!description && process.env.FUNCTION_NAME) {
@@ -661,12 +656,25 @@ export class Debuglet extends EventEmitter {
     return (await metadata.instance('attributes/cluster-name')).data as string;
   }
 
-  static async getRegion(): Promise<string> {
+  /**
+   * Returns the region from environment varaible if available.
+   * Otherwise, returns the region from the metadata service.
+   * If metadata is not available, returns undefined.
+   */
+  static async getRegion(): Promise<string | undefined> {
     if (process.env.FUNCTION_REGION) {
       return process.env.FUNCTION_REGION;
     }
-    const segments = ((await metadata.instance('region')) as string).split('/');
-    return segments[segments.length - 1];
+
+    try {
+      // Example returned region format: /process/1234567/us-central
+      const segments = ((await metadata.instance('region')) as string).split(
+        '/'
+      );
+      return segments[segments.length - 1];
+    } catch (err) {
+      return undefined;
+    }
   }
 
   static async getSourceContextFromFile(): Promise<SourceContext> {
