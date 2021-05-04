@@ -1,5 +1,12 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## [5.2.0](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v5.1.3...v5.2.0) (2021-05-04)
+
+
+### Features
+
+* Add region in Debuggee labels in GCF env ([#951](https://www.github.com/googleapis/cloud-debug-nodejs/issues/951)) ([a88e904](https://www.github.com/googleapis/cloud-debug-nodejs/commit/a88e904b02418546962aa986e0e2e523919a27b7))
+
 ### [5.1.3](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v5.1.2...v5.1.3) (2020-11-03)
 
 
