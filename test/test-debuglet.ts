@@ -856,6 +856,80 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
+    it('should attempt to retreive region correctly if needed', done => {
+      const savedGetPlatform = Debuglet.getPlatform;
+      Debuglet.getPlatform = () => Platforms.CLOUD_FUNCTION;
+
+      const clusterScope = nock(gcpMetadata.HOST_ADDRESS)
+        .get('/computeMetadata/v1/instance/region')
+        .once()
+        .reply(200, '123/456/region_name', gcpMetadata.HEADERS);
+
+      const debug = new Debug(
+        {projectId: 'fake-project', credentials: fakeCredentials},
+        packageInfo
+      );
+
+      nocks.oauth2();
+
+      const config = debugletConfig();
+      const debuglet = new Debuglet(debug, config);
+      const scope = nock(config.apiUrl)
+        .post(REGISTER_PATH)
+        .reply(200, {
+          debuggee: {id: DEBUGGEE_ID},
+        });
+
+      debuglet.once('registered', () => {
+        Debuglet.getPlatform = savedGetPlatform;
+        assert.strictEqual(
+          (debuglet.debuggee as Debuggee).labels?.region,
+          'region_name'
+        );
+        debuglet.stop();
+        clusterScope.done();
+        scope.done();
+        done();
+      });
+
+      debuglet.start();
+    });
+
+    it('should continue to register when could not get region', done => {
+      const savedGetPlatform = Debuglet.getPlatform;
+      Debuglet.getPlatform = () => Platforms.CLOUD_FUNCTION;
+
+      const clusterScope = nock(gcpMetadata.HOST_ADDRESS)
+        .get('/computeMetadata/v1/instance/region')
+        .once()
+        .reply(400);
+
+      const debug = new Debug(
+        {projectId: 'fake-project', credentials: fakeCredentials},
+        packageInfo
+      );
+
+      nocks.oauth2();
+
+      const config = debugletConfig();
+      const debuglet = new Debuglet(debug, config);
+      const scope = nock(config.apiUrl)
+        .post(REGISTER_PATH)
+        .reply(200, {
+          debuggee: {id: DEBUGGEE_ID},
+        });
+
+      debuglet.once('registered', () => {
+        Debuglet.getPlatform = savedGetPlatform;
+        debuglet.stop();
+        clusterScope.done();
+        scope.done();
+        done();
+      });
+
+      debuglet.start();
+    });
+
     it('should pass config source context to api', done => {
       const REPO_URL =
         'https://github.com/non-existent-users/non-existend-repo';
@@ -1462,7 +1536,8 @@ describe('Debuglet', () => {
         {service: 'some-service', version: 'production'},
         {},
         false,
-        packageInfo
+        packageInfo,
+        Platforms.DEFAULT
       );
       assert.ok(debuggee);
       assert.ok(debuggee.labels);
@@ -1477,7 +1552,8 @@ describe('Debuglet', () => {
         {service: 'default', version: 'yellow.5'},
         {},
         false,
-        packageInfo
+        packageInfo,
+        Platforms.DEFAULT
       );
       assert.ok(debuggee);
       assert.ok(debuggee.labels);
@@ -1493,6 +1569,7 @@ describe('Debuglet', () => {
         {},
         false,
         packageInfo,
+        Platforms.DEFAULT,
         undefined,
         'Some Error Message'
       );
@@ -1507,7 +1584,8 @@ describe('Debuglet', () => {
         {enableCanary: true, allowCanaryOverride: true},
         {},
         false,
-        packageInfo
+        packageInfo,
+        Platforms.DEFAULT
       );
       assert.strictEqual(debuggee.canaryMode, 'CANARY_MODE_DEFAULT_ENABLED');
     });
@@ -1519,7 +1597,8 @@ describe('Debuglet', () => {
         {enableCanary: true, allowCanaryOverride: false},
         {},
         false,
-        packageInfo
+        packageInfo,
+        Platforms.DEFAULT
       );
       assert.strictEqual(debuggee.canaryMode, 'CANARY_MODE_ALWAYS_ENABLED');
     });
@@ -1531,7 +1610,8 @@ describe('Debuglet', () => {
         {enableCanary: false, allowCanaryOverride: true},
         {},
         false,
-        packageInfo
+        packageInfo,
+        Platforms.DEFAULT
       );
       assert.strictEqual(debuggee.canaryMode, 'CANARY_MODE_DEFAULT_DISABLED');
     });
@@ -1543,51 +1623,62 @@ describe('Debuglet', () => {
         {enableCanary: false, allowCanaryOverride: false},
         {},
         false,
-        packageInfo
+        packageInfo,
+        Platforms.DEFAULT
       );
       assert.strictEqual(debuggee.canaryMode, 'CANARY_MODE_ALWAYS_DISABLED');
     });
+  });
 
+  describe('getPlatform', () => {
     it('should correctly identify default platform.', () => {
-      const debuggee = Debuglet.createDebuggee(
-        'some project',
-        'id',
-        {service: 'some-service', version: 'production'},
-        {},
-        false,
-        packageInfo
-      );
-      assert.ok(debuggee.labels!.platform === Platforms.DEFAULT);
+      assert.ok(Debuglet.getPlatform() === Platforms.DEFAULT);
     });
 
     it('should correctly identify GCF (legacy) platform.', () => {
       // GCF sets this env var on older runtimes.
       process.env.FUNCTION_NAME = 'mock';
-      const debuggee = Debuglet.createDebuggee(
-        'some project',
-        'id',
-        {service: 'some-service', version: 'production'},
-        {},
-        false,
-        packageInfo
-      );
-      assert.ok(debuggee.labels!.platform === Platforms.CLOUD_FUNCTION);
+      assert.ok(Debuglet.getPlatform() === Platforms.CLOUD_FUNCTION);
       delete process.env.FUNCTION_NAME; // Don't contaminate test environment.
     });
 
     it('should correctly identify GCF (modern) platform.', () => {
       // GCF sets this env var on modern runtimes.
       process.env.FUNCTION_TARGET = 'mock';
-      const debuggee = Debuglet.createDebuggee(
-        'some project',
-        'id',
-        {service: 'some-service', version: 'production'},
-        {},
-        false,
-        packageInfo
-      );
-      assert.ok(debuggee.labels!.platform === Platforms.CLOUD_FUNCTION);
+      assert.ok(Debuglet.getPlatform() === Platforms.CLOUD_FUNCTION);
       delete process.env.FUNCTION_TARGET; // Don't contaminate test environment.
+    });
+  });
+
+  describe('getRegion', () => {
+    it('should return function region for older GCF runtime', async () => {
+      process.env.FUNCTION_REGION = 'mock';
+
+      assert.ok((await Debuglet.getRegion()) === 'mock');
+
+      delete process.env.FUNCTION_REGION;
+    });
+
+    it('should return region for newer GCF runtime', async () => {
+      const clusterScope = nock(gcpMetadata.HOST_ADDRESS)
+        .get('/computeMetadata/v1/instance/region')
+        .once()
+        .reply(200, '123/456/region_name', gcpMetadata.HEADERS);
+
+      assert.ok((await Debuglet.getRegion()) === 'region_name');
+
+      clusterScope.done();
+    });
+
+    it('should return undefined when cannot get region metadata', async () => {
+      const clusterScope = nock(gcpMetadata.HOST_ADDRESS)
+        .get('/computeMetadata/v1/instance/region')
+        .once()
+        .reply(400);
+
+      assert.ok((await Debuglet.getRegion()) === undefined);
+
+      clusterScope.done();
     });
   });
 
