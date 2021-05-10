@@ -457,7 +457,7 @@ export class Debuglet extends EventEmitter {
     let sourceContext;
     try {
       sourceContext =
-        ((that.config.sourceContext as {}) as SourceContext) ||
+        (that.config.sourceContext as {} as SourceContext) ||
         (await Debuglet.getSourceContextFromFile());
     } catch (err5) {
       that.logger.warn('Unable to discover source context', err5);
@@ -741,9 +741,11 @@ export class Debuglet extends EventEmitter {
           );
           // TODO: Handle the case when `that.debuggee` is null.
           // TODO: Handle the case when `result` is undefined.
-          (that.debuggee as Debuggee).id = (result as {
-            debuggee: Debuggee;
-          }).debuggee.id;
+          (that.debuggee as Debuggee).id = (
+            result as {
+              debuggee: Debuggee;
+            }
+          ).debuggee.id;
           // TODO: Handle the case when `result` is undefined.
           that.emit('registered', (result as {debuggee: Debuggee}).debuggee.id);
           that.debuggeeRegistered.resolve();
@@ -926,9 +928,7 @@ export class Debuglet extends EventEmitter {
       //              field.  It is possible that breakpoint.id is always
       //              undefined!
       // TODO: Make sure the use of `that` here is correct.
-      delete that.completedBreakpointMap[
-        ((breakpoint as {}) as {id: number}).id
-      ];
+      delete that.completedBreakpointMap[(breakpoint as {} as {id: number}).id];
     });
 
     // Remove active breakpoints that the server no longer care about.
@@ -946,9 +946,9 @@ export class Debuglet extends EventEmitter {
    * @return {Object.<string, Breakpoint>} A map of breakpoint IDs to breakpoints.
    * @private
    */
-  convertBreakpointListToMap_(
-    breakpointList: stackdriver.Breakpoint[]
-  ): {[key: string]: stackdriver.Breakpoint} {
+  convertBreakpointListToMap_(breakpointList: stackdriver.Breakpoint[]): {
+    [key: string]: stackdriver.Breakpoint;
+  } {
     const map: {[id: string]: stackdriver.Breakpoint} = {};
     breakpointList.forEach(breakpoint => {
       // TODO: Address the case when `breakpoint.id` is `undefined`.
@@ -1098,13 +1098,15 @@ export class Debuglet extends EventEmitter {
     const that = this;
 
     // TODO: Address the case when `that.debuggee` is `null`.
-    that.controller.updateBreakpoint(that.debuggee as Debuggee, breakpoint, (
-      err /*, body*/
-    ) => {
-      if (err) {
-        that.logger.error('Unable to complete breakpoint on server', err);
+    that.controller.updateBreakpoint(
+      that.debuggee as Debuggee,
+      breakpoint,
+      (err /*, body*/) => {
+        if (err) {
+          that.logger.error('Unable to complete breakpoint on server', err);
+        }
       }
-    });
+    );
   }
 
   /**
