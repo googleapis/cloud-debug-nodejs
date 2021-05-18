@@ -312,6 +312,7 @@ export class Debuglet extends EventEmitter {
         minorVersion_:
           process.env.GAE_DEPLOYMENT_ID || process.env.GAE_MINOR_VERSION,
       },
+      resetV8DebuggerThreshold: process.env.RESET_V8_DEBUGGER_THRESHOLD,
     };
 
     if (process.env.FUNCTION_NAME) {

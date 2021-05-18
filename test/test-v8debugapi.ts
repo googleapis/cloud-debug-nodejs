@@ -35,6 +35,7 @@ import * as extend from 'extend';
 import * as debugapi from '../src/agent/v8/debugapi';
 import {defaultConfig} from '../src/agent/config';
 import {StatusMessage} from '../src/client/stackdriver/status-message';
+import {InspectorDebugApi} from '../src/agent/v8/inspector-debugapi';
 import * as scanner from '../src/agent/io/scanner';
 import * as SourceMapper from '../src/agent/io/sourcemapper';
 import * as path from 'path';
@@ -718,6 +719,76 @@ describe('v8debugapi', () => {
             done();
           });
         }, 1500);
+      });
+    });
+  });
+
+  describe('InspectorDebugApi', () => {
+    let oldLPS: number;
+    let oldDS: number;
+
+    before(() => {
+      oldLPS = config.log.maxLogsPerSecond;
+      oldDS = config.log.logDelaySeconds;
+      config.log.maxLogsPerSecond = config.resetV8DebuggerThreshold * 3;
+      config.log.logDelaySeconds = 1;
+    });
+
+    after(() => {
+      config.log.maxLogsPerSecond = oldLPS;
+      config.log.logDelaySeconds = oldDS;
+      assert(stateIsClean(api));
+    });
+
+    it('should perform v8 breakpoints reset when meeting threshold', done => {
+      // The test is only eligible for the InspectorDebugApi test target.
+      if (!(api instanceof InspectorDebugApi)) {
+        done();
+        return;
+      }
+
+      const bp: stackdriver.Breakpoint = ({
+        id: breakpointInFoo.id,
+        location: breakpointInFoo.location,
+        action: 'LOG',
+        logMessageFormat: 'cat',
+      } as {}) as stackdriver.Breakpoint;
+      api.set(bp, err1 => {
+        let logpointEvaluatedTimes = 0;
+
+        assert.ifError(err1);
+        api.log(
+          bp,
+          () => {
+            logpointEvaluatedTimes += 1;
+          },
+          () => false
+        );
+
+        const inspectorDebugApi = api as InspectorDebugApi;
+        const v8BeforeReset = inspectorDebugApi.v8;
+
+        // The loop should trigger the breakpoints reset.
+        for (let i = 0; i < config.resetV8DebuggerThreshold; i++) {
+          code.foo(1);
+        }
+
+        // Expect the current v8 data is no longer the previous one.
+        assert.notStrictEqual(inspectorDebugApi.v8, v8BeforeReset);
+
+        // Make sure the logpoint is still triggered correctly after the second reset.
+        for (let i = 0; i < config.resetV8DebuggerThreshold + 1; i++) {
+          code.foo(1);
+        }
+        assert.strictEqual(
+          logpointEvaluatedTimes,
+          config.resetV8DebuggerThreshold * 2 + 1
+        );
+
+        api.clear(bp, err2 => {
+          assert.ifError(err2);
+          done();
+        });
       });
     });
   });

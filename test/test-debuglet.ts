@@ -624,6 +624,15 @@ describe('Debuglet', () => {
         });
         debuglet.start();
       });
+
+      it('should respect RESET_V8_DEBUGGER_THRESHOLD env. var. ', () => {
+        process.env.RESET_V8_DEBUGGER_THRESHOLD = '123';
+        const debug = new Debug({}, packageInfo);
+        const debuglet = new Debuglet(debug, defaultConfig);
+        assert.ok(debuglet.config);
+        assert.ok(debuglet.config.resetV8DebuggerThreshold);
+        assert.strictEqual(debuglet.config.resetV8DebuggerThreshold, '123');
+      });
     });
 
     it('should retry on failed registration', function (done) {
