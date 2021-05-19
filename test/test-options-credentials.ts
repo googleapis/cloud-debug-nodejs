@@ -77,7 +77,7 @@ describe('test-options-credentials', () => {
     });
     nocks.projectId('project-via-metadata');
     // TODO: Determine how to remove this cast.
-    debuglet = new Debuglet(debug, (config as {}) as DebugAgentConfig);
+    debuglet = new Debuglet(debug, config as {} as DebugAgentConfig);
     debuglet.start();
   });
 
@@ -104,7 +104,7 @@ describe('test-options-credentials', () => {
     });
     nocks.projectId('project-via-metadata');
     // TODO: Determine how to remove this cast.
-    debuglet = new Debuglet(debug, (config as {}) as DebugAgentConfig);
+    debuglet = new Debuglet(debug, config as {} as DebugAgentConfig);
     debuglet.start();
   });
 
@@ -145,7 +145,7 @@ describe('test-options-credentials', () => {
       assert.notStrictEqual(options.credentials[field], fileCredentials[field]);
     });
     // TODO: Determine how to remove this cast.
-    debuglet = new Debuglet(debug, (config as {}) as DebugAgentConfig);
+    debuglet = new Debuglet(debug, config as {} as DebugAgentConfig);
     debuglet.start();
   });
 });

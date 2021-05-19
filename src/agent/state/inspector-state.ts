@@ -151,7 +151,7 @@ class StateResolver {
     };
 
     // TODO: Determine why _extend is used here
-    this.resolvedVariableTable = ((util as {}) as {_extend: Function})._extend(
+    this.resolvedVariableTable = (util as {} as {_extend: Function})._extend(
       [],
       this.messageTable
     );
