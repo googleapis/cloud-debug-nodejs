@@ -39,7 +39,8 @@ import {Debug} from '../src/client/stackdriver/debug';
 const DEBUGGEE_ID = 'bar';
 const REGISTER_PATH = '/v2/controller/debuggees/register';
 const BPS_PATH = '/v2/controller/debuggees/' + DEBUGGEE_ID + '/breakpoints';
-const EXPRESSIONS_REGEX = /Expressions and conditions are not allowed.*https:\/\/goo\.gl\/ShSm6r/;
+const EXPRESSIONS_REGEX =
+  /Expressions and conditions are not allowed.*https:\/\/goo\.gl\/ShSm6r/;
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const fakeCredentials = require('./fixtures/gcloud-credentials.json');
@@ -64,11 +65,11 @@ const bp: stackdriver.Breakpoint = {
   location: {path: 'build/test/fixtures/foo.js', line: 2},
 } as stackdriver.Breakpoint;
 // TODO: Have this actually implement Breakpoint.
-const errorBp: stackdriver.Breakpoint = ({
+const errorBp: stackdriver.Breakpoint = {
   id: 'testLog',
   action: 'FOO',
   location: {path: 'build/test/fixtures/foo.js', line: 2},
-} as {}) as stackdriver.Breakpoint;
+} as {} as stackdriver.Breakpoint;
 
 function verifyBreakpointRejection(
   re: RegExp,
@@ -283,6 +284,20 @@ describe('Debuglet', () => {
       });
 
       debuglet.start();
+    });
+
+    it('should have default resetV8DebuggerThreshold value', done => {
+      const debuglet = new Debuglet(new Debug({}, packageInfo), {});
+      assert.strictEqual(debuglet.config.resetV8DebuggerThreshold, 30);
+      done();
+    });
+
+    it('should overwrite resetV8DebuggerThreshold when available', done => {
+      const debuglet = new Debuglet(new Debug({}, packageInfo), {
+        resetV8DebuggerThreshold: 123,
+      });
+      assert.strictEqual(debuglet.config.resetV8DebuggerThreshold, 123);
+      done();
     });
 
     it('should not fail if files cannot be read', done => {
@@ -594,9 +609,11 @@ describe('Debuglet', () => {
         //       Resolve this.
         assert.strictEqual(
           undefined,
-          (debuglet.config.serviceContext as {
-            minorVersion: {};
-          }).minorVersion
+          (
+            debuglet.config.serviceContext as {
+              minorVersion: {};
+            }
+          ).minorVersion
         );
       });
 
@@ -623,15 +640,6 @@ describe('Debuglet', () => {
           done();
         });
         debuglet.start();
-      });
-
-      it('should respect RESET_V8_DEBUGGER_THRESHOLD env. var. ', () => {
-        process.env.RESET_V8_DEBUGGER_THRESHOLD = '123';
-        const debug = new Debug({}, packageInfo);
-        const debuglet = new Debuglet(debug, defaultConfig);
-        assert.ok(debuglet.config);
-        assert.ok(debuglet.config.resetV8DebuggerThreshold);
-        assert.strictEqual(debuglet.config.resetV8DebuggerThreshold, '123');
       });
     });
 
@@ -981,7 +989,7 @@ describe('Debuglet', () => {
       );
       const old = Debuglet.getSourceContextFromFile;
       Debuglet.getSourceContextFromFile = async () => {
-        return {a: (5 as {}) as string};
+        return {a: 5 as {} as string};
       };
 
       const config = debugletConfig();
@@ -1016,7 +1024,7 @@ describe('Debuglet', () => {
 
       const old = Debuglet.getSourceContextFromFile;
       Debuglet.getSourceContextFromFile = async () => {
-        return {a: (5 as {}) as string};
+        return {a: 5 as {} as string};
       };
 
       const config = debugletConfig({
@@ -1480,43 +1488,43 @@ describe('Debuglet', () => {
       // TODO: Determine if Debuglet.format() should allow a number[]
       //       or if only string[] should be allowed.
       assert.deepStrictEqual(
-        Debuglet.format('hi', ([5] as {}) as string[]),
+        Debuglet.format('hi', [5] as {} as string[]),
         'hi'
       );
       assert.deepStrictEqual(
-        Debuglet.format('hi $0', ([5] as {}) as string[]),
+        Debuglet.format('hi $0', [5] as {} as string[]),
         'hi 5'
       );
       assert.deepStrictEqual(
-        Debuglet.format('hi $0 $1', ([5, 'there'] as {}) as string[]),
+        Debuglet.format('hi $0 $1', [5, 'there'] as {} as string[]),
         'hi 5 there'
       );
       assert.deepStrictEqual(
-        Debuglet.format('hi $0 $1', ([5] as {}) as string[]),
+        Debuglet.format('hi $0 $1', [5] as {} as string[]),
         'hi 5 $1'
       );
       assert.deepStrictEqual(
-        Debuglet.format('hi $0 $1 $0', ([5] as {}) as string[]),
+        Debuglet.format('hi $0 $1 $0', [5] as {} as string[]),
         'hi 5 $1 5'
       );
       assert.deepStrictEqual(
-        Debuglet.format('hi $$', ([5] as {}) as string[]),
+        Debuglet.format('hi $$', [5] as {} as string[]),
         'hi $'
       );
       assert.deepStrictEqual(
-        Debuglet.format('hi $$0', ([5] as {}) as string[]),
+        Debuglet.format('hi $$0', [5] as {} as string[]),
         'hi $0'
       );
       assert.deepStrictEqual(
-        Debuglet.format('hi $00', ([5] as {}) as string[]),
+        Debuglet.format('hi $00', [5] as {} as string[]),
         'hi 50'
       );
       assert.deepStrictEqual(
-        Debuglet.format('hi $0', (['$1', 5] as {}) as string[]),
+        Debuglet.format('hi $0', ['$1', 5] as {} as string[]),
         'hi $1'
       );
       assert.deepStrictEqual(
-        Debuglet.format('hi $11', ([
+        Debuglet.format('hi $11', [
           0,
           1,
           2,
@@ -1531,7 +1539,7 @@ describe('Debuglet', () => {
           'b',
           'c',
           'd',
-        ] as {}) as string[]),
+        ] as {} as string[]),
         'hi b'
       );
     });
