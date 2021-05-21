@@ -34,7 +34,7 @@ describe('debug-assert', () => {
     it.skip('should cover the full assert API', () => {
       Object.keys(realAssert).forEach(key => {
         realAssert.strictEqual(
-          typeof ((assert as {}) as {[key: string]: Function})[key],
+          typeof (assert as {} as {[key: string]: Function})[key],
           'function',
           `${key} does not exist on the debug assert library`
         );

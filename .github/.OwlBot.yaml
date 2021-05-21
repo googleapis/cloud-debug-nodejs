@@ -1,4 +1,4 @@
-# Copyright 2018 Google LLC
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,19 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+docker:
+  image: gcr.io/repo-automation-bots/owlbot-nodejs:latest
 
-import synthtool as s
-import synthtool.gcp as gcp
-import synthtool.languages.node as node
-import logging
 
-logging.basicConfig(level=logging.DEBUG)
+begin-after-commit-hash: 397c0bfd367a2427104f988d5329bc117caafd95
 
-AUTOSYNTH_MULTIPLE_COMMITS = True
-
-common_templates = gcp.CommonTemplates()
-templates = common_templates.node_library()
-s.copy(templates, excludes=['.eslintignore', '.mocharc.js', '.github/workflows/ci.yaml'])
-
-node.install()
-node.fix()

@@ -74,9 +74,9 @@ async function processSourcemap(
     // TODO: Resolve the cast of `contents as any` (This is needed because the
     //       type is expected to be of `RawSourceMap` but the existing
     //       working code uses a string.)
-    consumer = (new sourceMap.SourceMapConsumer(
-      (contents as {}) as sourceMap.RawSourceMap
-    ) as {}) as sourceMap.RawSourceMap;
+    consumer = new sourceMap.SourceMapConsumer(
+      contents as {} as sourceMap.RawSourceMap
+    ) as {} as sourceMap.RawSourceMap;
   } catch (e) {
     throw new Error(
       'An error occurred while reading the ' +
@@ -246,7 +246,8 @@ export class SourceMapper {
     };
 
     // TODO: Determine how to remove the explicit cast here.
-    const consumer: sourceMap.SourceMapConsumer = (entry.mapConsumer as {}) as sourceMap.SourceMapConsumer;
+    const consumer: sourceMap.SourceMapConsumer =
+      entry.mapConsumer as {} as sourceMap.SourceMapConsumer;
     const allPos = consumer.allGeneratedPositionsFor(sourcePos);
     /*
      * Based on testing, it appears that the following code is needed to
@@ -270,7 +271,7 @@ export class SourceMapper {
       // TODO: The `sourceMap.Position` type definition has a `column`
       //       attribute and not a `col` attribute.  Determine if the type
       //       definition or this code is correct.
-      column: ((mappedPos as {}) as {col: number}).col, // SourceMapConsumer uses
+      column: (mappedPos as {} as {col: number}).col, // SourceMapConsumer uses
       // zero-based column
       // numbers which is the
       // same as the expected

@@ -28,14 +28,14 @@ delete process.env.GCLOUD_PROJECT;
 
 import {Controller} from '../src/agent/controller';
 // TODO: Fix fakeDebug to actually implement Debug.
-const fakeDebug = ({
+const fakeDebug = {
   apiEndpoint: 'clouddebugger.googleapis.com',
   request: (options: t.Options, cb: t.RequestCallback) => {
     teenyRequest(options, (err, r) => {
       cb(err, r ? r.body : undefined, r);
     });
   },
-} as {}) as Debug;
+} as {} as Debug;
 
 const agentVersion = 'SomeName/client/SomeVersion';
 const url = 'https://clouddebugger.googleapis.com';
@@ -226,7 +226,7 @@ describe('Controller API', () => {
         // TODO: Fix this error that states `body` is not a property
         //       of `ServerResponse`.
         assert(
-          ((response as {}) as {body: {waitExpired: {}}}).body.waitExpired,
+          (response as {} as {body: {waitExpired: {}}}).body.waitExpired,
           'should have expired set'
         );
         scope.done();
