@@ -18,7 +18,7 @@ import {ncp} from 'ncp';
 import * as tmp from 'tmp-promise';
 import {promisify} from 'util';
 
-const mvp = (promisify(mv) as {}) as (...args: string[]) => Promise<void>;
+const mvp = promisify(mv) as {} as (...args: string[]) => Promise<void>;
 const ncpp = promisify(ncp);
 const stagingDir = tmp.dirSync({keep: false, unsafeCleanup: true});
 const stagingPath = stagingDir.name;

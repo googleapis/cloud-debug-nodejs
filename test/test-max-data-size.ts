@@ -117,9 +117,9 @@ describe('maxDataSize', () => {
             ) => {
               return (
                 acc &&
-                (((!elem!.status ||
+                ((!elem!.status ||
                   elem!.status!.description.format !==
-                    'Max data size reached') as {}) as stackdriver.Variable)
+                    'Max data size reached') as {} as stackdriver.Variable)
               );
             }
           )

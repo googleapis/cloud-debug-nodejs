@@ -138,7 +138,7 @@ class StateResolver {
     };
 
     // TODO: Determine why _extend is used here
-    this.resolvedVariableTable = ((util as {}) as {_extend: Function})._extend(
+    this.resolvedVariableTable = (util as {} as {_extend: Function})._extend(
       [],
       this.messageTable
     );
@@ -148,7 +148,7 @@ class StateResolver {
 
     // This constructor is only used in situations where the legacy vm
     // interface is used that has the `runInDebugContext` method.
-    this.scopeType = ((vm as {}) as LegacyVm).runInDebugContext('ScopeType');
+    this.scopeType = (vm as {} as LegacyVm).runInDebugContext('ScopeType');
   }
 
   /**

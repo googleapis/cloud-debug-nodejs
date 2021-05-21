@@ -559,9 +559,11 @@ export class InspectorDebugApi implements debugapi.DebugApi {
           // TODO: Address the case where `breakpoint.id` is `null`.
           breakpoint.expressions[i] =
             // TODO: Address the case where `compile` is `null`.
-            (this.breakpoints[breakpoint.id].compile as (
-              text: string
-            ) => string)(breakpoint.expressions[i]);
+            (
+              this.breakpoints[breakpoint.id].compile as (
+                text: string
+              ) => string
+            )(breakpoint.expressions[i]);
         } catch (e) {
           this.logger.info(
             'Unable to compile watch expression >> ' +
@@ -617,7 +619,8 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       breakpoint.stackFrames = captured.stackFrames;
       // TODO: This suggests the Status type and Variable type are the same.
       //       Determine if that is the case.
-      breakpoint.variableTable = captured.variableTable as stackdriver.Variable[];
+      breakpoint.variableTable =
+        captured.variableTable as stackdriver.Variable[];
       breakpoint.evaluatedExpressions = expressionErrors.concat(
         captured.evaluatedExpressions
       );
