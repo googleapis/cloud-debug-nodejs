@@ -357,6 +357,14 @@ export interface ResolvedDebugAgentConfig extends GoogleAuthOptions {
    * used to set a default api url
    */
   apiUrl?: string;
+
+  /**
+   * Number of times of the V8 breakpoint hits events before resetting the
+   * breakpoints. This is to release the memory usage held by V8 engine for each
+   * breakpoint hit to prevent the memory leak. The default value is specified
+   * in defaultConfig.
+   */
+  resetV8DebuggerThreshold: number;
 }
 
 export interface StackdriverConfig extends GoogleAuthOptions {
@@ -406,4 +414,5 @@ export const defaultConfig: ResolvedDebugAgentConfig = {
 
   forceNewAgent_: false,
   testMode_: false,
+  resetV8DebuggerThreshold: 30,
 };

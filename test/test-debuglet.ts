@@ -286,6 +286,20 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
+    it('should have default resetV8DebuggerThreshold value', done => {
+      const debuglet = new Debuglet(new Debug({}, packageInfo), {});
+      assert.strictEqual(debuglet.config.resetV8DebuggerThreshold, 30);
+      done();
+    });
+
+    it('should overwrite resetV8DebuggerThreshold when available', done => {
+      const debuglet = new Debuglet(new Debug({}, packageInfo), {
+        resetV8DebuggerThreshold: 123,
+      });
+      assert.strictEqual(debuglet.config.resetV8DebuggerThreshold, 123);
+      done();
+    });
+
     it('should not fail if files cannot be read', done => {
       const MOCKED_DIRECTORY = process.cwd();
       const errors: Array<{filename: string; error: string}> = [];

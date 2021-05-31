@@ -41,6 +41,21 @@ interface InspectorOptions {
   useWellFormattedUrl: boolean;
 }
 
+/** Data related to the v8 inspector. */
+interface V8Data {
+  session: inspector.Session;
+  // Options for behavior when interfacing with the Inspector API.
+  inspectorOptions: InspectorOptions;
+  inspector: V8Inspector;
+  // Store the v8 setBreakpoint parameters for each v8 breakpoint so that later
+  // the recorded parameters can be used to reset the breakpoints.
+  setBreakpointsParams: {
+    [
+      v8BreakpointId: string
+    ]: inspector.Debugger.SetBreakpointByUrlParameterType;
+  };
+}
+
 /**
  * In older versions of Node, the script source as seen by the Inspector
  * backend is wrapped in `require('module').wrapper`, and in new versions
@@ -68,7 +83,6 @@ export class InspectorDebugApi implements debugapi.DebugApi {
   fileStats: ScanStats;
   breakpoints: {[id: string]: BreakpointData} = {};
   sourcemapper: SourceMapper;
-  session: inspector.Session;
   // TODO: listeners, scrpitmapper, location mapper and breakpointmapper can use
   // Map in the future after resolving Map.prototype.get(key) returns V or
   // undefined.
@@ -81,9 +95,9 @@ export class InspectorDebugApi implements debugapi.DebugApi {
   // stackdriver breakpoint id.
   breakpointMapper: {[id: string]: stackdriver.BreakpointId[]} = {};
   numBreakpoints = 0;
-  // Options for behavior when interfacing with the Inspector API.
-  private inspectorOptions: InspectorOptions;
-  v8Inspector: V8Inspector;
+  numBreakpointHitsBeforeReset = 0;
+  v8: V8Data;
+
   constructor(
     logger: consoleLogLevel.Logger,
     config: ResolvedDebugAgentConfig,
@@ -94,25 +108,36 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     this.config = config;
     this.fileStats = jsFiles;
     this.sourcemapper = sourcemapper;
-    this.session = new inspector.Session();
-    this.session.connect();
-    this.session.on('Debugger.scriptParsed', script => {
+    this.scriptMapper = {};
+    this.v8 = this.createV8Data();
+  }
+
+  /** Creates a new V8 Debugging session and the related data. */
+  private createV8Data(): V8Data {
+    const session = new inspector.Session();
+    session.connect();
+    session.on('Debugger.scriptParsed', script => {
       this.scriptMapper[script.params.scriptId] = script.params;
     });
-    this.session.post('Debugger.enable');
-    this.session.post('Debugger.setBreakpointsActive', {active: true});
-    this.session.on('Debugger.paused', message => {
+    session.post('Debugger.enable');
+    session.post('Debugger.setBreakpointsActive', {active: true});
+    session.on('Debugger.paused', message => {
       try {
         this.handleDebugPausedEvent(message.params);
       } catch (error) {
         this.logger.error(error);
       }
     });
-    this.inspectorOptions = {
-      // Well-Formatted URL is required in Node 10.11.1+.
-      useWellFormattedUrl: utils.satisfies(process.version, '>10.11.0'),
+
+    return {
+      session,
+      inspectorOptions: {
+        // Well-Formatted URL is required in Node 10.11.1+.
+        useWellFormattedUrl: utils.satisfies(process.version, '>10.11.0'),
+      },
+      inspector: new V8Inspector(session),
+      setBreakpointsParams: {},
     };
-    this.v8Inspector = new V8Inspector(this.session);
   }
 
   set(
@@ -219,7 +244,8 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     if (!this.breakpointMapper[breakpointData.id]) {
       // When breakpointmapper does not countain current v8/inspector breakpoint
       // id, we should remove this breakpoint from v8.
-      result = this.v8Inspector.removeBreakpoint(breakpointData.id);
+      result = this.v8.inspector.removeBreakpoint(breakpointData.id);
+      delete this.v8.setBreakpointsParams[breakpointData.id];
     }
     delete this.breakpoints[breakpoint.id];
     delete this.listeners[breakpoint.id];
@@ -297,7 +323,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
   }
 
   disconnect(): void {
-    this.session.disconnect();
+    this.v8.session.disconnect();
   }
 
   numBreakpoints_(): number {
@@ -487,7 +513,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     let v8BreakpointId; // v8/inspector breakpoint id
     if (!this.locationMapper[locationStr]) {
       // The first time when a breakpoint was set to this location.
-      const rawUrl = this.inspectorOptions.useWellFormattedUrl
+      const rawUrl = this.v8.inspectorOptions.useWellFormattedUrl
         ? `file://${matchingScript}`
         : matchingScript;
       // on windows on Node 11+, the url must start with file:///
@@ -496,17 +522,20 @@ export class InspectorDebugApi implements debugapi.DebugApi {
         process.platform === 'win32' && utils.satisfies(process.version, '>=11')
           ? rawUrl.replace(/^file:\/\//, 'file:///').replace(/\\/g, '/')
           : rawUrl;
-      const res = this.v8Inspector.setBreakpointByUrl({
+      const params = {
         lineNumber: line - 1,
         url,
         columnNumber: column - 1,
         condition: breakpoint.condition || undefined,
-      });
+      };
+      const res = this.v8.inspector.setBreakpointByUrl(params);
       if (res.error || !res.response) {
         // Error case.
         return null;
       }
       v8BreakpointId = res.response.breakpointId;
+      this.v8.setBreakpointsParams[v8BreakpointId] = params;
+
       this.locationMapper[locationStr] = [];
       this.breakpointMapper[v8BreakpointId] = [];
     } else {
@@ -593,7 +622,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
         const evaluatedExpressions = breakpoint.expressions.map(exp => {
           // returnByValue is set to true here so that the JSON string of the
           // value will be returned to log.
-          const result = state.evaluate(exp, frame, that.v8Inspector, true);
+          const result = state.evaluate(exp, frame, that.v8.inspector, true);
           if (result.error) {
             return result.error;
           } else {
@@ -608,7 +637,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
         breakpoint,
         this.config,
         this.scriptMapper,
-        this.v8Inspector
+        this.v8.inspector
       );
       if (
         breakpoint.location &&
@@ -641,6 +670,38 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       });
     } catch (e) {
       this.logger.warn('Internal V8 error on breakpoint event: ' + e);
+    }
+
+    this.tryResetV8Debugger();
+  }
+
+  /**
+   * Periodically resets breakpoints to prevent memory leaks in V8 (for holding
+   * contexts of previous breakpoint hits).
+   */
+  private tryResetV8Debugger() {
+    this.numBreakpointHitsBeforeReset += 1;
+    if (
+      this.numBreakpointHitsBeforeReset < this.config.resetV8DebuggerThreshold
+    ) {
+      return;
+    }
+    this.numBreakpointHitsBeforeReset = 0;
+
+    const storedParams = this.v8.setBreakpointsParams;
+
+    // Re-connect the session to clean the memory usage.
+    this.disconnect();
+    this.scriptMapper = {};
+    this.v8 = this.createV8Data();
+    this.v8.setBreakpointsParams = storedParams;
+
+    // Setting the v8 breakpoints again according to the stored parameters.
+    for (const params of Object.values(storedParams)) {
+      const res = this.v8.inspector.setBreakpointByUrl(params);
+      if (res.error || !res.response) {
+        this.logger.error('Error upon re-setting breakpoint: ' + res);
+      }
     }
   }
 }
