@@ -1,5 +1,12 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+### [5.2.1](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v5.2.0...v5.2.1) (2021-05-31)
+
+
+### Bug Fixes
+
+* periodically reset v8 session to prevent memory leak ([#957](https://www.github.com/googleapis/cloud-debug-nodejs/issues/957)) ([7735425](https://www.github.com/googleapis/cloud-debug-nodejs/commit/7735425ee8999c6ab1c30706ddf014315309705c))
+
 ## [5.2.0](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v5.1.3...v5.2.0) (2021-05-04)
 
 
