@@ -59,7 +59,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
 
   beforeEach(function () {
     this.timeout(10 * 1000);
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       let numChildrenReady = 0;
 
       // Process a status message sent from a child process.
@@ -117,9 +117,8 @@ describe('@google-cloud/debug end-to-end behavior', () => {
         child.process.on('message', handler);
 
         children.push(child);
-
-        child.process.stdout.on('data', stdoutHandler(i));
-        child.process.stderr.on('data', stdoutHandler(i));
+        child.process.stdout!.on('data', stdoutHandler(i));
+        child.process.stderr!.on('data', stdoutHandler(i));
       }
     });
   });
@@ -132,7 +131,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
       assert(child.process);
       const childProcess = child.process as cp.ChildProcess;
       childProcess.kill();
-      return new Promise((resolve, reject) => {
+      return new Promise<void>((resolve, reject) => {
         const timeout = setTimeout(() => {
           reject(new Error('A child process failed to exit.'));
         }, 3000);
