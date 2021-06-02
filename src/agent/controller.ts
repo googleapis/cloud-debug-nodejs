@@ -122,7 +122,7 @@ export class Controller extends ServiceObject {
       '/debuggees/' +
       encodeURIComponent(debuggee.id) +
       '/breakpoints?' +
-      qs.stringify(query);
+      qs.stringify(query as qs.ParsedUrlQueryInput);
     that.request(
       {uri, json: true},
       (err, body: stackdriver.ListBreakpointsResponse, response) => {
