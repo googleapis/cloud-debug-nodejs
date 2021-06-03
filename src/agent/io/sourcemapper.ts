@@ -29,7 +29,7 @@ const readFilep = promisify(fs.readFile);
 export interface MapInfoInput {
   outputFile: string;
   mapFile: string;
-  mapConsumer: sourceMap.RawSourceMap;
+  mapConsumer: sourceMap.SourceMapConsumer;
   // the sources are in ascending order from
   // shortest to longest
   sources: string[];
@@ -59,24 +59,23 @@ async function processSourcemap(
   }
   mapPath = path.normalize(mapPath);
 
-  let contents;
+  let rawSourceMapString;
   try {
-    contents = await readFilep(mapPath, 'utf8');
+    rawSourceMapString = await readFilep(mapPath, 'utf8');
   } catch (e) {
     throw new Error('Could not read sourcemap file ' + mapPath + ': ' + e);
   }
 
-  let consumer: sourceMap.RawSourceMap;
+  let rawSourceMap;
   try {
-    // TODO: Determine how to reconsile the type conflict where `consumer`
-    //       is constructed as a SourceMapConsumer but is used as a
-    //       RawSourceMap.
-    // TODO: Resolve the cast of `contents as any` (This is needed because the
-    //       type is expected to be of `RawSourceMap` but the existing
-    //       working code uses a string.)
-    consumer = new sourceMap.SourceMapConsumer(
-      contents as {} as sourceMap.RawSourceMap
-    ) as {} as sourceMap.RawSourceMap;
+    rawSourceMap = JSON.parse(rawSourceMapString);
+  } catch (e) {
+    throw new Error('Could not parse the raw sourcemap ' + mapPath + ': ' + e);
+  }
+
+  let consumer: sourceMap.SourceMapConsumer;
+  try {
+    consumer = await new sourceMap.SourceMapConsumer(rawSourceMapString);
   } catch (e) {
     throw new Error(
       'An error occurred while reading the ' +
@@ -93,18 +92,33 @@ async function processSourcemap(
    * containing the map file.  Otherwise, use the name of the output
    * file (with the .map extension removed) as the output file.
    */
-  const outputBase = consumer.file
-    ? consumer.file
+  const outputBase = rawSourceMap.file
+    ? rawSourceMap.file
     : path.basename(mapPath, '.map');
   const parentDir = path.dirname(mapPath);
   const outputPath = path.normalize(path.join(parentDir, outputBase));
 
-  // the sources are in ascending order from shortest to longest
-  const nonemptySources = consumer.sources
-    .filter(val => !!val)
-    .sort((src1, src2) => src1.length - src2.length);
+  // The paths of the sources that are relative to the source map file. Sort
+  // them in ascending order from shortest to longest.
+  // For webpack file path, normalize the path after the webpack prefix so that
+  // the source map library can recognize it.
+  const sourcesRelToSrcmap = rawSourceMap.sources
+    .filter((val: string) => !!val)
+    .map((val: string) => {
+      if (val.toLowerCase().startsWith(WEBPACK_PREFIX)) {
+        return (
+          WEBPACK_PREFIX + path.normalize(val.substr(WEBPACK_PREFIX.length))
+        );
+      }
+      return val;
+    })
+    .sort((src1: string, src2: string) => src1.length - src2.length);
 
-  const normalizedSources = nonemptySources
+  // The paths of the sources that are relative to the current process's working
+  // directory. These are the ones that are used for the fuzzy search. For
+  // webpack file path, the prefix is filtered out for better fuzzy search
+  // result.
+  const sourcesRelToProc = sourcesRelToSrcmap
     .map((src: string) => {
       if (src.toLowerCase().startsWith(WEBPACK_PREFIX)) {
         return src.substring(WEBPACK_PREFIX.length);
@@ -112,21 +126,21 @@ async function processSourcemap(
       return src;
     })
     .map((relPath: string) => {
-      // resolve the paths relative to the map file so that
-      // they are relative to the process's current working
-      // directory
+      // resolve the paths relative to the map file so that they are relative to
+      // the process's current working directory
       return path.normalize(path.join(parentDir, relPath));
     });
 
-  if (normalizedSources.length === 0) {
+  if (sourcesRelToProc.length === 0) {
     throw new Error('No sources listed in the sourcemap file ' + mapPath);
   }
-  for (const src of normalizedSources) {
+
+  for (const src of sourcesRelToProc) {
     infoMap.set(path.normalize(src), {
       outputFile: outputPath,
       mapFile: mapPath,
       mapConsumer: consumer,
-      sources: nonemptySources,
+      sources: sourcesRelToSrcmap,
     });
   }
 }
@@ -245,10 +259,7 @@ export class SourceMapper {
       column: colNumber, // to be zero-based
     };
 
-    // TODO: Determine how to remove the explicit cast here.
-    const consumer: sourceMap.SourceMapConsumer =
-      entry.mapConsumer as {} as sourceMap.SourceMapConsumer;
-    const allPos = consumer.allGeneratedPositionsFor(sourcePos);
+    const allPos = entry.mapConsumer.allGeneratedPositionsFor(sourcePos);
     /*
      * Based on testing, it appears that the following code is needed to
      * properly get the correct mapping information.
@@ -256,16 +267,18 @@ export class SourceMapper {
      * In particular, the generatedPositionFor() alone doesn't appear to
      * give the correct mapping information.
      */
-    const mappedPos: sourceMap.Position =
+    const mappedPos: sourceMap.NullablePosition =
       allPos && allPos.length > 0
         ? allPos.reduce((accumulator, value) => {
-            return value.line < accumulator.line ? value : accumulator;
+            return (value.line ?? 0) < (accumulator.line ?? 0)
+              ? value
+              : accumulator;
           })
-        : consumer.generatedPositionFor(sourcePos);
+        : entry.mapConsumer.generatedPositionFor(sourcePos);
 
     return {
       file: entry.outputFile,
-      line: mappedPos.line - 1, // convert the one-based line numbers returned
+      line: (mappedPos.line ?? 0) - 1, // convert the one-based line numbers returned
       // by the SourceMapConsumer to the expected
       // zero-based output.
       // TODO: The `sourceMap.Position` type definition has a `column`
