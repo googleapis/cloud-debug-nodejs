@@ -51,7 +51,7 @@ function testTool(
   const inputFilePath = path.join(BASE_PATH, relativeInputFilePath);
   const outputFilePath = path.join(BASE_PATH, relativeOutputFilePath);
 
-  describe.only('sourcemapper for tool ' + tool, () => {
+  describe('sourcemapper for tool ' + tool, () => {
     let sourcemapper: sm.SourceMapper;
 
     it('for tool ' + tool, async () => {
@@ -146,7 +146,6 @@ function testTool(
   });
 }
 
-/*
 testTool(
   'Babel',
   path.join('babel', 'out.js.map'),
@@ -251,8 +250,6 @@ testTool(
     [21, 44],
   ]
 );
-
-*/
 
 testTool(
   'Webpack with Typescript',

@@ -144,10 +144,6 @@ async function processSourcemap(
       mapConsumer: consumer,
       sources: sourcesRelToSrcmap,
     });
-
-    consumer.eachMapping(m => {
-      console.log('# m', m);
-    });
   }
 }
 
@@ -240,17 +236,9 @@ export class SourceMapper {
       return null;
     }
 
-    console.log('# inputPath', inputPath);
-    console.log('# entry.sources', entry.sources);
-    console.log('# entry.outputFile', entry.outputFile);
-    console.log('# entry.mapFile', entry.mapFile);
-
     const relPath = path
       .relative(path.dirname(entry.mapFile), inputPath)
       .replace(/\\/g, '/');
-
-    console.log('# relPath', relPath);
-
     /**
      * Note: Since `entry.sources` is in ascending order from shortest
      *       to longest, the first source path that ends with the
@@ -265,16 +253,12 @@ export class SourceMapper {
       }
     }
 
-    console.log('# source', source);
-
     const sourcePos = {
       source: source || relPath,
       line: lineNumber + 1, // the SourceMapConsumer expects the line number
       // to be one-based but expects the column number
       column: colNumber, // to be zero-based
     };
-
-    console.log('# sourcePos', sourcePos);
 
     const allPos = entry.mapConsumer.allGeneratedPositionsFor(sourcePos);
     /*
@@ -284,9 +268,6 @@ export class SourceMapper {
      * In particular, the generatedPositionFor() alone doesn't appear to
      * give the correct mapping information.
      */
-
-    console.log('# allPos', allPos);
-
     const mappedPos: sourceMap.NullablePosition =
       allPos && allPos.length > 0
         ? allPos.reduce((accumulator, value) => {
@@ -295,8 +276,6 @@ export class SourceMapper {
               : accumulator;
           })
         : entry.mapConsumer.generatedPositionFor(sourcePos);
-
-    console.log('# mappedPos', mappedPos);
 
     return {
       file: entry.outputFile,
