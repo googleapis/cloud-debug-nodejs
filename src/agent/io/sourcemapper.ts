@@ -107,7 +107,8 @@ async function processSourcemap(
     .map((val: string) => {
       if (val.toLowerCase().startsWith(WEBPACK_PREFIX)) {
         return (
-          WEBPACK_PREFIX + path.normalize(val.substr(WEBPACK_PREFIX.length))
+          WEBPACK_PREFIX +
+          path.normalize(val.substr(WEBPACK_PREFIX.length)).replace(/\\/g, '/')
         );
       }
       return val;
@@ -115,10 +116,11 @@ async function processSourcemap(
     .sort((src1: string, src2: string) => src1.length - src2.length);
 
   // The paths of the sources that are relative to the current process's working
-  // directory. These are the ones that are used for the fuzzy search. For
-  // webpack file path, the prefix is filtered out for better fuzzy search
+  // directory. These are the ones that are used for the fuzzy search (thus are
+  // platform specific, e.g. using '\\' on Windows and using '/' in Unix, etc.).
+  // For webpack file path, the prefix is filtered out for better fuzzy search
   // result.
-  const sourcesRelToProc = sourcesRelToSrcmap
+  const normalizedSourcesRelToProc = sourcesRelToSrcmap
     .map((src: string) => {
       if (src.toLowerCase().startsWith(WEBPACK_PREFIX)) {
         return src.substring(WEBPACK_PREFIX.length);
@@ -131,11 +133,11 @@ async function processSourcemap(
       return path.normalize(path.join(parentDir, relPath));
     });
 
-  if (sourcesRelToProc.length === 0) {
+  if (normalizedSourcesRelToProc.length === 0) {
     throw new Error('No sources listed in the sourcemap file ' + mapPath);
   }
 
-  for (const src of sourcesRelToProc) {
+  for (const src of normalizedSourcesRelToProc) {
     infoMap.set(path.normalize(src), {
       outputFile: outputPath,
       mapFile: mapPath,
