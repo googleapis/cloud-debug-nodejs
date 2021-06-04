@@ -146,7 +146,7 @@ function testTool(
   });
 }
 
-/* 
+/*
 testTool(
   'Babel',
   path.join('babel', 'out.js.map'),
@@ -252,7 +252,7 @@ testTool(
   ]
 );
 
-/*
+*/
 
 testTool(
   'Webpack with Typescript',
