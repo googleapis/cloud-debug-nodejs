@@ -23,7 +23,7 @@ import * as estree from 'estree';
  * @param {Object} node AST Node (as per the Mozilla Parser API)
  * @return {boolean} if the exper
  */
-export function isValid(node: estree.Node): boolean {
+export function isValid(node: estree.Node | null): boolean {
   // Empty expression is allowed
   if (node === null) {
     return true;
