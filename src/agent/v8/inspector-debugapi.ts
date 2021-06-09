@@ -23,7 +23,11 @@ import consoleLogLevel = require('console-log-level');
 import * as stackdriver from '../../types/stackdriver';
 import {ResolvedDebugAgentConfig} from '../config';
 import {FileStats, ScanStats} from '../io/scanner';
-import {MapInfoOutput, SourceMapper} from '../io/sourcemapper';
+import {
+  MapInfoOutput,
+  SourceMapper,
+  MultiFileMatchError,
+} from '../io/sourcemapper';
 import * as state from '../state/inspector-state';
 import * as utils from '../util/utils';
 
@@ -159,7 +163,26 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       );
     }
     const baseScriptPath = path.normalize(breakpoint.location.path);
-    if (!this.sourcemapper.hasMappingInfo(baseScriptPath)) {
+    let mapInfoInput = null;
+    try {
+      mapInfoInput = this.sourcemapper.getMapInfoInput(baseScriptPath);
+    } catch (error) {
+      if (error instanceof MultiFileMatchError) {
+        this.logger.warn(
+          `Unable to unambiguously find ${baseScriptPath}. Multiple matches: ${error.files}`
+        );
+        return utils.setErrorStatusAndCallback(
+          cb,
+          breakpoint,
+          StatusMessage.BREAKPOINT_SOURCE_LOCATION,
+          utils.messages.SOURCE_FILE_AMBIGUOUS
+        );
+      } else {
+        throw error;
+      }
+    }
+
+    if (mapInfoInput === null) {
       const extension = path.extname(baseScriptPath);
       if (!this.config.javascriptFileExtensions.includes(extension)) {
         return utils.setErrorStatusAndCallback(
@@ -174,10 +197,11 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     } else {
       const line = breakpoint.location.line;
       const column = 0;
-      const mapInfo = this.sourcemapper.mappingInfo(
+      const mapInfo = this.sourcemapper.getMapInfoOutput(
         baseScriptPath,
         line,
-        column
+        column,
+        mapInfoInput
       );
 
       const compile = utils.getBreakpointCompiler(breakpoint);
