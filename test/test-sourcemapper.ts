@@ -68,9 +68,9 @@ function testTool(
         tool +
         ' it states that it has mapping info for files it knows about',
       done => {
-        assert.strictEqual(
-          sourcemapper.getMapInfoInput(inputFilePath) !== null,
-          true,
+        assert.notStrictEqual(
+          sourcemapper.getMapInfoInput(inputFilePath),
+          null,
           `The sourcemapper should have information about '${inputFilePath}'`
         );
         done();
@@ -83,17 +83,17 @@ function testTool(
         ' it states that it has mapping info for files with a path' +
         ' similar to a path it knows about',
       done => {
-        assert.strictEqual(
-          sourcemapper.getMapInfoInput(inputFilePath) !== null,
-          true
+        assert.notStrictEqual(
+          sourcemapper.getMapInfoInput(inputFilePath),
+          null
         );
         const movedPath = path.join(
           '/some/other/base/dir/',
           relativeInputFilePath
         );
-        assert.strictEqual(
-          sourcemapper.getMapInfoInput(inputFilePath) !== null,
-          true,
+        assert.notStrictEqual(
+          sourcemapper.getMapInfoInput(inputFilePath),
+          null,
           `The sourcemapper should have information about paths similar to '${movedPath}'`
         );
         done();
@@ -108,8 +108,8 @@ function testTool(
       done => {
         const invalidPath = inputFilePath + '_INVALID';
         assert.strictEqual(
-          sourcemapper.getMapInfoInput(invalidPath) !== null,
-          false,
+          sourcemapper.getMapInfoInput(invalidPath),
+          null,
           `The source mapper should not have information the path '${invalidPath}' it doesn't recognize`
         );
         done();
