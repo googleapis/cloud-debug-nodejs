@@ -1,5 +1,12 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+### [5.2.3](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v5.2.2...v5.2.3) (2021-06-14)
+
+
+### Bug Fixes
+
+* surface correct error message for ambiguous sourcemap matches ([#971](https://www.github.com/googleapis/cloud-debug-nodejs/issues/971)) ([d5abfac](https://www.github.com/googleapis/cloud-debug-nodejs/commit/d5abfac3affba586f7fa28d2388a2b1d15942576))
+
 ### [5.2.2](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v5.2.1...v5.2.2) (2021-06-04)
 
 
