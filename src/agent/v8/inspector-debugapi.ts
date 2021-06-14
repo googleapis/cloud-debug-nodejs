@@ -88,7 +88,7 @@ export class InspectorDebugApi implements debugapi.DebugApi {
     this.fileStats = jsFiles;
     this.sourcemapper = sourcemapper;
     this.inspector = new V8Inspector(
-      /* useWellFormattedUrl=*/ logger,
+      /* logger=*/ logger,
       /*useWellFormattedUrl=*/ utils.satisfies(process.version, '>10.11.0'),
       /*resetV8DebuggerThreshold=*/ this.config.resetV8DebuggerThreshold,
       /*onScriptParsed=*/

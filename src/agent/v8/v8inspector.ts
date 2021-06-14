@@ -158,13 +158,16 @@ export class V8Inspector {
     session.post('Debugger.setBreakpointsActive', {active: true});
     session.on('Debugger.paused', message => {
       this.onPaused(message.params);
-      this.resetV8DebuggerIfMeetThreshold();
+      this.resetV8DebuggerIfThresholdMet();
     });
 
     this.session = session;
   }
 
-  /** Detaches from the V8 debugger. */
+  /**
+   * Detaches from the V8 debugger. This will purge all the existing V8
+   * breakpoints from the V8 debugger.
+   */
   detach() {
     if (!this.session) {
       return;
@@ -177,11 +180,11 @@ export class V8Inspector {
   }
 
   /**
-   * Resets the debugging session when the threshold. This is primarily for
-   * cleaning the memory usage hold by V8 debugger when hitting the V8
-   * breakpoints too many times.
+   * Resets the debugging session when the number of paused events meets the
+   * threshold. This is primarily for cleaning the memory usage hold by V8
+   * debugger when hitting the V8 breakpoints too many times.
    */
-  private resetV8DebuggerIfMeetThreshold() {
+  private resetV8DebuggerIfThresholdMet() {
     this.numPausedBeforeReset += 1;
     if (this.numPausedBeforeReset < this.resetV8DebuggerThreshold) {
       return;

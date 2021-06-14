@@ -359,8 +359,8 @@ export interface ResolvedDebugAgentConfig extends GoogleAuthOptions {
   apiUrl?: string;
 
   /**
-   * Number of times of the V8 pause events (could be breakpoint hits) before
-   * resetting the breakpoints. This is to release the memory usage held by V8
+   * Number of times the V8 pauses (could be breakpoint hits) before the
+   * debugging session is reset. This is to release the memory usage held by V8
    * engine for each breakpoint hit to prevent the memory leak. The default
    * value is specified in defaultConfig.
    */
