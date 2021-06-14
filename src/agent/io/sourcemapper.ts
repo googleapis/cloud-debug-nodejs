@@ -26,12 +26,25 @@ const readFilep = promisify(fs.readFile);
 
 /** @define {string} */ const MAP_EXT = '.map';
 
+/** Represents one source map file. */
 export interface MapInfoInput {
+  // The path of generated output file in the source map. For example, if
+  // "src/index1.ts" and "src/index2.ts" are generated into "dist/index.js" and
+  // "dist/index.js.map", then this field is "dist/index.js (relative to the
+  // process's working directory).
   outputFile: string;
+
+  // The source map's path (relative to the process's working directory). For
+  // the same example above, this field is "dist/index.js.map".
   mapFile: string;
+
+  // The SourceMapConsumer object after parsing the content in the mapFile.
   mapConsumer: sourceMap.SourceMapConsumer;
-  // the sources are in ascending order from
-  // shortest to longest
+
+  // The original sources in the source map. Each value is relative to the
+  // source map file. For the same example above, this field is
+  // ['../src/index1.ts', '../src/index2.ts']. the sources are in ascending
+  // order from shortest to longest.
   sources: string[];
 }
 
@@ -39,6 +52,12 @@ export interface MapInfoOutput {
   file: string;
   line: number;
   column?: number;
+}
+
+export class MultiFileMatchError implements Error {
+  readonly name = 'MultiFileMatchError';
+  readonly message = 'Error: matching multiple files';
+  constructor(readonly files: string[]) {}
 }
 
 /**
@@ -167,13 +186,22 @@ export class SourceMapper {
    * source file provided there isn't any ambiguity with associating the input
    * path to exactly one output transpiled file.
    *
-   * @param inputPath The (possibly relative) path to the original source file.
+   * If there are more than one matches, throw the error to include all the
+   * matched candidates.
+   *
+   * If there is no such mapping, it could be because the input file is not
+   * the input to a transpilation process or it is the input to a transpilation
+   * process but its corresponding .map file was not given to the constructor of
+   * this mapper.
+   *
+   * @param inputPath The path to an input file that could possibly be the input
+   *     to a transpilation process.
+   *  The path can be relative to the process's current working directory.
    * @return The `MapInfoInput` object that describes the transpiled file
-   *  associated with the specified input path.  `null` is returned if either
-   *  zero files are associated with the input path or if more than one file
-   *  could possibly be associated with the given input path.
+   *  associated with the specified input path. `null` is returned if there is
+   *  no files that are associated with the input path.
    */
-  private getMappingInfo(inputPath: string): MapInfoInput | null {
+  getMapInfoInput(inputPath: string): MapInfoInput | null {
     if (this.infoMap.has(path.normalize(inputPath))) {
       return this.infoMap.get(inputPath) as MapInfoInput;
     }
@@ -182,28 +210,15 @@ export class SourceMapper {
       inputPath,
       Array.from(this.infoMap.keys())
     );
+
     if (matches.length === 1) {
       return this.infoMap.get(matches[0]) as MapInfoInput;
     }
+    if (matches.length > 1) {
+      throw new MultiFileMatchError(matches);
+    }
 
     return null;
-  }
-
-  /**
-   * Used to determine if the source file specified by the given path has
-   * a .map file and an output file associated with it.
-   *
-   * If there is no such mapping, it could be because the input file is not
-   * the input to a transpilation process or it is the input to a transpilation
-   * process but its corresponding .map file was not given to the constructor
-   * of this mapper.
-   *
-   * @param {string} inputPath The path to an input file that could
-   *  possibly be the input to a transpilation process.  The path should be
-   *  relative to the process's current working directory.
-   */
-  hasMappingInfo(inputPath: string): boolean {
-    return this.getMappingInfo(inputPath) !== null;
   }
 
   /**
@@ -225,20 +240,18 @@ export class SourceMapper {
    *   If the given input file does not have mapping information associated
    *   with it then null is returned.
    */
-  mappingInfo(
+  getMapInfoOutput(
     inputPath: string,
     lineNumber: number,
-    colNumber: number
+    colNumber: number,
+    entry: MapInfoInput
   ): MapInfoOutput | null {
     inputPath = path.normalize(inputPath);
-    const entry = this.getMappingInfo(inputPath);
-    if (entry === null) {
-      return null;
-    }
 
     const relPath = path
       .relative(path.dirname(entry.mapFile), inputPath)
       .replace(/\\/g, '/');
+
     /**
      * Note: Since `entry.sources` is in ascending order from shortest
      *       to longest, the first source path that ends with the

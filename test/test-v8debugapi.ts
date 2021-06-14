@@ -412,7 +412,7 @@ describe('v8debugapi', () => {
       });
     });
 
-    it('should reject breakpoint when filename is ambiguous', done => {
+    it('should reject breakpoint when javascript file is ambiguous', done => {
       require('./fixtures/a/hello.js');
       require('./fixtures/b/hello.js');
       // TODO(dominickramer): Have this actually implement Breakpoint
@@ -454,6 +454,32 @@ describe('v8debugapi', () => {
           -1,
           `Missing text '${expectedSubstring}' in '${message}'`
         );
+        done();
+      });
+    });
+
+    it('should reject breakpoint when source mapping is ambiguous', done => {
+      const bp: stackdriver.Breakpoint = {
+        id: 'ambiguous',
+        location: {line: 1, path: 'in.ts'},
+      } as {} as stackdriver.Breakpoint;
+      api.set(bp, err => {
+        assert.ok(err);
+        assert.ok(bp.status);
+        assert.ok(bp.status instanceof StatusMessage);
+        assert.ok(bp.status!.isError);
+        assert(
+          bp.status!.description.format === utils.messages.SOURCE_FILE_AMBIGUOUS
+        );
+
+        // Verify that a warning log message is emitted.
+        assert.strictEqual(
+          logger.warns.length,
+          1,
+          `Expected 1 warning log message, got ${logger.allCalls.length}`
+        );
+        const message = logger.warns[0].args[0];
+        assert.notStrictEqual(message.indexOf('Multiple matches:'), -1);
         done();
       });
     });

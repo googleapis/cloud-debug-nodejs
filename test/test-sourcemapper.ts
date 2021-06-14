@@ -68,9 +68,9 @@ function testTool(
         tool +
         ' it states that it has mapping info for files it knows about',
       done => {
-        assert.strictEqual(
-          sourcemapper.hasMappingInfo(inputFilePath),
-          true,
+        assert.notStrictEqual(
+          sourcemapper.getMapInfoInput(inputFilePath),
+          null,
           `The sourcemapper should have information about '${inputFilePath}'`
         );
         done();
@@ -83,17 +83,17 @@ function testTool(
         ' it states that it has mapping info for files with a path' +
         ' similar to a path it knows about',
       done => {
-        assert.strictEqual(
-          sourcemapper.hasMappingInfo(relativeInputFilePath),
-          true
+        assert.notStrictEqual(
+          sourcemapper.getMapInfoInput(inputFilePath),
+          null
         );
         const movedPath = path.join(
           '/some/other/base/dir/',
           relativeInputFilePath
         );
-        assert.strictEqual(
-          sourcemapper.hasMappingInfo(movedPath),
-          true,
+        assert.notStrictEqual(
+          sourcemapper.getMapInfoInput(inputFilePath),
+          null,
           `The sourcemapper should have information about paths similar to '${movedPath}'`
         );
         done();
@@ -108,8 +108,8 @@ function testTool(
       done => {
         const invalidPath = inputFilePath + '_INVALID';
         assert.strictEqual(
-          sourcemapper.hasMappingInfo(invalidPath),
-          false,
+          sourcemapper.getMapInfoInput(invalidPath),
+          null,
           `The source mapper should not have information the path '${invalidPath}' it doesn't recognize`
         );
         done();
@@ -117,7 +117,14 @@ function testTool(
     );
 
     const testLineMapping = (inputLine: number, expectedOutputLine: number) => {
-      const info = sourcemapper.mappingInfo(inputFilePath, inputLine, 0);
+      const mapInfoInput = sourcemapper.getMapInfoInput(inputFilePath);
+      assert.notEqual(mapInfoInput, null);
+      const info = sourcemapper.getMapInfoOutput(
+        inputFilePath,
+        inputLine,
+        0,
+        mapInfoInput!
+      );
       assert.notStrictEqual(
         info,
         null,
