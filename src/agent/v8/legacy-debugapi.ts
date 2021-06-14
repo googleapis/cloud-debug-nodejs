@@ -129,7 +129,8 @@ export class V8DebugApi implements debugapi.DebugApi {
       );
     }
     const baseScriptPath = path.normalize(breakpoint.location.path);
-    if (!this.sourcemapper.hasMappingInfo(baseScriptPath)) {
+    const mapInfoInput = this.sourcemapper.getMapInfoInput(baseScriptPath);
+    if (mapInfoInput === null) {
       const extension = path.extname(baseScriptPath);
       if (!this.config.javascriptFileExtensions.includes(extension)) {
         return utils.setErrorStatusAndCallback(
@@ -143,10 +144,11 @@ export class V8DebugApi implements debugapi.DebugApi {
     } else {
       const line = breakpoint.location.line;
       const column = 0;
-      const mapInfo = this.sourcemapper.mappingInfo(
+      const mapInfo = this.sourcemapper.getMapInfoOutput(
         baseScriptPath,
         line,
-        column
+        column,
+        mapInfoInput
       );
       const compile = utils.getBreakpointCompiler(breakpoint);
       if (breakpoint.condition && compile) {
@@ -168,6 +170,7 @@ export class V8DebugApi implements debugapi.DebugApi {
       this.setInternal(breakpoint, mapInfo, compile, cb);
     }
   }
+
   clear(
     breakpoint: stackdriver.Breakpoint,
     cb: (err: Error | null) => void
