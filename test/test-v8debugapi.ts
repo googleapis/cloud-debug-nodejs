@@ -178,7 +178,7 @@ describe('debugapi selection', () => {
         assert.strictEqual(fileStats.errors().size, 0);
         const jsStats = fileStats.selectStats(/.js$/);
         const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
-        const mapper = await SourceMapper.create(mapFiles);
+        const mapper = await SourceMapper.create(mapFiles, logger);
         // TODO(dominickramer): Handle the case when mapper is undefined.
         // TODO(dominickramer): Handle the case when v8debugapi.create
         // returns null
@@ -222,7 +222,7 @@ describeFn('debugapi selection on Node >=10', () => {
         assert.strictEqual(fileStats.errors().size, 0);
         const jsStats = fileStats.selectStats(/.js$/);
         const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
-        const mapper = await SourceMapper.create(mapFiles);
+        const mapper = await SourceMapper.create(mapFiles, logger);
         assert(mapper);
         api = debugapi.create(logger, config, jsStats, mapper!);
         // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -250,7 +250,7 @@ describe('v8debugapi', () => {
           assert.strictEqual(fileStats.errors().size, 0);
           const jsStats = fileStats.selectStats(/.js$|.jsz$/);
           const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
-          const mapper = await SourceMapper.create(mapFiles);
+          const mapper = await SourceMapper.create(mapFiles, logger);
 
           // TODO(dominickramer): Handle the case when mapper is undefined.
           // TODO(dominickramer): Handle the case when v8debugapi.create
