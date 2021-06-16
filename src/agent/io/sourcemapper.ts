@@ -327,7 +327,10 @@ export class SourceMapper {
  * @param {Logger} logger A logger that reports errors that occurred while
  *  processing the given sourcemap files
  */
-export async function create(sourcemapPaths: string[], logger: Logger): Promise<SourceMapper> {
+export async function create(
+  sourcemapPaths: string[],
+  logger: Logger
+): Promise<SourceMapper> {
   const limit = pLimit(CONCURRENCY);
   const mapper = new SourceMapper(logger);
   const promises = sourcemapPaths.map(path =>
