@@ -28,11 +28,11 @@ const QUICK_MILLISECONDS = 300;
 /**
  * @param {string} tool The name of the tool that was used to generate the
  *  given sourcemap data
- * @param {string} relativeMapFilePath The path to the sourcemap file of a
+ * @param {string} mapFilePath The path to the sourcemap file of a
  *  transpilation to test
- * @param {string} relativeInputFilePath The path to the input file that was
+ * @param {string} inputFilePath The path to the input file that was
  *  transpiled to generate the specified sourcemap file
- * @param {string} relativeOutputFilePath The path to the output file that was
+ * @param {string} outputFilePath The path to the output file that was
  *  generated during the transpilation process that constructed the
  *  specified sourcemap file
  * @param {Array.<Array.<number, number>>} inToOutLineNums An array of arrays
@@ -44,15 +44,11 @@ const QUICK_MILLISECONDS = 300;
  */
 function testTool(
   tool: string,
-  relativeMapFilePath: string,
-  relativeInputFilePath: string,
-  relativeOutputFilePath: string,
+  mapFilePath: string,
+  inputFilePath: string,
+  outputFilePath: string,
   inToOutLineNums: number[][]
 ) {
-  const mapFilePath = path.join(BASE_PATH, relativeMapFilePath);
-  const inputFilePath = path.join(BASE_PATH, relativeInputFilePath);
-  const outputFilePath = path.join(BASE_PATH, relativeOutputFilePath);
-
   describe('sourcemapper for tool ' + tool, () => {
     const logger = new MockLogger();
     let sourcemapper: sm.SourceMapper;
@@ -112,7 +108,7 @@ function testTool(
         );
         const movedPath = path.join(
           '/some/other/base/dir/',
-          relativeInputFilePath
+          inputFilePath
         );
         assert.notStrictEqual(
           sourcemapper.getMapInfoInput(inputFilePath),
@@ -143,7 +139,6 @@ function testTool(
       const mapInfoInput = sourcemapper.getMapInfoInput(inputFilePath);
       assert.notEqual(mapInfoInput, null);
       const info = sourcemapper.getMapInfoOutput(
-        inputFilePath,
         inputLine,
         0,
         mapInfoInput!
@@ -153,7 +148,7 @@ function testTool(
       const debugsLength = logger.debugs.length;
       assert.notStrictEqual(
         logger.debugs[debugsLength - 3].args[0].indexOf(
-          'sourcemapper inputPath:'
+          'sourcemapper entry.inputFile:'
         ),
         -1
       );
@@ -200,9 +195,9 @@ function testTool(
 
 testTool(
   'Babel',
-  path.join('babel', 'out.js.map'),
-  path.join('babel', 'in.js'),
-  path.join('babel', 'out.js'),
+  path.join(BASE_PATH, path.join('babel', 'out.js.map')),
+  path.join(BASE_PATH, path.join('babel', 'in.js')),
+  path.join(BASE_PATH, path.join('babel', 'out.js')),
   [
     [1, 14],
     [2, 15],
@@ -259,9 +254,9 @@ testTool(
 
 testTool(
   'Typescript',
-  path.join('typescript', 'out.js.map'),
-  path.join('typescript', 'in.ts'),
-  path.join('typescript', 'out.js'),
+  path.join(BASE_PATH, path.join('typescript', 'out.js.map')),
+  path.join(BASE_PATH, path.join('typescript', 'in.ts')),
+  path.join(BASE_PATH, path.join('typescript', 'out.js')),
   [
     [1, 5],
     [2, 6],
@@ -280,10 +275,20 @@ testTool(
 );
 
 testTool(
+  'Typescript with sub path',
+  path.join(BASE_PATH, path.join('typescript', 'out.js.map')),
+  'in.ts',
+  path.join(BASE_PATH, path.join('typescript', 'out.js')),
+  [
+    [1, 5],
+  ]
+);
+
+testTool(
   'Coffeescript',
-  path.join('coffeescript', 'in.js.map'),
-  path.join('coffeescript', 'in.coffee'),
-  path.join('coffeescript', 'in.js'),
+  path.join(BASE_PATH, path.join('coffeescript', 'in.js.map')),
+  path.join(BASE_PATH, path.join('coffeescript', 'in.coffee')),
+  path.join(BASE_PATH, path.join('coffeescript', 'in.js')),
   [
     [1, 1],
     [2, 7],
@@ -305,9 +310,9 @@ testTool(
 
 testTool(
   'Webpack with Typescript',
-  path.join('webpack-ts', 'out.js.map'),
-  path.join('webpack-ts', 'in.ts_'),
-  path.join('webpack-ts', 'out.js'),
+  path.join(BASE_PATH, path.join('webpack-ts', 'out.js.map')),
+  path.join(BASE_PATH, path.join('webpack-ts', 'in.ts_')),
+  path.join(BASE_PATH, path.join('webpack-ts', 'out.js')),
   [
     [3, 93],
     [4, 94],

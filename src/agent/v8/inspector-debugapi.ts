@@ -198,7 +198,6 @@ export class InspectorDebugApi implements debugapi.DebugApi {
       const line = breakpoint.location.line;
       const column = 0;
       const mapInfo = this.sourcemapper.getMapInfoOutput(
-        baseScriptPath,
         line,
         column,
         mapInfoInput

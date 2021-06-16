@@ -35,6 +35,10 @@ export interface MapInfoInput {
   // process's working directory).
   outputFile: string;
 
+  // The path of the original source file. In the example above, this will be
+  // either "src/index1.ts" or "src/index2.ts".
+  inputFile: string;
+
   // The source map's path (relative to the process's working directory). For
   // the same example above, this field is "dist/index.js.map".
   mapFile: string;
@@ -158,8 +162,10 @@ async function processSourcemap(
   }
 
   for (const src of normalizedSourcesRelToProc) {
-    infoMap.set(path.normalize(src), {
+    const inputFile = path.normalize(src);
+    infoMap.set(inputFile, {
       outputFile: outputPath,
+      inputFile,
       mapFile: mapPath,
       mapConsumer: consumer,
       sources: sourcesRelToSrcmap,
@@ -218,13 +224,12 @@ export class SourceMapper {
   }
 
   /**
-   * @param {string} inputPath The path to an input file that could possibly
-   *  be the input to a transpilation process.  The path should be relative to
-   *  the process's current working directory
    * @param {number} The line number in the input file where the line number is
    *   zero-based.
    * @param {number} (Optional) The column number in the line of the file
    *   specified where the column number is zero-based.
+   * @param {string} The entry of the source map info in this.infoMap.
+   *
    * @return {Object} The object returned has a "file" attribute for the
    *   path of the output file associated with the given input file (where the
    *   path is relative to the process's current working directory),
@@ -237,17 +242,14 @@ export class SourceMapper {
    *   with it then null is returned.
    */
   getMapInfoOutput(
-    inputPath: string,
     lineNumber: number,
     colNumber: number,
     entry: MapInfoInput
   ): MapInfoOutput | null {
-    this.logger.debug(`sourcemapper inputPath: ${inputPath}`);
-
-    inputPath = path.normalize(inputPath);
+    this.logger.debug(`sourcemapper entry.inputFile: ${entry.inputFile}`);
 
     const relPath = path
-      .relative(path.dirname(entry.mapFile), inputPath)
+      .relative(path.dirname(entry.mapFile), entry.inputFile)
       .replace(/\\/g, '/');
 
     /**
