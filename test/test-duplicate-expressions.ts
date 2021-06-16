@@ -63,7 +63,7 @@ describe(__filename, () => {
         assert.strictEqual(fileStats.errors().size, 0);
         const jsStats = fileStats.selectStats(/.js$/);
         const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
-        const mapper = await SourceMapper.create(mapFiles);
+        const mapper = await SourceMapper.create(mapFiles, logger);
         // TODO: Handle the case when mapper is undefined
         // TODO: Handle the case when v8debugapi.create returns null
         api = debugapi.create(

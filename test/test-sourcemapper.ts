@@ -20,6 +20,8 @@ import * as path from 'path';
 
 import * as sm from '../src/agent/io/sourcemapper';
 
+import {MockLogger} from './mock-logger';
+
 const BASE_PATH = path.join(__dirname, 'fixtures', 'sourcemapper');
 const QUICK_MILLISECONDS = 300;
 
@@ -52,16 +54,28 @@ function testTool(
   const outputFilePath = path.join(BASE_PATH, relativeOutputFilePath);
 
   describe('sourcemapper for tool ' + tool, () => {
+    const logger = new MockLogger();
     let sourcemapper: sm.SourceMapper;
 
-    it('for tool ' + tool, async () => {
-      const start = Date.now();
-      sourcemapper = await sm.create([mapFilePath]);
-      assert(
-        Date.now() - start < QUICK_MILLISECONDS,
-        'should create the SourceMapper quickly'
-      );
-    });
+    it('for tool ' + tool + ' sourcemapper should be created correctly',
+       async () => {
+         const start = Date.now();
+         sourcemapper = await sm.create([mapFilePath], logger);
+         assert(
+             Date.now() - start < QUICK_MILLISECONDS,
+             'should create the SourceMapper quickly');
+
+         // Verify if the debugging information is correctly printed.
+         assert.notStrictEqual(
+             logger.debugs[0].args[0].indexOf('debugging information ...'), -1);
+         assert.notStrictEqual(logger.debugs[1].args[0].indexOf('source '), -1);
+         assert.notStrictEqual(
+             logger.debugs[2].args[0].indexOf('outputFile'), -1);
+         assert.notStrictEqual(logger.debugs[3].args[0].indexOf('mapFile'), -1);
+         assert.notStrictEqual(logger.debugs[4].args[0].indexOf('sources'), -1);
+         assert.strictEqual(
+             logger.debugs.length, sourcemapper.infoMap.size * 4 + 1);
+       });
 
     it(
       'for tool ' +
@@ -125,6 +139,22 @@ function testTool(
         0,
         mapInfoInput!
       );
+
+      // Verify if the debugging information is correctly printed.
+      const debugsLength = logger.debugs.length;
+      assert.notStrictEqual(
+          logger.debugs[debugsLength - 3].args[0].indexOf(
+              'sourcemapper inputPath:'),
+          -1);
+      assert.notStrictEqual(
+          logger.debugs[debugsLength - 2].args[0].indexOf(
+              'sourcemapper sourcePos: {'),
+          -1);
+      assert.notStrictEqual(
+          logger.debugs[debugsLength - 1].args[0].indexOf(
+              'sourcemapper mappedPos: {'),
+          -1);
+
       assert.notStrictEqual(
         info,
         null,
