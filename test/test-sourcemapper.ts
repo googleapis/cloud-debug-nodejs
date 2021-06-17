@@ -106,10 +106,7 @@ function testTool(
           sourcemapper.getMapInfoInput(inputFilePath),
           null
         );
-        const movedPath = path.join(
-          '/some/other/base/dir/',
-          inputFilePath
-        );
+        const movedPath = path.join('/some/other/base/dir/', inputFilePath);
         assert.notStrictEqual(
           sourcemapper.getMapInfoInput(inputFilePath),
           null,
@@ -138,11 +135,7 @@ function testTool(
     const testLineMapping = (inputLine: number, expectedOutputLine: number) => {
       const mapInfoInput = sourcemapper.getMapInfoInput(inputFilePath);
       assert.notEqual(mapInfoInput, null);
-      const info = sourcemapper.getMapInfoOutput(
-        inputLine,
-        0,
-        mapInfoInput!
-      );
+      const info = sourcemapper.getMapInfoOutput(inputLine, 0, mapInfoInput!);
 
       // Verify if the debugging information is correctly printed.
       const debugsLength = logger.debugs.length;
@@ -279,9 +272,7 @@ testTool(
   path.join(BASE_PATH, path.join('typescript', 'out.js.map')),
   'in.ts',
   path.join(BASE_PATH, path.join('typescript', 'out.js')),
-  [
-    [1, 5],
-  ]
+  [[1, 5]]
 );
 
 testTool(
