@@ -54,10 +54,6 @@ describe('sourcemapper debug info', () => {
     const sourcemapper = await sm.create([mapFilePath], logger);
 
     // Verify if the debugging information is correctly printed.
-    assert.notStrictEqual(
-      logger.debugs[0].args[0].match('debugging information ...'),
-      null
-    );
     const expectedDebugMessages = [
       'debugging information ...',
       path.normalize('test/fixtures/sourcemapper/typescript/in.ts'),
@@ -67,9 +63,12 @@ describe('sourcemapper debug info', () => {
     ];
 
     for (let i = 0; i < expectedDebugMessages.length; i++) {
+      // We use 'indexOf' here instead of 'match' to avoid parsing regular
+      // expression, which will confuse the result when having '\' in the path
+      // name on platform like Windows.
       assert.notStrictEqual(
-        logger.debugs[i].args[0].match(expectedDebugMessages[i]),
-        null,
+        logger.debugs[i].args[0].indexOf(expectedDebugMessages[i]),
+        -1,
         `'${logger.debugs[i].args[0]}' does not match '${expectedDebugMessages[i]}'`
       );
     }
@@ -88,24 +87,27 @@ describe('sourcemapper debug info', () => {
     sourcemapper.getMapInfoOutput(inputFilePath, 1, 0, mapInfoInput!);
 
     // Verify if the debugging information is correctly printed.
+    // We use 'indexOf' here instead of 'match' to avoid parsing regular
+    // expression, which will confuse the result when having '\' in the path
+    // name on platform like Windows.
     const debugsLength = logger.debugs.length;
     assert.notStrictEqual(
-      logger.debugs[debugsLength - 3].args[0].match(
+      logger.debugs[debugsLength - 3].args[0].indexOf(
         `sourcemapper inputPath: ${inputFilePath}`
       ),
-      null
+      -1
     );
     assert.notStrictEqual(
-      logger.debugs[debugsLength - 2].args[0].match(
+      logger.debugs[debugsLength - 2].args[0].indexOf(
         'sourcePos: {"source":"in.ts","line":2,"column":0}'
       ),
-      null
+      -1
     );
     assert.notStrictEqual(
-      logger.debugs[debugsLength - 1].args[0].match(
+      logger.debugs[debugsLength - 1].args[0].indexOf(
         'mappedPos: {"line":6,"column":0,"lastColumn":null}'
       ),
-      null
+      -1
     );
   });
 });
