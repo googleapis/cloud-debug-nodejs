@@ -18,6 +18,7 @@ import * as path from 'path';
 import {promisify} from 'util';
 import * as sourceMap from 'source-map';
 
+import {Logger} from '../config';
 import {findScriptsFuzzy} from '../util/utils';
 
 const CONCURRENCY = 10;
@@ -167,17 +168,10 @@ async function processSourcemap(
 }
 
 export class SourceMapper {
+  /** Maps each original source path to the corresponding source map info. */
   infoMap: Map<string, MapInfoInput>;
 
-  /**
-   * @param {Array.<string>} sourcemapPaths An array of paths to .map sourcemap
-   *  files that should be processed.  The paths should be relative to the
-   *  current process's current working directory
-   * @param {Logger} logger A logger that reports errors that occurred while
-   *  processing the given sourcemap files
-   * @constructor
-   */
-  constructor() {
+  constructor(readonly logger: Logger) {
     this.infoMap = new Map();
   }
 
@@ -210,6 +204,8 @@ export class SourceMapper {
       inputPath,
       Array.from(this.infoMap.keys())
     );
+
+    this.logger.debug(`sourcemapper fuzzy matches: ${matches}`);
 
     if (matches.length === 1) {
       return this.infoMap.get(matches[0]) as MapInfoInput;
@@ -246,6 +242,8 @@ export class SourceMapper {
     colNumber: number,
     entry: MapInfoInput
   ): MapInfoOutput | null {
+    this.logger.debug(`sourcemapper inputPath: ${inputPath}`);
+
     inputPath = path.normalize(inputPath);
 
     const relPath = path
@@ -273,6 +271,8 @@ export class SourceMapper {
       column: colNumber, // to be zero-based
     };
 
+    this.logger.debug(`sourcemapper sourcePos: ${JSON.stringify(sourcePos)}`);
+
     const allPos = entry.mapConsumer.allGeneratedPositionsFor(sourcePos);
     /*
      * Based on testing, it appears that the following code is needed to
@@ -290,6 +290,8 @@ export class SourceMapper {
           })
         : entry.mapConsumer.generatedPositionFor(sourcePos);
 
+    this.logger.debug(`sourcemapper mappedPos: ${JSON.stringify(mappedPos)}`);
+
     return {
       file: entry.outputFile,
       line: (mappedPos.line ?? 0) - 1, // convert the one-based line numbers returned
@@ -305,11 +307,32 @@ export class SourceMapper {
       // output
     };
   }
+
+  /** Prints the debugging information of the source mapper to the logger. */
+  debug() {
+    this.logger.debug('Printing source mapper debugging information ...');
+    for (const [key, value] of this.infoMap) {
+      this.logger.debug(`  source ${key}:`);
+      this.logger.debug(`    outputFile: ${value.outputFile}`);
+      this.logger.debug(`    mapFile: ${value.mapFile}`);
+      this.logger.debug(`    sources: ${value.sources}`);
+    }
+  }
 }
 
-export async function create(sourcemapPaths: string[]): Promise<SourceMapper> {
+/**
+ * @param {Array.<string>} sourcemapPaths An array of paths to .map sourcemap
+ *  files that should be processed.  The paths should be relative to the
+ *  current process's current working directory
+ * @param {Logger} logger A logger that reports errors that occurred while
+ *  processing the given sourcemap files
+ */
+export async function create(
+  sourcemapPaths: string[],
+  logger: Logger
+): Promise<SourceMapper> {
   const limit = pLimit(CONCURRENCY);
-  const mapper = new SourceMapper();
+  const mapper = new SourceMapper(logger);
   const promises = sourcemapPaths.map(path =>
     limit(() => processSourcemap(mapper.infoMap, path))
   );
@@ -320,5 +343,6 @@ export async function create(sourcemapPaths: string[]): Promise<SourceMapper> {
       'An error occurred while processing the sourcemap files' + err
     );
   }
+  mapper.debug();
   return mapper;
 }

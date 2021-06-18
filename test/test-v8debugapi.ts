@@ -178,7 +178,7 @@ describe('debugapi selection', () => {
         assert.strictEqual(fileStats.errors().size, 0);
         const jsStats = fileStats.selectStats(/.js$/);
         const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
-        const mapper = await SourceMapper.create(mapFiles);
+        const mapper = await SourceMapper.create(mapFiles, logger);
         // TODO(dominickramer): Handle the case when mapper is undefined.
         // TODO(dominickramer): Handle the case when v8debugapi.create
         // returns null
@@ -222,7 +222,7 @@ describeFn('debugapi selection on Node >=10', () => {
         assert.strictEqual(fileStats.errors().size, 0);
         const jsStats = fileStats.selectStats(/.js$/);
         const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
-        const mapper = await SourceMapper.create(mapFiles);
+        const mapper = await SourceMapper.create(mapFiles, logger);
         assert(mapper);
         api = debugapi.create(logger, config, jsStats, mapper!);
         // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -250,7 +250,7 @@ describe('v8debugapi', () => {
           assert.strictEqual(fileStats.errors().size, 0);
           const jsStats = fileStats.selectStats(/.js$|.jsz$/);
           const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
-          const mapper = await SourceMapper.create(mapFiles);
+          const mapper = await SourceMapper.create(mapFiles, logger);
 
           // TODO(dominickramer): Handle the case when mapper is undefined.
           // TODO(dominickramer): Handle the case when v8debugapi.create
@@ -766,41 +766,7 @@ describe('v8debugapi', () => {
       assert(stateIsClean(api));
     });
 
-    it('should only attach to v8 when having active breakpoints', done => {
-      // The test is only eligible for the InspectorDebugApi test target.
-      if (!(api instanceof InspectorDebugApi)) {
-        done();
-        return;
-      }
-
-      const inspectorDebugApi = api as InspectorDebugApi;
-      assert.strictEqual(inspectorDebugApi.inspector.session, null);
-
-      const bp: stackdriver.Breakpoint = {
-        id: breakpointInFoo.id,
-        location: breakpointInFoo.location,
-        action: 'LOG',
-        logMessageFormat: 'cat',
-      } as {} as stackdriver.Breakpoint;
-      api.set(bp, err1 => {
-        assert.ifError(err1);
-        api.log(
-          bp,
-          () => {},
-          () => false
-        );
-
-        assert.notStrictEqual(inspectorDebugApi.inspector.session, null);
-
-        api.clear(bp, err2 => {
-          assert.ifError(err2);
-          assert.strictEqual(inspectorDebugApi.inspector.session, null);
-          done();
-        });
-      });
-    });
-
-    it('should reset v8 debugging session when meeting threshold', done => {
+    it('should perform v8 breakpoints reset when meeting threshold', done => {
       // The test is only eligible for the InspectorDebugApi test target.
       if (!(api instanceof InspectorDebugApi)) {
         done();
@@ -826,7 +792,7 @@ describe('v8debugapi', () => {
         );
 
         const inspectorDebugApi = api as InspectorDebugApi;
-        const v8SessionBeforeReset = inspectorDebugApi.inspector.session;
+        const v8BeforeReset = inspectorDebugApi.v8;
 
         // The loop should trigger the breakpoints reset.
         for (let i = 0; i < config.resetV8DebuggerThreshold; i++) {
@@ -834,13 +800,9 @@ describe('v8debugapi', () => {
         }
 
         // Expect the current v8 data is no longer the previous one.
-        assert.notStrictEqual(
-          inspectorDebugApi.inspector.session,
-          v8SessionBeforeReset
-        );
+        assert.notStrictEqual(inspectorDebugApi.v8, v8BeforeReset);
 
-        // Make sure the logpoint is still triggered correctly after the second
-        // reset.
+        // Make sure the logpoint is still triggered correctly after the second reset.
         for (let i = 0; i < config.resetV8DebuggerThreshold + 1; i++) {
           code.foo(1);
         }

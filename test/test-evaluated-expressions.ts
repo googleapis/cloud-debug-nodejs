@@ -41,7 +41,7 @@ describe('debugger provides useful information', () => {
     scanner.scan(config.workingDirectory, /\.js$/).then(async fileStats => {
       const jsStats = fileStats.selectStats(/\.js$/);
       const mapFiles = fileStats.selectFiles(/\.map$/, process.cwd());
-      const mapper = await SourceMapper.create(mapFiles);
+      const mapper = await SourceMapper.create(mapFiles, logger);
       assert(mapper);
       api = debugapi.create(logger, config, jsStats, mapper!);
       done();

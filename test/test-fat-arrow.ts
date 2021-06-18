@@ -60,7 +60,7 @@ describe(__filename, () => {
         const jsStats = fileStats.selectStats(/.js$/);
         const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
         // TODO: Determine if the err parameter should be used.
-        const mapper = await SourceMapper.create(mapFiles);
+        const mapper = await SourceMapper.create(mapFiles, logger);
         // TODO: Handle the case when mapper is undefined
         // TODO: Handle the case when v8debugapi.create returns null
         api = debugapi.create(

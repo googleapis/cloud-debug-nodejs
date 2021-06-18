@@ -71,7 +71,7 @@ maybeDescribe(__filename, () => {
         assert.strictEqual(fileStats.errors().size, 0);
         const jsStats = fileStats.selectStats(/.js$/);
         const mapFiles = fileStats.selectFiles(/.map$/, process.cwd());
-        const mapper = await SourceMapper.create(mapFiles);
+        const mapper = await SourceMapper.create(mapFiles, logger);
         api = debugapi.create(
           logger,
           config,
