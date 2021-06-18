@@ -42,6 +42,74 @@ const QUICK_MILLISECONDS = 300;
  *
  *  Note: The line numbers are zero-based
  */
+
+describe('sourcemapper debug info', () => {
+  const logger = new MockLogger();
+  const mapFilePath = path.join(
+    BASE_PATH,
+    path.join('typescript', 'out.js.map')
+  );
+
+  it('should be printed upon creation', async () => {
+    const sourcemapper = await sm.create([mapFilePath], logger);
+
+    // Verify if the debugging information is correctly printed.
+    const expectedDebugMessages = [
+      'debugging information ...',
+      path.normalize('test/fixtures/sourcemapper/typescript/in.ts'),
+      path.normalize('test/fixtures/sourcemapper/typescript/out.js'),
+      path.normalize('test/fixtures/sourcemapper/typescript/out.js.map'),
+      'sources: in.ts',
+    ];
+
+    for (let i = 0; i < expectedDebugMessages.length; i++) {
+      // We use 'indexOf' here instead of 'match' to avoid parsing regular
+      // expression, which will confuse the result when having '\' in the path
+      // name on platform like Windows.
+      assert.notStrictEqual(
+        logger.debugs[i].args[0].indexOf(expectedDebugMessages[i]),
+        -1,
+        `'${logger.debugs[i].args[0]}' does not match '${expectedDebugMessages[i]}'`
+      );
+    }
+    assert.strictEqual(logger.debugs.length, sourcemapper.infoMap.size * 4 + 1);
+  });
+
+  it('should be printed when upon get infomap output', async () => {
+    const sourcemapper = await sm.create([mapFilePath], logger);
+    const inputFilePath = path.join(
+      BASE_PATH,
+      path.join('typescript', 'in.ts')
+    );
+
+    const mapInfoInput = sourcemapper.getMapInfoInput(inputFilePath);
+    assert.notEqual(mapInfoInput, null);
+    sourcemapper.getMapInfoOutput(1, 0, mapInfoInput!);
+
+    // Verify if the debugging information is correctly printed.
+    // We use 'indexOf' here instead of 'match' to avoid parsing regular
+    // expression, which will confuse the result when having '\' in the path
+    // name on platform like Windows.
+    const expectedDebugMessages = [
+      `sourcemapper entry.inputFile: ${inputFilePath}`,
+      'sourcePos: {"source":"in.ts","line":2,"column":0}',
+      'mappedPos: {"line":6,"column":0,"lastColumn":null}',
+    ].reverse();
+    const debugsLength = logger.debugs.length;
+    for (let i = 0; i < expectedDebugMessages.length; i++) {
+      assert.notStrictEqual(
+        logger.debugs[debugsLength - i - 1].args[0].indexOf(
+          expectedDebugMessages[i]
+        ),
+        -1,
+        `'${logger.debugs[debugsLength - i - 1].args[0]}' does not match '${
+          expectedDebugMessages[i]
+        }'`
+      );
+    }
+  });
+});
+
 function testTool(
   tool: string,
   mapFilePath: string,
@@ -53,34 +121,14 @@ function testTool(
     const logger = new MockLogger();
     let sourcemapper: sm.SourceMapper;
 
-    it(
-      'for tool ' + tool + ' sourcemapper should be created correctly',
-      async () => {
-        const start = Date.now();
-        sourcemapper = await sm.create([mapFilePath], logger);
-        assert(
-          Date.now() - start < QUICK_MILLISECONDS,
-          'should create the SourceMapper quickly'
-        );
-
-        // Verify if the debugging information is correctly printed.
-        assert.notStrictEqual(
-          logger.debugs[0].args[0].indexOf('debugging information ...'),
-          -1
-        );
-        assert.notStrictEqual(logger.debugs[1].args[0].indexOf('source '), -1);
-        assert.notStrictEqual(
-          logger.debugs[2].args[0].indexOf('outputFile'),
-          -1
-        );
-        assert.notStrictEqual(logger.debugs[3].args[0].indexOf('mapFile'), -1);
-        assert.notStrictEqual(logger.debugs[4].args[0].indexOf('sources'), -1);
-        assert.strictEqual(
-          logger.debugs.length,
-          sourcemapper.infoMap.size * 4 + 1
-        );
-      }
-    );
+    it('for tool ' + tool, async () => {
+      const start = Date.now();
+      sourcemapper = await sm.create([mapFilePath], logger);
+      assert(
+        Date.now() - start < QUICK_MILLISECONDS,
+        'should create the SourceMapper quickly'
+      );
+    });
 
     it(
       'for tool ' +
@@ -267,6 +315,8 @@ testTool(
   ]
 );
 
+// This test is for testing that by providing a partial partial match of the
+// source file, the breakpoint can still be set correctly.
 testTool(
   'Typescript with sub path',
   path.join(BASE_PATH, path.join('typescript', 'out.js.map')),

@@ -1,5 +1,12 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+### [5.2.4](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v5.2.3...v5.2.4) (2021-06-17)
+
+
+### Bug Fixes
+
+* attach to v8 debugger session only when having active breakpoints ([#975](https://www.github.com/googleapis/cloud-debug-nodejs/issues/975)) ([031a7ad](https://www.github.com/googleapis/cloud-debug-nodejs/commit/031a7ad5c830beee318ae36a9e56b6588bc929d4))
+
 ### [5.2.3](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v5.2.2...v5.2.3) (2021-06-14)
 
 

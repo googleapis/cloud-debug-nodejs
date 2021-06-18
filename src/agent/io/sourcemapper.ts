@@ -35,8 +35,9 @@ export interface MapInfoInput {
   // process's working directory).
   outputFile: string;
 
-  // The path of the original source file. In the example above, this will be
-  // either "src/index1.ts" or "src/index2.ts".
+  // The path of the original source file (relative to the process's working
+  // directory). In the example above, this will be either "src/index1.ts" or
+  // "src/index2.ts".
   inputFile: string;
 
   // The source map's path (relative to the process's working directory). For
