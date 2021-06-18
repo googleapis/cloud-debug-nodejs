@@ -58,28 +58,21 @@ describe('sourcemapper debug info', () => {
       logger.debugs[0].args[0].match('debugging information ...'),
       null
     );
-    assert.notStrictEqual(
-      logger.debugs[1].args[0].match(
-        'test/fixtures/sourcemapper/typescript/in.ts'
-      ),
-      null
-    );
-    assert.notStrictEqual(
-      logger.debugs[2].args[0].match(
-        'test/fixtures/sourcemapper/typescript/out.js'
-      ),
-      null
-    );
-    assert.notStrictEqual(
-      logger.debugs[3].args[0].match(
-        'test/fixtures/sourcemapper/typescript/out.js.map'
-      ),
-      null
-    );
-    assert.notStrictEqual(
-      logger.debugs[4].args[0].match('sources: in.ts'),
-      null
-    );
+    const expectedDebugMessages = [
+      'debugging information ...',
+      path.normalize('test/fixtures/sourcemapper/typescript/in.ts'),
+      path.normalize('test/fixtures/sourcemapper/typescript/out.js'),
+      path.normalize('test/fixtures/sourcemapper/typescript/out.js.map'),
+      'sources: in.ts',
+    ];
+
+    for (let i = 0; i < expectedDebugMessages.length; i++) {
+      assert.notStrictEqual(
+        logger.debugs[i].args[0].match(expectedDebugMessages[i]),
+        null,
+        `'${logger.debugs[i].args[0]}' does not match '${expectedDebugMessages[i]}'`
+      );
+    }
     assert.strictEqual(logger.debugs.length, sourcemapper.infoMap.size * 4 + 1);
   });
 
@@ -97,22 +90,22 @@ describe('sourcemapper debug info', () => {
     // Verify if the debugging information is correctly printed.
     const debugsLength = logger.debugs.length;
     assert.notStrictEqual(
-      logger.debugs[debugsLength - 3].args[0].indexOf(
-        'sourcemapper inputPath:'
+      logger.debugs[debugsLength - 3].args[0].match(
+        `sourcemapper inputPath: ${inputFilePath}`
       ),
-      -1
+      null
     );
     assert.notStrictEqual(
-      logger.debugs[debugsLength - 2].args[0].indexOf(
-        'sourcemapper sourcePos: {'
+      logger.debugs[debugsLength - 2].args[0].match(
+        'sourcePos: {"source":"in.ts","line":2,"column":0}'
       ),
-      -1
+      null
     );
     assert.notStrictEqual(
-      logger.debugs[debugsLength - 1].args[0].indexOf(
-        'sourcemapper mappedPos: {'
+      logger.debugs[debugsLength - 1].args[0].match(
+        'mappedPos: {"line":6,"column":0,"lastColumn":null}'
       ),
-      -1
+      null
     );
   });
 });
