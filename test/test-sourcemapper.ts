@@ -180,37 +180,34 @@ function testTool(
       }
     );
 
+    it(
+      'for tool ' +
+        tool +
+        ' it can get mapping info output when input file does not exist in the source map',
+      done => {
+        const mapInfoInput = sourcemapper.getMapInfoInput(inputFilePath);
+        assert.notEqual(mapInfoInput, null);
+
+        const mapInfoOutput = sourcemapper.getMapInfoOutput(10, 0, {
+          outputFile: mapInfoInput!.outputFile,
+          inputFile: 'some/file/not/in/sourcemap',
+          mapFile: mapInfoInput!.mapFile,
+          mapConsumer: mapInfoInput!.mapConsumer,
+          sources: mapInfoInput!.sources,
+        });
+
+        assert.notEqual(mapInfoOutput, null);
+        assert.strictEqual(mapInfoOutput!.file, mapInfoInput!.outputFile);
+        assert.strictEqual(mapInfoOutput!.line, -1);
+        done();
+      }
+    );
+
     const testLineMapping = (inputLine: number, expectedOutputLine: number) => {
       const mapInfoInput = sourcemapper.getMapInfoInput(inputFilePath);
       assert.notEqual(mapInfoInput, null);
       const info = sourcemapper.getMapInfoOutput(inputLine, 0, mapInfoInput!);
 
-      // Verify if the debugging information is correctly printed.
-      const debugsLength = logger.debugs.length;
-      assert.notStrictEqual(
-        logger.debugs[debugsLength - 3].args[0].indexOf(
-          'sourcemapper entry.inputFile:'
-        ),
-        -1
-      );
-      assert.notStrictEqual(
-        logger.debugs[debugsLength - 2].args[0].indexOf(
-          'sourcemapper sourcePos: {'
-        ),
-        -1
-      );
-      assert.notStrictEqual(
-        logger.debugs[debugsLength - 1].args[0].indexOf(
-          'sourcemapper mappedPos: {'
-        ),
-        -1
-      );
-
-      assert.notStrictEqual(
-        info,
-        null,
-        'The mapping info for file ' + inputFilePath + ' must be non-null'
-      );
       assert.strictEqual(info!.file, outputFilePath);
       assert.strictEqual(
         info!.line,
