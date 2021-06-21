@@ -25,24 +25,6 @@ import {MockLogger} from './mock-logger';
 const BASE_PATH = path.join(__dirname, 'fixtures', 'sourcemapper');
 const QUICK_MILLISECONDS = 300;
 
-/**
- * @param {string} tool The name of the tool that was used to generate the
- *  given sourcemap data
- * @param {string} mapFilePath The path to the sourcemap file of a
- *  transpilation to test
- * @param {string} inputFilePath The path to the input file that was
- *  transpiled to generate the specified sourcemap file
- * @param {string} outputFilePath The path to the output file that was
- *  generated during the transpilation process that constructed the
- *  specified sourcemap file
- * @param {Array.<Array.<number, number>>} inToOutLineNums An array of arrays
- *  where each element in the array is a pair of numbers.  The first number
- *  in the pair is the line number from the input file and the second number
- *  in the pair is the expected line number in the corresponding output file
- *
- *  Note: The line numbers are zero-based
- */
-
 describe('sourcemapper debug info', () => {
   const logger = new MockLogger();
   const mapFilePath = path.join(
@@ -110,6 +92,23 @@ describe('sourcemapper debug info', () => {
   });
 });
 
+/**
+ * @param {string} tool The name of the tool that was used to generate the
+ *  given sourcemap data
+ * @param {string} mapFilePath The path to the sourcemap file of a
+ *  transpilation to test
+ * @param {string} inputFilePath The path to the input file that was
+ *  transpiled to generate the specified sourcemap file
+ * @param {string} outputFilePath The path to the output file that was
+ *  generated during the transpilation process that constructed the
+ *  specified sourcemap file
+ * @param {Array.<Array.<number, number>>} inToOutLineNums An array of arrays
+ *  where each element in the array is a pair of numbers.  The first number
+ *  in the pair is the line number from the input file and the second number
+ *  in the pair is the expected line number in the corresponding output file
+ *
+ *  Note: The line numbers are zero-based
+ */
 function testTool(
   tool: string,
   mapFilePath: string,
