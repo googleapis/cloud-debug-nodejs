@@ -230,7 +230,7 @@ export class SourceMapper {
    * @param {number} (Optional) The column number in the line of the file
    *   specified where the column number is zero-based.
    * @param {string} The entry of the source map info in the sourceMapper. Such
-   *     an entry is supposed to get got by the getMapInfoInput method.
+   *     an entry is supposed to be got by the getMapInfoInput method.
    *
    * @return {Object} The object returned has a "file" attribute for the
    *   path of the output file associated with the given input file (where the
