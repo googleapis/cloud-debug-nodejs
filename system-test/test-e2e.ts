@@ -165,7 +165,10 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     assert.ok(debuggees, 'should get a valid ListDebuggees response');
 
     const result = debuggees.find(d => d.id === debuggeeId);
-    assert.ok(result, `should find the debuggee we just registered, expected debuggeeId: ${debuggeeId}, found: ${result}`);
+    assert.ok(
+      result,
+      `should find the debuggee we just registered, expected debuggeeId: ${debuggeeId}, found: ${result}`
+    );
   }
 
   async function verifyDeleteBreakpoints() {
