@@ -68,7 +68,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
         debuggeeId: string;
         projectId: string;
       }) => {
-        console.log(c);
+        console.log('handler received:', c);
         if (c.error) {
           reject(new Error('A child reported the following error: ' + c.error));
           return;
@@ -91,6 +91,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
         }
         numChildrenReady++;
         if (numChildrenReady === CLUSTER_WORKERS) {
+          console.log('All children are ready');
           resolve();
         }
       };
@@ -105,7 +106,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
       };
 
       for (let i = 0; i < CLUSTER_WORKERS; i++) {
-        // Fork child processes that sned messages to this process with IPC.
+        // Fork child processes that send messages to this process with IPC.
         // We pass UUID to the children so that they can all get the same
         // debuggee id.
         const child: Child = {transcript: ''};
@@ -126,8 +127,8 @@ describe('@google-cloud/debug end-to-end behavior', () => {
   afterEach(function () {
     this.timeout(5 * 1000);
     // Create a promise for each child that resolves when that child exits.
-    const childExitPromises = children.map(child => {
-      console.log(child.transcript);
+    const childExitPromises = children.map((child, index) => {
+      console.log(`child ${index} transcript: ===#`, child.transcript, '#===');
       assert(child.process);
       const childProcess = child.process as cp.ChildProcess;
       childProcess.kill();
@@ -164,7 +165,7 @@ describe('@google-cloud/debug end-to-end behavior', () => {
     assert.ok(debuggees, 'should get a valid ListDebuggees response');
 
     const result = debuggees.find(d => d.id === debuggeeId);
-    assert.ok(result, 'should find the debuggee we just registered');
+    assert.ok(result, `should find the debuggee we just registered, expected debuggeeId: ${debuggeeId}, found: ${result}`);
   }
 
   async function verifyDeleteBreakpoints() {
