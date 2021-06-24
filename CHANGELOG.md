@@ -1,5 +1,13 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+### [5.2.5](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v5.2.4...v5.2.5) (2021-06-24)
+
+
+### Bug Fixes
+
+* Add debugging information for sourcemapper ([#977](https://www.github.com/googleapis/cloud-debug-nodejs/issues/977)) ([b647106](https://www.github.com/googleapis/cloud-debug-nodejs/commit/b6471062a24894c7a427ad29ece0819b3b383352))
+* source mapping original path instead of user-provided input ([#978](https://www.github.com/googleapis/cloud-debug-nodejs/issues/978)) ([108225c](https://www.github.com/googleapis/cloud-debug-nodejs/commit/108225cfadbef2c6b3b0c4f4be06a8ea983a0476))
+
 ### [5.2.4](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v5.2.3...v5.2.4) (2021-06-17)
 
 
