@@ -25,24 +25,6 @@ import {MockLogger} from './mock-logger';
 const BASE_PATH = path.join(__dirname, 'fixtures', 'sourcemapper');
 const QUICK_MILLISECONDS = 300;
 
-/**
- * @param {string} tool The name of the tool that was used to generate the
- *  given sourcemap data
- * @param {string} relativeMapFilePath The path to the sourcemap file of a
- *  transpilation to test
- * @param {string} relativeInputFilePath The path to the input file that was
- *  transpiled to generate the specified sourcemap file
- * @param {string} relativeOutputFilePath The path to the output file that was
- *  generated during the transpilation process that constructed the
- *  specified sourcemap file
- * @param {Array.<Array.<number, number>>} inToOutLineNums An array of arrays
- *  where each element in the array is a pair of numbers.  The first number
- *  in the pair is the line number from the input file and the second number
- *  in the pair is the expected line number in the corresponding output file
- *
- *  Note: The line numbers are zero-based
- */
-
 describe('sourcemapper debug info', () => {
   const logger = new MockLogger();
   const mapFilePath = path.join(
@@ -84,45 +66,56 @@ describe('sourcemapper debug info', () => {
 
     const mapInfoInput = sourcemapper.getMapInfoInput(inputFilePath);
     assert.notEqual(mapInfoInput, null);
-    sourcemapper.getMapInfoOutput(inputFilePath, 1, 0, mapInfoInput!);
+    sourcemapper.getMapInfoOutput(1, 0, mapInfoInput!);
 
     // Verify if the debugging information is correctly printed.
     // We use 'indexOf' here instead of 'match' to avoid parsing regular
     // expression, which will confuse the result when having '\' in the path
     // name on platform like Windows.
+    const expectedDebugMessages = [
+      `sourcemapper entry.inputFile: ${inputFilePath}`,
+      'sourcePos: {"source":"in.ts","line":2,"column":0}',
+      'mappedPos: {"line":6,"column":0,"lastColumn":null}',
+    ].reverse();
     const debugsLength = logger.debugs.length;
-    assert.notStrictEqual(
-      logger.debugs[debugsLength - 3].args[0].indexOf(
-        `sourcemapper inputPath: ${inputFilePath}`
-      ),
-      -1
-    );
-    assert.notStrictEqual(
-      logger.debugs[debugsLength - 2].args[0].indexOf(
-        'sourcePos: {"source":"in.ts","line":2,"column":0}'
-      ),
-      -1
-    );
-    assert.notStrictEqual(
-      logger.debugs[debugsLength - 1].args[0].indexOf(
-        'mappedPos: {"line":6,"column":0,"lastColumn":null}'
-      ),
-      -1
-    );
+    for (let i = 0; i < expectedDebugMessages.length; i++) {
+      assert.notStrictEqual(
+        logger.debugs[debugsLength - i - 1].args[0].indexOf(
+          expectedDebugMessages[i]
+        ),
+        -1,
+        `'${logger.debugs[debugsLength - i - 1].args[0]}' does not match '${
+          expectedDebugMessages[i]
+        }'`
+      );
+    }
   });
 });
 
+/**
+ * @param {string} tool The name of the tool that was used to generate the
+ *  given sourcemap data
+ * @param {string} mapFilePath The path to the sourcemap file of a
+ *  transpilation to test
+ * @param {string} inputFilePath The path to the input file that was
+ *  transpiled to generate the specified sourcemap file
+ * @param {string} outputFilePath The path to the output file that was
+ *  generated during the transpilation process that constructed the
+ *  specified sourcemap file
+ * @param {Array.<Array.<number, number>>} inToOutLineNums An array of arrays
+ *  where each element in the array is a pair of numbers.  The first number
+ *  in the pair is the line number from the input file and the second number
+ *  in the pair is the expected line number in the corresponding output file
+ *
+ *  Note: The line numbers are zero-based
+ */
 function testTool(
   tool: string,
-  relativeMapFilePath: string,
-  relativeInputFilePath: string,
-  relativeOutputFilePath: string,
+  mapFilePath: string,
+  inputFilePath: string,
+  outputFilePath: string,
   inToOutLineNums: number[][]
 ) {
-  const mapFilePath = path.join(BASE_PATH, relativeMapFilePath);
-  const inputFilePath = path.join(BASE_PATH, relativeInputFilePath);
-  const outputFilePath = path.join(BASE_PATH, relativeOutputFilePath);
-
   describe('sourcemapper for tool ' + tool, () => {
     const logger = new MockLogger();
     let sourcemapper: sm.SourceMapper;
@@ -160,10 +153,7 @@ function testTool(
           sourcemapper.getMapInfoInput(inputFilePath),
           null
         );
-        const movedPath = path.join(
-          '/some/other/base/dir/',
-          relativeInputFilePath
-        );
+        const movedPath = path.join('/some/other/base/dir/', inputFilePath);
         assert.notStrictEqual(
           sourcemapper.getMapInfoInput(inputFilePath),
           null,
@@ -189,20 +179,34 @@ function testTool(
       }
     );
 
+    it(
+      'for tool ' +
+        tool +
+        ' it can get mapping info output when input file does not exist in the source map',
+      done => {
+        const mapInfoInput = sourcemapper.getMapInfoInput(inputFilePath);
+        assert.notEqual(mapInfoInput, null);
+
+        const mapInfoOutput = sourcemapper.getMapInfoOutput(10, 0, {
+          outputFile: mapInfoInput!.outputFile,
+          inputFile: 'some/file/not/in/sourcemap',
+          mapFile: mapInfoInput!.mapFile,
+          mapConsumer: mapInfoInput!.mapConsumer,
+          sources: mapInfoInput!.sources,
+        });
+
+        assert.notEqual(mapInfoOutput, null);
+        assert.strictEqual(mapInfoOutput!.file, mapInfoInput!.outputFile);
+        assert.strictEqual(mapInfoOutput!.line, -1);
+        done();
+      }
+    );
+
     const testLineMapping = (inputLine: number, expectedOutputLine: number) => {
       const mapInfoInput = sourcemapper.getMapInfoInput(inputFilePath);
       assert.notEqual(mapInfoInput, null);
-      const info = sourcemapper.getMapInfoOutput(
-        inputFilePath,
-        inputLine,
-        0,
-        mapInfoInput!
-      );
-      assert.notStrictEqual(
-        info,
-        null,
-        'The mapping info for file ' + inputFilePath + ' must be non-null'
-      );
+      const info = sourcemapper.getMapInfoOutput(inputLine, 0, mapInfoInput!);
+
       assert.strictEqual(info!.file, outputFilePath);
       assert.strictEqual(
         info!.line,
@@ -228,9 +232,9 @@ function testTool(
 
 testTool(
   'Babel',
-  path.join('babel', 'out.js.map'),
-  path.join('babel', 'in.js'),
-  path.join('babel', 'out.js'),
+  path.join(BASE_PATH, path.join('babel', 'out.js.map')),
+  path.join(BASE_PATH, path.join('babel', 'in.js')),
+  path.join(BASE_PATH, path.join('babel', 'out.js')),
   [
     [1, 14],
     [2, 15],
@@ -287,9 +291,9 @@ testTool(
 
 testTool(
   'Typescript',
-  path.join('typescript', 'out.js.map'),
-  path.join('typescript', 'in.ts'),
-  path.join('typescript', 'out.js'),
+  path.join(BASE_PATH, path.join('typescript', 'out.js.map')),
+  path.join(BASE_PATH, path.join('typescript', 'in.ts')),
+  path.join(BASE_PATH, path.join('typescript', 'out.js')),
   [
     [1, 5],
     [2, 6],
@@ -307,11 +311,21 @@ testTool(
   ]
 );
 
+// This test is for testing that by providing a partial partial match of the
+// source file, the breakpoint can still be set correctly.
+testTool(
+  'Typescript with sub path',
+  path.join(BASE_PATH, path.join('typescript', 'out.js.map')),
+  'in.ts',
+  path.join(BASE_PATH, path.join('typescript', 'out.js')),
+  [[1, 5]]
+);
+
 testTool(
   'Coffeescript',
-  path.join('coffeescript', 'in.js.map'),
-  path.join('coffeescript', 'in.coffee'),
-  path.join('coffeescript', 'in.js'),
+  path.join(BASE_PATH, path.join('coffeescript', 'in.js.map')),
+  path.join(BASE_PATH, path.join('coffeescript', 'in.coffee')),
+  path.join(BASE_PATH, path.join('coffeescript', 'in.js')),
   [
     [1, 1],
     [2, 7],
@@ -333,9 +347,9 @@ testTool(
 
 testTool(
   'Webpack with Typescript',
-  path.join('webpack-ts', 'out.js.map'),
-  path.join('webpack-ts', 'in.ts_'),
-  path.join('webpack-ts', 'out.js'),
+  path.join(BASE_PATH, path.join('webpack-ts', 'out.js.map')),
+  path.join(BASE_PATH, path.join('webpack-ts', 'in.ts_')),
+  path.join(BASE_PATH, path.join('webpack-ts', 'out.js')),
   [
     [3, 93],
     [4, 94],
