@@ -1,5 +1,12 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+### [5.2.6](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v5.2.5...v5.2.6) (2021-07-06)
+
+
+### Bug Fixes
+
+* Add more debugging info to the system e2e test ([#983](https://www.github.com/googleapis/cloud-debug-nodejs/issues/983)) ([5f670ee](https://www.github.com/googleapis/cloud-debug-nodejs/commit/5f670eefbb5828a9c211854f535ddce573c63d29))
+
 ### [5.2.5](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v5.2.4...v5.2.5) (2021-06-24)
 
 
