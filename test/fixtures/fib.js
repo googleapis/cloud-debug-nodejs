@@ -29,6 +29,8 @@ nocks.metadataInstance();
 
 const UUID = process.argv[2] || uuid.v4();
 
+console.log('UUID: ', UUID);
+
 // eslint-disable-next-line node/no-missing-require
 const debuglet = require('../../..').start({
   debug: {
