@@ -122,7 +122,6 @@ describe('Debuglet', () => {
       const mapFiles = searchResults.mapFiles.sort();
       assert(mapFiles[0].endsWith('empty-source-map.js.map'));
       assert(mapFiles[1].endsWith('js-map-file.js.map'));
-
     });
   });
 
