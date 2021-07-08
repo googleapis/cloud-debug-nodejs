@@ -112,12 +112,17 @@ describe('Debuglet', () => {
       const config = extend({}, defaultConfig, {
         workingDirectory: SOURCEMAP_DIR,
       });
+
       const searchResults = await Debuglet.findFiles(config, 'fake-id');
       assert(searchResults.jsStats);
       assert.strictEqual(Object.keys(searchResults.jsStats).length, 1);
       assert(searchResults.jsStats[path.join(SOURCEMAP_DIR, 'js-file.js')]);
-      assert.strictEqual(searchResults.mapFiles.length, 1);
-      assert(searchResults.mapFiles[0].endsWith('js-map-file.js.map'));
+
+      assert.strictEqual(searchResults.mapFiles.length, 2);
+      const mapFiles = searchResults.mapFiles.sort();
+      assert(mapFiles[0].endsWith('empty-source-map.js.map'));
+      assert(mapFiles[1].endsWith('js-map-file.js.map'));
+
     });
   });
 

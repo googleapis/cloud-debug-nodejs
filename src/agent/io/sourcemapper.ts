@@ -158,10 +158,6 @@ async function processSourcemap(
       return path.normalize(path.join(parentDir, relPath));
     });
 
-  if (normalizedSourcesRelToProc.length === 0) {
-    throw new Error('No sources listed in the sourcemap file ' + mapPath);
-  }
-
   for (const src of normalizedSourcesRelToProc) {
     const inputFile = path.normalize(src);
     infoMap.set(inputFile, {
