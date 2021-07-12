@@ -1,5 +1,12 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+### [5.2.7](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v5.2.6...v5.2.7) (2021-07-09)
+
+
+### Bug Fixes
+
+* do not throw when meeting empty source map file ([#992](https://www.github.com/googleapis/cloud-debug-nodejs/issues/992)) ([374c1a7](https://www.github.com/googleapis/cloud-debug-nodejs/commit/374c1a7043d0318b873d7e57ca3ade8ba3f2f958))
+
 ### [5.2.6](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v5.2.5...v5.2.6) (2021-07-06)
 
 
