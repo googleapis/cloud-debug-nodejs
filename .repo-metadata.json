@@ -2,7 +2,7 @@
   "name": "debugger",
   "name_pretty": "Stackdriver Debugger",
   "product_documentation": "https://cloud.google.com/debugger",
-  "client_documentation": "https://googleapis.dev/nodejs/debugger/latest/",
+  "client_documentation": "https://cloud.google.com/nodejs/docs/reference/debug-agent/latest",
   "issue_tracker": "https://issuetracker.google.com/savedsearches/559771",
   "release_level": "beta",
   "language": "nodejs",
