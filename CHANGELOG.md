@@ -1,5 +1,12 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+### [5.2.8](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v5.2.7...v5.2.8) (2021-08-09)
+
+
+### Bug Fixes
+
+* **build:** migrate to using main branch ([#1000](https://www.github.com/googleapis/cloud-debug-nodejs/issues/1000)) ([f4dd699](https://www.github.com/googleapis/cloud-debug-nodejs/commit/f4dd6993c27fe4e5ed1754392477934337b3f93c))
+
 ### [5.2.7](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v5.2.6...v5.2.7) (2021-07-09)
 
 
