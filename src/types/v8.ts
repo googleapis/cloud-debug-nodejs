@@ -15,7 +15,7 @@
 // TODO: Determine if the use of snake case should be allowed in this file.
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-// See https://github.com/v8/v8/blob/master/src/debug/mirrors.js
+// See https://chromium.googlesource.com/v8/v8.git/+/refs/heads/main/src/inspector/value-mirror.cc
 
 export declare type MirrorType =
   | 'undefined'
@@ -133,7 +133,7 @@ export interface PropertyMirror extends Mirror {
 
 export interface FrameDetails {
   // TODO: The debug code expects this to have `arguments` and `locals` fields.
-  //       The code at https://github.com/v8/v8/blob/master/src/debug/mirrors.js
+  //       The code at https://chromium.googlesource.com/v8/v8.git/+/refs/heads/main/src/inspector/value-mirror.cc
   //       seems to suggest that these fields should exist.  Make sure that is
   //       the case.
   arguments: Array<{
@@ -283,8 +283,7 @@ export interface FunctionMirror extends ObjectMirror {
   context: () => ContextMirror;
 }
 
-// See https://github.com/v8/v8/blob/master/src/debug/debug.js and
-//     https://github.com/nodejs/node/blob/master/src/node_contextify.cc
+// See https://chromium.googlesource.com/v8/v8.git/+/refs/heads/main/test/debugger/test-api.js
 export interface ExecutionState {
   // This interface only contains the elements used within the debug agent
   // for the full implementation.
@@ -323,8 +322,7 @@ export interface DebugEvent {
   AsyncTaskEvent: DebugEvent;
 }
 
-// See https://github.com/v8/v8/blob/master/src/debug/debug.js
-// TODO: Add the rest of the methods in this interface
+// See https://chromium.googlesource.com/v8/v8.git/+/refs/heads/main/test/debugger/test-api.js
 export interface Debug {
   DebugEvent: DebugEvent;
   setListener: (listener: any, opt_data?: any) => void;
