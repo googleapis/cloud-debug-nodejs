@@ -51,7 +51,7 @@
     "extend": "^3.0.2",
     "findit2": "^2.2.3",
     "gcp-metadata": "^4.0.0",
-    "p-limit": "^3.0.1",
+    "p-limit": "^4.0.0",
     "semver": "^7.0.0",
     "source-map": "^0.7.3",
     "split": "^1.0.0"
