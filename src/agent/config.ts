@@ -365,6 +365,12 @@ export interface ResolvedDebugAgentConfig extends GoogleAuthOptions {
    * in defaultConfig.
    */
   resetV8DebuggerThreshold: number;
+
+  /**
+   * If set, use Firebase Realtime Database as the backend instead of the
+   * Cloud Debugger API.  Requires many things, which will be documented later.
+   */
+  useFirebase: boolean;
 }
 
 export interface StackdriverConfig extends GoogleAuthOptions {
@@ -415,4 +421,6 @@ export const defaultConfig: ResolvedDebugAgentConfig = {
   forceNewAgent_: false,
   testMode_: false,
   resetV8DebuggerThreshold: 30,
+
+  useFirebase: false,
 };

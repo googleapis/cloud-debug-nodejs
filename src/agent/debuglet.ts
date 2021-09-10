@@ -35,11 +35,13 @@ import {
   ResolvedDebugAgentConfig,
 } from './config';
 import {Controller} from './controller';
+import { OnePlatformController } from './oneplatformcontroller';
 import * as scanner from './io/scanner';
 import * as SourceMapper from './io/sourcemapper';
 import * as utils from './util/utils';
 import * as debugapi from './v8/debugapi';
 import {DebugApi} from './v8/debugapi';
+import { FirebaseController } from './firebasecontroller';
 
 const readFilep = util.promisify(fs.readFile);
 
@@ -256,7 +258,11 @@ export class Debuglet extends EventEmitter {
     });
 
     /** @private {DebugletApi} */
-    this.controller = new Controller(this.debug, {apiUrl: config.apiUrl});
+    if (config.useFirebase) {
+      this.controller = new FirebaseController();
+    } else {
+      this.controller = new OnePlatformController(this.debug, {apiUrl: config.apiUrl});
+    }
 
     /** @private {Debuggee} */
     this.debuggee = null;
@@ -426,14 +432,18 @@ export class Debuglet extends EventEmitter {
     }
 
     let project: string;
-    try {
-      project = await that.debug.authClient.getProjectId();
-    } catch (err) {
-      that.logger.error(
-        'The project ID could not be determined: ' + err.message
-      );
-      that.emit('initError', err);
-      return;
+    if (this.config.useFirebase) {
+      project = 'does not matter yet';
+    } else {
+      try {
+        project = await that.debug.authClient.getProjectId();
+      } catch (err) {
+        that.logger.error(
+          'The project ID could not be determined: ' + err.message
+        );
+        that.emit('initError', err);
+        return;
+      }
     }
 
     if (
@@ -559,13 +569,14 @@ export class Debuglet extends EventEmitter {
       packageInfo.version;
     let desc = process.title + ' ' + mainScript;
 
+    // Incompatibilities!  Keys must be non-empty strings and can't contain ".", "#", "$", "/", "[", or "]"
     const labels: {[key: string]: string} = {
       'main script': mainScript,
-      'process.title': process.title,
+      'process title': process.title,
       'node version': process.versions.node,
       'V8 version': process.versions.v8,
-      'agent.name': packageInfo.name,
-      'agent.version': packageInfo.version,
+      'agent name': packageInfo.name,
+      'agent version': packageInfo.version,
       projectid: projectId,
       platform,
     };

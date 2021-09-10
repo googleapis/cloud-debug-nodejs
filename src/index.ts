@@ -45,8 +45,14 @@ export function start(
     throw new Error('Debug Agent has already been started');
   }
 
-  const debug = new Debug(options, pjson);
-  debuglet = new Debuglet(debug, agentConfig);
+  if (agentConfig.useFirebase) {
+    console.log("Running with experimental firebase backend.");
+    debuglet = new Debuglet({packageInfo: pjson} as Debug, agentConfig); // FIXME: Why is this here??
+  } else {
+    const debug = new Debug(options, pjson);  // FIXME: This is the API implementation.  Not wanted if we're using Firebase.
+    debuglet = new Debuglet(debug, agentConfig);
+  }
+
   debuglet.start();
 
   return agentConfig.testMode_ ? debuglet : debuglet.isReadyManager;
