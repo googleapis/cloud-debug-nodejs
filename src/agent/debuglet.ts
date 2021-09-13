@@ -700,7 +700,12 @@ export class Debuglet extends EventEmitter {
   }
 
   /**
-   * @param {number} seconds
+   * Registers the debuggee after `seconds` seconds.
+   * On failure, uses an exponential backoff to retry.
+   * If successful, emits a 'registered' event, resolves the debuggeeRegistered promise,
+   * and starts listening for breakpoint updates.
+   * 
+   * @param {number} seconds - The number of seconds to wait before registering.
    * @private
    */
   scheduleRegistration_(seconds: number): void {
@@ -759,19 +764,43 @@ export class Debuglet extends EventEmitter {
             }
           ).debuggee.id;
           // TODO: Handle the case when `result` is undefined.
-          that.emit('registered', (result as {debuggee: Debuggee}).debuggee.id);
-          that.debuggeeRegistered.resolve();
+          that.emit('registered', (result as {debuggee: Debuggee}).debuggee.id);  // FIXME: Do we need this?
+          that.debuggeeRegistered.resolve();  // FIXME: Do we need this?
           if (!that.fetcherActive) {
-            that.scheduleBreakpointFetch_(0, false);
+            that.startListeningForBreakpoints_();
+            //that.scheduleBreakpointFetch_(0, false);
           }
         }
       );
     }, seconds * 1000).unref();
   }
 
+  startListeningForBreakpoints_(): void {
+    // TODO: Handle the case where this.debuggee is null or not properly registered.
+    this.controller.subscribeToBreakpoints(
+      this.debuggee!,
+      (err: Error | null, breakpoints: stackdriver.Breakpoint[]) => {
+        // TODO: Handle the re-registration case.
+        this.updateActiveBreakpoints_(breakpoints);
+    });
+  }
+
   /**
-   * @param {number} seconds
-   * @param {boolean} once
+   * This function is where things need to change.
+   * The controller needs to handle the scheduling of fetching, because that is implementation specific.
+   * I still need to figure out what the new version of this function will do.
+   * Functionality in this function:
+   * - retrying failed rpcs
+   * - re-registering if necessary (I'm not convinced that's needed for the firebase implementation)
+   * - some data validation (why here??)
+   * - calling updateActiveBreakpoints(bps) to sync server and v8 breakpoints
+   * - scheduling the polling
+   * 
+   * Of all of that, the only functionality that needs to be in this class is the calling of updateActiveBreakpoints.
+   * That means that this entire function can be shifted to the controller :)
+   * 
+   * @param {number} seconds - The number of seconds to wait before registering.
+   * @param {boolean} once - If set, only fetch the breakpoints once and resolve `breakpointFetched` when complete.
    * @private
    */
   scheduleBreakpointFetch_(seconds: number, once: boolean): void {
@@ -909,6 +938,7 @@ export class Debuglet extends EventEmitter {
     const updatedBreakpointMap = this.convertBreakpointListToMap_(breakpoints);
 
     if (breakpoints.length) {
+      console.log(formatBreakpoints('Server breakpoints: ', updatedBreakpointMap));
       that.logger.info(
         formatBreakpoints('Server breakpoints: ', updatedBreakpointMap)
       );
@@ -1035,7 +1065,7 @@ export class Debuglet extends EventEmitter {
         cb(err1);
         return;
       }
-
+      console.log('\tsuccessfully added breakpoint  ' + breakpoint.id);
       that.logger.info('\tsuccessfully added breakpoint  ' + breakpoint.id);
       // TODO: Address the case when `breakpoint.id` is `undefined`.
       that.activeBreakpointMap[breakpoint.id as string] = breakpoint;
@@ -1063,6 +1093,7 @@ export class Debuglet extends EventEmitter {
             return;
           }
 
+          console.log('Breakpoint hit!: ' + breakpoint.id);
           that.logger.info('Breakpoint hit!: ' + breakpoint.id);
           that.completeBreakpoint_(breakpoint);
         });
@@ -1083,6 +1114,7 @@ export class Debuglet extends EventEmitter {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
 
+    console.log('\tupdating breakpoint data on server', breakpoint.id);
     that.logger.info('\tupdating breakpoint data on server', breakpoint.id);
     that.controller.updateBreakpoint(
       // TODO: Address the case when `that.debuggee` is `null`.
