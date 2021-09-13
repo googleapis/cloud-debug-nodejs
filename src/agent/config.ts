@@ -371,6 +371,15 @@ export interface ResolvedDebugAgentConfig extends GoogleAuthOptions {
    * Cloud Debugger API.  Requires many things, which will be documented later.
    */
   useFirebase: boolean;
+
+  /**
+   * If set, use this key for Firebase activities instead of default google credentials.
+   */
+  firebaseKeyPath?: string;
+  /**
+   * If set, use this as the firebase database url.  If not set, a FIXME default will be used.
+   */
+   firebaseDbUrl?: string;
 }
 
 export interface StackdriverConfig extends GoogleAuthOptions {

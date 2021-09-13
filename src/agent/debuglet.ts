@@ -259,7 +259,7 @@ export class Debuglet extends EventEmitter {
 
     /** @private {DebugletApi} */
     if (config.useFirebase) {
-      this.controller = new FirebaseController();
+      this.controller = new FirebaseController(config.firebaseKeyPath!, config.firebaseDbUrl);  // FIXME: Not friendly.
     } else {
       this.controller = new OnePlatformController(this.debug, {apiUrl: config.apiUrl});
     }

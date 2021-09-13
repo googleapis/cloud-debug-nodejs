@@ -17,7 +17,6 @@
  */
 
 import * as assert from 'assert';
-import * as qs from 'querystring';
 import * as t from 'teeny-request';
 
 import { Controller } from './controller';
@@ -29,7 +28,6 @@ import * as firebase from 'firebase-admin';
 
 export class FirebaseController implements Controller {
     databaseUrl: string;
-    credPath: string;
 
     db: firebase.database.Database;
     debuggeeId?: string;
@@ -38,15 +36,16 @@ export class FirebaseController implements Controller {
      * @constructor
      */
 
-    constructor() {
-        this.databaseUrl = "https://tanks-a-lot-game-default-rtdb.firebaseio.com";
-        this.credPath = "C:\\Users\\jwmct\\Downloads\\tanks-a-lot-game-firebase-adminsdk-ftm94-13208486d7.json"
+    constructor(keyPath: string, databaseUrl?: string) {
+        // FIXME: Figure out what the project ID is.
+        const projectId = "vaporware";
+        this.databaseUrl = databaseUrl ?? `https://${projectId}-cdbg.firebaseio.com`;
 
-        var serviceAccount = require(this.credPath);
+        var serviceAccount = require(keyPath);
 
         firebase.initializeApp({
             credential: firebase.credential.cert(serviceAccount),
-            databaseURL: "https://tanks-a-lot-game-default-rtdb.firebaseio.com"
+            databaseURL: this.databaseUrl,
         });
 
         this.db = firebase.database();
