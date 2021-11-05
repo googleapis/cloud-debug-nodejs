@@ -157,11 +157,20 @@ function resolveScripts(
  * We incrementally consider more components of the path until we find a unique
  * match, or return all the potential matches.
  *
- * @example findScriptsFuzzy('a/b.js', ['/d/b.js']) // -> ['/d/b.js']
- * @example findScriptsFuzzy('a/b.js', ['/c/b.js', '/d/b.js']); // -> []
- * @example findScriptsFuzzy('a/b.js', ['/x/a/b.js', '/y/a/b.js'])
+ * @example
+ * ```
+ * findScriptsFuzzy('a/b.js', ['/d/b.js']) // -> ['/d/b.js']
+ * ```
+ * @example
+ * ```
+ * findScriptsFuzzy('a/b.js', ['/c/b.js', '/d/b.js']); // -> []
+ * ```
+ * @example
+ * ```
+ * findScriptsFuzzy('a/b.js', ['/x/a/b.js', '/y/a/b.js'])
  *                 // -> ['x/a/b.js', 'y/a/b.js']
  *
+ * ```
  * @param {string} scriptPath partial path to the script.
  * @param {array<string>} fileList an array of absolute paths of filenames
  *     available.
