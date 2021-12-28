@@ -4,10 +4,12 @@
   "product_documentation": "https://cloud.google.com/debugger",
   "client_documentation": "https://cloud.google.com/nodejs/docs/reference/debug-agent/latest",
   "issue_tracker": "https://issuetracker.google.com/savedsearches/559771",
-  "release_level": "beta",
+  "release_level": "preview",
   "language": "nodejs",
   "repo": "googleapis/cloud-debug-nodejs",
   "distribution_name": "@google-cloud/debug-agent",
   "api_id": "clouddebugger.googleapis.com",
-  "codeowner_team": "@googleapis/api-debug"
+  "codeowner_team": "@googleapis/api-debug",
+  "api_shortname": "debugger",
+  "library_type": ""
 }
