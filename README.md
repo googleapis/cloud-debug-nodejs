@@ -6,7 +6,6 @@
 
 
 [![npm version](https://img.shields.io/npm/v/@google-cloud/debug-agent.svg)](https://www.npmjs.org/package/@google-cloud/debug-agent)
-[![codecov](https://img.shields.io/codecov/c/github/googleapis/cloud-debug-nodejs/main.svg?style=flat)](https://codecov.io/gh/googleapis/cloud-debug-nodejs)
 
 
 
