@@ -72,7 +72,7 @@ export class FirebaseController implements Controller {
         this.debuggeeId = '123456';  // TODO: Calculate this.
         debuggee.id = this.debuggeeId;
 
-        const debuggeeRef = this.db.ref(`debuggees/${this.debuggeeId}`);
+        const debuggeeRef = this.db.ref(`cdbg/debuggees/${this.debuggeeId}`);
         debuggeeRef.set(debuggee);
 
         // TODO: Handle errors.  I can .set(data, (error) => if (error) {})
@@ -96,7 +96,7 @@ export class FirebaseController implements Controller {
         console.log('listing active breakpoints.  WIP');
         assert(debuggee.id, 'should have a registered debuggee');
 
-        const bpRef = this.db.ref(`breakpoints/${this.debuggeeId}/active`);
+        const bpRef = this.db.ref(`cdbg/breakpoints/${this.debuggeeId}/active`);
 
         /*
         Here's where the data model breaks down between the two implementations.
@@ -133,13 +133,40 @@ export class FirebaseController implements Controller {
         console.log('updating a breakpoint');
         assert(debuggee.id, 'should have a registered debuggee');
 
-        breakpoint.action = 'CAPTURE';
+        // By default if action is not present, it's a snapshot, so for it to be
+        // a logpoint it must be present and equal to 'LOG', anything else is a
+        // snapshot.
+        const is_logpoint = breakpoint.action === 'LOG';
+        const is_snapshot = !is_logpoint
+
+        if (is_snapshot) {
+          breakpoint.action = 'CAPTURE';
+        }
+
         breakpoint.isFinalState = true;
 
-        // TODO: error handling
-        // TODO: break details & summary into different destinations so that getting all final breakpoints is less expensive.
-        this.db.ref(`breakpoints/${this.debuggeeId}/active/${breakpoint.id}`).remove();
-        this.db.ref(`breakpoints/${this.debuggeeId}/final/${breakpoint.id}`).set(breakpoint);
+        let breakpoint_map: {[key: string]: any} = {...breakpoint}
+
+        // Magic value. Firebase RTDB will replace the {'.sv': 'timestamp'} with
+        // the unix time since epoch in milliseconds.
+        // https://firebase.google.com/docs/reference/rest/database#section-server-values
+        breakpoint_map['finalTimeUnixMsec'] = {'.sv': 'timestamp'}
+
+        // TODO: error handling from here on
+        this.db.ref(`cdbg/breakpoints/${this.debuggeeId}/active/${breakpoint.id}`).remove();
+
+        if (is_snapshot) {
+          // We could also restrict this to only write to this node if it wasn't
+          // an error and there is actual snapshot data. For now though we'll
+          // write it regardless, makes sense if you want to get everything for
+          // a snapshot it's at this location, regardless of what it contains.
+          this.db.ref(`cdbg/breakpoints/${this.debuggeeId}/snapshot/${breakpoint.id}`).set(breakpoint_map);
+          // Now strip the snapshot data for the write to 'final' path.
+          const fields_to_strip = ['evaluatedExpressions', 'stackFrames', 'variableTable']
+          fields_to_strip.forEach((field) => delete breakpoint_map[field])
+        }
+
+        this.db.ref(`cdbg/breakpoints/${this.debuggeeId}/final/${breakpoint.id}`).set(breakpoint_map);
     }
 
     subscribeToBreakpoints(
@@ -152,7 +179,7 @@ export class FirebaseController implements Controller {
         console.log('Started subscription for breakpoint updates');
         assert(debuggee.id, 'should have a registered debuggee');
 
-        const bpRef = this.db.ref(`breakpoints/${this.debuggeeId}/active`);
+        const bpRef = this.db.ref(`cdbg/breakpoints/${this.debuggeeId}/active`);
 
         let breakpoints = [] as stackdriver.Breakpoint[];
         bpRef.on('child_added', (snapshot: firebase.database.DataSnapshot) => {
