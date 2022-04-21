@@ -24,7 +24,7 @@ import * as t from 'teeny-request';
 
 import { URL } from 'url';
 
-import { Logger } from './config';
+import { Logger, ResolvedDebugAgentConfig } from './config';
 import { Controller } from './controller';
 import { StatusMessage } from '../client/stackdriver/status-message';
 import { Debug } from '../client/stackdriver/debug';
@@ -73,6 +73,8 @@ const formatBreakpoint = (
 export class OnePlatformController extends ServiceObject implements Controller {
     private nextWaitToken: string | null;
     private agentId: string | null;
+    private config: ResolvedDebugAgentConfig;
+    private fetcherActive: boolean;
 
     apiUrl: string;
 
@@ -81,7 +83,7 @@ export class OnePlatformController extends ServiceObject implements Controller {
     /**
      * @constructor
      */
-    constructor(debug: Debug, config?: { apiUrl?: string }) {
+    constructor(debug: Debug, config: ResolvedDebugAgentConfig ) {
         super({ parent: debug, baseUrl: '/controller' });
 
         /** @private {string} */
@@ -90,10 +92,11 @@ export class OnePlatformController extends ServiceObject implements Controller {
 
         this.apiUrl = `https://${debug.apiEndpoint}/v2/controller`;
 
+        this.fetcherActive = false;
+
         /** @private */
         this.logger = consoleLogLevel({
             stderr: true,
-            prefix: 'Ugh.  Not really needed.',
             level: 'info',
         });
 
@@ -101,6 +104,8 @@ export class OnePlatformController extends ServiceObject implements Controller {
         if (config && config.apiUrl) {
             this.apiUrl = config.apiUrl + new URL(this.apiUrl).pathname;
         }
+
+        this.config = config;
     }
 
     /**
@@ -252,7 +257,9 @@ export class OnePlatformController extends ServiceObject implements Controller {
             breakpoints: stackdriver.Breakpoint[]
         ) => void
     ): void {
-        this.scheduleBreakpointFetch_(debuggee, 0, false, callback);
+        if (!this.fetcherActive) {
+            this.scheduleBreakpointFetch_(debuggee, 0, false, callback);
+        }
     }
 
     // FIXME: This is a simplification of debuglet.scheduleBreakpointFetch_ and will need repairs.
@@ -263,9 +270,15 @@ export class OnePlatformController extends ServiceObject implements Controller {
     ): void {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const that = this;
+        if (!once) {
+            that.fetcherActive = true;
+        }
         setTimeout(() => {
             that.logger.info('Fetching breakpoints');
-            // TODO: Address the case when `that.debuggee` is `null`.
+            if (!once) {
+                that.fetcherActive = true;
+            }
+                // TODO: Address the case when `that.debuggee` is `null`.
             that.listBreakpoints(
                 debuggee,
                 (err, response, body) => {
@@ -274,7 +287,9 @@ export class OnePlatformController extends ServiceObject implements Controller {
                             'Error fetching breakpoints – scheduling retry',
                             err
                         );
-                        // TODO: Decide whether to return an error or just schedule the retry here.
+                        // Return the error, prompting a re-registration.
+                        that.fetcherActive = false;
+                        callback(err, []);
                         return;
                     }
                     switch (response!.statusCode) {
@@ -282,7 +297,10 @@ export class OnePlatformController extends ServiceObject implements Controller {
                             // Registration expired. Deactivate the fetcher and queue
                             // re-registration, which will re-active breakpoint fetching.
                             that.logger.info('\t404 Registration expired.');
-                            // TODO: Decide whether to return an error or just schedule the retry here.
+                            that.fetcherActive = false;
+                            const expiredError = new Error(response!.statusMessage);
+                            expiredError.name = 'RegistrationExpiredError';
+                            callback(expiredError, []);
                             return;
 
                         default:
@@ -290,7 +308,7 @@ export class OnePlatformController extends ServiceObject implements Controller {
                             that.logger.info('\t' + response!.statusCode + ' completed.');
                             if (!body) {
                                 that.logger.error('\tinvalid list response: empty body');
-                                that.scheduleBreakpointFetch_(debuggee, 30, once, callback);  // TODO: Remove fixed number.
+                                that.scheduleBreakpointFetch_(debuggee, that.config.breakpointUpdateIntervalSec, once, callback);
                                 return;
                             }
                             if (body.waitExpired) {
@@ -329,7 +347,7 @@ export class OnePlatformController extends ServiceObject implements Controller {
                             callback(null, bps);
                             that.scheduleBreakpointFetch_(
                                 debuggee,
-                                30,  // TODO: Remove magic number.
+                                that.config.breakpointUpdateIntervalSec,
                                 once, callback
                             );
                     }

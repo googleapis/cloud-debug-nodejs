@@ -29,6 +29,7 @@ import * as stackdriver from '../src/types/stackdriver';
 import {OnePlatformController} from '../src/agent/oneplatformcontroller';
 import {Debuggee} from '../src/debuggee';
 import {Debug, PackageInfo} from '../src/client/stackdriver/debug';
+import {defaultConfig as DEFAULT_CONFIG} from '../src/agent/config';
 
 const packageInfo: PackageInfo = {
   name: 'SomeName',
@@ -42,7 +43,7 @@ describe('Controller', function () {
   this.timeout(60 * 1000);
 
   it('should register successfully', done => {
-    const controller = new OnePlatformController(debug);
+    const controller = new OnePlatformController(debug, DEFAULT_CONFIG);
     const debuggee = new Debuggee({
       project: process.env.GCLOUD_PROJECT,
       uniquifier: 'test-uid-' + Date.now(),
@@ -61,7 +62,7 @@ describe('Controller', function () {
   });
 
   it('should list breakpoints', done => {
-    const controller = new OnePlatformController(debug);
+    const controller = new OnePlatformController(debug, DEFAULT_CONFIG);
     const debuggee = new Debuggee({
       project: process.env.GCLOUD_PROJECT,
       uniquifier: 'test-uid-' + Date.now(),
@@ -85,7 +86,7 @@ describe('Controller', function () {
 
   it('should pass success on timeout', done => {
     this.timeout(100000);
-    const controller = new OnePlatformController(debug);
+    const controller = new OnePlatformController(debug, DEFAULT_CONFIG);
     const debuggee = new Debuggee({
       project: process.env.GCLOUD_PROJECT,
       uniquifier: 'test-uid-' + Date.now(),

@@ -261,7 +261,7 @@ export class Debuglet extends EventEmitter {
     if (config.useFirebase) {
       this.controller = new FirebaseController(config.firebaseKeyPath!, config.firebaseDbUrl);  // FIXME: Not friendly.
     } else {
-      this.controller = new OnePlatformController(this.debug, {apiUrl: config.apiUrl});
+      this.controller = new OnePlatformController(this.debug, this.config);
     }
 
     /** @private {Debuggee} */
@@ -513,7 +513,7 @@ export class Debuglet extends EventEmitter {
 
   /**
    * isReady returns a promise that only resolved if the last breakpoint update
-   * happend within a duration (PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS). This
+   * happened within a duration (PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS). This
    * feature is mainly used in Google Cloud Function (GCF), as it is a
    * serverless environment and we wanted to make sure debug agent always
    * captures the snapshots.
@@ -528,10 +528,7 @@ export class Debuglet extends EventEmitter {
       if (this.breakpointFetched) return this.breakpointFetched.get();
       this.breakpointFetched = new CachedPromise();
       this.debuggeeRegistered.get().then(() => {
-        this.scheduleBreakpointFetch_(
-          0 /*immediately*/,
-          true /*only fetch once*/
-        );
+        this.startListeningForBreakpoints_();
       });
       return this.breakpointFetched.get();
     }
@@ -711,6 +708,7 @@ export class Debuglet extends EventEmitter {
   scheduleRegistration_(seconds: number): void {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
+    console.log('scheduling registration');
 
     function onError(err: Error) {
       that.logger.error(
@@ -724,12 +722,16 @@ export class Debuglet extends EventEmitter {
       );
     }
 
+    console.log('Will set timeout in ' + seconds + ' seconds');
     setTimeout(() => {
+      console.log('setting timeout');
       if (!that.running) {
+        console.log('not running; giving up');
         onError(new Error('Debuglet not running'));
         return;
       }
 
+      console.log('sending register call to controller');
       // TODO: Handle the case when `that.debuggee` is null.
       that.controller.register(
         that.debuggee as Debuggee,
@@ -768,7 +770,6 @@ export class Debuglet extends EventEmitter {
           that.debuggeeRegistered.resolve();  // FIXME: Do we need this?
           if (!that.fetcherActive) {
             that.startListeningForBreakpoints_();
-            //that.scheduleBreakpointFetch_(0, false);
           }
         }
       );
@@ -776,142 +777,24 @@ export class Debuglet extends EventEmitter {
   }
 
   startListeningForBreakpoints_(): void {
+    const that = this;
     // TODO: Handle the case where this.debuggee is null or not properly registered.
+    console.log('About to subscribe to breakpoints');
     this.controller.subscribeToBreakpoints(
       this.debuggee!,
       (err: Error | null, breakpoints: stackdriver.Breakpoint[]) => {
-        // TODO: Handle the re-registration case.
+        if (err) {
+          // There was an error, and the subscription is cancelled.
+          // Re-register and resubscribe.
+          console.log('Error.  Scheduling re-registration');
+          const delay = err.name === 'RegistrationExpiredError' ? 0 : that.config.internal.registerDelayOnFetcherErrorSec;
+          that.scheduleRegistration_(delay);
+        }
+
         this.updateActiveBreakpoints_(breakpoints);
     });
   }
 
-  /**
-   * This function is where things need to change.
-   * The controller needs to handle the scheduling of fetching, because that is implementation specific.
-   * I still need to figure out what the new version of this function will do.
-   * Functionality in this function:
-   * - retrying failed rpcs
-   * - re-registering if necessary (I'm not convinced that's needed for the firebase implementation)
-   * - some data validation (why here??)
-   * - calling updateActiveBreakpoints(bps) to sync server and v8 breakpoints
-   * - scheduling the polling
-   * 
-   * Of all of that, the only functionality that needs to be in this class is the calling of updateActiveBreakpoints.
-   * That means that this entire function can be shifted to the controller :)
-   * 
-   * @param {number} seconds - The number of seconds to wait before registering.
-   * @param {boolean} once - If set, only fetch the breakpoints once and resolve `breakpointFetched` when complete.
-   * @private
-   */
-  scheduleBreakpointFetch_(seconds: number, once: boolean): void {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const that = this;
-    if (!once) {
-      that.fetcherActive = true;
-    }
-    setTimeout(() => {
-      if (!that.running) {
-        return;
-      }
-
-      if (!once) {
-        assert(that.fetcherActive);
-      }
-
-      that.logger.info('Fetching breakpoints');
-      // TODO: Address the case when `that.debuggee` is `null`.
-      that.controller.listBreakpoints(
-        that.debuggee as Debuggee,
-        (err, response, body) => {
-          if (err) {
-            that.logger.error(
-              'Error fetching breakpoints – scheduling retry',
-              err
-            );
-            that.fetcherActive = false;
-            // We back-off from fetching breakpoints, and try to register
-            // again after a while. Successful registration will restart the
-            // breakpoint fetcher.
-            that.updatePromise();
-            that.scheduleRegistration_(
-              that.config.internal.registerDelayOnFetcherErrorSec
-            );
-            return;
-          }
-          // TODO: Address the case where `response` is `undefined`.
-          switch (response!.statusCode) {
-            case 404:
-              // Registration expired. Deactivate the fetcher and queue
-              // re-registration, which will re-active breakpoint fetching.
-              that.logger.info('\t404 Registration expired.');
-              that.fetcherActive = false;
-              that.updatePromise();
-              that.scheduleRegistration_(0 /*immediately*/);
-              return;
-
-            default:
-              // TODO: Address the case where `response` is `undefined`.
-              that.logger.info('\t' + response!.statusCode + ' completed.');
-              if (!body) {
-                that.logger.error('\tinvalid list response: empty body');
-                that.scheduleBreakpointFetch_(
-                  that.config.breakpointUpdateIntervalSec,
-                  once
-                );
-                return;
-              }
-              if (body.waitExpired) {
-                that.logger.info('\tLong poll completed.');
-                that.scheduleBreakpointFetch_(0 /*immediately*/, once);
-                return;
-              }
-              // eslint-disable-next-line no-case-declarations
-              const bps = (body.breakpoints || []).filter(
-                (bp: stackdriver.Breakpoint) => {
-                  const action = bp.action || 'CAPTURE';
-                  if (action !== 'CAPTURE' && action !== 'LOG') {
-                    that.logger.warn(
-                      'Found breakpoint with invalid action:',
-                      action
-                    );
-                    bp.status = new StatusMessage(
-                      StatusMessage.UNSPECIFIED,
-                      BREAKPOINT_ACTION_MESSAGE,
-                      true
-                    );
-                    that.rejectBreakpoint_(bp);
-                    return false;
-                  }
-                  return true;
-                }
-              );
-              that.updateActiveBreakpoints_(bps);
-              if (Object.keys(that.activeBreakpointMap).length) {
-                that.logger.info(
-                  formatBreakpoints(
-                    'Active Breakpoints: ',
-                    that.activeBreakpointMap
-                  )
-                );
-              }
-              that.breakpointFetchedTimestamp = Date.now();
-              if (once) {
-                if (that.breakpointFetched) {
-                  that.breakpointFetched.resolve();
-                  that.breakpointFetched = null;
-                }
-              } else {
-                that.scheduleBreakpointFetch_(
-                  that.config.breakpointUpdateIntervalSec,
-                  once
-                );
-              }
-              return;
-          }
-        }
-      );
-    }, seconds * 1000).unref();
-  }
 
   /**
    * updatePromise_ is called when debuggee is expired. debuggeeRegistered
@@ -1157,7 +1040,7 @@ export class Debuglet extends EventEmitter {
    * This schedules a delayed operation that will delete the breakpoint from the
    * server after the expiry period.
    * FIXME: we should cancel the timer when the breakpoint completes. Otherwise
-   * we hold onto the closure memory until the breapointExpirateion timeout.
+   * we hold onto the closure memory until the breapointExpiration timeout.
    * @param {Breakpoint} breakpoint Server breakpoint object
    * @private
    */
@@ -1191,6 +1074,7 @@ export class Debuglet extends EventEmitter {
   stop(): void {
     assert.ok(this.running, 'stop can only be called on a running agent');
     this.logger.debug('Stopping Debuglet');
+    // FIXME: Find out if this needs to be propagated to the controller.
     this.running = false;
     this.emit('stopped');
   }
