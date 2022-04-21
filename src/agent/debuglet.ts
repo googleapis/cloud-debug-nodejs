@@ -708,7 +708,6 @@ export class Debuglet extends EventEmitter {
   scheduleRegistration_(seconds: number): void {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
-    console.log('scheduling registration');
 
     function onError(err: Error) {
       that.logger.error(
@@ -722,16 +721,12 @@ export class Debuglet extends EventEmitter {
       );
     }
 
-    console.log('Will set timeout in ' + seconds + ' seconds');
     setTimeout(() => {
-      console.log('setting timeout');
       if (!that.running) {
-        console.log('not running; giving up');
         onError(new Error('Debuglet not running'));
         return;
       }
 
-      console.log('sending register call to controller');
       // TODO: Handle the case when `that.debuggee` is null.
       that.controller.register(
         that.debuggee as Debuggee,
@@ -779,14 +774,12 @@ export class Debuglet extends EventEmitter {
   startListeningForBreakpoints_(): void {
     const that = this;
     // TODO: Handle the case where this.debuggee is null or not properly registered.
-    console.log('About to subscribe to breakpoints');
     this.controller.subscribeToBreakpoints(
       this.debuggee!,
       (err: Error | null, breakpoints: stackdriver.Breakpoint[]) => {
         if (err) {
           // There was an error, and the subscription is cancelled.
           // Re-register and resubscribe.
-          console.log('Error.  Scheduling re-registration');
           const delay = err.name === 'RegistrationExpiredError' ? 0 : that.config.internal.registerDelayOnFetcherErrorSec;
           that.scheduleRegistration_(delay);
         }
@@ -821,7 +814,6 @@ export class Debuglet extends EventEmitter {
     const updatedBreakpointMap = this.convertBreakpointListToMap_(breakpoints);
 
     if (breakpoints.length) {
-      console.log(formatBreakpoints('Server breakpoints: ', updatedBreakpointMap));
       that.logger.info(
         formatBreakpoints('Server breakpoints: ', updatedBreakpointMap)
       );
@@ -948,7 +940,6 @@ export class Debuglet extends EventEmitter {
         cb(err1);
         return;
       }
-      console.log('\tsuccessfully added breakpoint  ' + breakpoint.id);
       that.logger.info('\tsuccessfully added breakpoint  ' + breakpoint.id);
       // TODO: Address the case when `breakpoint.id` is `undefined`.
       that.activeBreakpointMap[breakpoint.id as string] = breakpoint;
@@ -976,7 +967,6 @@ export class Debuglet extends EventEmitter {
             return;
           }
 
-          console.log('Breakpoint hit!: ' + breakpoint.id);
           that.logger.info('Breakpoint hit!: ' + breakpoint.id);
           that.completeBreakpoint_(breakpoint);
         });
@@ -997,7 +987,6 @@ export class Debuglet extends EventEmitter {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
 
-    console.log('\tupdating breakpoint data on server', breakpoint.id);
     that.logger.info('\tupdating breakpoint data on server', breakpoint.id);
     that.controller.updateBreakpoint(
       // TODO: Address the case when `that.debuggee` is `null`.
@@ -1074,8 +1063,8 @@ export class Debuglet extends EventEmitter {
   stop(): void {
     assert.ok(this.running, 'stop can only be called on a running agent');
     this.logger.debug('Stopping Debuglet');
-    // FIXME: Find out if this needs to be propagated to the controller.
     this.running = false;
+    this.controller.stop();
     this.emit('stopped');
   }
 

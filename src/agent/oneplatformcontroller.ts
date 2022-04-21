@@ -75,6 +75,7 @@ export class OnePlatformController extends ServiceObject implements Controller {
     private agentId: string | null;
     private config: ResolvedDebugAgentConfig;
     private fetcherActive: boolean;
+    private running: boolean;
 
     apiUrl: string;
 
@@ -93,6 +94,7 @@ export class OnePlatformController extends ServiceObject implements Controller {
         this.apiUrl = `https://${debug.apiEndpoint}/v2/controller`;
 
         this.fetcherActive = false;
+        this.running = true;
 
         /** @private */
         this.logger = consoleLogLevel({
@@ -262,7 +264,6 @@ export class OnePlatformController extends ServiceObject implements Controller {
         }
     }
 
-    // FIXME: This is a simplification of debuglet.scheduleBreakpointFetch_ and will need repairs.
     scheduleBreakpointFetch_(debuggee: Debuggee, seconds: number, once: boolean, callback: (
         err: Error | null,
         breakpoints: stackdriver.Breakpoint[]
@@ -274,6 +275,10 @@ export class OnePlatformController extends ServiceObject implements Controller {
             that.fetcherActive = true;
         }
         setTimeout(() => {
+            if (!that.running) {
+                return;
+            }
+
             that.logger.info('Fetching breakpoints');
             if (!once) {
                 that.fetcherActive = true;
@@ -355,6 +360,11 @@ export class OnePlatformController extends ServiceObject implements Controller {
                 }
             );
         }, seconds * 1000).unref();
+    }
+
+
+    stop(): void {
+        this.running = false;
     }
 
 }

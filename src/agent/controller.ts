@@ -79,4 +79,9 @@ export interface Controller {
       breakpoints: stackdriver.Breakpoint[]
     ) => void
   ): void;
+
+  /**
+   * Stops the Controller. This is for testing purposes only.
+   */
+  stop(): void;
 }

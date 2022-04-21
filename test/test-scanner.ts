@@ -105,6 +105,7 @@ describe('scanner', () => {
     });
 
     it("should return the same hash if the files don't change", done => {
+      // FIXME: Broken.  "should have a registered debuggee..."
       scanner.scan(process.cwd(), /.js$/).then(fileStats1 => {
         const files1 = Object.keys(fileStats1.all());
         scanner.scan(process.cwd(), /.js$/).then(fileStats2 => {

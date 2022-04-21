@@ -82,6 +82,7 @@ describe('test-options-credentials', () => {
   });
 
   it('should use the credentials field of the options object', done => {
+    // FIXME: Broken -- unknown cause (should have a registered debuggee)
     const options = extend(
       {},
       {

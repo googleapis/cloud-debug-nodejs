@@ -197,4 +197,9 @@ export class FirebaseController implements Controller {
             callback(null, breakpoints);
         });
     }
+
+
+    stop(): void {
+        // No-op.
+    }
 }
