@@ -32,7 +32,9 @@ let debuglet: Debuglet;
  * https://www.youtube.com/watch?v=tyHcK_kAOpw}
  *
  * @example
+ * ```
  * debug.startAgent();
+ * ```
  */
 export function start(
   options?: DebugAgentConfig | StackdriverConfig
