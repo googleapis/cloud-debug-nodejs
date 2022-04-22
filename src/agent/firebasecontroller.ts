@@ -80,44 +80,6 @@ export class FirebaseController implements Controller {
         callback(null, { debuggee, agentId });
     }
 
-    /**
-     * Fetch the list of breakpoints from the server. Assumes we have registered.
-     * @param {!function(?Error,Object=,Object=)} callback accepting (err, response,
-     * body)
-     */
-    listBreakpoints(
-        debuggee: Debuggee,
-        callback: (
-            err: Error | null,
-            response?: t.Response,
-            body?: stackdriver.ListBreakpointsResponse
-        ) => void
-    ): void {
-        console.log('listing active breakpoints.  WIP');
-        assert(debuggee.id, 'should have a registered debuggee');
-
-        const bpRef = this.db.ref(`cdbg/breakpoints/${this.debuggeeId}/active`);
-
-        /*
-        Here's where the data model breaks down between the two implementations.
-        What I need is a callback that is called every time that the breakpoint set changes.
-        This means going in and changing the oneplatform controller to keep the listactivebreakpoints
-        polling going on at all times.
-        For the time being, I'll see if I can hamstring the firebase implementation into only returning once.
-        */
-        let breakpoints = [] as stackdriver.Breakpoint[];
-        bpRef.on('child_added', (snapshot) => {
-            breakpoints.push(snapshot.val());
-        });
-        bpRef.on('child_removed', (snapshot) => {
-            // remove the breakpoint.
-            const bpId = snapshot.val();
-            console.log(`breakpoint lost: ${bpId}`);
-        });
-
-        // TODO: Holy heck, this is wrong.  There needs to be a *much* better API.
-        callback(null, { statusCode: 200 } as t.Response, { breakpoints, waitExpired: false } as stackdriver.ListBreakpointsResponse);
-    }
 
     /**
      * Update the server about breakpoint state
