@@ -16,13 +16,10 @@
  * @module debug/controller
  */
 
-import * as t from 'teeny-request';
-
 import {Debuggee} from '../debuggee';
 import * as stackdriver from '../types/stackdriver';
 
 export interface Controller {
-
   /**
    * Register to the API (implementation)
    *
@@ -54,15 +51,12 @@ export interface Controller {
   /**
    * Start listening to breakpoints updates.  The callback will be called when
    * there is an unrecoverable error or when the set of active breakpoints has changed.
-   * @param {!Debuggee} debuggee 
+   * @param {!Debuggee} debuggee
    * @param {!function(?Error,Object=)} callback  accepting (err, breakpoints)
    */
   subscribeToBreakpoints(
     debuggee: Debuggee,
-    callback: (
-      err: Error | null,
-      breakpoints: stackdriver.Breakpoint[]
-    ) => void
+    callback: (err: Error | null, breakpoints: stackdriver.Breakpoint[]) => void
   ): void;
 
   /**

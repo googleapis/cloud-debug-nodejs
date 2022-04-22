@@ -35,13 +35,13 @@ import {
   ResolvedDebugAgentConfig,
 } from './config';
 import {Controller} from './controller';
-import { OnePlatformController } from './oneplatformcontroller';
+import {OnePlatformController} from './oneplatformcontroller';
 import * as scanner from './io/scanner';
 import * as SourceMapper from './io/sourcemapper';
 import * as utils from './util/utils';
 import * as debugapi from './v8/debugapi';
 import {DebugApi} from './v8/debugapi';
-import { FirebaseController } from './firebasecontroller';
+import {FirebaseController} from './firebasecontroller';
 
 const readFilep = util.promisify(fs.readFile);
 
@@ -57,8 +57,6 @@ const NODE_10_CIRC_REF_MESSAGE =
   ' and Node 12.' +
   ' See https://github.com/googleapis/cloud-debug-nodejs/issues/516 for more' +
   ' information.';
-const BREAKPOINT_ACTION_MESSAGE =
-  'The only currently supported breakpoint actions' + ' are CAPTURE and LOG.';
 
 // PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS is a heuristic duration that we set
 // to force the debug agent to return a new promise for isReady. The value is
@@ -259,7 +257,10 @@ export class Debuglet extends EventEmitter {
 
     /** @private {DebugletApi} */
     if (config.useFirebase) {
-      this.controller = new FirebaseController(config.firebaseKeyPath!, config.firebaseDbUrl);  // FIXME: Not friendly.
+      this.controller = new FirebaseController(
+        config.firebaseKeyPath!,
+        config.firebaseDbUrl
+      ); // FIXME: Not friendly.
     } else {
       this.controller = new OnePlatformController(this.debug, this.config);
     }
@@ -701,7 +702,7 @@ export class Debuglet extends EventEmitter {
    * On failure, uses an exponential backoff to retry.
    * If successful, emits a 'registered' event, resolves the debuggeeRegistered promise,
    * and starts listening for breakpoint updates.
-   * 
+   *
    * @param {number} seconds - The number of seconds to wait before registering.
    * @private
    */
@@ -761,8 +762,8 @@ export class Debuglet extends EventEmitter {
             }
           ).debuggee.id;
           // TODO: Handle the case when `result` is undefined.
-          that.emit('registered', (result as {debuggee: Debuggee}).debuggee.id);  // FIXME: Do we need this?
-          that.debuggeeRegistered.resolve();  // FIXME: Do we need this?
+          that.emit('registered', (result as {debuggee: Debuggee}).debuggee.id); // FIXME: Do we need this?
+          that.debuggeeRegistered.resolve(); // FIXME: Do we need this?
           if (!that.fetcherActive) {
             that.startListeningForBreakpoints_();
           }
@@ -780,14 +781,17 @@ export class Debuglet extends EventEmitter {
         if (err) {
           // There was an error, and the subscription is cancelled.
           // Re-register and resubscribe.
-          const delay = err.name === 'RegistrationExpiredError' ? 0 : that.config.internal.registerDelayOnFetcherErrorSec;
+          const delay =
+            err.name === 'RegistrationExpiredError'
+              ? 0
+              : that.config.internal.registerDelayOnFetcherErrorSec;
           that.scheduleRegistration_(delay);
         }
 
-        this.updateActiveBreakpoints_(breakpoints);
-    });
+        that.updateActiveBreakpoints_(breakpoints);
+      }
+    );
   }
-
 
   /**
    * updatePromise_ is called when debuggee is expired. debuggeeRegistered

@@ -177,7 +177,10 @@ describe('Controller API', () => {
             )
             .reply(200, invalidResponse);
           const debuggee = {id: 'fake-debuggee'};
-          const controller = new OnePlatformController(fakeDebug, DEFAULT_CONFIG);
+          const controller = new OnePlatformController(
+            fakeDebug,
+            DEFAULT_CONFIG
+          );
           // TODO: Fix debuggee to actually implement Debuggee
           // TODO: Determine if the response parameter should be used.
           controller.listBreakpoints(
@@ -283,7 +286,10 @@ describe('Controller API', () => {
             .reply(200, {breakpoints});
           // TODO: Fix debuggee to actually implement Debuggee
           const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
-          const controller = new OnePlatformController(fakeDebug, DEFAULT_CONFIG);
+          const controller = new OnePlatformController(
+            fakeDebug,
+            DEFAULT_CONFIG
+          );
           // TODO: Determine if the response parameter should be used.
           controller.listBreakpoints(debuggee, (err, response, result) => {
             assert(!err, 'not expecting an error');

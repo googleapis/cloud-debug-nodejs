@@ -48,7 +48,7 @@ export function start(
   }
 
   if (agentConfig.useFirebase) {
-    console.log("Running with experimental firebase backend.");
+    console.log('Running with experimental firebase backend.');
     debuglet = new Debuglet({packageInfo: pjson} as Debug, agentConfig);
   } else {
     const debug = new Debug(options, pjson);

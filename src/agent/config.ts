@@ -376,7 +376,7 @@ export interface ResolvedDebugAgentConfig extends GoogleAuthOptions {
   /**
    * If set, use this as the firebase database url.  If not set, a FIXME default will be used.
    */
-   firebaseDbUrl?: string;
+  firebaseDbUrl?: string;
 }
 
 export interface StackdriverConfig extends GoogleAuthOptions {
