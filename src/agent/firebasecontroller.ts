@@ -105,7 +105,7 @@ export class FirebaseController implements Controller {
 
     breakpoint.isFinalState = true;
 
-    const breakpoint_map: {[key: string]: {}} = {...breakpoint};
+    const breakpoint_map: {[key: string]: any} = {...breakpoint};
 
     // Magic value. Firebase RTDB will replace the {'.sv': 'timestamp'} with
     // the unix time since epoch in milliseconds.
