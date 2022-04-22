@@ -38,38 +38,6 @@ const BREAKPOINT_ACTION_MESSAGE =
     'The only currently supported breakpoint actions' + ' are CAPTURE and LOG.';
 
 
-/**
- * Formats a breakpoint object prefixed with a provided message as a string
- * intended for logging.
- * @param {string} msg The message that prefixes the formatted breakpoint.
- * @param {Breakpoint} breakpoint The breakpoint to format.
- * @return {string} A formatted string.
- */
-const formatBreakpoint = (
-    msg: string,
-    breakpoint: stackdriver.Breakpoint
-): string => {
-    let text =
-        msg +
-        util.format(
-            'breakpoint id: %s,\n\tlocation: %s',
-            breakpoint.id,
-            util.inspect(breakpoint.location)
-        );
-    if (breakpoint.createdTime) {
-        const unixTime = Number(breakpoint.createdTime.seconds);
-        const date = new Date(unixTime * 1000); // to milliseconds.
-        text += '\n\tcreatedTime: ' + date.toString();
-    }
-    if (breakpoint.condition) {
-        text += '\n\tcondition: ' + util.inspect(breakpoint.condition);
-    }
-    if (breakpoint.expressions) {
-        text += '\n\texpressions: ' + util.inspect(breakpoint.expressions);
-    }
-    return text;
-};
-
 export class OnePlatformController extends ServiceObject implements Controller {
     private nextWaitToken: string | null;
     private agentId: string | null;
