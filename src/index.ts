@@ -49,9 +49,9 @@ export function start(
 
   if (agentConfig.useFirebase) {
     console.log("Running with experimental firebase backend.");
-    debuglet = new Debuglet({packageInfo: pjson} as Debug, agentConfig); // FIXME: Why is this here??
+    debuglet = new Debuglet({packageInfo: pjson} as Debug, agentConfig);
   } else {
-    const debug = new Debug(options, pjson);  // FIXME: This is the API implementation.  Not wanted if we're using Firebase.
+    const debug = new Debug(options, pjson);
     debuglet = new Debuglet(debug, agentConfig);
   }
 
