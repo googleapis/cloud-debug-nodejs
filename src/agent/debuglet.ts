@@ -773,6 +773,7 @@ export class Debuglet extends EventEmitter {
   }
 
   startListeningForBreakpoints_(): void {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
     // TODO: Handle the case where this.debuggee is null or not properly registered.
     this.controller.subscribeToBreakpoints(

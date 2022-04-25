@@ -33,13 +33,13 @@ export class FirebaseController implements Controller {
   /**
    * @constructor
    */
-
   constructor(keyPath: string, databaseUrl?: string) {
     // FIXME: Figure out what the project ID is.
     const projectId = 'vaporware';
     this.databaseUrl =
       databaseUrl ?? `https://${projectId}-cdbg.firebaseio.com`;
 
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const serviceAccount = require(keyPath);
 
     firebase.initializeApp({

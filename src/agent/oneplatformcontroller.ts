@@ -257,7 +257,7 @@ export class OnePlatformController extends ServiceObject implements Controller {
           return;
         }
         switch (response!.statusCode) {
-          case 404:
+          case 404: {
             // Registration expired. Deactivate the fetcher and queue
             // re-registration, which will re-active breakpoint fetching.
             that.logger.info('\t404 Registration expired.');
@@ -266,6 +266,7 @@ export class OnePlatformController extends ServiceObject implements Controller {
             expiredError.name = 'RegistrationExpiredError';
             callback(expiredError, []);
             return;
+          }
 
           default:
             // TODO: Address the case where `response` is `undefined`.
