@@ -21,34 +21,74 @@ import * as assert from 'assert';
 import {Controller} from './controller';
 import {Debuggee} from '../debuggee';
 import * as stackdriver from '../types/stackdriver';
+import * as crypto from 'crypto';
 
 import * as firebase from 'firebase-admin';
 
 export class FirebaseController implements Controller {
-  databaseUrl: string;
-
   db: firebase.database.Database;
   debuggeeId?: string;
 
   /**
+   * Connects to the Firebase database.
+   * @param options specifies which database and credentials to use
+   * @returns database connection
+   */
+  static initialize(options: {
+    keyPath?: string;
+    databaseUrl?: string;
+  }): firebase.database.Database {
+    let credential = undefined;
+    let projectId = undefined;
+    if (options.keyPath) {
+      // Use the project id and credentials in the path specified by the keyPath.
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const serviceAccount = require(options.keyPath);
+      projectId = serviceAccount['project_id'];
+      credential = firebase.credential.cert(serviceAccount);
+    } else {
+      // TODO: Find out how to find the project ID.
+      projectId = 'TBD';
+    }
+
+    // Build the database URL.
+    let databaseUrl: string;
+    if (options.databaseUrl) {
+      databaseUrl = options.databaseUrl;
+    } else {
+      // TODO: Test whether this exists.  If not, fall back to -default.
+      databaseUrl = `https://${projectId}-cdbg.firebaseio.com`;
+    }
+
+    if (credential) {
+      firebase.initializeApp({
+        credential: credential,
+        databaseURL: databaseUrl,
+      });
+    } else {
+      // Use the default credentials.
+      firebase.initializeApp({
+        databaseURL: databaseUrl,
+      });
+    }
+
+    const db = firebase.database();
+
+    // TODO: Test this setup and emit a reasonable error.
+    console.log('Firebase app initialized.  Connected to', databaseUrl);
+    return db;
+  }
+
+  /**
    * @constructor
    */
-  constructor(keyPath: string, databaseUrl?: string) {
-    // FIXME: Figure out what the project ID is.
-    const projectId = 'vaporware';
-    this.databaseUrl =
-      databaseUrl ?? `https://${projectId}-cdbg.firebaseio.com`;
+  constructor(db: firebase.database.Database) {
+    this.db = db;
+  }
 
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const serviceAccount = require(keyPath);
-
-    firebase.initializeApp({
-      credential: firebase.credential.cert(serviceAccount),
-      databaseURL: this.databaseUrl,
-    });
-
-    this.db = firebase.database();
-    // TODO: Make these configurable and make them based on project id.
+  getProjectId(): string {
+    // TODO: Confirm that this is set in all supported cases.
+    return this.db.app.options.projectId ?? 'unknown';
   }
 
   /**
@@ -68,14 +108,24 @@ export class FirebaseController implements Controller {
     ) => void
   ): void {
     console.log('registering');
-    this.debuggeeId = '123456'; // TODO: Calculate this.
+    // Firebase hates undefined attributes.  Patch the debuggee, just in case.
+    if (!debuggee.canaryMode) {
+      debuggee.canaryMode = 'CANARY_MODE_UNSPECIFIED';
+    }
+
+    // Calculate the debuggee id as the hash of the object.
+    // This MUST be consistent across all debuggee instances.
+    this.debuggeeId = crypto
+      .createHash('md5')
+      .update(JSON.stringify(debuggee))
+      .digest('hex');
     debuggee.id = this.debuggeeId;
 
     const debuggeeRef = this.db.ref(`cdbg/debuggees/${this.debuggeeId}`);
     debuggeeRef.set(debuggee);
 
     // TODO: Handle errors.  I can .set(data, (error) => if (error) {})
-    const agentId = 'this does not matter';
+    const agentId = 'unsupported';
     callback(null, {debuggee, agentId});
   }
 

@@ -257,10 +257,12 @@ export class Debuglet extends EventEmitter {
 
     /** @private {DebugletApi} */
     if (config.useFirebase) {
-      this.controller = new FirebaseController(
-        config.firebaseKeyPath!,
-        config.firebaseDbUrl
-      ); // FIXME: Not friendly.
+      // TODO: This shouldn't be on the critical path.
+      const firebaseDb = FirebaseController.initialize({
+        keyPath: config.firebaseKeyPath,
+        databaseUrl: config.firebaseDbUrl,
+      });
+      this.controller = new FirebaseController(firebaseDb);
     } else {
       this.controller = new OnePlatformController(this.debug, this.config);
     }
@@ -434,7 +436,8 @@ export class Debuglet extends EventEmitter {
 
     let project: string;
     if (this.config.useFirebase) {
-      project = 'does not matter yet';
+      // Project id was discovered during initialization of the app.
+      project = (this.controller as FirebaseController).getProjectId();
     } else {
       try {
         project = await that.debug.authClient.getProjectId();
@@ -451,7 +454,7 @@ export class Debuglet extends EventEmitter {
       onGCP &&
       (!that.config.serviceContext || !that.config.serviceContext.service)
     ) {
-      // If on GCP, check if the clusterName instance attribute is availble.
+      // If on GCP, check if the clusterName instance attribute is available.
       // Use this as the service context for better service identification on
       // GKE.
       try {
