@@ -62,7 +62,7 @@
     "@types/console-log-level": "^1.4.0",
     "@types/estree": "0.0.51",
     "@types/extend": "^3.0.0",
-    "@types/mocha": "^8.0.0",
+    "@types/mocha": "^9.0.0",
     "@types/mv": "^2.1.0",
     "@types/ncp": "^2.0.3",
     "@types/node": "^16.0.0",
