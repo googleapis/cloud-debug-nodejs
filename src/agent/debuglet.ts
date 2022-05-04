@@ -568,14 +568,13 @@ export class Debuglet extends EventEmitter {
       packageInfo.version;
     let desc = process.title + ' ' + mainScript;
 
-    // Incompatibilities!  Keys must be non-empty strings and can't contain ".", "#", "$", "/", "[", or "]"
     const labels: {[key: string]: string} = {
-      'main script': mainScript,
-      'process title': process.title,
-      'node version': process.versions.node,
-      'V8 version': process.versions.v8,
-      'agent name': packageInfo.name,
-      'agent version': packageInfo.version,
+      'main_script': mainScript,
+      'process_title': process.title,
+      'node_version': process.versions.node,
+      'V8_version': process.versions.v8,
+      'agent_name': packageInfo.name,
+      'agent_version': packageInfo.version,
       projectid: projectId,
       platform,
     };
