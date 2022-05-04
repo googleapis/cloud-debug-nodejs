@@ -27,7 +27,7 @@ import {teenyRequest} from 'teeny-request';
 // not being set
 delete process.env.GCLOUD_PROJECT;
 
-import {OnePlatformController} from '../src/agent/oneplatformcontroller';
+import {OnePlatformController} from '../src/agent/oneplatform-controller';
 // TODO: Fix fakeDebug to actually implement Debug.
 const fakeDebug = {
   apiEndpoint: 'clouddebugger.googleapis.com',

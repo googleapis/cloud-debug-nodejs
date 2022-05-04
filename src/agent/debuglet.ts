@@ -35,13 +35,13 @@ import {
   ResolvedDebugAgentConfig,
 } from './config';
 import {Controller} from './controller';
-import {OnePlatformController} from './oneplatformcontroller';
+import {OnePlatformController} from './oneplatform-controller';
 import * as scanner from './io/scanner';
 import * as SourceMapper from './io/sourcemapper';
 import * as utils from './util/utils';
 import * as debugapi from './v8/debugapi';
 import {DebugApi} from './v8/debugapi';
-import {FirebaseController} from './firebasecontroller';
+import {FirebaseController} from './firebase-controller';
 
 const readFilep = util.promisify(fs.readFile);
 

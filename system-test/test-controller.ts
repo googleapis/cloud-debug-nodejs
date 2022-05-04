@@ -26,7 +26,7 @@ assert.ok(
 );
 
 import * as stackdriver from '../src/types/stackdriver';
-import {OnePlatformController} from '../src/agent/oneplatformcontroller';
+import {OnePlatformController} from '../src/agent/oneplatform-controller';
 import {Debuggee} from '../src/debuggee';
 import {Debug, PackageInfo} from '../src/client/stackdriver/debug';
 import {defaultConfig as DEFAULT_CONFIG} from '../src/agent/config';
