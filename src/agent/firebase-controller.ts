@@ -25,6 +25,9 @@ import * as crypto from 'crypto';
 
 import * as firebase from 'firebase-admin';
 
+import * as util from 'util';
+const debuglog = util.debuglog('cdbg.firebase');
+
 export class FirebaseController implements Controller {
   db: firebase.database.Database;
   debuggeeId?: string;
@@ -75,7 +78,7 @@ export class FirebaseController implements Controller {
     const db = firebase.database();
 
     // TODO: Test this setup and emit a reasonable error.
-    console.log('Firebase app initialized.  Connected to', databaseUrl);
+    debuglog('Firebase app initialized.  Connected to', databaseUrl);
     return db;
   }
 
@@ -107,7 +110,7 @@ export class FirebaseController implements Controller {
       }
     ) => void
   ): void {
-    console.log('registering');
+    debuglog('registering');
     // Firebase hates undefined attributes.  Patch the debuggee, just in case.
     if (!debuggee.canaryMode) {
       debuggee.canaryMode = 'CANARY_MODE_UNSPECIFIED';
@@ -140,7 +143,7 @@ export class FirebaseController implements Controller {
     breakpoint: stackdriver.Breakpoint,
     callback: (err?: Error, body?: {}) => void
   ): void {
-    console.log('updating a breakpoint');
+    debuglog('updating a breakpoint');
     assert(debuggee.id, 'should have a registered debuggee');
 
     // By default if action is not present, it's a snapshot, so for it to be
@@ -196,14 +199,14 @@ export class FirebaseController implements Controller {
     debuggee: Debuggee,
     callback: (err: Error | null, breakpoints: stackdriver.Breakpoint[]) => void
   ): void {
-    console.log('Started subscription for breakpoint updates');
+    debuglog('Started subscription for breakpoint updates');
     assert(debuggee.id, 'should have a registered debuggee');
 
     const bpRef = this.db.ref(`cdbg/breakpoints/${this.debuggeeId}/active`);
 
     let breakpoints = [] as stackdriver.Breakpoint[];
     bpRef.on('child_added', (snapshot: firebase.database.DataSnapshot) => {
-      console.log(`new breakpoint: ${snapshot.key}`);
+      debuglog(`new breakpoint: ${snapshot.key}`);
       const breakpoint = snapshot.val();
       breakpoint.id = snapshot.key;
       breakpoints.push(breakpoint);
@@ -213,7 +216,7 @@ export class FirebaseController implements Controller {
       // remove the breakpoint.
       const bpId = snapshot.key;
       breakpoints = breakpoints.filter(bp => bp.id !== bpId);
-      console.log(`breakpoint removed: ${bpId}`);
+      debuglog(`breakpoint removed: ${bpId}`);
       callback(null, breakpoints);
     });
   }

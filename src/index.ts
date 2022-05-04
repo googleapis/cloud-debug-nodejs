@@ -19,6 +19,9 @@ import {Debug} from './client/stackdriver/debug';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pjson = require('../../package.json');
 
+import * as util from 'util';
+const debuglog = util.debuglog('cdbg');
+
 // Singleton.
 let debuglet: Debuglet;
 
@@ -48,7 +51,7 @@ export function start(
   }
 
   if (agentConfig.useFirebase) {
-    console.log('Running with experimental firebase backend.');
+    debuglog('Running with experimental firebase backend.');
     debuglet = new Debuglet({packageInfo: pjson} as Debug, agentConfig);
   } else {
     const debug = new Debug(options, pjson);
