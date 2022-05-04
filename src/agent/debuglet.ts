@@ -569,12 +569,12 @@ export class Debuglet extends EventEmitter {
     let desc = process.title + ' ' + mainScript;
 
     const labels: {[key: string]: string} = {
-      'main_script': mainScript,
-      'process_title': process.title,
-      'node_version': process.versions.node,
-      'V8_version': process.versions.v8,
-      'agent_name': packageInfo.name,
-      'agent_version': packageInfo.version,
+      main_script: mainScript,
+      process_title: process.title,
+      node_version: process.versions.node,
+      V8_version: process.versions.v8,
+      agent_name: packageInfo.name,
+      agent_version: packageInfo.version,
       projectid: projectId,
       platform,
     };
