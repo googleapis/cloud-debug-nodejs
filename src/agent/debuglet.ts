@@ -359,23 +359,21 @@ export class Debuglet extends EventEmitter {
    * @private
    */
   async start(): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const that = this;
     const stat = util.promisify(fs.stat);
 
     try {
-      await stat(path.join(that.config.workingDirectory, 'package.json'));
+      await stat(path.join(this.config.workingDirectory, 'package.json'));
     } catch (err) {
-      that.logger.error('No package.json located in working directory.');
-      that.emit('initError', new Error('No package.json found.'));
+      this.logger.error('No package.json located in working directory.');
+      this.emit('initError', new Error('No package.json found.'));
       return;
     }
 
-    const workingDir = that.config.workingDirectory;
+    const workingDir = this.config.workingDirectory;
     // Don't continue if the working directory is a root directory
     // unless the user wants to force using the root directory
     if (
-      !that.config.allowRootAsWorkingDirectory &&
+      !this.config.allowRootAsWorkingDirectory &&
       path.join(workingDir, '..') === workingDir
     ) {
       const message =
@@ -383,8 +381,8 @@ export class Debuglet extends EventEmitter {
         'to avoid a scan of the entire filesystem for JavaScript files. ' +
         'Use config `allowRootAsWorkingDirectory` if you really want to ' +
         'do this.';
-      that.logger.error(message);
-      that.emit('initError', new Error(message));
+      this.logger.error(message);
+      this.emit('initError', new Error(message));
       return;
     }
 
@@ -395,39 +393,39 @@ export class Debuglet extends EventEmitter {
 
     let findResults: FindFilesResult;
     try {
-      findResults = await Debuglet.findFiles(that.config, gaeId);
-      findResults.errors.forEach(that.logger.warn);
+      findResults = await Debuglet.findFiles(this.config, gaeId);
+      findResults.errors.forEach(this.logger.warn);
     } catch (err) {
-      that.logger.error('Error scanning the filesystem.', err);
-      that.emit('initError', err);
+      this.logger.error('Error scanning the filesystem.', err);
+      this.emit('initError', err);
       return;
     }
 
     let mapper;
     try {
-      mapper = await SourceMapper.create(findResults.mapFiles, that.logger);
+      mapper = await SourceMapper.create(findResults.mapFiles, this.logger);
     } catch (err3) {
-      that.logger.error('Error processing the sourcemaps.', err3);
-      that.emit('initError', err3);
+      this.logger.error('Error processing the sourcemaps.', err3);
+      this.emit('initError', err3);
       return;
     }
 
-    that.v8debug = debugapi.create(
-      that.logger,
-      that.config,
+    this.v8debug = debugapi.create(
+      this.logger,
+      this.config,
       findResults.jsStats,
       mapper
     );
 
     const id: string = gaeId || findResults.hash;
 
-    that.logger.info('Unique ID for this Application: ' + id);
+    this.logger.info('Unique ID for this Application: ' + id);
 
     let onGCP: boolean;
     try {
       onGCP = await Debuglet.runningOnGCP();
     } catch (err) {
-      that.logger.warn(
+      this.logger.warn(
         'Unexpected error detecting GCE metadata service: ' + err.message
       );
       // Continue, assuming not on GCP.
@@ -440,26 +438,26 @@ export class Debuglet extends EventEmitter {
       project = (this.controller as FirebaseController).getProjectId();
     } else {
       try {
-        project = await that.debug.authClient.getProjectId();
+        project = await this.debug.authClient.getProjectId();
       } catch (err) {
-        that.logger.error(
+        this.logger.error(
           'The project ID could not be determined: ' + err.message
         );
-        that.emit('initError', err);
+        this.emit('initError', err);
         return;
       }
     }
 
     if (
       onGCP &&
-      (!that.config.serviceContext || !that.config.serviceContext.service)
+      (!this.config.serviceContext || !this.config.serviceContext.service)
     ) {
       // If on GCP, check if the clusterName instance attribute is available.
       // Use this as the service context for better service identification on
       // GKE.
       try {
         const clusterName = await Debuglet.getClusterNameFromMetadata();
-        that.config.serviceContext = {
+        this.config.serviceContext = {
           service: clusterName,
           version: 'unversioned',
           minorVersion_: undefined,
@@ -472,10 +470,10 @@ export class Debuglet extends EventEmitter {
     let sourceContext;
     try {
       sourceContext =
-        (that.config.sourceContext as {} as SourceContext) ||
+        (this.config.sourceContext as {} as SourceContext) ||
         (await Debuglet.getSourceContextFromFile());
     } catch (err5) {
-      that.logger.warn('Unable to discover source context', err5);
+      this.logger.warn('Unable to discover source context', err5);
       // This is ignorable.
     }
 
@@ -484,7 +482,7 @@ export class Debuglet extends EventEmitter {
       this.config.capture.maxDataSize === 0 &&
       utils.satisfies(process.version, '>=10 <10.15.3 || >=11 <11.7 || >=12')
     ) {
-      that.logger.warn(NODE_10_CIRC_REF_MESSAGE);
+      this.logger.warn(NODE_10_CIRC_REF_MESSAGE);
     }
 
     const platform = Debuglet.getPlatform();
@@ -494,25 +492,25 @@ export class Debuglet extends EventEmitter {
     }
 
     // We can register as a debuggee now.
-    that.logger.debug('Starting debuggee, project', project);
-    that.running = true;
+    this.logger.debug('Starting debuggee, project', project);
+    this.running = true;
 
-    that.project = project;
-    that.debuggee = Debuglet.createDebuggee(
+    this.project = project;
+    this.debuggee = Debuglet.createDebuggee(
       project,
       id,
-      that.config.serviceContext,
+      this.config.serviceContext,
       sourceContext,
       onGCP,
-      that.debug.packageInfo,
+      this.debug.packageInfo,
       platform,
-      that.config.description,
+      this.config.description,
       /*errorMessage=*/ undefined,
       region
     );
 
-    that.scheduleRegistration_(0 /* immediately */);
-    that.emit('started');
+    this.scheduleRegistration_(0 /* immediately */);
+    this.emit('started');
   }
 
   /**
