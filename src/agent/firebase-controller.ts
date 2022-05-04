@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /*!
- * @module debug/oneplatformcontroller
+ * @module debug/firebase-controller
  */
 
 import * as assert from 'assert';

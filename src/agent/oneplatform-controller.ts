@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /*!
- * @module debug/oneplatformcontroller
+ * @module debug/oneplatform-controller
  */
 
 import {ServiceObject} from '@google-cloud/common';
