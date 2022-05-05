@@ -24,6 +24,7 @@ import * as stackdriver from '../types/stackdriver';
 import * as crypto from 'crypto';
 
 import * as firebase from 'firebase-admin';
+import * as gcpMetadata from 'gcp-metadata';
 
 import * as util from 'util';
 const debuglog = util.debuglog('cdbg.firebase');
@@ -34,24 +35,37 @@ export class FirebaseController implements Controller {
 
   /**
    * Connects to the Firebase database.
+   *
+   * The project Id passed in options is preferred over any other sources.
+   *
    * @param options specifies which database and credentials to use
    * @returns database connection
    */
-  static initialize(options: {
+  static async initialize(options: {
     keyPath?: string;
     databaseUrl?: string;
-  }): firebase.database.Database {
+    projectId?: string;
+  }): Promise<firebase.database.Database> {
     let credential = undefined;
-    let projectId = undefined;
+    let projectId = options.projectId;
+
     if (options.keyPath) {
       // Use the project id and credentials in the path specified by the keyPath.
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const serviceAccount = require(options.keyPath);
-      projectId = serviceAccount['project_id'];
+      projectId = projectId ?? serviceAccount['project_id'];
       credential = firebase.credential.cert(serviceAccount);
     } else {
-      // TODO: Find out how to find the project ID.
-      projectId = 'TBD';
+      if (!projectId) {
+        // Try grabbing it from the GCE metadata server.
+        if (await gcpMetadata.isAvailable()) {
+          projectId = await gcpMetadata.project('project-id');
+        }
+      }
+    }
+
+    if (!projectId) {
+      throw new Error('Cannot determine project ID');
     }
 
     // Build the database URL.

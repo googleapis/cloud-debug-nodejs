@@ -189,7 +189,7 @@ export class Debuglet extends EventEmitter {
   private v8debug: DebugApi | null;
   private running: boolean;
   private project: string | null;
-  private controller: Controller;
+  private controller: Controller | null;
   private completedBreakpointMap: {[key: string]: boolean};
 
   // breakpointFetchedTimestamp represents the last timestamp when
@@ -255,17 +255,7 @@ export class Debuglet extends EventEmitter {
       level: Debuglet.logLevelToName(this.config.logLevel),
     });
 
-    /** @private {DebugletApi} */
-    if (config.useFirebase) {
-      // TODO: This shouldn't be on the critical path.
-      const firebaseDb = FirebaseController.initialize({
-        keyPath: config.firebaseKeyPath,
-        databaseUrl: config.firebaseDbUrl,
-      });
-      this.controller = new FirebaseController(firebaseDb);
-    } else {
-      this.controller = new OnePlatformController(this.debug, this.config);
-    }
+    this.controller = null;
 
     /** @private {Debuggee} */
     this.debuggee = null;
@@ -434,8 +424,19 @@ export class Debuglet extends EventEmitter {
 
     let project: string;
     if (this.config.useFirebase) {
-      // Project id was discovered during initialization of the app.
-      project = (this.controller as FirebaseController).getProjectId();
+      try {
+        const firebaseDb = await FirebaseController.initialize({
+          keyPath: this.config.firebaseKeyPath,
+          databaseUrl: this.config.firebaseDbUrl,
+          projectId: this.config.projectId,
+        });
+        this.controller = new FirebaseController(firebaseDb);
+        project = (this.controller as FirebaseController).getProjectId();
+      } catch (err) {
+        this.logger.error('Unable to connect to Firebase: ' + err.message);
+        this.emit('initError', err);
+        return;
+      }
     } else {
       try {
         project = await this.debug.authClient.getProjectId();
@@ -446,6 +447,7 @@ export class Debuglet extends EventEmitter {
         this.emit('initError', err);
         return;
       }
+      this.controller = new OnePlatformController(this.debug, this.config);
     }
 
     if (
@@ -723,6 +725,7 @@ export class Debuglet extends EventEmitter {
     }
 
     setTimeout(() => {
+      assert(that.controller);
       if (!that.running) {
         onError(new Error('Debuglet not running'));
         return;
@@ -773,8 +776,7 @@ export class Debuglet extends EventEmitter {
   }
 
   startListeningForBreakpoints_(): void {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const that = this;
+    assert(this.controller);
     // TODO: Handle the case where this.debuggee is null or not properly registered.
     this.controller.subscribeToBreakpoints(
       this.debuggee!,
@@ -785,11 +787,11 @@ export class Debuglet extends EventEmitter {
           const delay =
             err.name === 'RegistrationExpiredError'
               ? 0
-              : that.config.internal.registerDelayOnFetcherErrorSec;
-          that.scheduleRegistration_(delay);
+              : this.config.internal.registerDelayOnFetcherErrorSec;
+          this.scheduleRegistration_(delay);
         }
 
-        that.updateActiveBreakpoints_(breakpoints);
+        this.updateActiveBreakpoints_(breakpoints);
       }
     );
   }
@@ -814,30 +816,28 @@ export class Debuglet extends EventEmitter {
    * @private
    */
   updateActiveBreakpoints_(breakpoints: stackdriver.Breakpoint[]): void {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const that = this;
     const updatedBreakpointMap = this.convertBreakpointListToMap_(breakpoints);
 
     if (breakpoints.length) {
-      that.logger.info(
+      this.logger.info(
         formatBreakpoints('Server breakpoints: ', updatedBreakpointMap)
       );
     }
     breakpoints.forEach((breakpoint: stackdriver.Breakpoint) => {
       // TODO: Address the case when `breakpoint.id` is `undefined`.
       if (
-        !that.completedBreakpointMap[breakpoint.id as string] &&
-        !that.activeBreakpointMap[breakpoint.id as string]
+        !this.completedBreakpointMap[breakpoint.id as string] &&
+        !this.activeBreakpointMap[breakpoint.id as string]
       ) {
         // New breakpoint
-        that.addBreakpoint_(breakpoint, err => {
+        this.addBreakpoint_(breakpoint, err => {
           if (err) {
-            that.completeBreakpoint_(breakpoint, false);
+            this.completeBreakpoint_(breakpoint, false);
           }
         });
 
         // Schedule the expiry of server breakpoints.
-        that.scheduleBreakpointExpiry_(breakpoint);
+        this.scheduleBreakpointExpiry_(breakpoint);
       }
     });
 
@@ -850,7 +850,7 @@ export class Debuglet extends EventEmitter {
       //              field.  It is possible that breakpoint.id is always
       //              undefined!
       // TODO: Make sure the use of `that` here is correct.
-      delete that.completedBreakpointMap[(breakpoint as {} as {id: number}).id];
+      delete this.completedBreakpointMap[(breakpoint as {} as {id: number}).id];
     });
 
     // Remove active breakpoints that the server no longer care about.
@@ -989,21 +989,20 @@ export class Debuglet extends EventEmitter {
     breakpoint: stackdriver.Breakpoint,
     deleteFromV8 = true
   ): void {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const that = this;
+    assert(this.controller);
 
-    that.logger.info('\tupdating breakpoint data on server', breakpoint.id);
-    that.controller.updateBreakpoint(
+    this.logger.info('\tupdating breakpoint data on server', breakpoint.id);
+    this.controller.updateBreakpoint(
       // TODO: Address the case when `that.debuggee` is `null`.
-      that.debuggee as Debuggee,
+      this.debuggee as Debuggee,
       breakpoint,
       (err /*, body*/) => {
         if (err) {
-          that.logger.error('Unable to complete breakpoint on server', err);
+          this.logger.error('Unable to complete breakpoint on server', err);
         } else {
           // TODO: Address the case when `breakpoint.id` is `undefined`.
-          that.completedBreakpointMap[breakpoint.id as string] = true;
-          that.removeBreakpoint_(breakpoint, deleteFromV8);
+          this.completedBreakpointMap[breakpoint.id as string] = true;
+          this.removeBreakpoint_(breakpoint, deleteFromV8);
         }
       }
     );
@@ -1015,16 +1014,15 @@ export class Debuglet extends EventEmitter {
    * @private
    */
   rejectBreakpoint_(breakpoint: stackdriver.Breakpoint): void {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const that = this;
+    assert(this.controller);
 
     // TODO: Address the case when `that.debuggee` is `null`.
-    that.controller.updateBreakpoint(
-      that.debuggee as Debuggee,
+    this.controller.updateBreakpoint(
+      this.debuggee as Debuggee,
       breakpoint,
       (err /*, body*/) => {
         if (err) {
-          that.logger.error('Unable to complete breakpoint on server', err);
+          this.logger.error('Unable to complete breakpoint on server', err);
         }
       }
     );
@@ -1039,23 +1037,20 @@ export class Debuglet extends EventEmitter {
    * @private
    */
   scheduleBreakpointExpiry_(breakpoint: stackdriver.Breakpoint): void {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const that = this;
-
     const now = Date.now() / 1000;
     const createdTime = breakpoint.createdTime
       ? Number(breakpoint.createdTime.seconds)
       : now;
-    const expiryTime = createdTime + that.config.breakpointExpirationSec;
+    const expiryTime = createdTime + this.config.breakpointExpirationSec;
 
     setTimeout(() => {
-      that.logger.info('Expiring breakpoint ' + breakpoint.id);
+      this.logger.info('Expiring breakpoint ' + breakpoint.id);
       breakpoint.status = {
         description: {format: 'The snapshot has expired'},
         isError: true,
         refersTo: StatusMessage.BREAKPOINT_AGE,
       };
-      that.completeBreakpoint_(breakpoint);
+      this.completeBreakpoint_(breakpoint);
     }, (expiryTime - now) * 1000).unref();
   }
 
@@ -1066,6 +1061,7 @@ export class Debuglet extends EventEmitter {
    * pending operations.
    */
   stop(): void {
+    assert(this.controller);
     assert.ok(this.running, 'stop can only be called on a running agent');
     this.logger.debug('Stopping Debuglet');
     this.running = false;
