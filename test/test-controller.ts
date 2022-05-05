@@ -18,6 +18,7 @@ import * as nock from 'nock';
 
 import {Debug} from '../src/client/stackdriver/debug';
 import {Debuggee} from '../src/debuggee';
+import {defaultConfig as DEFAULT_CONFIG} from '../src/agent/config';
 import * as stackdriver from '../src/types/stackdriver';
 import * as t from 'teeny-request'; // types only
 import {teenyRequest} from 'teeny-request';
@@ -26,7 +27,7 @@ import {teenyRequest} from 'teeny-request';
 // not being set
 delete process.env.GCLOUD_PROJECT;
 
-import {Controller} from '../src/agent/controller';
+import {OnePlatformController} from '../src/agent/oneplatform-controller';
 // TODO: Fix fakeDebug to actually implement Debug.
 const fakeDebug = {
   apiEndpoint: 'clouddebugger.googleapis.com',
@@ -58,7 +59,7 @@ describe('Controller API', () => {
         description: 'unit test',
         agentVersion,
       });
-      const controller = new Controller(fakeDebug);
+      const controller = new OnePlatformController(fakeDebug, DEFAULT_CONFIG);
       // TODO: Determine if this type signature is correct.
       controller.register(debuggee, (err, result) => {
         assert(!err, 'not expecting an error');
@@ -83,7 +84,7 @@ describe('Controller API', () => {
         description: 'unit test',
         agentVersion,
       });
-      const controller = new Controller(fakeDebug);
+      const controller = new OnePlatformController(fakeDebug, DEFAULT_CONFIG);
       // TODO: Determine if this type signature is correct.
       controller.register(debuggee, (err, result) => {
         assert(!err, 'not expecting an error');
@@ -107,7 +108,7 @@ describe('Controller API', () => {
         description: 'unit test',
         agentVersion,
       });
-      const controller = new Controller(fakeDebug);
+      const controller = new OnePlatformController(fakeDebug, DEFAULT_CONFIG);
       controller.register(debuggee, (err, result) => {
         // TODO: Fix this incorrect method signature.
         (assert as {ifError: Function}).ifError(err, 'not expecting an error');
@@ -135,7 +136,7 @@ describe('Controller API', () => {
         description: 'unit test',
         agentVersion,
       });
-      const controller = new Controller(fakeDebug);
+      const controller = new OnePlatformController(fakeDebug, DEFAULT_CONFIG);
       controller.register(debuggee, (err /*, result*/) => {
         assert.ifError(err);
         done();
@@ -148,7 +149,7 @@ describe('Controller API', () => {
         .reply(200, {kind: 'whatever'});
 
       const debuggee = {id: 'fake-debuggee'};
-      const controller = new Controller(fakeDebug);
+      const controller = new OnePlatformController(fakeDebug, DEFAULT_CONFIG);
       // TODO: Fix debuggee to actually implement Debuggee
       // TODO: Determine if the response parameter should be used.
       controller.listBreakpoints(
@@ -176,7 +177,10 @@ describe('Controller API', () => {
             )
             .reply(200, invalidResponse);
           const debuggee = {id: 'fake-debuggee'};
-          const controller = new Controller(fakeDebug);
+          const controller = new OnePlatformController(
+            fakeDebug,
+            DEFAULT_CONFIG
+          );
           // TODO: Fix debuggee to actually implement Debuggee
           // TODO: Determine if the response parameter should be used.
           controller.listBreakpoints(
@@ -202,7 +206,7 @@ describe('Controller API', () => {
         .reply(403);
       // TODO: Fix debuggee to actually implement Debuggee
       const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
-      const controller = new Controller(fakeDebug);
+      const controller = new OnePlatformController(fakeDebug, DEFAULT_CONFIG);
       // TODO: Determine if the response parameter should be used.
       controller.listBreakpoints(debuggee, (err, response, result) => {
         assert(err instanceof Error, 'expecting an error');
@@ -218,7 +222,7 @@ describe('Controller API', () => {
         .reply(200, {waitExpired: true});
       // TODO: Fix debuggee to actually implement Debuggee
       const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
-      const controller = new Controller(fakeDebug);
+      const controller = new OnePlatformController(fakeDebug, DEFAULT_CONFIG);
       // TODO: Determine if the result parameter should be used.
       controller.listBreakpoints(debuggee, (err, response) => {
         // TODO: Fix this incorrect method signature.
@@ -253,7 +257,7 @@ describe('Controller API', () => {
         description: 'unit test',
         agentVersion,
       });
-      const controller = new Controller(fakeDebug);
+      const controller = new OnePlatformController(fakeDebug, DEFAULT_CONFIG);
       controller.register(debuggee, (err1 /*, response1*/) => {
         assert.ifError(err1);
         const debuggeeWithId: Debuggee = {id: 'fake-debuggee'} as Debuggee;
@@ -282,7 +286,10 @@ describe('Controller API', () => {
             .reply(200, {breakpoints});
           // TODO: Fix debuggee to actually implement Debuggee
           const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
-          const controller = new Controller(fakeDebug);
+          const controller = new OnePlatformController(
+            fakeDebug,
+            DEFAULT_CONFIG
+          );
           // TODO: Determine if the response parameter should be used.
           controller.listBreakpoints(debuggee, (err, response, result) => {
             assert(!err, 'not expecting an error');
@@ -321,7 +328,7 @@ describe('Controller API', () => {
         });
       // TODO: Fix debuggee to actually implement Debuggee
       const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
-      const controller = new Controller(fakeDebug);
+      const controller = new OnePlatformController(fakeDebug, DEFAULT_CONFIG);
       controller.updateBreakpoint(
         debuggee as Debuggee,
         breakpoint,
