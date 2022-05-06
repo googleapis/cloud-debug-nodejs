@@ -52,6 +52,7 @@
     "findit2": "^2.2.3",
     "firebase-admin": "^9.11.1",
     "gcp-metadata": "^4.0.0",
+    "google-auth-library": "^8.0.2",
     "p-limit": "^3.0.1",
     "semver": "^7.0.0",
     "source-map": "^0.7.3",

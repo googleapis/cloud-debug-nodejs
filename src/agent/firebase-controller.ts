@@ -179,11 +179,13 @@ export class FirebaseController implements Controller {
     // https://firebase.google.com/docs/reference/rest/database#section-server-values
     breakpoint_map['finalTimeUnixMsec'] = {'.sv': 'timestamp'};
 
-    // TODO: error handling from here on
+    // FIXME: Race condition.  This will trigger the removal of the breakpoint
+    // from V8 through the update breakpoints path.  
     this.db
       .ref(`cdbg/breakpoints/${this.debuggeeId}/active/${breakpoint.id}`)
       .remove();
 
+    // TODO: error handling from here on
     if (is_snapshot) {
       // We could also restrict this to only write to this node if it wasn't
       // an error and there is actual snapshot data. For now though we'll

@@ -906,14 +906,11 @@ export class Debuglet extends EventEmitter {
     breakpoint: stackdriver.Breakpoint,
     cb: (ob: Error | string) => void
   ): void {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const that = this;
-
     if (
-      !that.config.allowExpressions &&
+      !this.config.allowExpressions &&
       (breakpoint.condition || breakpoint.expressions)
     ) {
-      that.logger.error(ALLOW_EXPRESSIONS_MESSAGE);
+      this.logger.error(ALLOW_EXPRESSIONS_MESSAGE);
       breakpoint.status = new StatusMessage(
         StatusMessage.UNSPECIFIED,
         ALLOW_EXPRESSIONS_MESSAGE,
@@ -927,7 +924,7 @@ export class Debuglet extends EventEmitter {
 
     if (utils.satisfies(process.version, '5.2 || <4')) {
       const message = NODE_VERSION_MESSAGE;
-      that.logger.error(message);
+      this.logger.error(message);
       breakpoint.status = new StatusMessage(
         StatusMessage.UNSPECIFIED,
         message,
@@ -939,41 +936,41 @@ export class Debuglet extends EventEmitter {
       return;
     }
 
-    // TODO: Address the case when `that.v8debug` is `null`.
-    (that.v8debug as DebugApi).set(breakpoint, err1 => {
+    // TODO: Address the case when `this.v8debug` is `null`.
+    (this.v8debug as DebugApi).set(breakpoint, err1 => {
       if (err1) {
         cb(err1);
         return;
       }
-      that.logger.info('\tsuccessfully added breakpoint  ' + breakpoint.id);
+      this.logger.info('\tsuccessfully added breakpoint  ' + breakpoint.id);
       // TODO: Address the case when `breakpoint.id` is `undefined`.
-      that.activeBreakpointMap[breakpoint.id as string] = breakpoint;
+      this.activeBreakpointMap[breakpoint.id as string] = breakpoint;
 
       if (breakpoint.action === 'LOG') {
-        // TODO: Address the case when `that.v8debug` is `null`.
-        (that.v8debug as DebugApi).log(
+        // TODO: Address the case when `this.v8debug` is `null`.
+        (this.v8debug as DebugApi).log(
           breakpoint,
           (fmt: string, exprs: string[]) => {
-            that.config.log.logFunction(
+            this.config.log.logFunction(
               `LOGPOINT: ${Debuglet.format(fmt, exprs)}`
             );
           },
           () => {
             // TODO: Address the case when `breakpoint.id` is `undefined`.
-            return that.completedBreakpointMap[breakpoint.id as string];
+            return this.completedBreakpointMap[breakpoint.id as string];
           }
         );
       } else {
-        // TODO: Address the case when `that.v8debug` is `null`.
-        (that.v8debug as DebugApi).wait(breakpoint, err2 => {
+        // TODO: Address the case when `this.v8debug` is `null`.
+        (this.v8debug as DebugApi).wait(breakpoint, err2 => {
           if (err2) {
-            that.logger.error(err2);
+            this.logger.error(err2);
             cb(err2);
             return;
           }
 
-          that.logger.info('Breakpoint hit!: ' + breakpoint.id);
-          that.completeBreakpoint_(breakpoint);
+          this.logger.info('Breakpoint hit!: ' + breakpoint.id);
+          this.completeBreakpoint_(breakpoint);
         });
       }
     });
@@ -993,18 +990,22 @@ export class Debuglet extends EventEmitter {
 
     this.logger.info('\tupdating breakpoint data on server', breakpoint.id);
     this.controller.updateBreakpoint(
-      // TODO: Address the case when `that.debuggee` is `null`.
+      // TODO: Address the case when `this.debuggee` is `null`.
       this.debuggee as Debuggee,
       breakpoint,
       (err /*, body*/) => {
         if (err) {
           this.logger.error('Unable to complete breakpoint on server', err);
-        } else {
+          return;
+        }
+        // The Firebase controller will remove the breakpoint during the update
+        // by removing it from the database.
+        if (!this.config.useFirebase) {
           // TODO: Address the case when `breakpoint.id` is `undefined`.
           this.completedBreakpointMap[breakpoint.id as string] = true;
           this.removeBreakpoint_(breakpoint, deleteFromV8);
-        }
       }
+    }
     );
   }
 
@@ -1016,7 +1017,7 @@ export class Debuglet extends EventEmitter {
   rejectBreakpoint_(breakpoint: stackdriver.Breakpoint): void {
     assert(this.controller);
 
-    // TODO: Address the case when `that.debuggee` is `null`.
+    // TODO: Address the case when `this.debuggee` is `null`.
     this.controller.updateBreakpoint(
       this.debuggee as Debuggee,
       breakpoint,
