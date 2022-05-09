@@ -1004,8 +1004,8 @@ export class Debuglet extends EventEmitter {
           // TODO: Address the case when `breakpoint.id` is `undefined`.
           this.completedBreakpointMap[breakpoint.id as string] = true;
           this.removeBreakpoint_(breakpoint, deleteFromV8);
+        }
       }
-    }
     );
   }
 

@@ -32,6 +32,7 @@ const debuglog = util.debuglog('cdbg.firebase');
 export class FirebaseController implements Controller {
   db: firebase.database.Database;
   debuggeeId?: string;
+  bpRef?: firebase.database.Reference;
 
   /**
    * Connects to the Firebase database.
@@ -172,6 +173,7 @@ export class FirebaseController implements Controller {
 
     breakpoint.isFinalState = true;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const breakpoint_map: {[key: string]: any} = {...breakpoint};
 
     // Magic value. Firebase RTDB will replace the {'.sv': 'timestamp'} with
@@ -179,8 +181,6 @@ export class FirebaseController implements Controller {
     // https://firebase.google.com/docs/reference/rest/database#section-server-values
     breakpoint_map['finalTimeUnixMsec'] = {'.sv': 'timestamp'};
 
-    // FIXME: Race condition.  This will trigger the removal of the breakpoint
-    // from V8 through the update breakpoints path.  
     this.db
       .ref(`cdbg/breakpoints/${this.debuggeeId}/active/${breakpoint.id}`)
       .remove();
@@ -218,17 +218,17 @@ export class FirebaseController implements Controller {
     debuglog('Started subscription for breakpoint updates');
     assert(debuggee.id, 'should have a registered debuggee');
 
-    const bpRef = this.db.ref(`cdbg/breakpoints/${this.debuggeeId}/active`);
+    this.bpRef = this.db.ref(`cdbg/breakpoints/${this.debuggeeId}/active`);
 
     let breakpoints = [] as stackdriver.Breakpoint[];
-    bpRef.on('child_added', (snapshot: firebase.database.DataSnapshot) => {
+    this.bpRef.on('child_added', (snapshot: firebase.database.DataSnapshot) => {
       debuglog(`new breakpoint: ${snapshot.key}`);
       const breakpoint = snapshot.val();
       breakpoint.id = snapshot.key;
       breakpoints.push(breakpoint);
       callback(null, breakpoints);
     });
-    bpRef.on('child_removed', snapshot => {
+    this.bpRef.on('child_removed', snapshot => {
       // remove the breakpoint.
       const bpId = snapshot.key;
       breakpoints = breakpoints.filter(bp => bp.id !== bpId);
@@ -238,6 +238,9 @@ export class FirebaseController implements Controller {
   }
 
   stop(): void {
-    // No-op.
+    if (this.bpRef) {
+      this.bpRef.off();
+      this.bpRef = undefined;
+    }
   }
 }

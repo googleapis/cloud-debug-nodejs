@@ -12,476 +12,318 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// import * as assert from 'assert';
-// import {before, describe, it} from 'mocha';
-// import * as nock from 'nock';
+import * as assert from 'assert';
+import {describe, it} from 'mocha';
 
-// import {Debuggee} from '../src/debuggee';
-// import * as stackdriver from '../src/types/stackdriver';
-// import * as firebase from 'firebase-admin';
+import {Debuggee} from '../src/debuggee';
+import * as stackdriver from '../src/types/stackdriver';
+import * as firebase from 'firebase-admin';
 
-// // the tests in this file rely on the GCLOUD_PROJECT environment variable
-// // not being set
-// delete process.env.GCLOUD_PROJECT;
+import {FirebaseController} from '../src/agent/firebase-controller';
+import {DataSnapshot, EventType, Reference} from '@firebase/database-types';
 
-// import {FirebaseController} from '../src/agent/firebasecontroller';
-// import {promisify} from 'util';
-// import {
-//   DataSnapshot,
-//   EventType,
-//   OnDisconnect,
-//   Query,
-//   Reference,
-//   ThenableReference,
-// } from '@firebase/database-types';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+class MockSnapshot {
+  key: string;
+  value: any;
+  constructor(key: string, value: any) {
+    this.key = key;
+    this.value = value;
+  }
 
-// const agentVersion = 'SomeName/client/SomeVersion';
-// const url = 'https://unittesting-cdbg.firebaseio.com';
-// const api = '/cdbg';
+  val() {
+    return this.value;
+  }
+}
 
-// const keyPath = 'someKeyPath';
+class MockReference {
+  key: string;
+  value?: any;
+  parentRef?: MockReference;
+  children = new Map<string, MockReference>();
+  // Simplification: there's only one listener for each event type.
+  listeners = new Map<EventType, (a: DataSnapshot, b?: string | null) => any>();
 
-// nock.disableNetConnect();
+  constructor(key: string, parentRef?: MockReference) {
+    this.key = key.slice();
+    this.parentRef = parentRef;
+  }
 
-// class MockReference implements firebase.database.Reference {
-//   constructor() {
-//     this.key = '';
-//     this.parent = null;
-//     this.root = this;
-//     this.ref = this;
-//   }
-//   child(path: string): Reference {
-//     throw new Error('Method not implemented.');
-//   }
-//   key: string | null;
-//   onDisconnect(): OnDisconnect {
-//     throw new Error('Method not implemented.');
-//   }
-//   parent: Reference | null;
-//   push(value?: any, onComplete?: (a: Error | null) => any): ThenableReference {
-//     throw new Error('Method not implemented.');
-//   }
-//   remove(onComplete?: (a: Error | null) => any): Promise<any> {
-//     throw new Error('Method not implemented.');
-//   }
-//   root: Reference;
-//   set(value: any, onComplete?: (a: Error | null) => any): Promise<any> {
-//     throw new Error('Method not implemented.');
-//   }
-//   setPriority(
-//     priority: string | number | null,
-//     onComplete: (a: Error | null) => any
-//   ): Promise<any> {
-//     throw new Error('Method not implemented.');
-//   }
-//   setWithPriority(
-//     newVal: any,
-//     newPriority: string | number | null,
-//     onComplete?: (a: Error | null) => any
-//   ): Promise<any> {
-//     throw new Error('Method not implemented.');
-//   }
-//   transaction(
-//     transactionUpdate: (a: any) => any,
-//     onComplete?: (a: Error | null, b: boolean, c: DataSnapshot | null) => any,
-//     applyLocally?: boolean
-//   ): Promise<any> {
-//     throw new Error('Method not implemented.');
-//   }
-//   update(
-//     values: Record<string, any>,
-//     onComplete?: (a: Error | null) => any
-//   ): Promise<any> {
-//     throw new Error('Method not implemented.');
-//   }
-//   endBefore(value: string | number | boolean | null, key?: string): Query {
-//     throw new Error('Method not implemented.');
-//   }
-//   endAt(value: string | number | boolean | null, key?: string): Query {
-//     throw new Error('Method not implemented.');
-//   }
-//   equalTo(value: string | number | boolean | null, key?: string): Query {
-//     throw new Error('Method not implemented.');
-//   }
-//   isEqual(other: Query | null): boolean {
-//     throw new Error('Method not implemented.');
-//   }
-//   limitToFirst(limit: number): Query {
-//     throw new Error('Method not implemented.');
-//   }
-//   limitToLast(limit: number): Query {
-//     throw new Error('Method not implemented.');
-//   }
-//   off(
-//     eventType?: EventType,
-//     callback?: (a: DataSnapshot, b?: string | null) => any,
-//     context?: Record<string, any> | null
-//   ): void {
-//     throw new Error('Method not implemented.');
-//   }
-//   get(): Promise<DataSnapshot> {
-//     throw new Error('Method not implemented.');
-//   }
-//   on(
-//     eventType: EventType,
-//     callback: (a: DataSnapshot, b?: string | null) => any,
-//     cancelCallbackOrContext?: Record<string, any> | ((a: Error) => any) | null,
-//     context?: Record<string, any> | null
-//   ): (a: DataSnapshot | null, b?: string | null) => any {
-//     throw new Error('Method not implemented.');
-//   }
-//   once(
-//     eventType: EventType,
-//     successCallback?: (a: DataSnapshot, b?: string | null) => any,
-//     failureCallbackOrContext?:
-//       | Record<string, any>
-//       | ((a: Error) => void)
-//       | null,
-//     context?: Record<string, any> | null
-//   ): Promise<DataSnapshot> {
-//     throw new Error('Method not implemented.');
-//   }
-//   orderByChild(path: string): Query {
-//     throw new Error('Method not implemented.');
-//   }
-//   orderByKey(): Query {
-//     throw new Error('Method not implemented.');
-//   }
-//   orderByPriority(): Query {
-//     throw new Error('Method not implemented.');
-//   }
-//   orderByValue(): Query {
-//     throw new Error('Method not implemented.');
-//   }
-//   ref: Reference;
-//   startAt(value: string | number | boolean | null, key?: string): Query {
-//     throw new Error('Method not implemented.');
-//   }
-//   startAfter(value: string | number | boolean | null, key?: string): Query {
-//     throw new Error('Method not implemented.');
-//   }
-//   toJSON(): Record<string, any> {
-//     throw new Error('Method not implemented.');
-//   }
-//   toString(): string {
-//     throw new Error('Method not implemented.');
-//   }
-// }
+  remove(onComplete?: (a: Error | null) => any): Promise<any> {
+    if (this.parentRef) {
+      this.parentRef.childRemoved(this.key);
+      this.parentRef.children.delete(this.key);
+    }
+    if (onComplete) {
+      onComplete(null);
+    }
+    return new Promise<any>(resolve => resolve(null));
+  }
 
-// class MockDatabase implements firebase.database.Database {
-//   app: any;
-//   refs = new Map<string, MockReference>();
+  getOrAdd(key: string): MockReference {
+    if (!this.children.has(key)) {
+      this.children.set(key, new MockReference(key, this));
+    }
+    return this.children.get(key)!;
+  }
 
-//   getRulesJSON(): Promise<object> {
-//     throw new Error('getRulesJSON not implemented.');
-//   }
-//   setRules(source: string | object | Buffer): Promise<void> {
-//     throw new Error('setRules not implemented.');
-//   }
-//   getRules(): Promise<string> {
-//     throw new Error('getRules not implemented.');
-//   }
-//   useEmulator(host: string, port: number): void {
-//     throw new Error('useEmulator not implemented.');
-//   }
-//   goOffline(): void {
-//     throw new Error('goOffline not implemented.');
-//   }
-//   goOnline(): void {
-//     throw new Error('goOnline not implemented.');
-//   }
-//   ref(path?: string | Reference): Reference {
-//     throw new Error('ref not implemented.');
-//   }
-//   refFromURL(url: string): Reference {
-//     throw new Error('refFromURL not implemented.');
-//   }
-// }
+  childRemoved(key: string) {
+    if (this.listeners.has('child_removed')) {
+      this.listeners.get('child_removed')!(
+        new MockSnapshot(key, {}) as {} as DataSnapshot
+      );
+    }
+    if (this.parentRef) {
+      this.parentRef.childRemoved(`${this.key}/${key}`);
+    }
+  }
 
-// describe.only('Firebase Controller', () => {
-//   const db = new MockDatabase();
-//   describe.only('register', () => {
-//     it.only('should get a debuggeeId', done => {
-//       const debuggee = new Debuggee({
-//         project: 'fake-project',
-//         uniquifier: 'fake-id',
-//         description: 'unit test',
-//         agentVersion,
-//       });
-//       // Write the code I wish I could.
-//       const debuggeeId = '123456';
-//       const scope = nock(url)
-//         .put(api + `/cdbg/debuggees/${debuggeeId}`)
-//         .reply(200, {});
-//       const controller = new FirebaseController(db);
-//       controller.register(debuggee, (err, result) => {
-//         assert(!err, 'not expecting an error');
-//         assert.ok(result);
-//         assert.strictEqual(result!.debuggee.id, debuggeeId);
-//         scope.done();
-//         done();
-//       });
-//     });
+  childAdded(key: string, value: any) {
+    if (this.listeners.has('child_added')) {
+      this.listeners.get('child_added')!(
+        new MockSnapshot(key, value) as {} as DataSnapshot
+      );
+    }
+    if (this.parentRef) {
+      this.parentRef.childAdded(`${this.key}/${key}`, value);
+    }
+  }
 
-//     it('should get an agentId', done => {
-//       const scope = nock(url)
-//         .post(api + '/debuggees/register')
-//         .reply(200, {
-//           debuggee: {id: 'fake-debuggee'},
-//           agentId: 'fake-agent-id',
-//           activePeriodSec: 600,
-//         });
-//       const debuggee = new Debuggee({
-//         project: 'fake-project',
-//         uniquifier: 'fake-id',
-//         description: 'unit test',
-//         agentVersion,
-//       });
-//       const controller = new FirebaseController(db);
-//       // TODO: Determine if this type signature is correct.
-//       controller.register(debuggee, (err, result) => {
-//         assert(!err, 'not expecting an error');
-//         assert.ok(result);
-//         assert.strictEqual(result!.agentId, 'fake-agent-id');
-//         scope.done();
-//         done();
-//       });
-//     });
+  set(value: any, onComplete?: (a: Error | null) => any): Promise<any> {
+    let creating = false;
+    if (!this.value) {
+      creating = true;
+    }
+    this.value = value;
+    if (onComplete) {
+      onComplete(null);
+    }
+    if (creating && this.parentRef) {
+      this.parentRef.childAdded(this.key, value);
+    }
+    return new Promise<any>(resolve => resolve(null));
+  }
 
-//     it('should not return an error when the debuggee isDisabled', done => {
-//       const scope = nock(url)
-//         .post(api + '/debuggees/register')
-//         .reply(200, {
-//           debuggee: {id: 'fake-debuggee', isDisabled: true},
-//           activePeriodSec: 600,
-//         });
-//       const debuggee = new Debuggee({
-//         project: 'fake-project',
-//         uniquifier: 'fake-id',
-//         description: 'unit test',
-//         agentVersion,
-//       });
-//       const controller = new FirebaseController(db);
-//       controller.register(debuggee, (err, result) => {
-//         // TODO: Fix this incorrect method signature.
-//         (assert as {ifError: Function}).ifError(err, 'not expecting an error');
-//         assert.ok(result);
-//         assert.strictEqual(result!.debuggee.id, 'fake-debuggee');
-//         assert.ok(result!.debuggee.isDisabled);
-//         scope.done();
-//         done();
-//       });
-//     });
-//   });
+  on(
+    eventType: EventType,
+    callback: (a: DataSnapshot, b?: string | null) => any
+  ): (a: DataSnapshot | null, b?: string | null) => any {
+    this.listeners.set(eventType, callback);
 
-//   describe('subscribeToBreakpoints', () => {
-//     // register before each test
-//     before(done => {
-//       nock(url)
-//         .post(api + '/debuggees/register')
-//         .reply(200, {
-//           debuggee: {id: 'fake-debuggee'},
-//           activePeriodSec: 600,
-//         });
-//       const debuggee = new Debuggee({
-//         project: 'fake-project',
-//         uniquifier: 'fake-id',
-//         description: 'unit test',
-//         agentVersion,
-//       });
-//       const controller = new FirebaseController(db);
-//       controller.register(debuggee, (err /*, result*/) => {
-//         assert.ifError(err);
-//         done();
-//       });
-//     });
+    // Callback will be called with each existing child: https://firebase.google.com/docs/database/admin/retrieve-data#child-added
+    if (eventType === 'child_added') {
+      this.children.forEach(child => this.childAdded(child.key, child.value));
+    }
+    // Don't care about return value.
+    return () => null;
+  }
 
-//     it('should deal with a missing breakpoints response', done => {
-//       const scope = nock(url)
-//         .get(api + '/debuggees/fake-debuggee/breakpoints?successOnTimeout=true')
-//         .reply(200, {kind: 'whatever'});
+  off() {
+    // No-op.  Needed to cleanly detach in the real firebase implementation.
+  }
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
-//       const debuggee = {id: 'fake-debuggee'};
-//       const controller = new FirebaseController(db);
-//       // TODO: Fix debuggee to actually implement Debuggee
-//       // TODO: Determine if the response parameter should be used.
-//       controller.subscribeToBreakpoints(
-//         debuggee as Debuggee,
-//         (err, breakpoints) => {
-//           assert(!err, 'not expecting an error');
-//           // TODO: Handle the case where result is undefined
-//           assert(!breakpoints, 'should not have a breakpoints property');
-//           scope.done();
-//           done();
-//         }
-//       );
-//     });
+class MockDatabase {
+  root = new MockReference('');
+  mockRef(path: string): MockReference {
+    const parts = path.split('/');
+    let ref = this.root;
+    for (let i = 0; i < parts.length; i++) {
+      ref = ref.getOrAdd(parts[i]);
+    }
+    return ref;
+  }
+  ref(path: string): Reference {
+    return this.mockRef(path) as {} as Reference;
+  }
+}
 
-//     describe('invalid responses', () => {
-//       const tests: string | Array<{}> = ['', 'JSON, this is not', []];
-//       tests.forEach((invalidResponse, index) => {
-//         it('should pass test ' + index, done => {
-//           const scope = nock(url)
-//             .get(
-//               api + '/debuggees/fake-debuggee/breakpoints?successOnTimeout=true'
-//             )
-//             .reply(200, invalidResponse);
-//           const debuggee = {id: 'fake-debuggee'};
-//           const controller = new FirebaseController(db);
-//           controller.subscribeToBreakpoints(
-//             debuggee as Debuggee,
-//             (err, breakpoints) => {
-//               assert(!err, 'not expecting an error');
-//               assert(!breakpoints, 'should not have breakpoints property');
-//               scope.done();
-//               done();
-//             }
-//           );
-//         });
-//       });
-//     });
+describe('Firebase Controller', () => {
+  const debuggee = new Debuggee({
+    project: 'fake-project',
+    uniquifier: 'fake-id',
+    description: 'unit test',
+    agentVersion: 'SomeName/client/SomeVersion',
+  });
 
-//     it('should throw error on http errors', done => {
-//       const scope = nock(url)
-//         .get(api + '/debuggees/fake-debuggee/breakpoints?successOnTimeout=true')
-//         .reply(403);
-//       // TODO: Fix debuggee to actually implement Debuggee
-//       const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
-//       const controller = new FirebaseController(db);
-//       // TODO: Determine if the response parameter should be used.
-//       controller.subscribeToBreakpoints(debuggee, (err, breakpoints) => {
-//         assert(err instanceof Error, 'expecting an error');
-//         assert(!breakpoints, 'should not have any breakpoints');
-//         scope.done();
-//         done();
-//       });
-//     });
+  describe('register', () => {
+    it('should get a debuggeeId', done => {
+      const db = new MockDatabase();
+      // Debuggee Id is the md5 hash of the json representation of the debuggee.
+      const debuggeeId = 'e1662bd77f69383284621966af8eb5e9';
+      const controller = new FirebaseController(
+        db as {} as firebase.database.Database
+      );
+      controller.register(debuggee, (err, result) => {
+        assert(!err, 'not expecting an error');
+        assert.ok(result);
+        assert.strictEqual(result!.debuggee.id, debuggeeId);
+        assert.strictEqual(
+          db.mockRef(`cdbg/debuggees/${debuggeeId}`).value,
+          debuggee
+        );
+        done();
+      });
+    });
+  });
 
-//     it('should work with waitTokens', done => {
-//       const scope = nock(url)
-//         .get(api + '/debuggees/fake-debuggee/breakpoints?successOnTimeout=true')
-//         .reply(200, {waitExpired: true});
-//       // TODO: Fix debuggee to actually implement Debuggee
-//       const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
-//       const controller = new FirebaseController(db);
-//       // TODO: Determine if the result parameter should be used.
-//       controller.subscribeToBreakpoints(debuggee, (err, response) => {
-//         // TODO: Fix this incorrect method signature.
-//         (assert as {ifError: Function}).ifError(err, 'not expecting an error');
-//         // TODO: Fix this error that states `body` is not a property
-//         //       of `ServerResponse`.
-//         assert(
-//           (response as {} as {body: {waitExpired: {}}}).body.waitExpired,
-//           'should have expired set'
-//         );
-//         scope.done();
-//         done();
-//       });
-//     });
+  describe('subscribeToBreakpoints', () => {
+    const breakpoints = [
+      {id: 'breakpoint-0', location: {path: 'foo.js', line: 18}},
+      {id: 'breakpoint-1', location: {path: 'bar.js', line: 23}},
+    ];
+    const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
 
-//     it('should work with agentId provided from registration', done => {
-//       const scope = nock(url)
-//         .post(api + '/debuggees/register')
-//         .reply(200, {
-//           debuggee: {id: 'fake-debuggee'},
-//           agentId: 'fake-agent-id',
-//           activePeriodSec: 600,
-//         })
-//         .get(
-//           api +
-//             '/debuggees/fake-debuggee/breakpoints?successOnTimeout=true&agentId=fake-agent-id'
-//         )
-//         .reply(200, {waitExpired: true});
-//       const debuggee = new Debuggee({
-//         project: 'fake-project',
-//         uniquifier: 'fake-id',
-//         description: 'unit test',
-//         agentVersion,
-//       });
-//       const controller = new FirebaseController(db);
-//       controller.register(debuggee, (err1 /*, response1*/) => {
-//         assert.ifError(err1);
-//         const debuggeeWithId: Debuggee = {id: 'fake-debuggee'} as Debuggee;
-//         // TODO: Determine if the result parameter should be used.
-//         controller.subscribeToBreakpoints(
-//           debuggeeWithId,
-//           (err2 /*, response2*/) => {
-//             assert.ifError(err2);
-//             scope.done();
-//             done();
-//           }
-//         );
-//       });
-//     });
+    it('should notice added and removed breakpoints', done => {
+      const db = new MockDatabase();
+      const controller = new FirebaseController(
+        db as {} as firebase.database.Database
+      );
+      controller.debuggeeId = 'debuggeeId';
 
-//     // TODO: Fix this so that each element of the array is actually an
-//     //       array of Breakpoints.
-//     const testsBreakpoints: stackdriver.Breakpoint[][] = [
-//       [],
-//       [{id: 'breakpoint-0', location: {path: 'foo.js', line: 18}}],
-//     ] as stackdriver.Breakpoint[][];
-//     testsBreakpoints.forEach(
-//       (breakpoints: stackdriver.Breakpoint[], index: number) => {
-//         it('should pass test ' + index, done => {
-//           const scope = nock(url)
-//             .get(
-//               api + '/debuggees/fake-debuggee/breakpoints?successOnTimeout=true'
-//             )
-//             .reply(200, {breakpoints});
-//           // TODO: Fix debuggee to actually implement Debuggee
-//           const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
-//           const controller = new FirebaseController(db);
-//           // TODO: Determine if the response parameter should be used.
-//           controller.subscribeToBreakpoints(debuggee, (err, breakpoints) => {
-//             assert(!err, 'not expecting an error');
-//             assert(breakpoints, 'should have a breakpoints property');
-//             const bps = breakpoints;
-//             assert.deepStrictEqual(bps, breakpoints, 'breakpoints mismatch');
-//             scope.done();
-//             done();
-//           });
-//         });
-//       }
-//     );
-//   });
+      // Add a breakpoint before listening.
+      db.mockRef(`cdbg/breakpoints/debuggeeId/active/${breakpoints[0].id}`).set(
+        breakpoints[0]
+      );
 
-//   describe('updateBreakpoint', () => {
-//     it('should PUT to server when a breakpoint is updated', done => {
-//       // TODO: Fix breakpoint to actually Breakpoint
-//       const breakpoint: stackdriver.Breakpoint = {
-//         id: 'breakpoint-0',
-//         location: {path: 'foo.js', line: 99},
-//       } as stackdriver.Breakpoint;
-//       // A cast for the second argument to put() is necessary for nock 11
-//       // because the type definitions state that the second argument cannot
-//       // be an Object even though the nock code itself seems to handle an
-//       // Object.  Further, the tests pass when using the cast.
-//       // This issue is being tracked in the nock repo at
-//       // https://github.com/nock/nock/issues/1731.
-//       const scope = nock(url)
-//         .put(api + '/debuggees/fake-debuggee/breakpoints/breakpoint-0', {
-//           debuggeeId: 'fake-debuggee',
-//           breakpoint,
-//         } as {})
-//         .reply(200, {
-//           kind: 'debugletcontroller#updateActiveBreakpointResponse',
-//         });
-//       // TODO: Fix debuggee to actually implement Debuggee
-//       const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
-//       const controller = new FirebaseController(db);
-//       controller.updateBreakpoint(
-//         debuggee as Debuggee,
-//         breakpoint,
-//         (err, result) => {
-//           assert(!err, 'not expecting an error');
-//           assert.strictEqual(
-//             (result as {kind: {}}).kind,
-//             'debugletcontroller#updateActiveBreakpointResponse'
-//           );
-//           scope.done();
-//           done();
-//         }
-//       );
-//     });
-//   });
-// });
+      const expectedResults = [
+        [breakpoints[0]],
+        [breakpoints[0], breakpoints[1]],
+        [breakpoints[1]],
+      ];
+      let callbackCount = 0;
+      controller.subscribeToBreakpoints(debuggee, (err, bps) => {
+        assert(!err, 'not expecting an error');
+        assert.deepStrictEqual(
+          bps,
+          expectedResults[callbackCount],
+          'breakpoints mismatch'
+        );
+        callbackCount++;
+        if (callbackCount === expectedResults.length) {
+          controller.stop();
+          done();
+        }
+      });
+
+      db.mockRef(`cdbg/breakpoints/debuggeeId/active/${breakpoints[1].id}`).set(
+        breakpoints[1]
+      );
+      db.mockRef(
+        `cdbg/breakpoints/debuggeeId/active/${breakpoints[0].id}`
+      ).remove();
+    });
+  });
+
+  describe('updateBreakpoint', () => {
+    it('should update the database correctly for snapshots', done => {
+      const breakpointId = 'breakpointId';
+      const debuggeeId = 'debuggeeId';
+      const breakpoint: stackdriver.Breakpoint = {
+        id: breakpointId,
+        action: 'CAPTURE',
+        location: {path: 'foo.js', line: 99},
+      } as stackdriver.Breakpoint;
+      const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
+      const db = new MockDatabase();
+      const controller = new FirebaseController(
+        db as {} as firebase.database.Database
+      );
+      controller.debuggeeId = debuggeeId;
+
+      let removed = false;
+      db.ref(`cdbg/breakpoints/${debuggeeId}/active`).on(
+        'child_removed',
+        data => {
+          assert.strictEqual(data.key, breakpointId);
+          removed = true;
+        }
+      );
+
+      let finalized = false;
+      db.ref(`cdbg/breakpoints/${debuggeeId}/final`).on('child_added', data => {
+        assert.strictEqual(data.key, breakpointId);
+        assert.deepStrictEqual(data.val(), {
+          ...breakpoint,
+          isFinalState: true,
+          finalTimeUnixMsec: {'.sv': 'timestamp'},
+        });
+        finalized = true;
+      });
+
+      let snapshotted = false;
+      db.ref(`cdbg/breakpoints/${debuggeeId}/snapshot`).on(
+        'child_added',
+        data => {
+          assert.strictEqual(data.key, breakpointId);
+          assert.deepStrictEqual(data.val(), {
+            ...breakpoint,
+            isFinalState: true,
+            finalTimeUnixMsec: {'.sv': 'timestamp'},
+          });
+          snapshotted = true;
+        }
+      );
+
+      controller.updateBreakpoint(debuggee as Debuggee, breakpoint, err => {
+        assert(!err, 'not expecting an error');
+        assert(removed, 'should have been removed');
+        assert(finalized, 'should have been finalized');
+        assert(snapshotted, 'should have been snapshotted');
+        done();
+      });
+    });
+    it('should update the database correctly for logpoints', done => {
+      const breakpointId = 'breakpointId';
+      const debuggeeId = 'debuggeeId';
+      const breakpoint: stackdriver.Breakpoint = {
+        id: breakpointId,
+        action: 'LOG',
+        location: {path: 'foo.js', line: 99},
+      } as stackdriver.Breakpoint;
+      const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
+      const db = new MockDatabase();
+      const controller = new FirebaseController(
+        db as {} as firebase.database.Database
+      );
+      controller.debuggeeId = debuggeeId;
+
+      let removed = false;
+      db.ref(`cdbg/breakpoints/${debuggeeId}/active`).on(
+        'child_removed',
+        data => {
+          assert.strictEqual(data.key, breakpointId);
+          removed = true;
+        }
+      );
+
+      let finalized = false;
+      db.ref(`cdbg/breakpoints/${debuggeeId}/final`).on('child_added', data => {
+        assert.strictEqual(data.key, breakpointId);
+        assert.deepStrictEqual(data.val(), {
+          ...breakpoint,
+          isFinalState: true,
+          finalTimeUnixMsec: {'.sv': 'timestamp'},
+        });
+        finalized = true;
+      });
+
+      let snapshotted = false;
+      db.ref(`cdbg/breakpoints/${debuggeeId}/snapshot`).on(
+        'child_added',
+        () => {
+          snapshotted = true;
+        }
+      );
+
+      controller.updateBreakpoint(debuggee as Debuggee, breakpoint, err => {
+        assert(!err, 'not expecting an error');
+        assert(removed, 'should have been removed');
+        assert(finalized, 'should have been finalized');
+        assert(!snapshotted, 'should not have been snapshotted');
+        done();
+      });
+    });
+  });
+});
