@@ -24,6 +24,7 @@ import * as stackdriver from '../types/stackdriver';
 import * as crypto from 'crypto';
 
 import * as firebase from 'firebase-admin';
+import * as gcpMetadata from 'gcp-metadata';
 
 import * as util from 'util';
 const debuglog = util.debuglog('cdbg.firebase');
@@ -31,27 +32,41 @@ const debuglog = util.debuglog('cdbg.firebase');
 export class FirebaseController implements Controller {
   db: firebase.database.Database;
   debuggeeId?: string;
+  bpRef?: firebase.database.Reference;
 
   /**
    * Connects to the Firebase database.
+   *
+   * The project Id passed in options is preferred over any other sources.
+   *
    * @param options specifies which database and credentials to use
    * @returns database connection
    */
-  static initialize(options: {
+  static async initialize(options: {
     keyPath?: string;
     databaseUrl?: string;
-  }): firebase.database.Database {
+    projectId?: string;
+  }): Promise<firebase.database.Database> {
     let credential = undefined;
-    let projectId = undefined;
+    let projectId = options.projectId;
+
     if (options.keyPath) {
       // Use the project id and credentials in the path specified by the keyPath.
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const serviceAccount = require(options.keyPath);
-      projectId = serviceAccount['project_id'];
+      projectId = projectId ?? serviceAccount['project_id'];
       credential = firebase.credential.cert(serviceAccount);
     } else {
-      // TODO: Find out how to find the project ID.
-      projectId = 'TBD';
+      if (!projectId) {
+        // Try grabbing it from the GCE metadata server.
+        if (await gcpMetadata.isAvailable()) {
+          projectId = await gcpMetadata.project('project-id');
+        }
+      }
+    }
+
+    if (!projectId) {
+      throw new Error('Cannot determine project ID');
     }
 
     // Build the database URL.
@@ -158,6 +173,7 @@ export class FirebaseController implements Controller {
 
     breakpoint.isFinalState = true;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const breakpoint_map: {[key: string]: any} = {...breakpoint};
 
     // Magic value. Firebase RTDB will replace the {'.sv': 'timestamp'} with
@@ -165,11 +181,11 @@ export class FirebaseController implements Controller {
     // https://firebase.google.com/docs/reference/rest/database#section-server-values
     breakpoint_map['finalTimeUnixMsec'] = {'.sv': 'timestamp'};
 
-    // TODO: error handling from here on
     this.db
       .ref(`cdbg/breakpoints/${this.debuggeeId}/active/${breakpoint.id}`)
       .remove();
 
+    // TODO: error handling from here on
     if (is_snapshot) {
       // We could also restrict this to only write to this node if it wasn't
       // an error and there is actual snapshot data. For now though we'll
@@ -202,17 +218,17 @@ export class FirebaseController implements Controller {
     debuglog('Started subscription for breakpoint updates');
     assert(debuggee.id, 'should have a registered debuggee');
 
-    const bpRef = this.db.ref(`cdbg/breakpoints/${this.debuggeeId}/active`);
+    this.bpRef = this.db.ref(`cdbg/breakpoints/${this.debuggeeId}/active`);
 
     let breakpoints = [] as stackdriver.Breakpoint[];
-    bpRef.on('child_added', (snapshot: firebase.database.DataSnapshot) => {
+    this.bpRef.on('child_added', (snapshot: firebase.database.DataSnapshot) => {
       debuglog(`new breakpoint: ${snapshot.key}`);
       const breakpoint = snapshot.val();
       breakpoint.id = snapshot.key;
       breakpoints.push(breakpoint);
       callback(null, breakpoints);
     });
-    bpRef.on('child_removed', snapshot => {
+    this.bpRef.on('child_removed', snapshot => {
       // remove the breakpoint.
       const bpId = snapshot.key;
       breakpoints = breakpoints.filter(bp => bp.id !== bpId);
@@ -222,6 +238,9 @@ export class FirebaseController implements Controller {
   }
 
   stop(): void {
-    // No-op.
+    if (this.bpRef) {
+      this.bpRef.off();
+      this.bpRef = undefined;
+    }
   }
 }
