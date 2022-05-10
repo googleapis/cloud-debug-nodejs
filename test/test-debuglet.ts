@@ -1169,8 +1169,7 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
-    /*it('should have breakpoints fetched when promise is resolved', function (done) {
-      // FIXME: Broken.
+    it('should have breakpoints fetched when promise is resolved', function (done) {
       this.timeout(2000);
       const breakpoint: stackdriver.Breakpoint = {
         id: 'test1',
@@ -1189,7 +1188,6 @@ describe('Debuglet', () => {
         .post(REGISTER_PATH)
         .reply(200, {debuggee: {id: DEBUGGEE_ID}})
         .get(BPS_PATH + '?successOnTimeout=true')
-        .twice()
         .reply(200, {breakpoints: [breakpoint]});
       const debugPromise = debuglet.isReadyManager.isReady();
       debuglet.once('registered', () => {
@@ -1212,7 +1210,6 @@ describe('Debuglet', () => {
     });
 
     it('should resolve breakpointFetched promise when registration expires', function (done) {
-      // FIXME: Broken.
       this.timeout(2000);
       const debug = new Debug(
         {projectId: 'fake-project', credentials: fakeCredentials},
@@ -1237,7 +1234,7 @@ describe('Debuglet', () => {
       });
 
       debuglet.start();
-    });*/
+    });
 
     it('should reject breakpoints with conditions when allowExpressions=false', function (done) {
       this.timeout(2000);
@@ -1425,8 +1422,7 @@ describe('Debuglet', () => {
     // The test expires a breakpoint and then has the api respond with
     // the breakpoint listed as active. It validates that the breakpoint
     // is only expired with the server once.
-    /*it('should not update expired breakpoints', function (done) {
-      // FIXME: Broken
+    it('should not update expired breakpoints', function (done) {
       const debug = new Debug(
         {projectId: 'fake-project', credentials: fakeCredentials},
         packageInfo
@@ -1440,6 +1436,7 @@ describe('Debuglet', () => {
         forceNewAgent_: true,
       });
       const debuglet = new Debuglet(debug, config);
+      let unexpectedUpdate = false;
       const scope = nock(config.apiUrl)
         .post(REGISTER_PATH)
         .reply(200, {debuggee: {id: DEBUGGEE_ID}})
@@ -1459,15 +1456,20 @@ describe('Debuglet', () => {
         .times(4)
         .reply(200, {breakpoints: [bp]});
 
+      // Get ready to fail the test if any additional updates come through.
+      nock.emitter.on('no match', (req) => {
+        if (req.path.startsWith(BPS_PATH) && req.method === 'PUT') {
+          unexpectedUpdate = true;
+        }
+      });
+
       debuglet.once('registered', (id: string) => {
         assert.strictEqual(id, DEBUGGEE_ID);
         setTimeout(() => {
           assert.deepStrictEqual(debuglet.activeBreakpointMap.test, bp);
           setTimeout(() => {
             assert(!debuglet.activeBreakpointMap.test);
-            // Fetcher disables if we re-update since endpoint isn't mocked
-            // twice
-            assert(debuglet.fetcherActive);
+            assert(!unexpectedUpdate, 'unexpected update request');
             debuglet.stop();
             scope.done();
             done();
@@ -1476,7 +1478,7 @@ describe('Debuglet', () => {
       });
 
       debuglet.start();
-    });*/
+    });
   });
 
   describe('map subtract', () => {

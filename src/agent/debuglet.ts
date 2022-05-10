@@ -765,8 +765,8 @@ export class Debuglet extends EventEmitter {
             }
           ).debuggee.id;
           // TODO: Handle the case when `result` is undefined.
-          that.emit('registered', (result as {debuggee: Debuggee}).debuggee.id); // FIXME: Do we need this?
-          that.debuggeeRegistered.resolve(); // FIXME: Do we need this?
+          that.emit('registered', (result as {debuggee: Debuggee}).debuggee.id);
+          that.debuggeeRegistered.resolve();
           if (!that.fetcherActive) {
             that.startListeningForBreakpoints_();
           }
@@ -788,9 +788,15 @@ export class Debuglet extends EventEmitter {
             err.name === 'RegistrationExpiredError'
               ? 0
               : this.config.internal.registerDelayOnFetcherErrorSec;
+          this.updatePromise();
           this.scheduleRegistration_(delay);
         }
 
+        this.breakpointFetchedTimestamp = Date.now();
+        if (this.breakpointFetched) {
+          this.breakpointFetched.resolve();
+          this.breakpointFetched = null;
+        }
         this.updateActiveBreakpoints_(breakpoints);
       }
     );
