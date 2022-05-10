@@ -1457,7 +1457,7 @@ describe('Debuglet', () => {
         .reply(200, {breakpoints: [bp]});
 
       // Get ready to fail the test if any additional updates come through.
-      nock.emitter.on('no match', (req) => {
+      nock.emitter.on('no match', req => {
         if (req.path.startsWith(BPS_PATH) && req.method === 'PUT') {
           unexpectedUpdate = true;
         }
