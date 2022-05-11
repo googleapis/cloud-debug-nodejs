@@ -192,6 +192,8 @@ export class Debuglet extends EventEmitter {
   private controller: Controller | null;
   private completedBreakpointMap: {[key: string]: boolean};
 
+  // The following four variables are used for the "isReady" functionality.
+
   // breakpointFetchedTimestamp represents the last timestamp when
   // breakpointFetched was resolved, which means breakpoint update was
   // successful.
@@ -765,8 +767,8 @@ export class Debuglet extends EventEmitter {
             }
           ).debuggee.id;
           // TODO: Handle the case when `result` is undefined.
-          that.emit('registered', (result as {debuggee: Debuggee}).debuggee.id); // FIXME: Do we need this?
-          that.debuggeeRegistered.resolve(); // FIXME: Do we need this?
+          that.emit('registered', (result as {debuggee: Debuggee}).debuggee.id);
+          that.debuggeeRegistered.resolve();
           if (!that.fetcherActive) {
             that.startListeningForBreakpoints_();
           }
@@ -788,16 +790,23 @@ export class Debuglet extends EventEmitter {
             err.name === 'RegistrationExpiredError'
               ? 0
               : this.config.internal.registerDelayOnFetcherErrorSec;
+          // The debuglet is no longer ready and the promises are stale.
+          this.updatePromise();
           this.scheduleRegistration_(delay);
         }
 
+        this.breakpointFetchedTimestamp = Date.now();
+        if (this.breakpointFetched) {
+          this.breakpointFetched.resolve();
+          this.breakpointFetched = null;
+        }
         this.updateActiveBreakpoints_(breakpoints);
       }
     );
   }
 
   /**
-   * updatePromise_ is called when debuggee is expired. debuggeeRegistered
+   * updatePromise is called when debuggee is expired. debuggeeRegistered
    * CachedPromise will be refreshed. Also, breakpointFetched CachedPromise will
    * be resolved so that uses (such as GCF users) will not hang forever to wait
    * non-fetchable breakpoints.

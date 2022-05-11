@@ -57,7 +57,7 @@ class MockReference {
     if (onComplete) {
       onComplete(null);
     }
-    return new Promise<any>(resolve => resolve(null));
+    return Promise.resolve();
   }
 
   getOrAdd(key: string): MockReference {
@@ -101,7 +101,7 @@ class MockReference {
     if (creating && this.parentRef) {
       this.parentRef.childAdded(this.key, value);
     }
-    return new Promise<any>(resolve => resolve(null));
+    return Promise.resolve();
   }
 
   on(
