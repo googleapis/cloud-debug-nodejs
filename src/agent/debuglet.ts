@@ -449,7 +449,11 @@ export class Debuglet extends EventEmitter {
         this.emit('initError', err);
         return;
       }
-      this.controller = new OnePlatformController(this.debug, this.config);
+      this.controller = new OnePlatformController(
+        this.debug,
+        this.config,
+        this.logger
+      );
     }
 
     if (

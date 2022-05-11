@@ -18,7 +18,6 @@
 
 import {ServiceObject} from '@google-cloud/common';
 import * as assert from 'assert';
-import * as consoleLogLevel from 'console-log-level';
 import * as qs from 'querystring';
 import * as t from 'teeny-request';
 
@@ -48,7 +47,7 @@ export class OnePlatformController extends ServiceObject implements Controller {
   /**
    * @constructor
    */
-  constructor(debug: Debug, config: ResolvedDebugAgentConfig) {
+  constructor(debug: Debug, config: ResolvedDebugAgentConfig, logger: Logger) {
     super({parent: debug, baseUrl: '/controller'});
 
     /** @private {string} */
@@ -61,10 +60,7 @@ export class OnePlatformController extends ServiceObject implements Controller {
     this.running = true;
 
     /** @private */
-    this.logger = consoleLogLevel({
-      stderr: true,
-      level: 'info',
-    });
+    this.logger = logger;
 
     if (config && config.apiUrl) {
       this.apiUrl = config.apiUrl + new URL(this.apiUrl).pathname;
