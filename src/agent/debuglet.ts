@@ -192,6 +192,8 @@ export class Debuglet extends EventEmitter {
   private controller: Controller | null;
   private completedBreakpointMap: {[key: string]: boolean};
 
+  // The following four variables are used for the "isReady" functionality.
+
   // breakpointFetchedTimestamp represents the last timestamp when
   // breakpointFetched was resolved, which means breakpoint update was
   // successful.
@@ -788,6 +790,7 @@ export class Debuglet extends EventEmitter {
             err.name === 'RegistrationExpiredError'
               ? 0
               : this.config.internal.registerDelayOnFetcherErrorSec;
+          // The debuglet is no longer ready and the promises are stale.
           this.updatePromise();
           this.scheduleRegistration_(delay);
         }
@@ -803,7 +806,7 @@ export class Debuglet extends EventEmitter {
   }
 
   /**
-   * updatePromise_ is called when debuggee is expired. debuggeeRegistered
+   * updatePromise is called when debuggee is expired. debuggeeRegistered
    * CachedPromise will be refreshed. Also, breakpointFetched CachedPromise will
    * be resolved so that uses (such as GCF users) will not hang forever to wait
    * non-fetchable breakpoints.
