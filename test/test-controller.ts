@@ -22,6 +22,7 @@ import {defaultConfig as DEFAULT_CONFIG} from '../src/agent/config';
 import * as stackdriver from '../src/types/stackdriver';
 import * as t from 'teeny-request'; // types only
 import {teenyRequest} from 'teeny-request';
+import {MockLogger} from './mock-logger';
 
 // the tests in this file rely on the GCLOUD_PROJECT environment variable
 // not being set
@@ -45,6 +46,8 @@ const api = '/v2/controller';
 nock.disableNetConnect();
 
 describe('Controller API', () => {
+  const logger = new MockLogger();
+
   describe('register', () => {
     it('should get a debuggeeId', done => {
       const scope = nock(url)
@@ -59,7 +62,11 @@ describe('Controller API', () => {
         description: 'unit test',
         agentVersion,
       });
-      const controller = new OnePlatformController(fakeDebug, DEFAULT_CONFIG);
+      const controller = new OnePlatformController(
+        fakeDebug,
+        DEFAULT_CONFIG,
+        logger
+      );
       // TODO: Determine if this type signature is correct.
       controller.register(debuggee, (err, result) => {
         assert(!err, 'not expecting an error');
@@ -84,7 +91,11 @@ describe('Controller API', () => {
         description: 'unit test',
         agentVersion,
       });
-      const controller = new OnePlatformController(fakeDebug, DEFAULT_CONFIG);
+      const controller = new OnePlatformController(
+        fakeDebug,
+        DEFAULT_CONFIG,
+        logger
+      );
       // TODO: Determine if this type signature is correct.
       controller.register(debuggee, (err, result) => {
         assert(!err, 'not expecting an error');
@@ -108,7 +119,11 @@ describe('Controller API', () => {
         description: 'unit test',
         agentVersion,
       });
-      const controller = new OnePlatformController(fakeDebug, DEFAULT_CONFIG);
+      const controller = new OnePlatformController(
+        fakeDebug,
+        DEFAULT_CONFIG,
+        logger
+      );
       controller.register(debuggee, (err, result) => {
         // TODO: Fix this incorrect method signature.
         (assert as {ifError: Function}).ifError(err, 'not expecting an error');
@@ -136,7 +151,11 @@ describe('Controller API', () => {
         description: 'unit test',
         agentVersion,
       });
-      const controller = new OnePlatformController(fakeDebug, DEFAULT_CONFIG);
+      const controller = new OnePlatformController(
+        fakeDebug,
+        DEFAULT_CONFIG,
+        logger
+      );
       controller.register(debuggee, (err /*, result*/) => {
         assert.ifError(err);
         done();
@@ -149,7 +168,11 @@ describe('Controller API', () => {
         .reply(200, {kind: 'whatever'});
 
       const debuggee = {id: 'fake-debuggee'};
-      const controller = new OnePlatformController(fakeDebug, DEFAULT_CONFIG);
+      const controller = new OnePlatformController(
+        fakeDebug,
+        DEFAULT_CONFIG,
+        logger
+      );
       // TODO: Fix debuggee to actually implement Debuggee
       // TODO: Determine if the response parameter should be used.
       controller.listBreakpoints(
@@ -179,7 +202,8 @@ describe('Controller API', () => {
           const debuggee = {id: 'fake-debuggee'};
           const controller = new OnePlatformController(
             fakeDebug,
-            DEFAULT_CONFIG
+            DEFAULT_CONFIG,
+            logger
           );
           // TODO: Fix debuggee to actually implement Debuggee
           // TODO: Determine if the response parameter should be used.
@@ -206,7 +230,11 @@ describe('Controller API', () => {
         .reply(403);
       // TODO: Fix debuggee to actually implement Debuggee
       const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
-      const controller = new OnePlatformController(fakeDebug, DEFAULT_CONFIG);
+      const controller = new OnePlatformController(
+        fakeDebug,
+        DEFAULT_CONFIG,
+        logger
+      );
       // TODO: Determine if the response parameter should be used.
       controller.listBreakpoints(debuggee, (err, response, result) => {
         assert(err instanceof Error, 'expecting an error');
@@ -222,7 +250,11 @@ describe('Controller API', () => {
         .reply(200, {waitExpired: true});
       // TODO: Fix debuggee to actually implement Debuggee
       const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
-      const controller = new OnePlatformController(fakeDebug, DEFAULT_CONFIG);
+      const controller = new OnePlatformController(
+        fakeDebug,
+        DEFAULT_CONFIG,
+        logger
+      );
       // TODO: Determine if the result parameter should be used.
       controller.listBreakpoints(debuggee, (err, response) => {
         // TODO: Fix this incorrect method signature.
@@ -257,7 +289,11 @@ describe('Controller API', () => {
         description: 'unit test',
         agentVersion,
       });
-      const controller = new OnePlatformController(fakeDebug, DEFAULT_CONFIG);
+      const controller = new OnePlatformController(
+        fakeDebug,
+        DEFAULT_CONFIG,
+        logger
+      );
       controller.register(debuggee, (err1 /*, response1*/) => {
         assert.ifError(err1);
         const debuggeeWithId: Debuggee = {id: 'fake-debuggee'} as Debuggee;
@@ -288,7 +324,8 @@ describe('Controller API', () => {
           const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
           const controller = new OnePlatformController(
             fakeDebug,
-            DEFAULT_CONFIG
+            DEFAULT_CONFIG,
+            logger
           );
           // TODO: Determine if the response parameter should be used.
           controller.listBreakpoints(debuggee, (err, response, result) => {
@@ -328,7 +365,11 @@ describe('Controller API', () => {
         });
       // TODO: Fix debuggee to actually implement Debuggee
       const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
-      const controller = new OnePlatformController(fakeDebug, DEFAULT_CONFIG);
+      const controller = new OnePlatformController(
+        fakeDebug,
+        DEFAULT_CONFIG,
+        logger
+      );
       controller.updateBreakpoint(
         debuggee as Debuggee,
         breakpoint,
