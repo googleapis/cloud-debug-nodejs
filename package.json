@@ -1,6 +1,6 @@
 {
   "name": "@google-cloud/debug-agent",
-  "version": "5.2.8",
+  "version": "5.2.9",
   "author": "Google Inc.",
   "description": "Stackdriver Debug Agent for Node.js",
   "main": "./build/src/index",

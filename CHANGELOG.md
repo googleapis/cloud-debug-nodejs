@@ -1,5 +1,12 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+### [5.2.9](https://github.com/googleapis/cloud-debug-nodejs/compare/v5.2.8...v5.2.9) (2022-05-12)
+
+
+### Bug Fixes
+
+* **deps:** update dependency express to v4.18.1 ([#1054](https://github.com/googleapis/cloud-debug-nodejs/issues/1054)) ([4fcfd32](https://github.com/googleapis/cloud-debug-nodejs/commit/4fcfd32f3385d0f60b917bbb98c190340277d7cc))
+
 ### [5.2.8](https://www.github.com/googleapis/cloud-debug-nodejs/compare/v5.2.7...v5.2.8) (2021-08-09)
 
 
