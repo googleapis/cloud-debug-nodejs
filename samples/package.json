@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@google-cloud/debug-agent": "^5.2.8",
-    "express": "4.17.2"
+    "express": "4.18.1"
   },
   "devDependencies": {
     "execa": "^5.0.0",
