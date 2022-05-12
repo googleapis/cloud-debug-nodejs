@@ -35,11 +35,13 @@ import {
   ResolvedDebugAgentConfig,
 } from './config';
 import {Controller} from './controller';
+import {OnePlatformController} from './oneplatform-controller';
 import * as scanner from './io/scanner';
 import * as SourceMapper from './io/sourcemapper';
 import * as utils from './util/utils';
 import * as debugapi from './v8/debugapi';
 import {DebugApi} from './v8/debugapi';
+import {FirebaseController} from './firebase-controller';
 
 const readFilep = util.promisify(fs.readFile);
 
@@ -55,8 +57,6 @@ const NODE_10_CIRC_REF_MESSAGE =
   ' and Node 12.' +
   ' See https://github.com/googleapis/cloud-debug-nodejs/issues/516 for more' +
   ' information.';
-const BREAKPOINT_ACTION_MESSAGE =
-  'The only currently supported breakpoint actions' + ' are CAPTURE and LOG.';
 
 // PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS is a heuristic duration that we set
 // to force the debug agent to return a new promise for isReady. The value is
@@ -189,8 +189,10 @@ export class Debuglet extends EventEmitter {
   private v8debug: DebugApi | null;
   private running: boolean;
   private project: string | null;
-  private controller: Controller;
+  private controller: Controller | null;
   private completedBreakpointMap: {[key: string]: boolean};
+
+  // The following four variables are used for the "isReady" functionality.
 
   // breakpointFetchedTimestamp represents the last timestamp when
   // breakpointFetched was resolved, which means breakpoint update was
@@ -255,8 +257,7 @@ export class Debuglet extends EventEmitter {
       level: Debuglet.logLevelToName(this.config.logLevel),
     });
 
-    /** @private {DebugletApi} */
-    this.controller = new Controller(this.debug, {apiUrl: config.apiUrl});
+    this.controller = null;
 
     /** @private {Debuggee} */
     this.debuggee = null;
@@ -350,23 +351,21 @@ export class Debuglet extends EventEmitter {
    * @private
    */
   async start(): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const that = this;
     const stat = util.promisify(fs.stat);
 
     try {
-      await stat(path.join(that.config.workingDirectory, 'package.json'));
+      await stat(path.join(this.config.workingDirectory, 'package.json'));
     } catch (err) {
-      that.logger.error('No package.json located in working directory.');
-      that.emit('initError', new Error('No package.json found.'));
+      this.logger.error('No package.json located in working directory.');
+      this.emit('initError', new Error('No package.json found.'));
       return;
     }
 
-    const workingDir = that.config.workingDirectory;
+    const workingDir = this.config.workingDirectory;
     // Don't continue if the working directory is a root directory
     // unless the user wants to force using the root directory
     if (
-      !that.config.allowRootAsWorkingDirectory &&
+      !this.config.allowRootAsWorkingDirectory &&
       path.join(workingDir, '..') === workingDir
     ) {
       const message =
@@ -374,8 +373,8 @@ export class Debuglet extends EventEmitter {
         'to avoid a scan of the entire filesystem for JavaScript files. ' +
         'Use config `allowRootAsWorkingDirectory` if you really want to ' +
         'do this.';
-      that.logger.error(message);
-      that.emit('initError', new Error(message));
+      this.logger.error(message);
+      this.emit('initError', new Error(message));
       return;
     }
 
@@ -386,39 +385,39 @@ export class Debuglet extends EventEmitter {
 
     let findResults: FindFilesResult;
     try {
-      findResults = await Debuglet.findFiles(that.config, gaeId);
-      findResults.errors.forEach(that.logger.warn);
+      findResults = await Debuglet.findFiles(this.config, gaeId);
+      findResults.errors.forEach(this.logger.warn);
     } catch (err) {
-      that.logger.error('Error scanning the filesystem.', err);
-      that.emit('initError', err);
+      this.logger.error('Error scanning the filesystem.', err);
+      this.emit('initError', err);
       return;
     }
 
     let mapper;
     try {
-      mapper = await SourceMapper.create(findResults.mapFiles, that.logger);
+      mapper = await SourceMapper.create(findResults.mapFiles, this.logger);
     } catch (err3) {
-      that.logger.error('Error processing the sourcemaps.', err3);
-      that.emit('initError', err3);
+      this.logger.error('Error processing the sourcemaps.', err3);
+      this.emit('initError', err3);
       return;
     }
 
-    that.v8debug = debugapi.create(
-      that.logger,
-      that.config,
+    this.v8debug = debugapi.create(
+      this.logger,
+      this.config,
       findResults.jsStats,
       mapper
     );
 
     const id: string = gaeId || findResults.hash;
 
-    that.logger.info('Unique ID for this Application: ' + id);
+    this.logger.info('Unique ID for this Application: ' + id);
 
     let onGCP: boolean;
     try {
       onGCP = await Debuglet.runningOnGCP();
     } catch (err) {
-      that.logger.warn(
+      this.logger.warn(
         'Unexpected error detecting GCE metadata service: ' + err.message
       );
       // Continue, assuming not on GCP.
@@ -426,26 +425,47 @@ export class Debuglet extends EventEmitter {
     }
 
     let project: string;
-    try {
-      project = await that.debug.authClient.getProjectId();
-    } catch (err) {
-      that.logger.error(
-        'The project ID could not be determined: ' + err.message
+    if (this.config.useFirebase) {
+      try {
+        const firebaseDb = await FirebaseController.initialize({
+          keyPath: this.config.firebaseKeyPath,
+          databaseUrl: this.config.firebaseDbUrl,
+          projectId: this.config.projectId,
+        });
+        this.controller = new FirebaseController(firebaseDb);
+        project = (this.controller as FirebaseController).getProjectId();
+      } catch (err) {
+        this.logger.error('Unable to connect to Firebase: ' + err.message);
+        this.emit('initError', err);
+        return;
+      }
+    } else {
+      try {
+        project = await this.debug.authClient.getProjectId();
+      } catch (err) {
+        this.logger.error(
+          'The project ID could not be determined: ' + err.message
+        );
+        this.emit('initError', err);
+        return;
+      }
+      this.controller = new OnePlatformController(
+        this.debug,
+        this.config,
+        this.logger
       );
-      that.emit('initError', err);
-      return;
     }
 
     if (
       onGCP &&
-      (!that.config.serviceContext || !that.config.serviceContext.service)
+      (!this.config.serviceContext || !this.config.serviceContext.service)
     ) {
-      // If on GCP, check if the clusterName instance attribute is availble.
+      // If on GCP, check if the clusterName instance attribute is available.
       // Use this as the service context for better service identification on
       // GKE.
       try {
         const clusterName = await Debuglet.getClusterNameFromMetadata();
-        that.config.serviceContext = {
+        this.config.serviceContext = {
           service: clusterName,
           version: 'unversioned',
           minorVersion_: undefined,
@@ -458,10 +478,10 @@ export class Debuglet extends EventEmitter {
     let sourceContext;
     try {
       sourceContext =
-        (that.config.sourceContext as {} as SourceContext) ||
+        (this.config.sourceContext as {} as SourceContext) ||
         (await Debuglet.getSourceContextFromFile());
     } catch (err5) {
-      that.logger.warn('Unable to discover source context', err5);
+      this.logger.warn('Unable to discover source context', err5);
       // This is ignorable.
     }
 
@@ -470,7 +490,7 @@ export class Debuglet extends EventEmitter {
       this.config.capture.maxDataSize === 0 &&
       utils.satisfies(process.version, '>=10 <10.15.3 || >=11 <11.7 || >=12')
     ) {
-      that.logger.warn(NODE_10_CIRC_REF_MESSAGE);
+      this.logger.warn(NODE_10_CIRC_REF_MESSAGE);
     }
 
     const platform = Debuglet.getPlatform();
@@ -480,30 +500,30 @@ export class Debuglet extends EventEmitter {
     }
 
     // We can register as a debuggee now.
-    that.logger.debug('Starting debuggee, project', project);
-    that.running = true;
+    this.logger.debug('Starting debuggee, project', project);
+    this.running = true;
 
-    that.project = project;
-    that.debuggee = Debuglet.createDebuggee(
+    this.project = project;
+    this.debuggee = Debuglet.createDebuggee(
       project,
       id,
-      that.config.serviceContext,
+      this.config.serviceContext,
       sourceContext,
       onGCP,
-      that.debug.packageInfo,
+      this.debug.packageInfo,
       platform,
-      that.config.description,
+      this.config.description,
       /*errorMessage=*/ undefined,
       region
     );
 
-    that.scheduleRegistration_(0 /* immediately */);
-    that.emit('started');
+    this.scheduleRegistration_(0 /* immediately */);
+    this.emit('started');
   }
 
   /**
    * isReady returns a promise that only resolved if the last breakpoint update
-   * happend within a duration (PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS). This
+   * happened within a duration (PROMISE_RESOLVE_CUT_OFF_IN_MILLISECONDS). This
    * feature is mainly used in Google Cloud Function (GCF), as it is a
    * serverless environment and we wanted to make sure debug agent always
    * captures the snapshots.
@@ -518,10 +538,7 @@ export class Debuglet extends EventEmitter {
       if (this.breakpointFetched) return this.breakpointFetched.get();
       this.breakpointFetched = new CachedPromise();
       this.debuggeeRegistered.get().then(() => {
-        this.scheduleBreakpointFetch_(
-          0 /*immediately*/,
-          true /*only fetch once*/
-        );
+        this.startListeningForBreakpoints_();
       });
       return this.breakpointFetched.get();
     }
@@ -560,12 +577,12 @@ export class Debuglet extends EventEmitter {
     let desc = process.title + ' ' + mainScript;
 
     const labels: {[key: string]: string} = {
-      'main script': mainScript,
-      'process.title': process.title,
-      'node version': process.versions.node,
-      'V8 version': process.versions.v8,
-      'agent.name': packageInfo.name,
-      'agent.version': packageInfo.version,
+      main_script: mainScript,
+      process_title: process.title,
+      node_version: process.versions.node,
+      V8_version: process.versions.v8,
+      agent_name: packageInfo.name,
+      agent_version: packageInfo.version,
       projectid: projectId,
       platform,
     };
@@ -689,7 +706,12 @@ export class Debuglet extends EventEmitter {
   }
 
   /**
-   * @param {number} seconds
+   * Registers the debuggee after `seconds` seconds.
+   * On failure, uses an exponential backoff to retry.
+   * If successful, emits a 'registered' event, resolves the debuggeeRegistered promise,
+   * and starts listening for breakpoint updates.
+   *
+   * @param {number} seconds - The number of seconds to wait before registering.
    * @private
    */
   scheduleRegistration_(seconds: number): void {
@@ -709,6 +731,7 @@ export class Debuglet extends EventEmitter {
     }
 
     setTimeout(() => {
+      assert(that.controller);
       if (!that.running) {
         onError(new Error('Debuglet not running'));
         return;
@@ -751,130 +774,43 @@ export class Debuglet extends EventEmitter {
           that.emit('registered', (result as {debuggee: Debuggee}).debuggee.id);
           that.debuggeeRegistered.resolve();
           if (!that.fetcherActive) {
-            that.scheduleBreakpointFetch_(0, false);
+            that.startListeningForBreakpoints_();
           }
         }
       );
     }, seconds * 1000).unref();
   }
 
-  /**
-   * @param {number} seconds
-   * @param {boolean} once
-   * @private
-   */
-  scheduleBreakpointFetch_(seconds: number, once: boolean): void {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const that = this;
-    if (!once) {
-      that.fetcherActive = true;
-    }
-    setTimeout(() => {
-      if (!that.running) {
-        return;
-      }
-
-      if (!once) {
-        assert(that.fetcherActive);
-      }
-
-      that.logger.info('Fetching breakpoints');
-      // TODO: Address the case when `that.debuggee` is `null`.
-      that.controller.listBreakpoints(
-        that.debuggee as Debuggee,
-        (err, response, body) => {
-          if (err) {
-            that.logger.error(
-              'Error fetching breakpoints – scheduling retry',
-              err
-            );
-            that.fetcherActive = false;
-            // We back-off from fetching breakpoints, and try to register
-            // again after a while. Successful registration will restart the
-            // breakpoint fetcher.
-            that.updatePromise();
-            that.scheduleRegistration_(
-              that.config.internal.registerDelayOnFetcherErrorSec
-            );
-            return;
-          }
-          // TODO: Address the case where `response` is `undefined`.
-          switch (response!.statusCode) {
-            case 404:
-              // Registration expired. Deactivate the fetcher and queue
-              // re-registration, which will re-active breakpoint fetching.
-              that.logger.info('\t404 Registration expired.');
-              that.fetcherActive = false;
-              that.updatePromise();
-              that.scheduleRegistration_(0 /*immediately*/);
-              return;
-
-            default:
-              // TODO: Address the case where `response` is `undefined`.
-              that.logger.info('\t' + response!.statusCode + ' completed.');
-              if (!body) {
-                that.logger.error('\tinvalid list response: empty body');
-                that.scheduleBreakpointFetch_(
-                  that.config.breakpointUpdateIntervalSec,
-                  once
-                );
-                return;
-              }
-              if (body.waitExpired) {
-                that.logger.info('\tLong poll completed.');
-                that.scheduleBreakpointFetch_(0 /*immediately*/, once);
-                return;
-              }
-              // eslint-disable-next-line no-case-declarations
-              const bps = (body.breakpoints || []).filter(
-                (bp: stackdriver.Breakpoint) => {
-                  const action = bp.action || 'CAPTURE';
-                  if (action !== 'CAPTURE' && action !== 'LOG') {
-                    that.logger.warn(
-                      'Found breakpoint with invalid action:',
-                      action
-                    );
-                    bp.status = new StatusMessage(
-                      StatusMessage.UNSPECIFIED,
-                      BREAKPOINT_ACTION_MESSAGE,
-                      true
-                    );
-                    that.rejectBreakpoint_(bp);
-                    return false;
-                  }
-                  return true;
-                }
-              );
-              that.updateActiveBreakpoints_(bps);
-              if (Object.keys(that.activeBreakpointMap).length) {
-                that.logger.info(
-                  formatBreakpoints(
-                    'Active Breakpoints: ',
-                    that.activeBreakpointMap
-                  )
-                );
-              }
-              that.breakpointFetchedTimestamp = Date.now();
-              if (once) {
-                if (that.breakpointFetched) {
-                  that.breakpointFetched.resolve();
-                  that.breakpointFetched = null;
-                }
-              } else {
-                that.scheduleBreakpointFetch_(
-                  that.config.breakpointUpdateIntervalSec,
-                  once
-                );
-              }
-              return;
-          }
+  startListeningForBreakpoints_(): void {
+    assert(this.controller);
+    // TODO: Handle the case where this.debuggee is null or not properly registered.
+    this.controller.subscribeToBreakpoints(
+      this.debuggee!,
+      (err: Error | null, breakpoints: stackdriver.Breakpoint[]) => {
+        if (err) {
+          // There was an error, and the subscription is cancelled.
+          // Re-register and resubscribe.
+          const delay =
+            err.name === 'RegistrationExpiredError'
+              ? 0
+              : this.config.internal.registerDelayOnFetcherErrorSec;
+          // The debuglet is no longer ready and the promises are stale.
+          this.updatePromise();
+          this.scheduleRegistration_(delay);
         }
-      );
-    }, seconds * 1000).unref();
+
+        this.breakpointFetchedTimestamp = Date.now();
+        if (this.breakpointFetched) {
+          this.breakpointFetched.resolve();
+          this.breakpointFetched = null;
+        }
+        this.updateActiveBreakpoints_(breakpoints);
+      }
+    );
   }
 
   /**
-   * updatePromise_ is called when debuggee is expired. debuggeeRegistered
+   * updatePromise is called when debuggee is expired. debuggeeRegistered
    * CachedPromise will be refreshed. Also, breakpointFetched CachedPromise will
    * be resolved so that uses (such as GCF users) will not hang forever to wait
    * non-fetchable breakpoints.
@@ -893,30 +829,28 @@ export class Debuglet extends EventEmitter {
    * @private
    */
   updateActiveBreakpoints_(breakpoints: stackdriver.Breakpoint[]): void {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const that = this;
     const updatedBreakpointMap = this.convertBreakpointListToMap_(breakpoints);
 
     if (breakpoints.length) {
-      that.logger.info(
+      this.logger.info(
         formatBreakpoints('Server breakpoints: ', updatedBreakpointMap)
       );
     }
     breakpoints.forEach((breakpoint: stackdriver.Breakpoint) => {
       // TODO: Address the case when `breakpoint.id` is `undefined`.
       if (
-        !that.completedBreakpointMap[breakpoint.id as string] &&
-        !that.activeBreakpointMap[breakpoint.id as string]
+        !this.completedBreakpointMap[breakpoint.id as string] &&
+        !this.activeBreakpointMap[breakpoint.id as string]
       ) {
         // New breakpoint
-        that.addBreakpoint_(breakpoint, err => {
+        this.addBreakpoint_(breakpoint, err => {
           if (err) {
-            that.completeBreakpoint_(breakpoint, false);
+            this.completeBreakpoint_(breakpoint, false);
           }
         });
 
         // Schedule the expiry of server breakpoints.
-        that.scheduleBreakpointExpiry_(breakpoint);
+        this.scheduleBreakpointExpiry_(breakpoint);
       }
     });
 
@@ -929,7 +863,7 @@ export class Debuglet extends EventEmitter {
       //              field.  It is possible that breakpoint.id is always
       //              undefined!
       // TODO: Make sure the use of `that` here is correct.
-      delete that.completedBreakpointMap[(breakpoint as {} as {id: number}).id];
+      delete this.completedBreakpointMap[(breakpoint as {} as {id: number}).id];
     });
 
     // Remove active breakpoints that the server no longer care about.
@@ -985,14 +919,11 @@ export class Debuglet extends EventEmitter {
     breakpoint: stackdriver.Breakpoint,
     cb: (ob: Error | string) => void
   ): void {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const that = this;
-
     if (
-      !that.config.allowExpressions &&
+      !this.config.allowExpressions &&
       (breakpoint.condition || breakpoint.expressions)
     ) {
-      that.logger.error(ALLOW_EXPRESSIONS_MESSAGE);
+      this.logger.error(ALLOW_EXPRESSIONS_MESSAGE);
       breakpoint.status = new StatusMessage(
         StatusMessage.UNSPECIFIED,
         ALLOW_EXPRESSIONS_MESSAGE,
@@ -1006,7 +937,7 @@ export class Debuglet extends EventEmitter {
 
     if (utils.satisfies(process.version, '5.2 || <4')) {
       const message = NODE_VERSION_MESSAGE;
-      that.logger.error(message);
+      this.logger.error(message);
       breakpoint.status = new StatusMessage(
         StatusMessage.UNSPECIFIED,
         message,
@@ -1018,42 +949,41 @@ export class Debuglet extends EventEmitter {
       return;
     }
 
-    // TODO: Address the case when `that.v8debug` is `null`.
-    (that.v8debug as DebugApi).set(breakpoint, err1 => {
+    // TODO: Address the case when `this.v8debug` is `null`.
+    (this.v8debug as DebugApi).set(breakpoint, err1 => {
       if (err1) {
         cb(err1);
         return;
       }
-
-      that.logger.info('\tsuccessfully added breakpoint  ' + breakpoint.id);
+      this.logger.info('\tsuccessfully added breakpoint  ' + breakpoint.id);
       // TODO: Address the case when `breakpoint.id` is `undefined`.
-      that.activeBreakpointMap[breakpoint.id as string] = breakpoint;
+      this.activeBreakpointMap[breakpoint.id as string] = breakpoint;
 
       if (breakpoint.action === 'LOG') {
-        // TODO: Address the case when `that.v8debug` is `null`.
-        (that.v8debug as DebugApi).log(
+        // TODO: Address the case when `this.v8debug` is `null`.
+        (this.v8debug as DebugApi).log(
           breakpoint,
           (fmt: string, exprs: string[]) => {
-            that.config.log.logFunction(
+            this.config.log.logFunction(
               `LOGPOINT: ${Debuglet.format(fmt, exprs)}`
             );
           },
           () => {
             // TODO: Address the case when `breakpoint.id` is `undefined`.
-            return that.completedBreakpointMap[breakpoint.id as string];
+            return this.completedBreakpointMap[breakpoint.id as string];
           }
         );
       } else {
-        // TODO: Address the case when `that.v8debug` is `null`.
-        (that.v8debug as DebugApi).wait(breakpoint, err2 => {
+        // TODO: Address the case when `this.v8debug` is `null`.
+        (this.v8debug as DebugApi).wait(breakpoint, err2 => {
           if (err2) {
-            that.logger.error(err2);
+            this.logger.error(err2);
             cb(err2);
             return;
           }
 
-          that.logger.info('Breakpoint hit!: ' + breakpoint.id);
-          that.completeBreakpoint_(breakpoint);
+          this.logger.info('Breakpoint hit!: ' + breakpoint.id);
+          this.completeBreakpoint_(breakpoint);
         });
       }
     });
@@ -1069,21 +999,24 @@ export class Debuglet extends EventEmitter {
     breakpoint: stackdriver.Breakpoint,
     deleteFromV8 = true
   ): void {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const that = this;
+    assert(this.controller);
 
-    that.logger.info('\tupdating breakpoint data on server', breakpoint.id);
-    that.controller.updateBreakpoint(
-      // TODO: Address the case when `that.debuggee` is `null`.
-      that.debuggee as Debuggee,
+    this.logger.info('\tupdating breakpoint data on server', breakpoint.id);
+    this.controller.updateBreakpoint(
+      // TODO: Address the case when `this.debuggee` is `null`.
+      this.debuggee as Debuggee,
       breakpoint,
       (err /*, body*/) => {
         if (err) {
-          that.logger.error('Unable to complete breakpoint on server', err);
-        } else {
+          this.logger.error('Unable to complete breakpoint on server', err);
+          return;
+        }
+        // The Firebase controller will remove the breakpoint during the update
+        // by removing it from the database.
+        if (!this.config.useFirebase) {
           // TODO: Address the case when `breakpoint.id` is `undefined`.
-          that.completedBreakpointMap[breakpoint.id as string] = true;
-          that.removeBreakpoint_(breakpoint, deleteFromV8);
+          this.completedBreakpointMap[breakpoint.id as string] = true;
+          this.removeBreakpoint_(breakpoint, deleteFromV8);
         }
       }
     );
@@ -1095,16 +1028,15 @@ export class Debuglet extends EventEmitter {
    * @private
    */
   rejectBreakpoint_(breakpoint: stackdriver.Breakpoint): void {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const that = this;
+    assert(this.controller);
 
-    // TODO: Address the case when `that.debuggee` is `null`.
-    that.controller.updateBreakpoint(
-      that.debuggee as Debuggee,
+    // TODO: Address the case when `this.debuggee` is `null`.
+    this.controller.updateBreakpoint(
+      this.debuggee as Debuggee,
       breakpoint,
       (err /*, body*/) => {
         if (err) {
-          that.logger.error('Unable to complete breakpoint on server', err);
+          this.logger.error('Unable to complete breakpoint on server', err);
         }
       }
     );
@@ -1114,28 +1046,25 @@ export class Debuglet extends EventEmitter {
    * This schedules a delayed operation that will delete the breakpoint from the
    * server after the expiry period.
    * FIXME: we should cancel the timer when the breakpoint completes. Otherwise
-   * we hold onto the closure memory until the breapointExpirateion timeout.
+   * we hold onto the closure memory until the breapointExpiration timeout.
    * @param {Breakpoint} breakpoint Server breakpoint object
    * @private
    */
   scheduleBreakpointExpiry_(breakpoint: stackdriver.Breakpoint): void {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const that = this;
-
     const now = Date.now() / 1000;
     const createdTime = breakpoint.createdTime
       ? Number(breakpoint.createdTime.seconds)
       : now;
-    const expiryTime = createdTime + that.config.breakpointExpirationSec;
+    const expiryTime = createdTime + this.config.breakpointExpirationSec;
 
     setTimeout(() => {
-      that.logger.info('Expiring breakpoint ' + breakpoint.id);
+      this.logger.info('Expiring breakpoint ' + breakpoint.id);
       breakpoint.status = {
         description: {format: 'The snapshot has expired'},
         isError: true,
         refersTo: StatusMessage.BREAKPOINT_AGE,
       };
-      that.completeBreakpoint_(breakpoint);
+      this.completeBreakpoint_(breakpoint);
     }, (expiryTime - now) * 1000).unref();
   }
 
@@ -1146,9 +1075,11 @@ export class Debuglet extends EventEmitter {
    * pending operations.
    */
   stop(): void {
+    assert(this.controller);
     assert.ok(this.running, 'stop can only be called on a running agent');
     this.logger.debug('Stopping Debuglet');
     this.running = false;
+    this.controller.stop();
     this.emit('stopped');
   }
 
