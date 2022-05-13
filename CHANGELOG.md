@@ -1,5 +1,16 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## [6.0.0](https://github.com/googleapis/cloud-debug-nodejs/compare/v5.2.9...v6.0.0) (2022-05-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* Add ability to store breakpoint data in firebase realtime database (#1076)
+
+### Features
+
+* Add ability to store breakpoint data in firebase realtime database ([#1076](https://github.com/googleapis/cloud-debug-nodejs/issues/1076)) ([4bbcc10](https://github.com/googleapis/cloud-debug-nodejs/commit/4bbcc10b635920eb7a4b47e439756d11c3f4c8eb))
+
 ### [5.2.9](https://github.com/googleapis/cloud-debug-nodejs/compare/v5.2.8...v5.2.9) (2022-05-12)
 
 
