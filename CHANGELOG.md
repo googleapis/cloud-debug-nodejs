@@ -1,5 +1,12 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+### [6.0.1](https://github.com/googleapis/cloud-debug-nodejs/compare/v6.0.0...v6.0.1) (2022-05-16)
+
+
+### Bug Fixes
+
+* **deps:** Update source-map to 0.8.0-beta.0 ([#1081](https://github.com/googleapis/cloud-debug-nodejs/issues/1081)) ([926c300](https://github.com/googleapis/cloud-debug-nodejs/commit/926c300fe18f504e318cf32cd399d1a1fffb8640)), closes [#1066](https://github.com/googleapis/cloud-debug-nodejs/issues/1066)
+
 ## [6.0.0](https://github.com/googleapis/cloud-debug-nodejs/compare/v5.2.9...v6.0.0) (2022-05-12)
 
 
