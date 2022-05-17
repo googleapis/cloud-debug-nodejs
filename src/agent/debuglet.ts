@@ -388,7 +388,7 @@ export class Debuglet extends EventEmitter {
       findResults = await Debuglet.findFiles(this.config, gaeId);
       findResults.errors.forEach(this.logger.warn);
     } catch (err) {
-      this.logger.error('Error scanning the filesystem.', err);
+      this.logger.error('Error scanning the filesystem.', err as Error);
       this.emit('initError', err);
       return;
     }
@@ -397,7 +397,7 @@ export class Debuglet extends EventEmitter {
     try {
       mapper = await SourceMapper.create(findResults.mapFiles, this.logger);
     } catch (err3) {
-      this.logger.error('Error processing the sourcemaps.', err3);
+      this.logger.error('Error processing the sourcemaps.', err3 as Error);
       this.emit('initError', err3);
       return;
     }
@@ -418,7 +418,8 @@ export class Debuglet extends EventEmitter {
       onGCP = await Debuglet.runningOnGCP();
     } catch (err) {
       this.logger.warn(
-        'Unexpected error detecting GCE metadata service: ' + err.message
+        'Unexpected error detecting GCE metadata service: ' +
+          (err as Error).message
       );
       // Continue, assuming not on GCP.
       onGCP = false;
@@ -435,7 +436,9 @@ export class Debuglet extends EventEmitter {
         this.controller = new FirebaseController(firebaseDb);
         project = (this.controller as FirebaseController).getProjectId();
       } catch (err) {
-        this.logger.error('Unable to connect to Firebase: ' + err.message);
+        this.logger.error(
+          'Unable to connect to Firebase: ' + (err as Error).message
+        );
         this.emit('initError', err);
         return;
       }
@@ -444,7 +447,7 @@ export class Debuglet extends EventEmitter {
         project = await this.debug.authClient.getProjectId();
       } catch (err) {
         this.logger.error(
-          'The project ID could not be determined: ' + err.message
+          'The project ID could not be determined: ' + (err as Error).message
         );
         this.emit('initError', err);
         return;
@@ -481,7 +484,7 @@ export class Debuglet extends EventEmitter {
         (this.config.sourceContext as {} as SourceContext) ||
         (await Debuglet.getSourceContextFromFile());
     } catch (err5) {
-      this.logger.warn('Unable to discover source context', err5);
+      this.logger.warn('Unable to discover source context', err5 as Error);
       // This is ignorable.
     }
 

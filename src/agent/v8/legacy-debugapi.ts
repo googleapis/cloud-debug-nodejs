@@ -320,7 +320,7 @@ export class V8DebugApi implements debugapi.DebugApi {
           cb,
           breakpoint,
           StatusMessage.BREAKPOINT_CONDITION,
-          utils.messages.SYNTAX_ERROR_IN_CONDITION + err.message
+          utils.messages.SYNTAX_ERROR_IN_CONDITION + (err as Error).message
         );
       }
     }
