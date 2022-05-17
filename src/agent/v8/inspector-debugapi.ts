@@ -402,7 +402,8 @@ export class InspectorDebugApi implements debugapi.DebugApi {
           );
         }
       } catch (e) {
-        const message = utils.messages.SYNTAX_ERROR_IN_CONDITION + (e as Error).message;
+        const message =
+          utils.messages.SYNTAX_ERROR_IN_CONDITION + (e as Error).message;
         return utils.setErrorStatusAndCallback(
           cb,
           breakpoint,
