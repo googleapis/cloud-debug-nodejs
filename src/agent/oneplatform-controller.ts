@@ -207,7 +207,7 @@ export class OnePlatformController extends ServiceObject implements Controller {
         callback(err!, body);
       });
     } catch (error) {
-      callback(error);
+      callback(error as Error);
     }
   }
 

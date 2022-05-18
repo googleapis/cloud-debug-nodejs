@@ -50,7 +50,7 @@ export function evaluate(
       return {error: 'Expression not allowed'};
     }
   } catch (err) {
-    return {error: err.message};
+    return {error: (err as Error).message};
   }
 
   // Now actually ask V8 to evaluate the expression
@@ -58,7 +58,7 @@ export function evaluate(
     const mirror = frame.evaluate(expression);
     return {error: null, mirror};
   } catch (error) {
-    return {error};
+    return {error: error as string};
   }
 }
 

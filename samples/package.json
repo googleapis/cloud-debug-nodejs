@@ -6,7 +6,7 @@
   "author": "Google LLC",
   "repository": "googleapis/cloud-debug-nodejs",
   "engines": {
-    "node": ">=10"
+    "node": ">=12.0.0"
   },
   "files": [
     "*.js"

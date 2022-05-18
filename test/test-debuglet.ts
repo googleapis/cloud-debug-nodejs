@@ -103,7 +103,7 @@ describe('Debuglet', () => {
       try {
         await Debuglet.findFiles(config, 'fake-id');
       } catch (e) {
-        err = e;
+        err = e as Error;
       }
       assert.ok(err);
     });

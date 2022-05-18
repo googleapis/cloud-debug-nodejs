@@ -162,7 +162,7 @@ function computeStats(
         }
         statistics[filename] = fileStats;
       } catch (err) {
-        errors.set(filename, err);
+        errors.set(filename, err as Error);
       }
     }
 
