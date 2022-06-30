@@ -1,5 +1,29 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## [7.0.0](https://github.com/googleapis/cloud-debug-nodejs/compare/v6.0.1...v7.0.0) (2022-06-25)
+
+
+### ⚠ BREAKING CHANGES
+
+* upgrade to stable (#1088)
+* update library to use Node 12 (#1084)
+
+### Features
+
+* upgrade to stable ([#1088](https://github.com/googleapis/cloud-debug-nodejs/issues/1088)) ([792ef81](https://github.com/googleapis/cloud-debug-nodejs/commit/792ef81f4eb5462ce61155162b6f5233f736a338))
+
+
+### Bug Fixes
+
+* **deps:** update dependency @google-cloud/common to v4 ([#1090](https://github.com/googleapis/cloud-debug-nodejs/issues/1090)) ([f4f6ad4](https://github.com/googleapis/cloud-debug-nodejs/commit/f4f6ad48a9eb62ceca735ea0f79d47e4764b9e15))
+* **deps:** update dependency firebase-admin to v10 ([#1080](https://github.com/googleapis/cloud-debug-nodejs/issues/1080)) ([957ea3c](https://github.com/googleapis/cloud-debug-nodejs/commit/957ea3cd9be2eb7627dad9c32c512669534732bd))
+* **deps:** update dependency gcp-metadata to v5 ([#1068](https://github.com/googleapis/cloud-debug-nodejs/issues/1068)) ([20ff5c5](https://github.com/googleapis/cloud-debug-nodejs/commit/20ff5c53f8f2bbbae4308703f0a75a1f2770c713))
+
+
+### Build System
+
+* update library to use Node 12 ([#1084](https://github.com/googleapis/cloud-debug-nodejs/issues/1084)) ([3434ddd](https://github.com/googleapis/cloud-debug-nodejs/commit/3434ddd0b2cab8ca74a382a9729815387657f700))
+
 ### [6.0.1](https://github.com/googleapis/cloud-debug-nodejs/compare/v6.0.0...v6.0.1) (2022-05-16)
 
 
