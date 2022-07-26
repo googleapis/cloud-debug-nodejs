@@ -1,5 +1,12 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## [7.1.0](https://github.com/googleapis/cloud-debug-nodejs/compare/v7.0.0...v7.1.0) (2022-07-26)
+
+
+### Features
+
+* improve debuggee ids ([#1097](https://github.com/googleapis/cloud-debug-nodejs/issues/1097)) ([267a4bd](https://github.com/googleapis/cloud-debug-nodejs/commit/267a4bd48ea6e575b710c53f937883b6feca169a))
+
 ## [7.0.0](https://github.com/googleapis/cloud-debug-nodejs/compare/v6.0.1...v7.0.0) (2022-06-25)
 
 
