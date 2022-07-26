@@ -133,8 +133,10 @@ export class FirebaseController implements Controller {
 
     // Calculate the debuggee id as the hash of the object.
     // This MUST be consistent across all debuggee instances.
+    // TODO: JSON.stringify may provide different strings if labels are added
+    // in different orders.
     const debuggeeHash = crypto
-      .createHash('md5')
+      .createHash('sha1')
       .update(JSON.stringify(debuggee))
       .digest('hex');
     this.debuggeeId = `d-${debuggeeHash.substring(0, 8)}`;

@@ -150,9 +150,9 @@ describe('Firebase Controller', () => {
   describe('register', () => {
     it('should get a debuggeeId', done => {
       const db = new MockDatabase();
-      // Debuggee Id is based on the md5 hash of the json representation of
+      // Debuggee Id is based on the sha1 hash of the json representation of
       // the debuggee.
-      const debuggeeId = 'd-e1662bd7';
+      const debuggeeId = 'd-b9dbb5e7';
       const controller = new FirebaseController(
         db as {} as firebase.database.Database
       );
