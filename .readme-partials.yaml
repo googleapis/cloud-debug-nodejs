@@ -1,10 +1,15 @@
 introduction: |-
-  > This module provides Cloud Debugger support for Node.js applications. Cloud Debugger is a feature of Google Cloud Platform that lets you debug your applications in production without stopping or pausing your application.
+  > This module provides Cloud Debugger support for Node.js applications.
+  Cloud Debugger is a feature of Google Cloud Platform that lets you debug your
+  applications in production without stopping or pausing your application.
 
 body: |-
   ## Debugger Agent Settings
 
-  You can customize the behaviour of the automatic debugger agent. See [the agent configuration][config-ts] for a list of possible configuration options. These options can be passed in the `options` object passed to the `start` function.
+  You can customize the behaviour of the automatic debugger agent. See
+  [the agent configuration][config-ts] for a list of possible configuration
+  options. These options can be passed in the `options` object passed to the
+  `start` function.
 
   ```js
   require('@google-cloud/debug-agent').start({
@@ -22,19 +27,34 @@ body: |-
 
   ## Using the Debugger
 
-  Once your application is running (deployed, or elsewhere), you should be able to use the [Debug UI][debug-tab] in your Cloud [developer console][dev-console]. You can find the Debug UI in the 'Operations -> Debug' section in the navigation panel, or by simply searching for 'Debug' in the cloud console.
+  Once your application is running (deployed, or elsewhere), you should be able
+  to use the [Debug UI][debug-tab] in your Cloud
+  [developer console][dev-console]. You can find the Debug UI in the
+  'Operations -> Debug' section in the navigation panel, or by simply searching
+  for 'Debug' in the cloud console.
 
-  If you have the source available, you can set a snapshot by clicking in the gutter (line number area). Otherwise, you can set a snapshot by entering a filename and line number in the snapshot panel. Once you set a snapshot, the debug agent will insert a momentary breakpoint at the code location in the running instances of the application.
+  If you have the source available, you can set a snapshot by clicking in the
+  gutter (line number area). Otherwise, you can set a snapshot by entering a
+  filename and line number in the snapshot panel. Once you set a snapshot, the
+  debug agent will insert a momentary breakpoint at the code location in the
+  running instances of the application.
 
-  As soon as that line of code is reached in any of the running instances of your application, the stack traces, local variables, and watch expressions are captured, and your application continues.
+  As soon as that line of code is reached in any of the running instances of
+  your application, the stack traces, local variables, and watch expressions
+  are captured, and your application continues.
 
-  **Note:** The directory layout of the code that is being debugged does not have to exactly match the source code specified in the Debug UI.  This is because the debug agent resolves a snapshot filename by searching for a file with the longest matching path suffix. If a unique match is found, that file will be used to set the snapshot.
+  **Note:** The directory layout of the code that is being debugged does not
+  have to exactly match the source code specified in the Debug UI.  This is
+  because the debug agent resolves a snapshot filename by searching for a file
+  with the longest matching path suffix. If a unique match is found, that file
+  will be used to set the snapshot.
 
   ## Firebase Realtime Database backend
 
   The Cloud Debugger API is deprecated and will be turned down in May 2023.
 
-  You can use Firebase Realtime Database for data persistence as an alternative.
+  You can use Firebase Realtime Database for data persistence as an
+  alternative.
 
   ### Enabling the agent
 
@@ -50,19 +70,32 @@ body: |-
 
   ### Using the Debugger
 
-  Using the Debugger with the Firebase Realtime Database backend requires using the Snapshot Debugger CLI.
+  Using the Debugger with the Firebase Realtime Database backend requires using
+  the Snapshot Debugger CLI.
 
-  See [full documentation here](https://github.com/GoogleCloudPlatform/snapshot-debugger#readme).
+  See [full documentation here][snapshot-debugger-readme].
 
   ## Limitations and Requirements
 
-  > Note: There is a known issue where enabling the agent may trigger memory leaks.  See [#811](https://github.com/googleapis/cloud-debug-nodejs/issues/811)
+  > Note: There is a known issue where enabling the agent may trigger memory
+  leaks.  See [#811](https://github.com/googleapis/cloud-debug-nodejs/issues/811)
 
-  * The root directory of your application needs to contain a `package.json` file.
-  * You can set snapshot conditions and watch expressions to be evaluated in the context of your application. This leads to some issues you should be aware of
-    * You may be able to view sensitive data of your own users by looking at the values of the variables.
-    * The debug agent tries to ensure that all conditions and watchpoints you add are read-only and have no side effects. It catches, and disallows, all expressions that may have static side effects to prevent accidental state change. However, it presently does not catch expressions that have dynamic side-effects. For example, `o.f` looks like a property access, but dynamically, it may end up calling a getter function. We presently do NOT detect such dynamic-side effects.
+  * The root directory of your application needs to contain a `package.json`
+    file.
+  * You can set snapshot conditions and watch expressions to be evaluated in
+    the context of your application. This leads to some issues you should be
+    aware of
+    * You may be able to view sensitive data of your own users by looking at
+      the values of the variables.
+    * The debug agent tries to ensure that all conditions and watchpoints you
+      add are read-only and have no side effects. It catches, and disallows,
+      all expressions that may have static side effects to prevent accidental
+      state change. However, it presently does not catch expressions that have
+      dynamic side-effects. For example, `o.f` looks like a property access,
+      but dynamically, it may end up calling a getter function. We presently do
+      NOT detect such dynamic-side effects.
 
   [config-ts]: https://github.com/googleapis/cloud-debug-nodejs/blob/master/src/agent/config.ts
   [debug-tab]: https://console.cloud.google.com/debug
   [dev-console]: https://console.cloud.google.com/
+  [snapshot-debugger-readme]: https://github.com/GoogleCloudPlatform/snapshot-debugger#readme
