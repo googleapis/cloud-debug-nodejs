@@ -6,10 +6,9 @@ introduction: |-
 body: |-
   ## Debugger Agent Settings
 
-  You can customize the behaviour of the automatic debugger agent. See
-  [the agent configuration][config-ts] for a list of possible configuration
-  options. These options can be passed in the `options` object passed to the
-  `start` function.
+  To customize the behaviour of the automatic debugger agent, specify options
+  when starting the agent. The following code sample shows how to pass in a
+  subset of the available options.
 
   ```js
   require('@google-cloud/debug-agent').start({
@@ -25,23 +24,24 @@ body: |-
   });
   ```
 
+  See [the agent configuration][config-ts] for a list of possible configuration
+  options.
+
   ## Using the Debugger
 
-  Once your application is running (deployed, or elsewhere), you should be able
-  to use the [Debug UI][debug-tab] in your Cloud
-  [developer console][dev-console]. You can find the Debug UI in the
-  'Operations -> Debug' section in the navigation panel, or by simply searching
-  for 'Debug' in the cloud console.
+  Once your application is running, use the [Debug UI][debug-tab] in your Cloud
+  [developer console][dev-console] to debug your application. The Debug UI can
+  be found in the 'Operations -> Debug' section in the navigation panel, or by
+  simply searching for 'Debug' in the cloud console.
 
-  If you have the source available, you can set a snapshot by clicking in the
-  gutter (line number area). Otherwise, you can set a snapshot by entering a
-  filename and line number in the snapshot panel. Once you set a snapshot, the
-  debug agent will insert a momentary breakpoint at the code location in the
-  running instances of the application.
-
-  As soon as that line of code is reached in any of the running instances of
-  your application, the stack traces, local variables, and watch expressions
-  are captured, and your application continues.
+  To take a snapshot with the debugger:
+  1. Click in the gutter (line number area) or enter a filename and line number
+     in the snapshot panel
+  2. The debugger inserts a momentary breakpoint at the specified location in
+     your code in the running instance of your application.
+  3. As soon as that line of code is reached in any of the running instances of
+     your application, the stack traces, local variables, and watch expressions
+     are captured, and your application continues.
 
   **Note:** The directory layout of the code that is being debugged does not
   have to exactly match the source code specified in the Debug UI.  This is
@@ -58,44 +58,50 @@ body: |-
 
   ### Enabling the agent
 
+  To enable the agent, add the following at the top of your app's main script
+  or entry point:
+
   ```js
   require('@google-cloud/debug-agent').start({
     useFirebase: true,
-    // optional; will use https://my-project-id-cdbg.firebase.io.com if not provided.
     firebaseDbUrl: 'https://my-database-url.firebaseio.com',
-    // optional; will use default google application credentials if not provided.
     firebaseKeyPath: 'path/to/service_account.json',
   });
   ```
+
+  The following params are optional:
+  * firebaseDbUrl - https://PROJECT_ID-cdbg.firebase.io.com will be used if not
+    provided. where PROJECT_ID is your project ID.
+  * firebaseKeyPath - Default google application credentials are used if not
+    provided.
 
   ### Using the Debugger
 
   Using the Debugger with the Firebase Realtime Database backend requires using
   the Snapshot Debugger CLI.
 
-  See [full documentation here][snapshot-debugger-readme].
+  See the [full Snapshot Debugger CLI documentation][snapshot-debugger-readme].
 
   ## Limitations and Requirements
 
   > Note: There is a known issue where enabling the agent may trigger memory
   leaks.  See [#811](https://github.com/googleapis/cloud-debug-nodejs/issues/811)
 
+  * Privacy issues can be created by setting snapshot conditions that watch
+    expressions evaluated in the context of your application. You may be able
+    to view sensitive user data when viewing the values of variables.
+  * The debug agent tries to ensure that all conditions and watchpoints you
+    add are read-only and have no side effects. It catches, and disallows,
+    all expressions that may have static side effects to prevent accidental
+    state change. However, it presently does not catch expressions that have
+    dynamic side-effects. For example, `o.f` looks like a property access,
+    but dynamically, it may end up calling a getter function. We presently do
+    NOT detect such dynamic-side effects.
   * The root directory of your application needs to contain a `package.json`
     file.
-  * You can set snapshot conditions and watch expressions to be evaluated in
-    the context of your application. This leads to some issues you should be
-    aware of
-    * You may be able to view sensitive data of your own users by looking at
-      the values of the variables.
-    * The debug agent tries to ensure that all conditions and watchpoints you
-      add are read-only and have no side effects. It catches, and disallows,
-      all expressions that may have static side effects to prevent accidental
-      state change. However, it presently does not catch expressions that have
-      dynamic side-effects. For example, `o.f` looks like a property access,
-      but dynamically, it may end up calling a getter function. We presently do
-      NOT detect such dynamic-side effects.
 
   [config-ts]: https://github.com/googleapis/cloud-debug-nodejs/blob/master/src/agent/config.ts
   [debug-tab]: https://console.cloud.google.com/debug
   [dev-console]: https://console.cloud.google.com/
   [snapshot-debugger-readme]: https://github.com/GoogleCloudPlatform/snapshot-debugger#readme
+  
