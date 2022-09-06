@@ -2,7 +2,7 @@
 [//]: # "To regenerate it, use `python -m synthtool`."
 <img src="https://avatars2.githubusercontent.com/u/2810941?v=3&s=96" alt="Google Cloud Platform logo" title="Google Cloud Platform" align="right" height="96" width="96"/>
 
-# [Stackdriver Debugger: Node.js Client](https://github.com/googleapis/cloud-debug-nodejs)
+# [Cloud Debugger: Node.js Client](https://github.com/googleapis/cloud-debug-nodejs)
 
 [![release level](https://img.shields.io/badge/release%20level-stable-brightgreen.svg?style=flat)](https://cloud.google.com/terms/launch-stages)
 [![npm version](https://img.shields.io/npm/v/@google-cloud/debug-agent.svg)](https://www.npmjs.org/package/@google-cloud/debug-agent)
@@ -10,14 +10,16 @@
 
 
 
-Stackdriver Debug Agent for Node.js
+> This module provides Cloud Debugger support for Node.js applications.
+Cloud Debugger is a feature of Google Cloud Platform that lets you debug your
+applications in production without stopping or pausing your application.
 
 
 A comprehensive list of changes in each version may be found in
 [the CHANGELOG](https://github.com/googleapis/cloud-debug-nodejs/blob/main/CHANGELOG.md).
 
-* [Stackdriver Debugger Node.js Client API Reference][client-docs]
-* [Stackdriver Debugger Documentation][product-docs]
+* [Cloud Debugger Node.js Client API Reference][client-docs]
+* [Cloud Debugger Documentation][product-docs]
 * [github.com/googleapis/cloud-debug-nodejs](https://github.com/googleapis/cloud-debug-nodejs)
 
 Read more about the client libraries for Cloud APIs, including the older
@@ -42,7 +44,7 @@ Google APIs Client Libraries, in [Client Libraries Explained][explained].
 ### Before you begin
 
 1.  [Select or create a Cloud Platform project][projects].
-1.  [Enable the Stackdriver Debugger API][enable_api].
+1.  [Enable the Cloud Debugger API][enable_api].
 1.  [Set up authentication with a service account][auth] so you can access the
     API from your local workstation.
 
@@ -52,7 +54,106 @@ Google APIs Client Libraries, in [Client Libraries Explained][explained].
 npm install @google-cloud/debug-agent
 ```
 
+## Debugger Agent Settings
 
+To customize the behaviour of the automatic debugger agent, specify options
+when starting the agent. The following code sample shows how to pass in a
+subset of the available options.
+
+```js
+require('@google-cloud/debug-agent').start({
+  // .. auth settings ..
+
+  // debug agent settings:
+  allowExpressions: true,
+  serviceContext: {
+    service: 'my-service',
+    version: 'version-1'
+  },
+  capture: { maxFrames: 20, maxProperties: 100 }
+});
+```
+
+See [the agent configuration][config-ts] for a list of possible configuration
+options.
+
+## Using the Debugger
+
+Once your application is running, use the [Debug UI][debug-tab] in your Cloud
+[developer console][dev-console] to debug your application. The Debug UI can
+be found in the 'Operations -> Debug' section in the navigation panel, or by
+simply searching for 'Debug' in the cloud console.
+
+To take a snapshot with the debugger:
+1. Click in the gutter (line number area) or enter a filename and line number
+   in the snapshot panel
+2. The debugger inserts a momentary breakpoint at the specified location in
+   your code in the running instance of your application.
+3. As soon as that line of code is reached in any of the running instances of
+   your application, the stack traces, local variables, and watch expressions
+   are captured, and your application continues.
+
+**Note:** The directory layout of the code that is being debugged does not
+have to exactly match the source code specified in the Debug UI.  This is
+because the debug agent resolves a snapshot filename by searching for a file
+with the longest matching path suffix. If a unique match is found, that file
+will be used to set the snapshot.
+
+## Firebase Realtime Database backend
+
+The Cloud Debugger API is deprecated and will be turned down in May 2023.
+
+You can use Firebase Realtime Database for data persistence as an
+alternative.
+
+### Enabling the agent
+
+To enable the agent, add the following at the top of your app's main script
+or entry point:
+
+```js
+require('@google-cloud/debug-agent').start({
+  useFirebase: true,
+  firebaseDbUrl: 'https://my-database-url.firebaseio.com',
+  firebaseKeyPath: 'path/to/service_account.json',
+});
+```
+
+The following params are optional:
+* firebaseDbUrl - https://PROJECT_ID-cdbg.firebase.io.com will be used if not
+  provided. where PROJECT_ID is your project ID.
+* firebaseKeyPath - Default google application credentials are used if not
+  provided.
+
+### Using the Debugger
+
+Using the Debugger with the Firebase Realtime Database backend requires using
+the Snapshot Debugger CLI.
+
+See the [full Snapshot Debugger CLI documentation][snapshot-debugger-readme].
+
+## Limitations and Requirements
+
+> Note: There is a known issue where enabling the agent may trigger memory
+leaks.  See [#811](https://github.com/googleapis/cloud-debug-nodejs/issues/811)
+
+* Privacy issues can be created by setting snapshot conditions that watch
+  expressions evaluated in the context of your application. You may be able
+  to view sensitive user data when viewing the values of variables.
+* The debug agent tries to ensure that all conditions and watchpoints you
+  add are read-only and have no side effects. It catches, and disallows,
+  all expressions that may have static side effects to prevent accidental
+  state change. However, it presently does not catch expressions that have
+  dynamic side-effects. For example, `o.f` looks like a property access,
+  but dynamically, it may end up calling a getter function. We presently do
+  NOT detect such dynamic-side effects.
+* The root directory of your application needs to contain a `package.json`
+  file.
+
+[config-ts]: https://github.com/googleapis/cloud-debug-nodejs/blob/master/src/agent/config.ts
+[debug-tab]: https://console.cloud.google.com/debug
+[dev-console]: https://console.cloud.google.com/
+[snapshot-debugger-readme]: https://github.com/GoogleCloudPlatform/snapshot-debugger#readme
 
 
 ## Samples
@@ -66,7 +167,7 @@ Samples are in the [`samples/`](https://github.com/googleapis/cloud-debug-nodejs
 
 
 
-The [Stackdriver Debugger Node.js Client API Reference][client-docs] documentation
+The [Cloud Debugger Node.js Client API Reference][client-docs] documentation
 also contains samples.
 
 ## Supported Node.js Versions
