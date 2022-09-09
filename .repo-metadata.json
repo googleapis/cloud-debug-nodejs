@@ -1,6 +1,6 @@
 {
   "name": "debugger",
-  "name_pretty": "Stackdriver Debugger",
+  "name_pretty": "Cloud Debugger",
   "product_documentation": "https://cloud.google.com/debugger",
   "client_documentation": "https://cloud.google.com/nodejs/docs/reference/debug-agent/latest",
   "issue_tracker": "https://issuetracker.google.com/savedsearches/559771",
