@@ -31,7 +31,7 @@
     "system-test": "nyc mocha build/system-test --timeout 600000",
     "test": "nyc cross-env CLOUD_DEBUG_ASSERTIONS=1 mocha build/test --recursive false",
     "compile": "tsc -p .",
-    "postcompile": "cpy \"test/*.js test/**/*.js\" test/fixtures build",
+    "postcompile": "cpy \"test/*.js\" \"test/**/*.js\" test/fixtures build",
     "fix": "gts fix",
     "pretest": "npm run compile",
     "prepack": "npm run compile",
