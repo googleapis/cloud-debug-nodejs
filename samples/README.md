@@ -2,11 +2,13 @@
 [//]: # "To regenerate it, use `python -m synthtool`."
 <img src="https://avatars2.githubusercontent.com/u/2810941?v=3&s=96" alt="Google Cloud Platform logo" title="Google Cloud Platform" align="right" height="96" width="96"/>
 
-# [Stackdriver Debugger: Node.js Samples](https://github.com/googleapis/cloud-debug-nodejs)
+# [Cloud Debugger: Node.js Samples](https://github.com/googleapis/cloud-debug-nodejs)
 
 [![Open in Cloud Shell][shell_img]][shell_link]
 
-
+> This module provides Cloud Debugger support for Node.js applications.
+Cloud Debugger is a feature of Google Cloud Platform that lets you debug your
+applications in production without stopping or pausing your application.
 
 ## Table of Contents
 
