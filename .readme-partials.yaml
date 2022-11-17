@@ -70,8 +70,8 @@ body: |-
   ```
 
   The following params are optional:
-  * firebaseDbUrl - https://PROJECT_ID-cdbg.firebase.io.com will be used if not
-    provided. where PROJECT_ID is your project ID.
+  * firebaseDbUrl - https://**PROJECT_ID**-cdbg.firebaseio.com will be used if not
+    provided. where **PROJECT_ID** is your project ID.
   * firebaseKeyPath - Default google application credentials are used if not
     provided.
 
