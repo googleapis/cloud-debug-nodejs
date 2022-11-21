@@ -1,5 +1,13 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## [7.1.1](https://github.com/googleapis/cloud-debug-nodejs/compare/v7.1.0...v7.1.1) (2022-11-18)
+
+
+### Bug Fixes
+
+* **deps:** Update dependency express to v4.18.2 ([#1110](https://github.com/googleapis/cloud-debug-nodejs/issues/1110)) ([b50b8a0](https://github.com/googleapis/cloud-debug-nodejs/commit/b50b8a078459b58be1b1dac4e8f921b2ec5960d2))
+* Remove pip install statements ([#1546](https://github.com/googleapis/cloud-debug-nodejs/issues/1546)) ([#1101](https://github.com/googleapis/cloud-debug-nodejs/issues/1101)) ([fd2cd5a](https://github.com/googleapis/cloud-debug-nodejs/commit/fd2cd5ad39a007744d0c9349bbdf9b5e386cbaa7))
+
 ## [7.1.0](https://github.com/googleapis/cloud-debug-nodejs/compare/v7.0.0...v7.1.0) (2022-07-26)
 
 
