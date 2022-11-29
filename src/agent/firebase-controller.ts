@@ -74,25 +74,41 @@ export class FirebaseController implements Controller {
     if (options.databaseUrl) {
       databaseUrl = options.databaseUrl;
     } else {
-      // TODO: Test whether this exists.  If not, fall back to -default.
+      // TODO: Add fallback to -default
       databaseUrl = `https://${projectId}-cdbg.firebaseio.com`;
     }
 
+    let app : firebase.app.App;
     if (credential) {
-      firebase.initializeApp({
+      app = firebase.initializeApp({
         credential: credential,
         databaseURL: databaseUrl,
       }, 'cdbg');
     } else {
       // Use the default credentials.
-      firebase.initializeApp({
+      app = firebase.initializeApp({
         databaseURL: databaseUrl,
       }, 'cdbg');
     }
 
     const db = firebase.database();
 
-    // TODO: Test this setup and emit a reasonable error.
+    // Test the connection by reading the schema version.
+    try {
+      const version_snapshot = await db.ref('cdbg/schema_version').get();
+      if (version_snapshot) {
+        const version = version_snapshot.val();
+        debuglog(`Firebase app initialized.  Connected to ${databaseUrl}` +
+                 ` with schema version ${version}`);
+      } else {
+        app.delete();
+        throw new Error('failed to fetch schema version from database');
+      }
+    } catch (e) {
+      app.delete();
+      throw(e);
+    }
+
     debuglog('Firebase app initialized.  Connected to', databaseUrl);
     return db;
   }
