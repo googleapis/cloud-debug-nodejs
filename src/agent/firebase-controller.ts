@@ -82,12 +82,12 @@ export class FirebaseController implements Controller {
       firebase.initializeApp({
         credential: credential,
         databaseURL: databaseUrl,
-      });
+      }, 'cdbg');
     } else {
       // Use the default credentials.
       firebase.initializeApp({
         databaseURL: databaseUrl,
-      });
+      }, 'cdbg');
     }
 
     const db = firebase.database();
