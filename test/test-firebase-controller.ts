@@ -44,6 +44,10 @@ class MockReference {
   // Simplification: there's only one listener for each event type.
   listeners = new Map<EventType, (a: DataSnapshot, b?: string | null) => any>();
 
+  // Test options
+  shouldFail = false;
+  failMessage?: string;
+
   constructor(key: string, parentRef?: MockReference) {
     this.key = key.slice();
     this.parentRef = parentRef;
@@ -90,6 +94,13 @@ class MockReference {
   }
 
   set(value: any, onComplete?: (a: Error | null) => any): Promise<any> {
+    if (this.shouldFail) {
+      this.shouldFail = false;
+      if (onComplete) {
+        onComplete(new Error(this.failMessage));
+      }
+    }
+
     let creating = false;
     if (!this.value) {
       creating = true;
@@ -120,6 +131,11 @@ class MockReference {
 
   off() {
     // No-op.  Needed to cleanly detach in the real firebase implementation.
+  }
+
+  failNextSet(errorMessage: string) {
+    this.shouldFail = true;
+    this.failMessage = errorMessage;
   }
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
@@ -152,7 +168,7 @@ describe('Firebase Controller', () => {
       const db = new MockDatabase();
       // Debuggee Id is based on the sha1 hash of the json representation of
       // the debuggee.
-      const debuggeeId = 'd-b9dbb5e7';
+      const debuggeeId = 'd-008335af';
       const controller = new FirebaseController(
         db as {} as firebase.database.Database
       );
@@ -166,6 +182,21 @@ describe('Firebase Controller', () => {
         );
         done();
       });
+    });
+    it('should error out gracefully', done => {
+      const db = new MockDatabase();
+      // Debuggee Id is based on the sha1 hash of the json representation of
+      // the debuggee.
+      const debuggeeId = 'd-008335af';
+      db.mockRef(`cdbg/debuggees/${debuggeeId}`).failNextSet('mocked failure');
+      const controller = new FirebaseController(
+        db as {} as firebase.database.Database
+      );
+      controller.register(debuggee, (err, result) => {
+        assert(err, 'expecting an error');
+        done();
+      });
+
     });
   });
 

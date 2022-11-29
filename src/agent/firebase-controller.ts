@@ -151,6 +151,7 @@ export class FirebaseController implements Controller {
     // This MUST be consistent across all debuggee instances.
     // TODO: JSON.stringify may provide different strings if labels are added
     // in different orders.
+    debuggee.id = '';  // Don't use the debuggee id when computing the id.
     const debuggeeHash = crypto
       .createHash('sha1')
       .update(JSON.stringify(debuggee))
@@ -159,11 +160,14 @@ export class FirebaseController implements Controller {
     debuggee.id = this.debuggeeId;
 
     const debuggeeRef = this.db.ref(`cdbg/debuggees/${this.debuggeeId}`);
-    debuggeeRef.set(debuggee);
-
-    // TODO: Handle errors.  I can .set(data, (error) => if (error) {})
-    const agentId = 'unsupported';
-    callback(null, {debuggee, agentId});
+    debuggeeRef.set(debuggee, (err) => {
+      if (err) {
+        callback(err);
+      } else {
+        const agentId = 'unsupported';
+        callback(null, {debuggee, agentId});
+      }
+    });
   }
 
   /**
@@ -246,6 +250,11 @@ export class FirebaseController implements Controller {
       breakpoint.id = snapshot.key;
       breakpoints.push(breakpoint);
       callback(null, breakpoints);
+    }, (e: Error) => {
+      debuglog(`unable to listen to child_added events on ` +
+               `cdbg/breakpoints/${this.debuggeeId}/active. ` +
+               `Please check your database settings.`);
+      callback(e, []);
     });
     this.bpRef.on('child_removed', snapshot => {
       // remove the breakpoint.
@@ -253,6 +262,11 @@ export class FirebaseController implements Controller {
       breakpoints = breakpoints.filter(bp => bp.id !== bpId);
       debuglog(`breakpoint removed: ${bpId}`);
       callback(null, breakpoints);
+    }, (e: Error) => {
+      debuglog(`unable to listen to child_removed events on ` +
+               `cdbg/breakpoints/${this.debuggeeId}/active. ` +
+               `Please check your database settings.`);
+      callback(e, []);
     });
   }
 
@@ -260,6 +274,11 @@ export class FirebaseController implements Controller {
     if (this.bpRef) {
       this.bpRef.off();
       this.bpRef = undefined;
+    }
+    try {
+      firebase.app('cdbg').delete();
+    } catch (err) {
+      debuglog(`failed to tear down firebase app: ${err})`);
     }
   }
 }
