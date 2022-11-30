@@ -176,11 +176,11 @@ export class FirebaseController implements Controller {
    * @param {!Breakpoint} breakpoint
    * @param {!Function} callback accepting (err, body)
    */
-  updateBreakpoint(
+  async updateBreakpoint(
     debuggee: Debuggee,
     breakpoint: stackdriver.Breakpoint,
     callback: (err?: Error, body?: {}) => void
-  ): void {
+  ): Promise<void> {
     debuglog('updating a breakpoint');
     assert(debuggee.id, 'should have a registered debuggee');
 
@@ -204,31 +204,42 @@ export class FirebaseController implements Controller {
     // https://firebase.google.com/docs/reference/rest/database#section-server-values
     breakpoint_map['finalTimeUnixMsec'] = {'.sv': 'timestamp'};
 
-    this.db
-      .ref(`cdbg/breakpoints/${this.debuggeeId}/active/${breakpoint.id}`)
-      .remove();
-
-    // TODO: error handling from here on
-    if (is_snapshot) {
-      // We could also restrict this to only write to this node if it wasn't
-      // an error and there is actual snapshot data. For now though we'll
-      // write it regardless, makes sense if you want to get everything for
-      // a snapshot it's at this location, regardless of what it contains.
-      this.db
-        .ref(`cdbg/breakpoints/${this.debuggeeId}/snapshot/${breakpoint.id}`)
-        .set(breakpoint_map);
-      // Now strip the snapshot data for the write to 'final' path.
-      const fields_to_strip = [
-        'evaluatedExpressions',
-        'stackFrames',
-        'variableTable',
-      ];
-      fields_to_strip.forEach(field => delete breakpoint_map[field]);
+    try {
+      await this.db
+        .ref(`cdbg/breakpoints/${this.debuggeeId}/active/${breakpoint.id}`)
+        .remove();
+    } catch (err) {
+      debuglog(`failed to delete breakpoint ${breakpoint.id}: ` + err);
+      callback(err as Error);
+      throw err;
     }
 
-    this.db
-      .ref(`cdbg/breakpoints/${this.debuggeeId}/final/${breakpoint.id}`)
-      .set(breakpoint_map);
+    try {
+      if (is_snapshot) {
+        // We could also restrict this to only write to this node if it wasn't
+        // an error and there is actual snapshot data. For now though we'll
+        // write it regardless, makes sense if you want to get everything for
+        // a snapshot it's at this location, regardless of what it contains.
+        await this.db
+          .ref(`cdbg/breakpoints/${this.debuggeeId}/snapshot/${breakpoint.id}`)
+          .set(breakpoint_map);
+        // Now strip the snapshot data for the write to 'final' path.
+        const fields_to_strip = [
+          'evaluatedExpressions',
+          'stackFrames',
+          'variableTable',
+        ];
+        fields_to_strip.forEach(field => delete breakpoint_map[field]);
+      }
+
+      await this.db
+        .ref(`cdbg/breakpoints/${this.debuggeeId}/final/${breakpoint.id}`)
+        .set(breakpoint_map);
+    } catch (err) {
+      debuglog(`failed to finalize breakpoint ${breakpoint.id}: ` + err);
+      callback(err as Error);
+      throw err;
+    }
 
     // Indicate success to the caller.
     callback();
