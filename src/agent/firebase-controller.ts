@@ -78,17 +78,23 @@ export class FirebaseController implements Controller {
       databaseUrl = `https://${projectId}-cdbg.firebaseio.com`;
     }
 
-    let app : firebase.app.App;
+    let app: firebase.app.App;
     if (credential) {
-      app = firebase.initializeApp({
-        credential: credential,
-        databaseURL: databaseUrl,
-      }, 'cdbg');
+      app = firebase.initializeApp(
+        {
+          credential: credential,
+          databaseURL: databaseUrl,
+        },
+        'cdbg'
+      );
     } else {
       // Use the default credentials.
-      app = firebase.initializeApp({
-        databaseURL: databaseUrl,
-      }, 'cdbg');
+      app = firebase.initializeApp(
+        {
+          databaseURL: databaseUrl,
+        },
+        'cdbg'
+      );
     }
 
     const db = firebase.database();
@@ -98,15 +104,17 @@ export class FirebaseController implements Controller {
       const version_snapshot = await db.ref('cdbg/schema_version').get();
       if (version_snapshot) {
         const version = version_snapshot.val();
-        debuglog(`Firebase app initialized.  Connected to ${databaseUrl}` +
-                 ` with schema version ${version}`);
+        debuglog(
+          `Firebase app initialized.  Connected to ${databaseUrl}` +
+            ` with schema version ${version}`
+        );
       } else {
         app.delete();
         throw new Error('failed to fetch schema version from database');
       }
     } catch (e) {
       app.delete();
-      throw(e);
+      throw e;
     }
 
     debuglog('Firebase app initialized.  Connected to', databaseUrl);
@@ -151,7 +159,7 @@ export class FirebaseController implements Controller {
     // This MUST be consistent across all debuggee instances.
     // TODO: JSON.stringify may provide different strings if labels are added
     // in different orders.
-    debuggee.id = '';  // Don't use the debuggee id when computing the id.
+    debuggee.id = ''; // Don't use the debuggee id when computing the id.
     const debuggeeHash = crypto
       .createHash('sha1')
       .update(JSON.stringify(debuggee))
@@ -160,7 +168,7 @@ export class FirebaseController implements Controller {
     debuggee.id = this.debuggeeId;
 
     const debuggeeRef = this.db.ref(`cdbg/debuggees/${this.debuggeeId}`);
-    debuggeeRef.set(debuggee, (err) => {
+    debuggeeRef.set(debuggee, err => {
       if (err) {
         callback(err);
       } else {
@@ -255,30 +263,42 @@ export class FirebaseController implements Controller {
     this.bpRef = this.db.ref(`cdbg/breakpoints/${this.debuggeeId}/active`);
 
     let breakpoints = [] as stackdriver.Breakpoint[];
-    this.bpRef.on('child_added', (snapshot: firebase.database.DataSnapshot) => {
-      debuglog(`new breakpoint: ${snapshot.key}`);
-      const breakpoint = snapshot.val();
-      breakpoint.id = snapshot.key;
-      breakpoints.push(breakpoint);
-      callback(null, breakpoints);
-    }, (e: Error) => {
-      debuglog(`unable to listen to child_added events on ` +
-               `cdbg/breakpoints/${this.debuggeeId}/active. ` +
-               `Please check your database settings.`);
-      callback(e, []);
-    });
-    this.bpRef.on('child_removed', snapshot => {
-      // remove the breakpoint.
-      const bpId = snapshot.key;
-      breakpoints = breakpoints.filter(bp => bp.id !== bpId);
-      debuglog(`breakpoint removed: ${bpId}`);
-      callback(null, breakpoints);
-    }, (e: Error) => {
-      debuglog(`unable to listen to child_removed events on ` +
-               `cdbg/breakpoints/${this.debuggeeId}/active. ` +
-               `Please check your database settings.`);
-      callback(e, []);
-    });
+    this.bpRef.on(
+      'child_added',
+      (snapshot: firebase.database.DataSnapshot) => {
+        debuglog(`new breakpoint: ${snapshot.key}`);
+        const breakpoint = snapshot.val();
+        breakpoint.id = snapshot.key;
+        breakpoints.push(breakpoint);
+        callback(null, breakpoints);
+      },
+      (e: Error) => {
+        debuglog(
+          'unable to listen to child_added events on ' +
+            `cdbg/breakpoints/${this.debuggeeId}/active. ` +
+            'Please check your database settings.'
+        );
+        callback(e, []);
+      }
+    );
+    this.bpRef.on(
+      'child_removed',
+      snapshot => {
+        // remove the breakpoint.
+        const bpId = snapshot.key;
+        breakpoints = breakpoints.filter(bp => bp.id !== bpId);
+        debuglog(`breakpoint removed: ${bpId}`);
+        callback(null, breakpoints);
+      },
+      (e: Error) => {
+        debuglog(
+          'unable to listen to child_removed events on ' +
+            `cdbg/breakpoints/${this.debuggeeId}/active. ` +
+            'Please check your database settings.'
+        );
+        callback(e, []);
+      }
+    );
   }
 
   stop(): void {

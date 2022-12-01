@@ -196,7 +196,6 @@ describe('Firebase Controller', () => {
         assert(err, 'expecting an error');
         done();
       });
-
     });
   });
 
