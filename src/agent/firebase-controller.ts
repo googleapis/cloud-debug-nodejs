@@ -29,6 +29,8 @@ import * as gcpMetadata from 'gcp-metadata';
 import * as util from 'util';
 const debuglog = util.debuglog('cdbg.firebase');
 
+const FIREBASE_APP_NAME = 'cdbg';
+
 export class FirebaseController implements Controller {
   db: firebase.database.Database;
   debuggeeId?: string;
@@ -85,7 +87,7 @@ export class FirebaseController implements Controller {
           credential: credential,
           databaseURL: databaseUrl,
         },
-        'cdbg'
+        FIREBASE_APP_NAME
       );
     } else {
       // Use the default credentials.
@@ -117,7 +119,6 @@ export class FirebaseController implements Controller {
       throw e;
     }
 
-    debuglog('Firebase app initialized.  Connected to', databaseUrl);
     return db;
   }
 
@@ -307,7 +308,7 @@ export class FirebaseController implements Controller {
       this.bpRef = undefined;
     }
     try {
-      firebase.app('cdbg').delete();
+      firebase.app(FIREBASE_APP_NAME).delete();
     } catch (err) {
       debuglog(`failed to tear down firebase app: ${err})`);
     }
