@@ -29,6 +29,8 @@ import * as gcpMetadata from 'gcp-metadata';
 import * as util from 'util';
 const debuglog = util.debuglog('cdbg.firebase');
 
+const FIREBASE_APP_NAME = 'cdbg';
+
 export class FirebaseController implements Controller {
   db: firebase.database.Database;
   debuggeeId?: string;
@@ -74,26 +76,49 @@ export class FirebaseController implements Controller {
     if (options.databaseUrl) {
       databaseUrl = options.databaseUrl;
     } else {
-      // TODO: Test whether this exists.  If not, fall back to -default.
+      // TODO: Add fallback to -default
       databaseUrl = `https://${projectId}-cdbg.firebaseio.com`;
     }
 
+    let app: firebase.app.App;
     if (credential) {
-      firebase.initializeApp({
-        credential: credential,
-        databaseURL: databaseUrl,
-      });
+      app = firebase.initializeApp(
+        {
+          credential: credential,
+          databaseURL: databaseUrl,
+        },
+        FIREBASE_APP_NAME
+      );
     } else {
       // Use the default credentials.
-      firebase.initializeApp({
-        databaseURL: databaseUrl,
-      });
+      app = firebase.initializeApp(
+        {
+          databaseURL: databaseUrl,
+        },
+        'cdbg'
+      );
     }
 
     const db = firebase.database();
 
-    // TODO: Test this setup and emit a reasonable error.
-    debuglog('Firebase app initialized.  Connected to', databaseUrl);
+    // Test the connection by reading the schema version.
+    try {
+      const version_snapshot = await db.ref('cdbg/schema_version').get();
+      if (version_snapshot) {
+        const version = version_snapshot.val();
+        debuglog(
+          `Firebase app initialized.  Connected to ${databaseUrl}` +
+            ` with schema version ${version}`
+        );
+      } else {
+        app.delete();
+        throw new Error('failed to fetch schema version from database');
+      }
+    } catch (e) {
+      app.delete();
+      throw e;
+    }
+
     return db;
   }
 
@@ -135,6 +160,7 @@ export class FirebaseController implements Controller {
     // This MUST be consistent across all debuggee instances.
     // TODO: JSON.stringify may provide different strings if labels are added
     // in different orders.
+    debuggee.id = ''; // Don't use the debuggee id when computing the id.
     const debuggeeHash = crypto
       .createHash('sha1')
       .update(JSON.stringify(debuggee))
@@ -143,11 +169,14 @@ export class FirebaseController implements Controller {
     debuggee.id = this.debuggeeId;
 
     const debuggeeRef = this.db.ref(`cdbg/debuggees/${this.debuggeeId}`);
-    debuggeeRef.set(debuggee);
-
-    // TODO: Handle errors.  I can .set(data, (error) => if (error) {})
-    const agentId = 'unsupported';
-    callback(null, {debuggee, agentId});
+    debuggeeRef.set(debuggee, err => {
+      if (err) {
+        callback(err);
+      } else {
+        const agentId = 'unsupported';
+        callback(null, {debuggee, agentId});
+      }
+    });
   }
 
   /**
@@ -156,11 +185,11 @@ export class FirebaseController implements Controller {
    * @param {!Breakpoint} breakpoint
    * @param {!Function} callback accepting (err, body)
    */
-  updateBreakpoint(
+  async updateBreakpoint(
     debuggee: Debuggee,
     breakpoint: stackdriver.Breakpoint,
     callback: (err?: Error, body?: {}) => void
-  ): void {
+  ): Promise<void> {
     debuglog('updating a breakpoint');
     assert(debuggee.id, 'should have a registered debuggee');
 
@@ -184,31 +213,42 @@ export class FirebaseController implements Controller {
     // https://firebase.google.com/docs/reference/rest/database#section-server-values
     breakpoint_map['finalTimeUnixMsec'] = {'.sv': 'timestamp'};
 
-    this.db
-      .ref(`cdbg/breakpoints/${this.debuggeeId}/active/${breakpoint.id}`)
-      .remove();
-
-    // TODO: error handling from here on
-    if (is_snapshot) {
-      // We could also restrict this to only write to this node if it wasn't
-      // an error and there is actual snapshot data. For now though we'll
-      // write it regardless, makes sense if you want to get everything for
-      // a snapshot it's at this location, regardless of what it contains.
-      this.db
-        .ref(`cdbg/breakpoints/${this.debuggeeId}/snapshot/${breakpoint.id}`)
-        .set(breakpoint_map);
-      // Now strip the snapshot data for the write to 'final' path.
-      const fields_to_strip = [
-        'evaluatedExpressions',
-        'stackFrames',
-        'variableTable',
-      ];
-      fields_to_strip.forEach(field => delete breakpoint_map[field]);
+    try {
+      await this.db
+        .ref(`cdbg/breakpoints/${this.debuggeeId}/active/${breakpoint.id}`)
+        .remove();
+    } catch (err) {
+      debuglog(`failed to delete breakpoint ${breakpoint.id}: ` + err);
+      callback(err as Error);
+      throw err;
     }
 
-    this.db
-      .ref(`cdbg/breakpoints/${this.debuggeeId}/final/${breakpoint.id}`)
-      .set(breakpoint_map);
+    try {
+      if (is_snapshot) {
+        // We could also restrict this to only write to this node if it wasn't
+        // an error and there is actual snapshot data. For now though we'll
+        // write it regardless, makes sense if you want to get everything for
+        // a snapshot it's at this location, regardless of what it contains.
+        await this.db
+          .ref(`cdbg/breakpoints/${this.debuggeeId}/snapshot/${breakpoint.id}`)
+          .set(breakpoint_map);
+        // Now strip the snapshot data for the write to 'final' path.
+        const fields_to_strip = [
+          'evaluatedExpressions',
+          'stackFrames',
+          'variableTable',
+        ];
+        fields_to_strip.forEach(field => delete breakpoint_map[field]);
+      }
+
+      await this.db
+        .ref(`cdbg/breakpoints/${this.debuggeeId}/final/${breakpoint.id}`)
+        .set(breakpoint_map);
+    } catch (err) {
+      debuglog(`failed to finalize breakpoint ${breakpoint.id}: ` + err);
+      callback(err as Error);
+      throw err;
+    }
 
     // Indicate success to the caller.
     callback();
@@ -224,26 +264,53 @@ export class FirebaseController implements Controller {
     this.bpRef = this.db.ref(`cdbg/breakpoints/${this.debuggeeId}/active`);
 
     let breakpoints = [] as stackdriver.Breakpoint[];
-    this.bpRef.on('child_added', (snapshot: firebase.database.DataSnapshot) => {
-      debuglog(`new breakpoint: ${snapshot.key}`);
-      const breakpoint = snapshot.val();
-      breakpoint.id = snapshot.key;
-      breakpoints.push(breakpoint);
-      callback(null, breakpoints);
-    });
-    this.bpRef.on('child_removed', snapshot => {
-      // remove the breakpoint.
-      const bpId = snapshot.key;
-      breakpoints = breakpoints.filter(bp => bp.id !== bpId);
-      debuglog(`breakpoint removed: ${bpId}`);
-      callback(null, breakpoints);
-    });
+    this.bpRef.on(
+      'child_added',
+      (snapshot: firebase.database.DataSnapshot) => {
+        debuglog(`new breakpoint: ${snapshot.key}`);
+        const breakpoint = snapshot.val();
+        breakpoint.id = snapshot.key;
+        breakpoints.push(breakpoint);
+        callback(null, breakpoints);
+      },
+      (e: Error) => {
+        debuglog(
+          'unable to listen to child_added events on ' +
+            `cdbg/breakpoints/${this.debuggeeId}/active. ` +
+            'Please check your database settings.'
+        );
+        callback(e, []);
+      }
+    );
+    this.bpRef.on(
+      'child_removed',
+      snapshot => {
+        // remove the breakpoint.
+        const bpId = snapshot.key;
+        breakpoints = breakpoints.filter(bp => bp.id !== bpId);
+        debuglog(`breakpoint removed: ${bpId}`);
+        callback(null, breakpoints);
+      },
+      (e: Error) => {
+        debuglog(
+          'unable to listen to child_removed events on ' +
+            `cdbg/breakpoints/${this.debuggeeId}/active. ` +
+            'Please check your database settings.'
+        );
+        callback(e, []);
+      }
+    );
   }
 
   stop(): void {
     if (this.bpRef) {
       this.bpRef.off();
       this.bpRef = undefined;
+    }
+    try {
+      firebase.app(FIREBASE_APP_NAME).delete();
+    } catch (err) {
+      debuglog(`failed to tear down firebase app: ${err})`);
     }
   }
 }

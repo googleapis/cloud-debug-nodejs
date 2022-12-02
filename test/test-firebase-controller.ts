@@ -44,6 +44,10 @@ class MockReference {
   // Simplification: there's only one listener for each event type.
   listeners = new Map<EventType, (a: DataSnapshot, b?: string | null) => any>();
 
+  // Test options
+  shouldFail = false;
+  failMessage?: string;
+
   constructor(key: string, parentRef?: MockReference) {
     this.key = key.slice();
     this.parentRef = parentRef;
@@ -90,6 +94,13 @@ class MockReference {
   }
 
   set(value: any, onComplete?: (a: Error | null) => any): Promise<any> {
+    if (this.shouldFail) {
+      this.shouldFail = false;
+      if (onComplete) {
+        onComplete(new Error(this.failMessage));
+      }
+    }
+
     let creating = false;
     if (!this.value) {
       creating = true;
@@ -120,6 +131,11 @@ class MockReference {
 
   off() {
     // No-op.  Needed to cleanly detach in the real firebase implementation.
+  }
+
+  failNextSet(errorMessage: string) {
+    this.shouldFail = true;
+    this.failMessage = errorMessage;
   }
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
@@ -152,7 +168,7 @@ describe('Firebase Controller', () => {
       const db = new MockDatabase();
       // Debuggee Id is based on the sha1 hash of the json representation of
       // the debuggee.
-      const debuggeeId = 'd-b9dbb5e7';
+      const debuggeeId = 'd-008335af';
       const controller = new FirebaseController(
         db as {} as firebase.database.Database
       );
@@ -164,6 +180,20 @@ describe('Firebase Controller', () => {
           db.mockRef(`cdbg/debuggees/${debuggeeId}`).value,
           debuggee
         );
+        done();
+      });
+    });
+    it('should error out gracefully', done => {
+      const db = new MockDatabase();
+      // Debuggee Id is based on the sha1 hash of the json representation of
+      // the debuggee.
+      const debuggeeId = 'd-008335af';
+      db.mockRef(`cdbg/debuggees/${debuggeeId}`).failNextSet('mocked failure');
+      const controller = new FirebaseController(
+        db as {} as firebase.database.Database
+      );
+      controller.register(debuggee, (err, result) => {
+        assert(err, 'expecting an error');
         done();
       });
     });
@@ -323,6 +353,140 @@ describe('Firebase Controller', () => {
         assert(removed, 'should have been removed');
         assert(finalized, 'should have been finalized');
         assert(!snapshotted, 'should not have been snapshotted');
+        done();
+      });
+    });
+    it('should throw an error if the delete fails', done => {
+      const breakpointId = 'breakpointId';
+      const debuggeeId = 'debuggeeId';
+      const breakpoint: stackdriver.Breakpoint = {
+        id: breakpointId,
+        action: 'CAPTURE',
+        location: {path: 'foo.js', line: 99},
+      } as stackdriver.Breakpoint;
+      const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
+      const db = new MockDatabase();
+      const controller = new FirebaseController(
+        db as {} as firebase.database.Database
+      );
+      controller.debuggeeId = debuggeeId;
+
+      db.ref(`cdbg/breakpoints/${debuggeeId}/active`).on(
+        'child_removed',
+        data => {
+          throw new Error('mock remove failure');
+        }
+      );
+
+      let finalized = false;
+      db.ref(`cdbg/breakpoints/${debuggeeId}/final`).on('child_added', data => {
+        finalized = true;
+      });
+
+      let snapshotted = false;
+      db.ref(`cdbg/breakpoints/${debuggeeId}/snapshot`).on(
+        'child_added',
+        data => {
+          snapshotted = true;
+        }
+      );
+      controller.updateBreakpoint(debuggee as Debuggee, breakpoint, err => {
+        assert(err, 'expecting an error');
+        assert(!finalized, 'should not have been finalized');
+        assert(!snapshotted, 'should not have been snapshotted');
+        done();
+      });
+    });
+    it('throw an error if the finalization fails', done => {
+      const breakpointId = 'breakpointId';
+      const debuggeeId = 'debuggeeId';
+      const breakpoint: stackdriver.Breakpoint = {
+        id: breakpointId,
+        action: 'CAPTURE',
+        location: {path: 'foo.js', line: 99},
+      } as stackdriver.Breakpoint;
+      const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
+      const db = new MockDatabase();
+      const controller = new FirebaseController(
+        db as {} as firebase.database.Database
+      );
+      controller.debuggeeId = debuggeeId;
+
+      let removed = false;
+      db.ref(`cdbg/breakpoints/${debuggeeId}/active`).on(
+        'child_removed',
+        data => {
+          assert.strictEqual(data.key, breakpointId);
+          removed = true;
+        }
+      );
+
+      db.ref(`cdbg/breakpoints/${debuggeeId}/final`).on('child_added', data => {
+        assert.strictEqual(data.key, breakpointId);
+        throw new Error('mock write failure');
+      });
+
+      let snapshotted = false;
+      db.ref(`cdbg/breakpoints/${debuggeeId}/snapshot`).on(
+        'child_added',
+        data => {
+          snapshotted = true;
+        }
+      );
+
+      controller.updateBreakpoint(debuggee as Debuggee, breakpoint, err => {
+        assert(err, 'expecting an error');
+        assert(removed, 'should have been removed');
+        assert(snapshotted, 'should have been snapshotted');
+        done();
+      });
+    });
+    it('throw an error if writing the snapshot fails', done => {
+      const breakpointId = 'breakpointId';
+      const debuggeeId = 'debuggeeId';
+      const breakpoint: stackdriver.Breakpoint = {
+        id: breakpointId,
+        action: 'CAPTURE',
+        location: {path: 'foo.js', line: 99},
+      } as stackdriver.Breakpoint;
+      const debuggee: Debuggee = {id: 'fake-debuggee'} as Debuggee;
+      const db = new MockDatabase();
+      const controller = new FirebaseController(
+        db as {} as firebase.database.Database
+      );
+      controller.debuggeeId = debuggeeId;
+
+      let removed = false;
+      db.ref(`cdbg/breakpoints/${debuggeeId}/active`).on(
+        'child_removed',
+        data => {
+          assert.strictEqual(data.key, breakpointId);
+          removed = true;
+        }
+      );
+
+      let finalized = false;
+      db.ref(`cdbg/breakpoints/${debuggeeId}/final`).on('child_added', data => {
+        assert.strictEqual(data.key, breakpointId);
+        assert.deepStrictEqual(data.val(), {
+          ...breakpoint,
+          isFinalState: true,
+          finalTimeUnixMsec: {'.sv': 'timestamp'},
+        });
+        finalized = true;
+      });
+
+      db.ref(`cdbg/breakpoints/${debuggeeId}/snapshot`).on(
+        'child_added',
+        data => {
+          throw new Error('mock snapshot write failure');
+        }
+      );
+
+      controller.updateBreakpoint(debuggee as Debuggee, breakpoint, err => {
+        assert(err, 'expecting an error');
+        assert(removed, 'should have been removed');
+        assert(!finalized, 'should not have been finalized');
         done();
       });
     });
