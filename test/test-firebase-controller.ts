@@ -183,6 +183,40 @@ describe('Firebase Controller', () => {
         done();
       });
     });
+    it('should pass labels properly', done => {
+      const db = new MockDatabase();
+      // Debuggee Id is based on the sha1 hash of the json representation of
+      // the debuggee.
+      const debuggeeId = 'd-cbd029da';
+      const debuggeeWithLabels = new Debuggee({
+        project: 'fake-project',
+        uniquifier: 'fake-id',
+        description: 'unit test',
+        agentVersion: 'SomeName/client/SomeVersion',
+        labels: {
+          V8_version: 'v8_version',
+          process_title: 'node',
+          projectid: 'fake-project',
+          agent_version: '7.x',
+          version: 'appengine_version',
+          minorversion: 'minor_version',
+        },
+      });
+
+      const controller = new FirebaseController(
+        db as {} as firebase.database.Database
+      );
+      controller.register(debuggeeWithLabels, (err, result) => {
+        assert(!err, 'not expecting an error');
+        assert.ok(result);
+        assert.strictEqual(result!.debuggee.id, debuggeeId);
+        assert.strictEqual(
+          db.mockRef(`cdbg/debuggees/${debuggeeId}`).value,
+          debuggeeWithLabels
+        );
+        done();
+      });
+    });
     it('should error out gracefully', done => {
       const db = new MockDatabase();
       // Debuggee Id is based on the sha1 hash of the json representation of

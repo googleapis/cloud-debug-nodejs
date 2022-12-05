@@ -169,7 +169,7 @@ export class FirebaseController implements Controller {
     debuggee.id = this.debuggeeId;
 
     const debuggeeRef = this.db.ref(`cdbg/debuggees/${this.debuggeeId}`);
-    debuggeeRef.set(debuggee, err => {
+    debuggeeRef.set(debuggee as {}, err => {
       if (err) {
         callback(err);
       } else {
