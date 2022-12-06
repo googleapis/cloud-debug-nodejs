@@ -135,12 +135,15 @@ export class FirebaseController implements Controller {
   }
 
   /**
-   * Register to the API (implementation)
+   * Register to the API (implementation).
+   *
+   * Writes an initial record to the database if it is not yet present.
+   * Otherwise only updates the last active timestamp.
    *
    * @param {!function(?Error,Object=)} callback
    * @private
    */
-  register(
+  async register(
     debuggee: Debuggee,
     callback: (
       err: Error | null,
@@ -149,7 +152,7 @@ export class FirebaseController implements Controller {
         agentId: string;
       }
     ) => void
-  ): void {
+  ): Promise<void> {
     debuglog('registering');
     // Firebase hates undefined attributes.  Patch the debuggee, just in case.
     if (!debuggee.canaryMode) {
@@ -168,15 +171,24 @@ export class FirebaseController implements Controller {
     this.debuggeeId = `d-${debuggeeHash.substring(0, 8)}`;
     debuggee.id = this.debuggeeId;
 
-    const debuggeeRef = this.db.ref(`cdbg/debuggees/${this.debuggeeId}`);
-    debuggeeRef.set(debuggee, err => {
-      if (err) {
-        callback(err);
+    try {
+      // Test presence using the registration time.  This moves less data.
+      const presenceRef = this.db.ref(
+        `cdbg/debuggees/${this.debuggeeId}` + '/registrationTimeMsec'
+      );
+      const presenceSnapshot = await presenceRef.get();
+      if (presenceSnapshot.exists()) {
+        this.markDebuggeeActive();
       } else {
-        const agentId = 'unsupported';
-        callback(null, {debuggee, agentId});
+        const ref = this.db.ref(`cdbg/debuggees/${this.debuggeeId}`);
+        ref.set({registrationTimeMsec: {'.sv': 'timestamp'}, ...debuggee});
       }
-    });
+    } catch (err) {
+      callback(err as Error);
+    }
+
+    const agentId = 'unsupported';
+    callback(null, {debuggee, agentId});
   }
 
   /**
@@ -300,6 +312,17 @@ export class FirebaseController implements Controller {
         callback(e, []);
       }
     );
+  }
+
+  /**
+   * Marks a debuggee as active by prompting the server to update the
+   * lastUpdateTimeMsec to server time.
+   */
+  async markDebuggeeActive() {
+    const ref = this.db.ref(
+      `cdbg/debuggees/${this.debuggeeId}/lastUpdateTimeMsec`
+    );
+    ref.set({'.sv': 'timestamp'});
   }
 
   stop(): void {
