@@ -174,14 +174,14 @@ export class FirebaseController implements Controller {
     try {
       // Test presence using the registration time.  This moves less data.
       const presenceRef = this.db.ref(
-        `cdbg/debuggees/${this.debuggeeId}` + '/registrationTimeMsec'
+        `cdbg/debuggees/${this.debuggeeId}` + '/registrationTimeUnixMsec'
       );
       const presenceSnapshot = await presenceRef.get();
       if (presenceSnapshot.exists()) {
         this.markDebuggeeActive();
       } else {
         const ref = this.db.ref(`cdbg/debuggees/${this.debuggeeId}`);
-        ref.set({registrationTimeMsec: {'.sv': 'timestamp'}, ...debuggee});
+        ref.set({registrationTimeUnixMsec: {'.sv': 'timestamp'}, ...debuggee});
       }
     } catch (err) {
       callback(err as Error);
@@ -316,11 +316,11 @@ export class FirebaseController implements Controller {
 
   /**
    * Marks a debuggee as active by prompting the server to update the
-   * lastUpdateTimeMsec to server time.
+   * lastUpdateTimeUnixMsec to server time.
    */
   async markDebuggeeActive() {
     const ref = this.db.ref(
-      `cdbg/debuggees/${this.debuggeeId}/lastUpdateTimeMsec`
+      `cdbg/debuggees/${this.debuggeeId}/lastUpdateTimeUnixMsec`
     );
     ref.set({'.sv': 'timestamp'});
   }
