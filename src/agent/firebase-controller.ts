@@ -143,7 +143,7 @@ export class FirebaseController implements Controller {
    * @param {!function(?Error,Object=)} callback
    * @private
    */
-  async register(
+  register(
     debuggee: Debuggee,
     callback: (
       err: Error | null,
@@ -152,7 +152,7 @@ export class FirebaseController implements Controller {
         agentId: string;
       }
     ) => void
-  ): Promise<void> {
+  ): void {
     debuglog('registering');
     // Firebase hates undefined attributes.  Patch the debuggee, just in case.
     if (!debuggee.canaryMode) {
@@ -171,24 +171,33 @@ export class FirebaseController implements Controller {
     this.debuggeeId = `d-${debuggeeHash.substring(0, 8)}`;
     debuggee.id = this.debuggeeId;
 
-    try {
-      // Test presence using the registration time.  This moves less data.
-      const presenceRef = this.db.ref(
-        `cdbg/debuggees/${this.debuggeeId}` + '/registrationTimeUnixMsec'
-      );
-      const presenceSnapshot = await presenceRef.get();
-      if (presenceSnapshot.exists()) {
-        this.markDebuggeeActive();
-      } else {
-        const ref = this.db.ref(`cdbg/debuggees/${this.debuggeeId}`);
-        ref.set({registrationTimeUnixMsec: {'.sv': 'timestamp'}, ...debuggee});
-      }
-    } catch (err) {
-      callback(err as Error);
-    }
-
     const agentId = 'unsupported';
-    callback(null, {debuggee, agentId});
+    console.log('Testing for presence');
+    // Test presence using the registration time.  This moves less data.
+    const presenceRef = this.db.ref(
+      `cdbg/debuggees/${this.debuggeeId}` + '/registrationTimeUnixMsec'
+    );
+    presenceRef.get().then(presenceSnapshot => {
+      if (presenceSnapshot.exists()) {
+        console.log('present; marking active');
+        this.markDebuggeeActive().then(() => {
+          callback(null, {debuggee, agentId});
+        }).catch(err => {
+          callback(err);
+        });
+      } else {
+        console.log('not present; writing full record');
+        const ref = this.db.ref(`cdbg/debuggees/${this.debuggeeId}`);
+        ref.set({registrationTimeUnixMsec: {'.sv': 'timestamp'}, ...debuggee}).then(() => {
+          console.log('successful write');
+          callback(null, {debuggee, agentId});
+        }).catch(err => {
+          callback(err);
+        });
+      }
+    }).catch(err => {
+      callback(err as Error);
+    });
   }
 
   /**

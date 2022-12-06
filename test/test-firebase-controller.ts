@@ -34,6 +34,10 @@ class MockSnapshot {
   val() {
     return this.value;
   }
+
+  exists() {
+    return !!this.value;
+  }
 }
 
 class MockReference {
@@ -62,6 +66,10 @@ class MockReference {
       onComplete(null);
     }
     return Promise.resolve();
+  }
+
+  async get(): Promise<DataSnapshot> {
+    return new MockSnapshot(this.key, this.value) as {} as DataSnapshot;
   }
 
   getOrAdd(key: string): MockReference {
@@ -155,15 +163,44 @@ class MockDatabase {
   }
 }
 
-describe('Firebase Controller', () => {
+describe.only('Firebase Controller', () => {
   const debuggee = new Debuggee({
     project: 'fake-project',
     uniquifier: 'fake-id',
     description: 'unit test',
     agentVersion: 'SomeName/client/SomeVersion',
+    labels: {
+      V8_version: 'v8_version',
+      process_title: 'node',
+      projectid: 'fake-project',
+      agent_version: '7.x',
+      version: 'appengine_version',
+      minorversion: 'minor_version',
+    },
   });
 
-  describe('register', () => {
+  describe.only('register', () => {
+    describe.only('first time', () => {
+      it('should write successfully', done => {
+        const db = new MockDatabase();
+        const controller = new FirebaseController(
+          db as {} as firebase.database.Database
+        );
+        const debuggeeId = 'd-008335af';
+        controller.register(debuggee, (err, result) => {
+          assert(!err, 'not expecting an error');
+          assert.ok(result);
+          console.log(result);
+          assert.strictEqual(result!.debuggee.id, debuggeeId);
+          console.log('working??');
+          assert.strictEqual(
+            db.mockRef(`cdbg/debuggees/${debuggeeId}`).value,
+            debuggee
+          );
+          done();
+        });
+      });
+    });
     it('should get a debuggeeId', done => {
       const db = new MockDatabase();
       // Debuggee Id is based on the sha1 hash of the json representation of
