@@ -172,32 +172,31 @@ export class FirebaseController implements Controller {
     debuggee.id = this.debuggeeId;
 
     const agentId = 'unsupported';
-    console.log('Testing for presence');
     // Test presence using the registration time.  This moves less data.
     const presenceRef = this.db.ref(
-      `cdbg/debuggees/${this.debuggeeId}` + '/registrationTimeUnixMsec'
+      `cdbg/debuggees/${this.debuggeeId}/registrationTimeUnixMsec`
     );
     presenceRef.get().then(presenceSnapshot => {
       if (presenceSnapshot.exists()) {
-        console.log('present; marking active');
-        this.markDebuggeeActive().then(() => {
-          callback(null, {debuggee, agentId});
-        }).catch(err => {
-          callback(err);
-        });
+        this.markDebuggeeActive().then(
+          () => callback(null, {debuggee, agentId}),
+          err => callback(err)
+        );
       } else {
-        console.log('not present; writing full record');
         const ref = this.db.ref(`cdbg/debuggees/${this.debuggeeId}`);
-        ref.set({registrationTimeUnixMsec: {'.sv': 'timestamp'}, ...debuggee}).then(() => {
-          console.log('successful write');
-          callback(null, {debuggee, agentId});
-        }).catch(err => {
-          callback(err);
-        });
+        ref
+          .set({
+            registrationTimeUnixMsec: {'.sv': 'timestamp'},
+            lastUpdateTimeUnixMsec: {'.sv': 'timestamp'},
+            ...debuggee,
+          })
+          .then(
+            () => callback(null, {debuggee, agentId}),
+            err => callback(err)
+          );
       }
-    }).catch(err => {
-      callback(err as Error);
-    });
+    },
+                          err => callback(err));
   }
 
   /**
@@ -327,11 +326,11 @@ export class FirebaseController implements Controller {
    * Marks a debuggee as active by prompting the server to update the
    * lastUpdateTimeUnixMsec to server time.
    */
-  async markDebuggeeActive() {
+  async markDebuggeeActive(): Promise<void> {
     const ref = this.db.ref(
       `cdbg/debuggees/${this.debuggeeId}/lastUpdateTimeUnixMsec`
     );
-    ref.set({'.sv': 'timestamp'});
+    await ref.set({'.sv': 'timestamp'});
   }
 
   stop(): void {

@@ -49,8 +49,10 @@ class MockReference {
   listeners = new Map<EventType, (a: DataSnapshot, b?: string | null) => any>();
 
   // Test options
-  shouldFail = false;
-  failMessage?: string;
+  shouldFailSet = false;
+  shouldFailGet = false;
+  failSetMessage?: string;
+  failGetMessage?: string;
 
   constructor(key: string, parentRef?: MockReference) {
     this.key = key.slice();
@@ -69,6 +71,11 @@ class MockReference {
   }
 
   async get(): Promise<DataSnapshot> {
+    if (this.shouldFailGet) {
+      console.log('FAIL');
+      this.shouldFailGet = false;
+      throw new Error(this.failGetMessage);
+    }
     return new MockSnapshot(this.key, this.value) as {} as DataSnapshot;
   }
 
@@ -101,12 +108,14 @@ class MockReference {
     }
   }
 
-  set(value: any, onComplete?: (a: Error | null) => any): Promise<any> {
-    if (this.shouldFail) {
-      this.shouldFail = false;
+  async set(value: any, onComplete?: (a: Error | null) => any): Promise<any> {
+    if (this.shouldFailSet) {
+      this.shouldFailSet = false;
+      const err = new Error(this.failSetMessage);
       if (onComplete) {
-        onComplete(new Error(this.failMessage));
+        onComplete(err);
       }
+      throw err;
     }
 
     let creating = false;
@@ -120,7 +129,6 @@ class MockReference {
     if (creating && this.parentRef) {
       this.parentRef.childAdded(this.key, value);
     }
-    return Promise.resolve();
   }
 
   on(
@@ -142,8 +150,13 @@ class MockReference {
   }
 
   failNextSet(errorMessage: string) {
-    this.shouldFail = true;
-    this.failMessage = errorMessage;
+    this.shouldFailSet = true;
+    this.failSetMessage = errorMessage;
+  }
+
+  failNextGet(errorMessage: string) {
+    this.shouldFailGet = true;
+    this.failGetMessage = errorMessage;
   }
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
@@ -178,94 +191,107 @@ describe.only('Firebase Controller', () => {
       minorversion: 'minor_version',
     },
   });
+  // Debuggee Id is based on the sha1 hash of the json representation of
+  // the debuggee.
+  const debuggeeId = 'd-cbd029da';
 
   describe.only('register', () => {
-    describe.only('first time', () => {
+    it('should error out gracefully on presence check', done => {
+      const db = new MockDatabase();
+      const controller = new FirebaseController(
+        db as {} as firebase.database.Database
+      );
+      db.mockRef(
+        `cdbg/debuggees/${debuggeeId}/registrationTimeUnixMsec`
+      ).failNextGet('mocked failure');
+      controller.register(debuggee, (err, result) => {
+        try {
+          assert(err, 'expecting an error');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+    });
+    describe('first time', () => {
       it('should write successfully', done => {
         const db = new MockDatabase();
         const controller = new FirebaseController(
           db as {} as firebase.database.Database
         );
-        const debuggeeId = 'd-008335af';
+        const expectedDebuggee = {
+          ...debuggee,
+          registrationTimeUnixMsec: {'.sv': 'timestamp'},
+          lastUpdateTimeUnixMsec: {'.sv': 'timestamp'},
+          id: debuggeeId,
+          canaryMode: 'CANARY_MODE_UNSPECIFIED',
+        };
+
         controller.register(debuggee, (err, result) => {
-          assert(!err, 'not expecting an error');
-          assert.ok(result);
-          console.log(result);
-          assert.strictEqual(result!.debuggee.id, debuggeeId);
-          console.log('working??');
-          assert.strictEqual(
-            db.mockRef(`cdbg/debuggees/${debuggeeId}`).value,
-            debuggee
-          );
-          done();
+          // try/catch block to avoid losing failed assertions to the error
+          // handling in controller.register.
+          try {
+            assert(!err, 'not expecting an error');
+            assert.ok(result);
+            assert.strictEqual(result!.debuggee.id, debuggeeId);
+            assert.deepEqual(
+              db.mockRef(`cdbg/debuggees/${debuggeeId}`).value,
+              expectedDebuggee
+            );
+            done();
+          } catch (err) {
+            done(err);
+          }
+        });
+      });
+      it('should error out gracefully', done => {
+        const db = new MockDatabase();
+        db.mockRef(`cdbg/debuggees/${debuggeeId}`).failNextSet(
+          'mocked failure'
+        );
+        const controller = new FirebaseController(
+          db as {} as firebase.database.Database
+        );
+        controller.register(debuggee, (err, result) => {
+          try {
+            assert(err, 'expecting an error');
+            done();
+          } catch (err) {
+            done(err);
+          }
         });
       });
     });
-    it('should get a debuggeeId', done => {
-      const db = new MockDatabase();
-      // Debuggee Id is based on the sha1 hash of the json representation of
-      // the debuggee.
-      const debuggeeId = 'd-008335af';
-      const controller = new FirebaseController(
-        db as {} as firebase.database.Database
-      );
-      controller.register(debuggee, (err, result) => {
-        assert(!err, 'not expecting an error');
-        assert.ok(result);
-        assert.strictEqual(result!.debuggee.id, debuggeeId);
-        assert.strictEqual(
-          db.mockRef(`cdbg/debuggees/${debuggeeId}`).value,
-          debuggee
+    describe('re-register', () => {
+      it('should only update the timestamp', done => {
+        const db = new MockDatabase();
+        const controller = new FirebaseController(
+          db as {} as firebase.database.Database
         );
-        done();
-      });
-    });
-    it('should pass labels properly', done => {
-      const db = new MockDatabase();
-      // Debuggee Id is based on the sha1 hash of the json representation of
-      // the debuggee.
-      const debuggeeId = 'd-cbd029da';
-      const debuggeeWithLabels = new Debuggee({
-        project: 'fake-project',
-        uniquifier: 'fake-id',
-        description: 'unit test',
-        agentVersion: 'SomeName/client/SomeVersion',
-        labels: {
-          V8_version: 'v8_version',
-          process_title: 'node',
-          projectid: 'fake-project',
-          agent_version: '7.x',
-          version: 'appengine_version',
-          minorversion: 'minor_version',
-        },
-      });
+        // Throw an error if the debuggee is written; there should be no write.
+        db.mockRef(`cdbg/debuggees/${debuggeeId}`).failNextSet(
+          'should not be called'
+        );
+        // This is all that is required to indicate a prior registration.
+        db.mockRef(`cdbg/debuggees/${debuggeeId}/registrationTimeUnixMsec`).set(
+          12345678
+        );
 
-      const controller = new FirebaseController(
-        db as {} as firebase.database.Database
-      );
-      controller.register(debuggeeWithLabels, (err, result) => {
-        assert(!err, 'not expecting an error');
-        assert.ok(result);
-        assert.strictEqual(result!.debuggee.id, debuggeeId);
-        assert.strictEqual(
-          db.mockRef(`cdbg/debuggees/${debuggeeId}`).value,
-          debuggeeWithLabels
-        );
-        done();
-      });
-    });
-    it('should error out gracefully', done => {
-      const db = new MockDatabase();
-      // Debuggee Id is based on the sha1 hash of the json representation of
-      // the debuggee.
-      const debuggeeId = 'd-008335af';
-      db.mockRef(`cdbg/debuggees/${debuggeeId}`).failNextSet('mocked failure');
-      const controller = new FirebaseController(
-        db as {} as firebase.database.Database
-      );
-      controller.register(debuggee, (err, result) => {
-        assert(err, 'expecting an error');
-        done();
+        controller.register(debuggee, (err, result) => {
+          try {
+            assert(!err, 'not expecting an error');
+            assert.ok(result);
+            // In production this would be the actual timestamp.
+            assert.deepEqual(
+              db.mockRef(`cdbg/debuggees/${debuggeeId}/lastUpdateTimeUnixMsec`)
+                .value,
+              {'.sv': 'timestamp'}
+            );
+            done();
+          } catch (err) {
+            done(err);
+          }
+        });
       });
     });
   });
