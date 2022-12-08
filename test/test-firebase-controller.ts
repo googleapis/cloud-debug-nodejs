@@ -370,7 +370,7 @@ describe('Firebase Controller', () => {
       );
       controller.debuggeeId = 'debuggeeId';
 
-      controller.markActivePeriod = 10; // Mark active frequently for testing purposes.
+      controller.markActivePeriodMsec = 10; // Mark active frequently for testing purposes.
 
       let markedActiveCount = 0;
       db.mockRef('cdbg/debuggees/debuggeeId/lastUpdateTimeUnixMsec').set =

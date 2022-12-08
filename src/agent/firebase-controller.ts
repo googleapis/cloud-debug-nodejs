@@ -37,7 +37,7 @@ export class FirebaseController implements Controller {
   bpRef?: firebase.database.Reference;
 
   markActiveInterval: ReturnType<typeof setInterval> | undefined;
-  markActivePeriod: number = 60 * 60 * 1000; // 1 hour in ms.
+  markActivePeriodMsec: number = 60 * 60 * 1000; // 1 hour in ms.
 
   /**
    * Connects to the Firebase database.
@@ -325,10 +325,10 @@ export class FirebaseController implements Controller {
   }
 
   startMarkingDebuggeeActive() {
-    console.log(`starting to mark every ${this.markActivePeriod} ms`);
+    debuglog(`starting to mark every ${this.markActivePeriodMsec} ms`);
     this.markActiveInterval = setInterval(() => {
       this.markDebuggeeActive();
-    }, this.markActivePeriod);
+    }, this.markActivePeriodMsec);
   }
 
   /**
