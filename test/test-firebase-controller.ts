@@ -384,9 +384,9 @@ describe('Firebase Controller', () => {
       // Let markActive trigger 2 times.
       setTimeout(() => {
         controller.stop();
-        assert.equal(markedActiveCount, 2);
+        assert(markedActiveCount >= 2);
         done();
-      }, 25);
+      }, 50);
     });
   });
 
