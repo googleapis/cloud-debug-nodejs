@@ -176,27 +176,24 @@ export class FirebaseController implements Controller {
     const presenceRef = this.db.ref(
       `cdbg/debuggees/${this.debuggeeId}/registrationTimeUnixMsec`
     );
-    presenceRef.get().then(presenceSnapshot => {
-      if (presenceSnapshot.exists()) {
-        this.markDebuggeeActive().then(
-          () => callback(null, {debuggee, agentId}),
-          err => callback(err)
-        );
-      } else {
-        const ref = this.db.ref(`cdbg/debuggees/${this.debuggeeId}`);
-        ref
-          .set({
+    presenceRef
+      .get()
+      .then(presenceSnapshot => {
+        if (presenceSnapshot.exists()) {
+          return this.markDebuggeeActive();
+        } else {
+          const ref = this.db.ref(`cdbg/debuggees/${this.debuggeeId}`);
+          return ref.set({
             registrationTimeUnixMsec: {'.sv': 'timestamp'},
             lastUpdateTimeUnixMsec: {'.sv': 'timestamp'},
             ...debuggee,
-          })
-          .then(
-            () => callback(null, {debuggee, agentId}),
-            err => callback(err)
-          );
-      }
-    },
-                          err => callback(err));
+          });
+        }
+      })
+      .then(
+        () => callback(null, {debuggee, agentId}),
+        err => callback(err)
+      );
   }
 
   /**

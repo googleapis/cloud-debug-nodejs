@@ -72,7 +72,6 @@ class MockReference {
 
   async get(): Promise<DataSnapshot> {
     if (this.shouldFailGet) {
-      console.log('FAIL');
       this.shouldFailGet = false;
       throw new Error(this.failGetMessage);
     }
@@ -287,6 +286,27 @@ describe.only('Firebase Controller', () => {
                 .value,
               {'.sv': 'timestamp'}
             );
+            done();
+          } catch (err) {
+            done(err);
+          }
+        });
+      });
+      it('should error out gracefully', done => {
+        const db = new MockDatabase();
+        // This is all that is required to indicate a prior registration.
+        db.mockRef(`cdbg/debuggees/${debuggeeId}/registrationTimeUnixMsec`).set(
+          12345678
+        );
+        db.mockRef(`cdbg/debuggees/${debuggeeId}/lastUpdateTimeUnixMsec`).failNextSet(
+          'mocked failure'
+        );
+        const controller = new FirebaseController(
+          db as {} as firebase.database.Database
+        );
+        controller.register(debuggee, (err, result) => {
+          try {
+            assert(err, 'expecting an error');
             done();
           } catch (err) {
             done(err);
