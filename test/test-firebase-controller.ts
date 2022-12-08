@@ -175,26 +175,26 @@ class MockDatabase {
   }
 }
 
-describe.only('Firebase Controller', () => {
-  const debuggee = new Debuggee({
-    project: 'fake-project',
-    uniquifier: 'fake-id',
-    description: 'unit test',
-    agentVersion: 'SomeName/client/SomeVersion',
-    labels: {
-      V8_version: 'v8_version',
-      process_title: 'node',
-      projectid: 'fake-project',
-      agent_version: '7.x',
-      version: 'appengine_version',
-      minorversion: 'minor_version',
-    },
-  });
-  // Debuggee Id is based on the sha1 hash of the json representation of
-  // the debuggee.
-  const debuggeeId = 'd-cbd029da';
+describe('Firebase Controller', () => {
+  describe('register', () => {
+    const debuggee = new Debuggee({
+      project: 'fake-project',
+      uniquifier: 'fake-id',
+      description: 'unit test',
+      agentVersion: 'SomeName/client/SomeVersion',
+      labels: {
+        V8_version: 'v8_version',
+        process_title: 'node',
+        projectid: 'fake-project',
+        agent_version: '7.x',
+        version: 'appengine_version',
+        minorversion: 'minor_version',
+      },
+    });
+    // Debuggee Id is based on the sha1 hash of the json representation of
+    // the debuggee.
+    const debuggeeId = 'd-cbd029da';
 
-  describe.only('register', () => {
     it('should error out gracefully on presence check', done => {
       const db = new MockDatabase();
       const controller = new FirebaseController(
@@ -203,7 +203,7 @@ describe.only('Firebase Controller', () => {
       db.mockRef(
         `cdbg/debuggees/${debuggeeId}/registrationTimeUnixMsec`
       ).failNextGet('mocked failure');
-      controller.register(debuggee, (err, result) => {
+      controller.register(debuggee, err => {
         try {
           assert(err, 'expecting an error');
           done();
@@ -251,7 +251,7 @@ describe.only('Firebase Controller', () => {
         const controller = new FirebaseController(
           db as {} as firebase.database.Database
         );
-        controller.register(debuggee, (err, result) => {
+        controller.register(debuggee, err => {
           try {
             assert(err, 'expecting an error');
             done();
@@ -298,13 +298,13 @@ describe.only('Firebase Controller', () => {
         db.mockRef(`cdbg/debuggees/${debuggeeId}/registrationTimeUnixMsec`).set(
           12345678
         );
-        db.mockRef(`cdbg/debuggees/${debuggeeId}/lastUpdateTimeUnixMsec`).failNextSet(
-          'mocked failure'
-        );
+        db.mockRef(
+          `cdbg/debuggees/${debuggeeId}/lastUpdateTimeUnixMsec`
+        ).failNextSet('mocked failure');
         const controller = new FirebaseController(
           db as {} as firebase.database.Database
         );
-        controller.register(debuggee, (err, result) => {
+        controller.register(debuggee, err => {
           try {
             assert(err, 'expecting an error');
             done();
@@ -361,6 +361,32 @@ describe.only('Firebase Controller', () => {
       db.mockRef(
         `cdbg/breakpoints/debuggeeId/active/${breakpoints[0].id}`
       ).remove();
+    });
+
+    it('should start marking the debuggee as active', done => {
+      const db = new MockDatabase();
+      const controller = new FirebaseController(
+        db as {} as firebase.database.Database
+      );
+      controller.debuggeeId = 'debuggeeId';
+
+      controller.markActivePeriod = 10; // Mark active frequently for testing purposes.
+
+      let markedActiveCount = 0;
+      db.mockRef('cdbg/debuggees/debuggeeId/lastUpdateTimeUnixMsec').set =
+        () => {
+          markedActiveCount += 1;
+          return Promise.resolve();
+        };
+
+      controller.subscribeToBreakpoints(debuggee, () => {});
+
+      // Let markActive trigger 2 times.
+      setTimeout(() => {
+        controller.stop();
+        assert.equal(markedActiveCount, 2);
+        done();
+      }, 25);
     });
   });
 
@@ -490,20 +516,20 @@ describe.only('Firebase Controller', () => {
 
       db.ref(`cdbg/breakpoints/${debuggeeId}/active`).on(
         'child_removed',
-        data => {
+        () => {
           throw new Error('mock remove failure');
         }
       );
 
       let finalized = false;
-      db.ref(`cdbg/breakpoints/${debuggeeId}/final`).on('child_added', data => {
+      db.ref(`cdbg/breakpoints/${debuggeeId}/final`).on('child_added', () => {
         finalized = true;
       });
 
       let snapshotted = false;
       db.ref(`cdbg/breakpoints/${debuggeeId}/snapshot`).on(
         'child_added',
-        data => {
+        () => {
           snapshotted = true;
         }
       );
@@ -546,7 +572,7 @@ describe.only('Firebase Controller', () => {
       let snapshotted = false;
       db.ref(`cdbg/breakpoints/${debuggeeId}/snapshot`).on(
         'child_added',
-        data => {
+        () => {
           snapshotted = true;
         }
       );
@@ -595,7 +621,7 @@ describe.only('Firebase Controller', () => {
 
       db.ref(`cdbg/breakpoints/${debuggeeId}/snapshot`).on(
         'child_added',
-        data => {
+        () => {
           throw new Error('mock snapshot write failure');
         }
       );

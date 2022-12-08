@@ -36,6 +36,9 @@ export class FirebaseController implements Controller {
   debuggeeId?: string;
   bpRef?: firebase.database.Reference;
 
+  markActiveInterval: ReturnType<typeof setInterval> | undefined;
+  markActivePeriod: number = 60 * 60 * 1000; // 1 hour in ms.
+
   /**
    * Connects to the Firebase database.
    *
@@ -317,6 +320,15 @@ export class FirebaseController implements Controller {
         callback(e, []);
       }
     );
+
+    this.startMarkingDebuggeeActive();
+  }
+
+  startMarkingDebuggeeActive() {
+    console.log(`starting to mark every ${this.markActivePeriod} ms`);
+    this.markActiveInterval = setInterval(() => {
+      this.markDebuggeeActive();
+    }, this.markActivePeriod);
   }
 
   /**
@@ -339,6 +351,10 @@ export class FirebaseController implements Controller {
       firebase.app(FIREBASE_APP_NAME).delete();
     } catch (err) {
       debuglog(`failed to tear down firebase app: ${err})`);
+    }
+    if (this.markActiveInterval) {
+      clearInterval(this.markActiveInterval);
+      this.markActiveInterval = undefined;
     }
   }
 }
