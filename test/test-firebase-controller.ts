@@ -34,6 +34,10 @@ class MockSnapshot {
   val() {
     return this.value;
   }
+
+  exists() {
+    return !!this.value;
+  }
 }
 
 class MockReference {
@@ -45,8 +49,10 @@ class MockReference {
   listeners = new Map<EventType, (a: DataSnapshot, b?: string | null) => any>();
 
   // Test options
-  shouldFail = false;
-  failMessage?: string;
+  shouldFailSet = false;
+  shouldFailGet = false;
+  failSetMessage?: string;
+  failGetMessage?: string;
 
   constructor(key: string, parentRef?: MockReference) {
     this.key = key.slice();
@@ -62,6 +68,14 @@ class MockReference {
       onComplete(null);
     }
     return Promise.resolve();
+  }
+
+  async get(): Promise<DataSnapshot> {
+    if (this.shouldFailGet) {
+      this.shouldFailGet = false;
+      throw new Error(this.failGetMessage);
+    }
+    return new MockSnapshot(this.key, this.value) as {} as DataSnapshot;
   }
 
   getOrAdd(key: string): MockReference {
@@ -93,12 +107,14 @@ class MockReference {
     }
   }
 
-  set(value: any, onComplete?: (a: Error | null) => any): Promise<any> {
-    if (this.shouldFail) {
-      this.shouldFail = false;
+  async set(value: any, onComplete?: (a: Error | null) => any): Promise<any> {
+    if (this.shouldFailSet) {
+      this.shouldFailSet = false;
+      const err = new Error(this.failSetMessage);
       if (onComplete) {
-        onComplete(new Error(this.failMessage));
+        onComplete(err);
       }
+      throw err;
     }
 
     let creating = false;
@@ -112,7 +128,6 @@ class MockReference {
     if (creating && this.parentRef) {
       this.parentRef.childAdded(this.key, value);
     }
-    return Promise.resolve();
   }
 
   on(
@@ -134,8 +149,13 @@ class MockReference {
   }
 
   failNextSet(errorMessage: string) {
-    this.shouldFail = true;
-    this.failMessage = errorMessage;
+    this.shouldFailSet = true;
+    this.failSetMessage = errorMessage;
+  }
+
+  failNextGet(errorMessage: string) {
+    this.shouldFailGet = true;
+    this.failGetMessage = errorMessage;
   }
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
@@ -156,79 +176,142 @@ class MockDatabase {
 }
 
 describe('Firebase Controller', () => {
-  const debuggee = new Debuggee({
-    project: 'fake-project',
-    uniquifier: 'fake-id',
-    description: 'unit test',
-    agentVersion: 'SomeName/client/SomeVersion',
-  });
-
   describe('register', () => {
-    it('should get a debuggeeId', done => {
-      const db = new MockDatabase();
-      // Debuggee Id is based on the sha1 hash of the json representation of
-      // the debuggee.
-      const debuggeeId = 'd-008335af';
-      const controller = new FirebaseController(
-        db as {} as firebase.database.Database
-      );
-      controller.register(debuggee, (err, result) => {
-        assert(!err, 'not expecting an error');
-        assert.ok(result);
-        assert.strictEqual(result!.debuggee.id, debuggeeId);
-        assert.strictEqual(
-          db.mockRef(`cdbg/debuggees/${debuggeeId}`).value,
-          debuggee
-        );
-        done();
-      });
+    const debuggee = new Debuggee({
+      project: 'fake-project',
+      uniquifier: 'fake-id',
+      description: 'unit test',
+      agentVersion: 'SomeName/client/SomeVersion',
+      labels: {
+        V8_version: 'v8_version',
+        process_title: 'node',
+        projectid: 'fake-project',
+        agent_version: '7.x',
+        version: 'appengine_version',
+        minorversion: 'minor_version',
+      },
     });
-    it('should pass labels properly', done => {
-      const db = new MockDatabase();
-      // Debuggee Id is based on the sha1 hash of the json representation of
-      // the debuggee.
-      const debuggeeId = 'd-cbd029da';
-      const debuggeeWithLabels = new Debuggee({
-        project: 'fake-project',
-        uniquifier: 'fake-id',
-        description: 'unit test',
-        agentVersion: 'SomeName/client/SomeVersion',
-        labels: {
-          V8_version: 'v8_version',
-          process_title: 'node',
-          projectid: 'fake-project',
-          agent_version: '7.x',
-          version: 'appengine_version',
-          minorversion: 'minor_version',
-        },
-      });
+    // Debuggee Id is based on the sha1 hash of the json representation of
+    // the debuggee.
+    const debuggeeId = 'd-cbd029da';
 
+    it('should error out gracefully on presence check', done => {
+      const db = new MockDatabase();
       const controller = new FirebaseController(
         db as {} as firebase.database.Database
       );
-      controller.register(debuggeeWithLabels, (err, result) => {
-        assert(!err, 'not expecting an error');
-        assert.ok(result);
-        assert.strictEqual(result!.debuggee.id, debuggeeId);
-        assert.strictEqual(
-          db.mockRef(`cdbg/debuggees/${debuggeeId}`).value,
-          debuggeeWithLabels
-        );
-        done();
+      db.mockRef(
+        `cdbg/debuggees/${debuggeeId}/registrationTimeUnixMsec`
+      ).failNextGet('mocked failure');
+      controller.register(debuggee, err => {
+        try {
+          assert(err, 'expecting an error');
+          done();
+        } catch (err) {
+          done(err);
+        }
       });
     });
-    it('should error out gracefully', done => {
-      const db = new MockDatabase();
-      // Debuggee Id is based on the sha1 hash of the json representation of
-      // the debuggee.
-      const debuggeeId = 'd-008335af';
-      db.mockRef(`cdbg/debuggees/${debuggeeId}`).failNextSet('mocked failure');
-      const controller = new FirebaseController(
-        db as {} as firebase.database.Database
-      );
-      controller.register(debuggee, (err, result) => {
-        assert(err, 'expecting an error');
-        done();
+    describe('first time', () => {
+      it('should write successfully', done => {
+        const db = new MockDatabase();
+        const controller = new FirebaseController(
+          db as {} as firebase.database.Database
+        );
+        const expectedDebuggee = {
+          ...debuggee,
+          registrationTimeUnixMsec: {'.sv': 'timestamp'},
+          lastUpdateTimeUnixMsec: {'.sv': 'timestamp'},
+          id: debuggeeId,
+          canaryMode: 'CANARY_MODE_UNSPECIFIED',
+        };
+
+        controller.register(debuggee, (err, result) => {
+          // try/catch block to avoid losing failed assertions to the error
+          // handling in controller.register.
+          try {
+            assert(!err, 'not expecting an error');
+            assert.ok(result);
+            assert.strictEqual(result!.debuggee.id, debuggeeId);
+            assert.deepEqual(
+              db.mockRef(`cdbg/debuggees/${debuggeeId}`).value,
+              expectedDebuggee
+            );
+            done();
+          } catch (err) {
+            done(err);
+          }
+        });
+      });
+      it('should error out gracefully', done => {
+        const db = new MockDatabase();
+        db.mockRef(`cdbg/debuggees/${debuggeeId}`).failNextSet(
+          'mocked failure'
+        );
+        const controller = new FirebaseController(
+          db as {} as firebase.database.Database
+        );
+        controller.register(debuggee, err => {
+          try {
+            assert(err, 'expecting an error');
+            done();
+          } catch (err) {
+            done(err);
+          }
+        });
+      });
+    });
+    describe('re-register', () => {
+      it('should only update the timestamp', done => {
+        const db = new MockDatabase();
+        const controller = new FirebaseController(
+          db as {} as firebase.database.Database
+        );
+        // Throw an error if the debuggee is written; there should be no write.
+        db.mockRef(`cdbg/debuggees/${debuggeeId}`).failNextSet(
+          'should not be called'
+        );
+        // This is all that is required to indicate a prior registration.
+        db.mockRef(`cdbg/debuggees/${debuggeeId}/registrationTimeUnixMsec`).set(
+          12345678
+        );
+
+        controller.register(debuggee, (err, result) => {
+          try {
+            assert(!err, 'not expecting an error');
+            assert.ok(result);
+            // In production this would be the actual timestamp.
+            assert.deepEqual(
+              db.mockRef(`cdbg/debuggees/${debuggeeId}/lastUpdateTimeUnixMsec`)
+                .value,
+              {'.sv': 'timestamp'}
+            );
+            done();
+          } catch (err) {
+            done(err);
+          }
+        });
+      });
+      it('should error out gracefully', done => {
+        const db = new MockDatabase();
+        // This is all that is required to indicate a prior registration.
+        db.mockRef(`cdbg/debuggees/${debuggeeId}/registrationTimeUnixMsec`).set(
+          12345678
+        );
+        db.mockRef(
+          `cdbg/debuggees/${debuggeeId}/lastUpdateTimeUnixMsec`
+        ).failNextSet('mocked failure');
+        const controller = new FirebaseController(
+          db as {} as firebase.database.Database
+        );
+        controller.register(debuggee, err => {
+          try {
+            assert(err, 'expecting an error');
+            done();
+          } catch (err) {
+            done(err);
+          }
+        });
       });
     });
   });
@@ -278,6 +361,32 @@ describe('Firebase Controller', () => {
       db.mockRef(
         `cdbg/breakpoints/debuggeeId/active/${breakpoints[0].id}`
       ).remove();
+    });
+
+    it('should start marking the debuggee as active', done => {
+      const db = new MockDatabase();
+      const controller = new FirebaseController(
+        db as {} as firebase.database.Database
+      );
+      controller.debuggeeId = 'debuggeeId';
+
+      controller.markActivePeriodMsec = 10; // Mark active frequently for testing purposes.
+
+      let markedActiveCount = 0;
+      db.mockRef('cdbg/debuggees/debuggeeId/lastUpdateTimeUnixMsec').set =
+        () => {
+          markedActiveCount += 1;
+          return Promise.resolve();
+        };
+
+      controller.subscribeToBreakpoints(debuggee, () => {});
+
+      // Let markActive trigger 2 times.
+      setTimeout(() => {
+        controller.stop();
+        assert(markedActiveCount >= 2);
+        done();
+      }, 50);
     });
   });
 
@@ -407,20 +516,20 @@ describe('Firebase Controller', () => {
 
       db.ref(`cdbg/breakpoints/${debuggeeId}/active`).on(
         'child_removed',
-        data => {
+        () => {
           throw new Error('mock remove failure');
         }
       );
 
       let finalized = false;
-      db.ref(`cdbg/breakpoints/${debuggeeId}/final`).on('child_added', data => {
+      db.ref(`cdbg/breakpoints/${debuggeeId}/final`).on('child_added', () => {
         finalized = true;
       });
 
       let snapshotted = false;
       db.ref(`cdbg/breakpoints/${debuggeeId}/snapshot`).on(
         'child_added',
-        data => {
+        () => {
           snapshotted = true;
         }
       );
@@ -463,7 +572,7 @@ describe('Firebase Controller', () => {
       let snapshotted = false;
       db.ref(`cdbg/breakpoints/${debuggeeId}/snapshot`).on(
         'child_added',
-        data => {
+        () => {
           snapshotted = true;
         }
       );
@@ -512,7 +621,7 @@ describe('Firebase Controller', () => {
 
       db.ref(`cdbg/breakpoints/${debuggeeId}/snapshot`).on(
         'child_added',
-        data => {
+        () => {
           throw new Error('mock snapshot write failure');
         }
       );

@@ -36,6 +36,9 @@ export class FirebaseController implements Controller {
   debuggeeId?: string;
   bpRef?: firebase.database.Reference;
 
+  markActiveInterval: ReturnType<typeof setInterval> | undefined;
+  markActivePeriodMsec: number = 60 * 60 * 1000; // 1 hour in ms.
+
   /**
    * Connects to the Firebase database.
    *
@@ -135,7 +138,10 @@ export class FirebaseController implements Controller {
   }
 
   /**
-   * Register to the API (implementation)
+   * Register to the API (implementation).
+   *
+   * Writes an initial record to the database if it is not yet present.
+   * Otherwise only updates the last active timestamp.
    *
    * @param {!function(?Error,Object=)} callback
    * @private
@@ -168,15 +174,29 @@ export class FirebaseController implements Controller {
     this.debuggeeId = `d-${debuggeeHash.substring(0, 8)}`;
     debuggee.id = this.debuggeeId;
 
-    const debuggeeRef = this.db.ref(`cdbg/debuggees/${this.debuggeeId}`);
-    debuggeeRef.set(debuggee as {}, err => {
-      if (err) {
-        callback(err);
-      } else {
-        const agentId = 'unsupported';
-        callback(null, {debuggee, agentId});
-      }
-    });
+    const agentId = 'unsupported';
+    // Test presence using the registration time.  This moves less data.
+    const presenceRef = this.db.ref(
+      `cdbg/debuggees/${this.debuggeeId}/registrationTimeUnixMsec`
+    );
+    presenceRef
+      .get()
+      .then(presenceSnapshot => {
+        if (presenceSnapshot.exists()) {
+          return this.markDebuggeeActive();
+        } else {
+          const ref = this.db.ref(`cdbg/debuggees/${this.debuggeeId}`);
+          return ref.set({
+            registrationTimeUnixMsec: {'.sv': 'timestamp'},
+            lastUpdateTimeUnixMsec: {'.sv': 'timestamp'},
+            ...debuggee,
+          });
+        }
+      })
+      .then(
+        () => callback(null, {debuggee, agentId}),
+        err => callback(err)
+      );
   }
 
   /**
@@ -300,6 +320,26 @@ export class FirebaseController implements Controller {
         callback(e, []);
       }
     );
+
+    this.startMarkingDebuggeeActive();
+  }
+
+  startMarkingDebuggeeActive() {
+    debuglog(`starting to mark every ${this.markActivePeriodMsec} ms`);
+    this.markActiveInterval = setInterval(() => {
+      this.markDebuggeeActive();
+    }, this.markActivePeriodMsec);
+  }
+
+  /**
+   * Marks a debuggee as active by prompting the server to update the
+   * lastUpdateTimeUnixMsec to server time.
+   */
+  async markDebuggeeActive(): Promise<void> {
+    const ref = this.db.ref(
+      `cdbg/debuggees/${this.debuggeeId}/lastUpdateTimeUnixMsec`
+    );
+    await ref.set({'.sv': 'timestamp'});
   }
 
   stop(): void {
@@ -311,6 +351,10 @@ export class FirebaseController implements Controller {
       firebase.app(FIREBASE_APP_NAME).delete();
     } catch (err) {
       debuglog(`failed to tear down firebase app: ${err})`);
+    }
+    if (this.markActiveInterval) {
+      clearInterval(this.markActiveInterval);
+      this.markActiveInterval = undefined;
     }
   }
 }
