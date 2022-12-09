@@ -1,5 +1,18 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## [7.2.0](https://github.com/googleapis/cloud-debug-nodejs/compare/v7.1.1...v7.2.0) (2022-12-09)
+
+
+### Features
+
+* Add active debuggee support ([#1121](https://github.com/googleapis/cloud-debug-nodejs/issues/1121)) ([a421509](https://github.com/googleapis/cloud-debug-nodejs/commit/a421509d7c616a4ed48302498886ffa66bfefad9))
+* Add error handling to firebase controller. ([#1116](https://github.com/googleapis/cloud-debug-nodejs/issues/1116)) ([a188e34](https://github.com/googleapis/cloud-debug-nodejs/commit/a188e347131168d21d01f77267863e53ae1043a8))
+
+
+### Bug Fixes
+
+* Correctly send labels on register calls. ([#1118](https://github.com/googleapis/cloud-debug-nodejs/issues/1118)) ([007cbbd](https://github.com/googleapis/cloud-debug-nodejs/commit/007cbbd3df765b06978aa5604bcbdb4925cf725e))
+
 ## [7.1.1](https://github.com/googleapis/cloud-debug-nodejs/compare/v7.1.0...v7.1.1) (2022-11-18)
 
 
