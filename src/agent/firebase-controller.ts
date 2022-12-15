@@ -98,11 +98,11 @@ export class FirebaseController implements Controller {
         {
           databaseURL: databaseUrl,
         },
-        'cdbg'
+        FIREBASE_APP_NAME
       );
     }
 
-    const db = firebase.database();
+    const db = firebase.database(app);
 
     // Test the connection by reading the schema version.
     try {
