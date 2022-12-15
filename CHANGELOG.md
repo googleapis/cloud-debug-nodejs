@@ -1,5 +1,12 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## [7.2.1](https://github.com/googleapis/cloud-debug-nodejs/compare/v7.2.0...v7.2.1) (2022-12-15)
+
+
+### Bug Fixes
+
+* Correctly propagate the firebase app name ([#1122](https://github.com/googleapis/cloud-debug-nodejs/issues/1122)) ([443e902](https://github.com/googleapis/cloud-debug-nodejs/commit/443e902c9d702ea1869e5e68d709f3e6ee14485c))
+
 ## [7.2.0](https://github.com/googleapis/cloud-debug-nodejs/compare/v7.1.1...v7.2.0) (2022-12-09)
 
 
