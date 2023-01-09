@@ -99,14 +99,11 @@ because the debug agent resolves a snapshot filename by searching for a file
 with the longest matching path suffix. If a unique match is found, that file
 will be used to set the snapshot.
 
-## Firebase Realtime Database backend
+## Snapshot Debugger - Firebase Realtime Database Backend
 
-The Cloud Debugger API is deprecated and will be turned down in May 2023.
-
-You can use Firebase Realtime Database for data persistence as an
-alternative.
-
-### Enabling the agent
+This functionality is available for release 7.2.1 onward of this agent and
+provides support for the Snapshot Debugger, which is being provided as a
+replacement for the deprecated Cloud Debugger service.
 
 To enable the agent, add the following at the top of your app's main script
 or entry point:
@@ -125,12 +122,8 @@ The following params are optional:
 * firebaseKeyPath - Default google application credentials are used if not
   provided.
 
-### Using the Debugger
-
-Using the Debugger with the Firebase Realtime Database backend requires using
-the Snapshot Debugger CLI.
-
-See the [full Snapshot Debugger CLI documentation][snapshot-debugger-readme].
+See https://github.com/GoogleCloudPlatform/snapshot-debugger and
+https://cloud.google.com/debugger/docs/deprecations for more details.
 
 ## Limitations and Requirements
 
