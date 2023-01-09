@@ -101,7 +101,7 @@ will be used to set the snapshot.
 
 ## Snapshot Debugger - Firebase Realtime Database Backend
 
-This functionality is available for release 7.2.1 onward of this agent and
+This functionality is available for release 6.0.0 onward of this agent and
 provides support for the Snapshot Debugger, which is being provided as a
 replacement for the deprecated Cloud Debugger service.
 
