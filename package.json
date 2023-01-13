@@ -58,9 +58,7 @@
     "split": "^1.0.0"
   },
   "overrides": {
-    "firebase-admin": {
-      "@fastify/busboy": "1.1.0"
-    }
+    "@fastify/busboy": "1.1.0"
   },
   "devDependencies": {
     "@compodoc/compodoc": "1.1.19",
