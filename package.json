@@ -45,6 +45,7 @@
   },
   "dependencies": {
     "@google-cloud/common": "^4.0.0",
+    "@fastify/busboy": "1.1.0",
     "acorn": "^8.0.0",
     "coffeescript": "^2.0.0",
     "console-log-level": "^1.4.0",
@@ -58,7 +59,9 @@
     "split": "^1.0.0"
   },
   "overrides": {
-    "@fastify/busboy": "1.1.0"
+    "firebase-admin": {
+      "@fastify/busboy": "1.1.0"
+    }
   },
   "devDependencies": {
     "@compodoc/compodoc": "1.1.19",
