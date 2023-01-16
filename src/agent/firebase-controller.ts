@@ -31,6 +31,19 @@ const debuglog = util.debuglog('cdbg.firebase');
 
 const FIREBASE_APP_NAME = 'cdbg';
 
+/**
+ * Waits ms milliseconds for the promise to resolve, or rejects with a timeout.
+ * @param ms
+ * @param promise
+ * @returns Promise wrapped in a timeout.
+ */
+const withTimeout = (ms: number, promise: Promise<any>) => {
+  const timeout = new Promise((_, reject) =>
+    setTimeout(() => reject(`Timed out after ${ms} ms.`), ms)
+  );
+  return Promise.race([promise, timeout]);
+};
+
 export class FirebaseController implements Controller {
   db: firebase.database.Database;
   debuggeeId?: string;
@@ -75,54 +88,62 @@ export class FirebaseController implements Controller {
     }
 
     // Build the database URL.
-    let databaseUrl: string;
+    const databaseUrls = [];
     if (options.databaseUrl) {
-      databaseUrl = options.databaseUrl;
+      databaseUrls.push(options.databaseUrl);
     } else {
-      // TODO: Add fallback to -default
-      databaseUrl = `https://${projectId}-cdbg.firebaseio.com`;
+      databaseUrls.push(`https://${projectId}-cdbg.firebaseio.com`);
+      databaseUrls.push(`https://${projectId}-default-rtdb.firebaseio.com`);
     }
 
-    let app: firebase.app.App;
-    if (credential) {
-      app = firebase.initializeApp(
-        {
-          credential: credential,
-          databaseURL: databaseUrl,
-        },
-        FIREBASE_APP_NAME
-      );
-    } else {
-      // Use the default credentials.
-      app = firebase.initializeApp(
-        {
-          databaseURL: databaseUrl,
-        },
-        FIREBASE_APP_NAME
-      );
-    }
-
-    const db = firebase.database(app);
-
-    // Test the connection by reading the schema version.
-    try {
-      const version_snapshot = await db.ref('cdbg/schema_version').get();
-      if (version_snapshot) {
-        const version = version_snapshot.val();
-        debuglog(
-          `Firebase app initialized.  Connected to ${databaseUrl}` +
-            ` with schema version ${version}`
+    for (const databaseUrl of databaseUrls) {
+      let app: firebase.app.App;
+      if (credential) {
+        app = firebase.initializeApp(
+          {
+            credential: credential,
+            databaseURL: databaseUrl,
+          },
+          FIREBASE_APP_NAME
         );
       } else {
-        app.delete();
-        throw new Error('failed to fetch schema version from database');
+        // Use the default credentials.
+        app = firebase.initializeApp(
+          {
+            databaseURL: databaseUrl,
+          },
+          FIREBASE_APP_NAME
+        );
       }
-    } catch (e) {
-      app.delete();
-      throw e;
+
+      const db = firebase.database(app);
+
+      // Test the connection by reading the schema version.
+      try {
+        const version_snapshot = await withTimeout(
+          10000,
+          db.ref('cdbg/schema_version').get()
+        );
+        if (version_snapshot) {
+          const version = version_snapshot.val();
+          debuglog(
+            `Firebase app initialized.  Connected to ${databaseUrl}` +
+              ` with schema version ${version}`
+          );
+
+          return db;
+        } else {
+          throw new Error('failed to fetch schema version from database');
+        }
+      } catch (e) {
+        debuglog(`failed to connect to database ${databaseUrl}: ` + e);
+        app.delete();
+      }
     }
 
-    return db;
+    throw new Error(
+      `Failed to initialize FirebaseApp, attempted URLs: ${databaseUrls}`
+    );
   }
 
   /**
