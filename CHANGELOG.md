@@ -1,5 +1,12 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## [7.2.2](https://github.com/googleapis/cloud-debug-nodejs/compare/v7.2.1...v7.2.2) (2023-01-16)
+
+
+### Bug Fixes
+
+* Add timeout to firebase db connection attempt ([#1132](https://github.com/googleapis/cloud-debug-nodejs/issues/1132)) ([8cd89c8](https://github.com/googleapis/cloud-debug-nodejs/commit/8cd89c8adb33f4e3024ef6dcd79861279826aafe))
+
 ## [7.2.1](https://github.com/googleapis/cloud-debug-nodejs/compare/v7.2.0...v7.2.1) (2022-12-15)
 
 
