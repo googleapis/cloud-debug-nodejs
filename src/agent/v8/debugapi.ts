@@ -14,10 +14,10 @@
 
 import consoleLogLevel = require('console-log-level');
 import * as stackdriver from '../../types/stackdriver';
-import {DebugAgentConfig} from '../config';
+import {ResolvedDebugAgentConfig} from '../config';
 import {ScanStats} from '../io/scanner';
 import {SourceMapper} from '../io/sourcemapper';
-import * as utils from '../util/utils';
+import {InspectorDebugApi} from './inspector-debugapi';
 
 export interface DebugApi {
   set(
@@ -42,34 +42,6 @@ export interface DebugApi {
   numListeners_(): number;
 }
 
-interface DebugApiConstructor {
-  new (
-    logger: consoleLogLevel.Logger,
-    config: DebugAgentConfig,
-    jsFiles: ScanStats,
-    sourcemapper: SourceMapper
-  ): DebugApi;
-}
-
-let debugApiConstructor: DebugApiConstructor;
-
-export function willUseInspector(nodeVersion?: string) {
-  // checking for null and undefined.
-  // eslint-disable-next-line eqeqeq
-  const version = nodeVersion != null ? nodeVersion : process.version;
-  return utils.satisfies(version, '>=10');
-}
-
-if (willUseInspector()) {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const inspectorapi = require('./inspector-debugapi');
-  debugApiConstructor = inspectorapi.InspectorDebugApi;
-} else {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const v8debugapi = require('./legacy-debugapi');
-  debugApiConstructor = v8debugapi.V8DebugApi;
-}
-
 export const MODULE_WRAP_PREFIX_LENGTH = require('module')
   .wrap('☃')
   .indexOf('☃');
@@ -78,7 +50,7 @@ let singleton: DebugApi;
 
 export function create(
   logger: consoleLogLevel.Logger,
-  config: DebugAgentConfig,
+  config: ResolvedDebugAgentConfig,
   jsFiles: ScanStats,
   sourcemapper: SourceMapper
 ): DebugApi {
@@ -88,6 +60,6 @@ export function create(
     singleton.disconnect();
   }
 
-  singleton = new debugApiConstructor(logger, config, jsFiles, sourcemapper);
+  singleton = new InspectorDebugApi(logger, config, jsFiles, sourcemapper);
   return singleton;
 }
