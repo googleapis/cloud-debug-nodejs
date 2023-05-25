@@ -126,42 +126,6 @@ function validateBreakpoint(breakpoint: stackdriver.Breakpoint): void {
   }
 }
 
-describe('propertly determines if the inspector protocol should be used', () => {
-  let suffixes = ['', '.11', '.11.1'];
-  // also handle suffixes associated with nightly builds
-  suffixes = suffixes.concat(
-    suffixes.map(suffix => suffix + '-nightly201804132a6ab9b37b')
-  );
-
-  it('handles Node >=10 correctly', () => {
-    // on Node >= 10, inspector should always be used
-    for (let version = 10; version <= 11; version++) {
-      for (const suffix of suffixes) {
-        const fullVersion = `v${version}${suffix}`;
-        assert.strictEqual(
-          debugapi.willUseInspector(fullVersion),
-          true,
-          `Should use inspector in Node.js version ${fullVersion}`
-        );
-      }
-    }
-  });
-
-  it('handles Node <10 correctly', () => {
-    // on Node < 10, inspector should never be used
-    for (let version = 4; version <= 9; version++) {
-      for (const suffix of suffixes) {
-        const fullVersion = `v${version}${suffix}`;
-        assert.strictEqual(
-          debugapi.willUseInspector(fullVersion),
-          false,
-          `Should not use inspector in Node.js version ${fullVersion}`
-        );
-      }
-    }
-  });
-});
-
 describe('debugapi selection', () => {
   const config: ResolvedDebugAgentConfig = extend({}, defaultConfig, {
     workingDirectory: __dirname,
@@ -188,15 +152,7 @@ describe('debugapi selection', () => {
           jsStats,
           mapper as SourceMapper.SourceMapper
         ) as DebugApi;
-        if (debugapi.willUseInspector()) {
-          // eslint-disable-next-line @typescript-eslint/no-var-requires
-          const inspectorapi = require('../src/agent/v8/inspector-debugapi');
-          assert.ok(api instanceof inspectorapi.InspectorDebugApi);
-        } else {
-          // eslint-disable-next-line @typescript-eslint/no-var-requires
-          const v8debugapi = require('../src/agent/v8/legacy-debugapi');
-          assert.ok(api instanceof v8debugapi.V8DebugApi);
-        }
+        assert.ok(api instanceof InspectorDebugApi);
         done();
       });
   });
