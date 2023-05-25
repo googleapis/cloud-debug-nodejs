@@ -64,7 +64,7 @@
     }
   },
   "devDependencies": {
-    "@compodoc/compodoc": "1.1.19",
+    "@compodoc/compodoc": "1.1.21",
     "@types/acorn": "^4.0.2",
     "@types/console-log-level": "^1.4.0",
     "@types/estree": "1.0.1",
