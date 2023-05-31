@@ -79,12 +79,17 @@ export class FirebaseController implements Controller {
         // First try grabbing it from a service account file.
         if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
           try {
-            const serviceAccount = require(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+            const serviceAccount = require(process.env
+              .GOOGLE_APPLICATION_CREDENTIALS);
             projectId = serviceAccount['project_id'];
-          } catch (e) {}
+          } catch (e) {
+            debuglog(
+              'failed to get project id from applications credential file: ' + e
+            );
+          }
         }
-          // Try grabbing it from the GCE metadata server.
-        if (!projectId && await gcpMetadata.isAvailable()) {
+        // Try grabbing it from the GCE metadata server.
+        if (!projectId && (await gcpMetadata.isAvailable())) {
           projectId = await gcpMetadata.project('project-id');
         }
       }
