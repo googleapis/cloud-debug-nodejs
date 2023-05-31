@@ -76,8 +76,15 @@ export class FirebaseController implements Controller {
       credential = firebase.credential.cert(serviceAccount);
     } else {
       if (!projectId) {
-        // Try grabbing it from the GCE metadata server.
-        if (await gcpMetadata.isAvailable()) {
+        // First try grabbing it from a service account file.
+        if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+          try {
+            const serviceAccount = require(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+            projectId = serviceAccount['project_id'];
+          } catch (e) {}
+        }
+          // Try grabbing it from the GCE metadata server.
+        if (!projectId && await gcpMetadata.isAvailable()) {
           projectId = await gcpMetadata.project('project-id');
         }
       }
