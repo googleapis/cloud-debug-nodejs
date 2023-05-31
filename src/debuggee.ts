@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {PackageInfo} from './client/stackdriver/debug';
+import {PackageInfo} from './agent/debuglet';
 import {StatusMessage} from './client/stackdriver/status-message';
 
 export declare type CanaryMode =

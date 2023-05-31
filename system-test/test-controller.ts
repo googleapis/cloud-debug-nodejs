@@ -26,9 +26,8 @@ assert.ok(
 );
 
 import * as stackdriver from '../src/types/stackdriver';
-import {OnePlatformController} from '../src/agent/oneplatform-controller';
 import {Debuggee} from '../src/debuggee';
-import {Debug, PackageInfo} from '../src/client/stackdriver/debug';
+import {PackageInfo} from '../src/agent/debuglet';
 import {defaultConfig as DEFAULT_CONFIG} from '../src/agent/config';
 import {MockLogger} from '../test/mock-logger';
 
@@ -38,7 +37,8 @@ const packageInfo: PackageInfo = {
 };
 const agentVersion = `${packageInfo.name}/client/${packageInfo.version}`;
 
-const debug = new Debug({}, packageInfo);
+/*
+TODO: Write tests that work for Firebase backend, if they aren't covered by E2E.
 
 describe('Controller', function () {
   this.timeout(60 * 1000);
@@ -126,3 +126,4 @@ describe('Controller', function () {
   // breakpoint (need the debugger API). TODO.
   it('should update an active breakpoint');
 });
+*/

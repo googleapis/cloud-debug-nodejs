@@ -22,7 +22,6 @@ import * as metadata from 'gcp-metadata';
 import * as path from 'path';
 import * as util from 'util';
 
-import {Debug, PackageInfo} from '../client/stackdriver/debug';
 import {StatusMessage} from '../client/stackdriver/status-message';
 import {CanaryMode, Debuggee, DebuggeeProperties} from '../debuggee';
 import * as stackdriver from '../types/stackdriver';
@@ -35,7 +34,6 @@ import {
   ResolvedDebugAgentConfig,
 } from './config';
 import {Controller} from './controller';
-import {OnePlatformController} from './oneplatform-controller';
 import * as scanner from './io/scanner';
 import * as SourceMapper from './io/sourcemapper';
 import * as utils from './util/utils';
@@ -77,6 +75,11 @@ export enum Platforms {
   CLOUD_FUNCTION = 'cloud_function',
   /** Any other platform. */
   DEFAULT = 'default',
+}
+
+export interface PackageInfo {
+  name: string;
+  version: string;
 }
 
 /**
@@ -185,7 +188,7 @@ export interface FindFilesResult {
 }
 
 export class Debuglet extends EventEmitter {
-  private debug: Debug;
+  private packageInfo: PackageInfo;
   private v8debug: DebugApi | null;
   private running: boolean;
   private project: string | null;
@@ -215,7 +218,7 @@ export class Debuglet extends EventEmitter {
   activeBreakpointMap: {[key: string]: stackdriver.Breakpoint};
 
   /**
-   * @param {Debug} debug - A Debug instance.
+   * @param {PackageInfo} packageInfo - Information about the agent package.
    * @param {object=} config - The option parameters for the Debuglet.
    * @event 'started' once the startup tasks are completed. Only called once.
    * @event 'stopped' if the agent stops due to a fatal error after starting.
@@ -226,14 +229,14 @@ export class Debuglet extends EventEmitter {
    *    called multiple times.
    * @constructor
    */
-  constructor(debug: Debug, config: DebugAgentConfig) {
+  constructor(packageInfo: PackageInfo, config: DebugAgentConfig) {
     super();
 
     /** @private {object} */
     this.config = Debuglet.normalizeConfig_(config);
 
-    /** @private {Debug} */
-    this.debug = debug;
+    /** @private {PackageInfo} */
+    this.packageInfo = packageInfo;
 
     /**
      * @private {object} V8 Debug API. This can be null if the Node.js version
@@ -253,7 +256,7 @@ export class Debuglet extends EventEmitter {
     /** @private */
     this.logger = consoleLogLevel({
       stderr: true,
-      prefix: this.debug.packageInfo.name,
+      prefix: this.packageInfo.name,
       level: Debuglet.logLevelToName(this.config.logLevel),
     });
 
@@ -426,37 +429,20 @@ export class Debuglet extends EventEmitter {
     }
 
     let project: string;
-    if (this.config.useFirebase) {
-      try {
-        const firebaseDb = await FirebaseController.initialize({
-          keyPath: this.config.firebaseKeyPath,
-          databaseUrl: this.config.firebaseDbUrl,
-          projectId: this.config.projectId,
-        });
-        this.controller = new FirebaseController(firebaseDb);
-        project = (this.controller as FirebaseController).getProjectId();
-      } catch (err) {
-        this.logger.error(
-          'Unable to connect to Firebase: ' + (err as Error).message
-        );
-        this.emit('initError', err);
-        return;
-      }
-    } else {
-      try {
-        project = await this.debug.authClient.getProjectId();
-      } catch (err) {
-        this.logger.error(
-          'The project ID could not be determined: ' + (err as Error).message
-        );
-        this.emit('initError', err);
-        return;
-      }
-      this.controller = new OnePlatformController(
-        this.debug,
-        this.config,
-        this.logger
+    try {
+      const firebaseDb = await FirebaseController.initialize({
+        keyPath: this.config.firebaseKeyPath,
+        databaseUrl: this.config.firebaseDbUrl,
+        projectId: this.config.projectId,
+      });
+      this.controller = new FirebaseController(firebaseDb);
+      project = (this.controller as FirebaseController).getProjectId();
+    } catch (err) {
+      this.logger.error(
+        'Unable to connect to Firebase: ' + (err as Error).message
       );
+      this.emit('initError', err);
+      return;
     }
 
     if (
@@ -513,7 +499,7 @@ export class Debuglet extends EventEmitter {
       this.config.serviceContext,
       sourceContext,
       onGCP,
-      this.debug.packageInfo,
+      this.packageInfo,
       platform,
       this.config.description,
       /*errorMessage=*/ undefined,
@@ -1013,13 +999,6 @@ export class Debuglet extends EventEmitter {
         if (err) {
           this.logger.error('Unable to complete breakpoint on server', err);
           return;
-        }
-        // The Firebase controller will remove the breakpoint during the update
-        // by removing it from the database.
-        if (!this.config.useFirebase) {
-          // TODO: Address the case when `breakpoint.id` is `undefined`.
-          this.completedBreakpointMap[breakpoint.id as string] = true;
-          this.removeBreakpoint_(breakpoint, deleteFromV8);
         }
       }
     );
