@@ -12,36 +12,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as assert from 'assert';
-import {afterEach, before, beforeEach, describe, it} from 'mocha';
-import * as cp from 'child_process';
-import * as util from 'util';
-import * as uuid from 'uuid';
+// import * as assert from 'assert';
+// import {afterEach, before, beforeEach, describe, it} from 'mocha';
+// import * as cp from 'child_process';
+// import * as util from 'util';
+// import * as uuid from 'uuid';
 
-import * as stackdriver from '../src/types/stackdriver';
-import {Debugger} from '../test/debugger';
+// import * as stackdriver from '../src/types/stackdriver';
+// import {Debugger} from '../test/debugger';
 
-const CLUSTER_WORKERS = 3;
+// const CLUSTER_WORKERS = 3;
 
-const FILENAME = 'build/test/fixtures/fib.js';
+// const FILENAME = 'build/test/fixtures/fib.js';
 
-const UUID = uuid.v4();
-const LOG_MESSAGE_FORMAT = UUID + ': o is: $0';
+// const UUID = uuid.v4();
+// const LOG_MESSAGE_FORMAT = UUID + ': o is: $0';
 
-// fib.js uses a custom log-point function that lower cases everything.
-const REGEX = new RegExp(
-  `logpoint: ${UUID}: o is: {"a":\\[1,"hi",true\\]}`,
-  'g'
-);
+// // fib.js uses a custom log-point function that lower cases everything.
+// const REGEX = new RegExp(
+//   `logpoint: ${UUID}: o is: {"a":\\[1,"hi",true\\]}`,
+//   'g'
+// );
 
-const delay = (delayTimeMS: number): Promise<void> => {
-  return new Promise(r => setTimeout(r, delayTimeMS));
-};
+// const delay = (delayTimeMS: number): Promise<void> => {
+//   return new Promise(r => setTimeout(r, delayTimeMS));
+// };
 
-interface Child {
-  transcript: string;
-  process?: cp.ChildProcess;
-}
+// interface Child {
+//   transcript: string;
+//   process?: cp.ChildProcess;
+// }
 
 // TODO: Write E2E tests that work with the Firebase backend.
 // // This test could take up to 100 seconds.

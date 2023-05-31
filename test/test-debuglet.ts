@@ -1753,21 +1753,21 @@ describe('CachedPromise', () => {
 // });
 
 // a counter for unique test urls.
-let apiUrlInc = 0;
+// let apiUrlInc = 0;
 
-/**
- * returns a new config object to be passed to debuglet. always has apiUrl
- * @param conf custom config values
- */
-function debugletConfig(conf?: {}): ResolvedDebugAgentConfig & {
-  apiUrl: string;
-} {
-  const apiUrl = 'https://clouddebugger.googleapis.com' + ++apiUrlInc;
-  const c = Object.assign(
-    {},
-    DEFAULT_CONFIG,
-    conf
-  ) as ResolvedDebugAgentConfig & {apiUrl: string};
-  c.apiUrl = apiUrl;
-  return c;
-}
+// /**
+//  * returns a new config object to be passed to debuglet. always has apiUrl
+//  * @param conf custom config values
+//  */
+// function debugletConfig(conf?: {}): ResolvedDebugAgentConfig & {
+//   apiUrl: string;
+// } {
+//   const apiUrl = 'https://clouddebugger.googleapis.com' + ++apiUrlInc;
+//   const c = Object.assign(
+//     {},
+//     DEFAULT_CONFIG,
+//     conf
+//   ) as ResolvedDebugAgentConfig & {apiUrl: string};
+//   c.apiUrl = apiUrl;
+//   return c;
+// }

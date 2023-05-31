@@ -16,19 +16,16 @@
  * @module debug/debugger
  */
 
-import {Debuggee} from '../src/debuggee';
+// import {Debuggee} from '../src/debuggee';
 import * as stackdriver from '../src/types/stackdriver';
 
 // TODO: Write a Debugger interface that works with the Firebase backend.
 
-
 export class Debugger {
-
   /**
    * @constructor
    */
-  constructor() {
-  }
+  constructor() {}
 
   /**
    * Gets a list of debuggees in a given project to which the user can set
@@ -38,8 +35,7 @@ export class Debugger {
    * @param {boolean=} includeInactive - Whether or not to include inactive
    *     debuggees in the list (default false).
    */
-  async listDebuggees(projectId: string, includeInactive: boolean) {
-  }
+  async listDebuggees(projectId: string, includeInactive: boolean) {}
 
   /**
    * Gets a list of breakpoints in a given debuggee.
@@ -61,8 +57,7 @@ export class Debugger {
       includeInactive?: boolean;
       action?: stackdriver.Action;
     }
-  ) {
-  }
+  ) {}
 
   /**
    * Gets information about a given breakpoint.
@@ -71,8 +66,7 @@ export class Debugger {
    * @param {string} breakpointId - The ID of the breakpoint to get information
    *     about.
    */
-  getBreakpoint(debuggeeId: string, breakpointId: string) {
-  }
+  getBreakpoint(debuggeeId: string, breakpointId: string) {}
 
   /**
    * Sets a new breakpoint.
@@ -81,8 +75,7 @@ export class Debugger {
    * @param {Breakpoint} breakpoint - An object representing information about
    *     the breakpoint to set.
    */
-  setBreakpoint(debuggeeId: string, breakpoint: stackdriver.Breakpoint) {
-  }
+  setBreakpoint(debuggeeId: string, breakpoint: stackdriver.Breakpoint) {}
 
   /**
    * Deletes a breakpoint.
@@ -90,6 +83,5 @@ export class Debugger {
    *     belongs.
    * @param {Breakpoint} breakpointId - The ID of the breakpoint to delete.
    */
-  deleteBreakpoint(debuggeeId: string, breakpointId: string) {
-  }
+  deleteBreakpoint(debuggeeId: string, breakpointId: string) {}
 }

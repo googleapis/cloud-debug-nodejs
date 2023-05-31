@@ -12,24 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as assert from 'assert';
-import {before, describe, it} from 'mocha';
-import * as nock from 'nock';
+// import * as assert from 'assert';
+// import {before, describe, it} from 'mocha';
+// import * as nock from 'nock';
 
-import {Debuggee} from '../src/debuggee';
-import {defaultConfig as DEFAULT_CONFIG} from '../src/agent/config';
-import * as stackdriver from '../src/types/stackdriver';
-import * as t from 'teeny-request'; // types only
-import {teenyRequest} from 'teeny-request';
-import {MockLogger} from './mock-logger';
+// import {Debuggee} from '../src/debuggee';
+// import {defaultConfig as DEFAULT_CONFIG} from '../src/agent/config';
+// import * as stackdriver from '../src/types/stackdriver';
+// import * as t from 'teeny-request'; // types only
+// import {teenyRequest} from 'teeny-request';
+// import {MockLogger} from './mock-logger';
 
 // TODO: Write controller tests that use the Firebase controller.
 
 // the tests in this file rely on the GCLOUD_PROJECT environment variable
 // not being set
-delete process.env.GCLOUD_PROJECT;
+// delete process.env.GCLOUD_PROJECT;
 
-import {FirebaseController} from '../src/agent/firebase-controller';
+// import {FirebaseController} from '../src/agent/firebase-controller';
 // TODO: Probably use the fake firebase backend.
 // const fakeDebug = {
 //   apiEndpoint: 'clouddebugger.googleapis.com',

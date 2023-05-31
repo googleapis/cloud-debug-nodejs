@@ -834,7 +834,7 @@ export class Debuglet extends EventEmitter {
         // New breakpoint
         this.addBreakpoint_(breakpoint, err => {
           if (err) {
-            this.completeBreakpoint_(breakpoint, false);
+            this.completeBreakpoint_(breakpoint);
           }
         });
 
@@ -984,10 +984,7 @@ export class Debuglet extends EventEmitter {
    * @param {Breakpoint} breakpoint
    * @private
    */
-  completeBreakpoint_(
-    breakpoint: stackdriver.Breakpoint,
-    deleteFromV8 = true
-  ): void {
+  completeBreakpoint_(breakpoint: stackdriver.Breakpoint): void {
     assert(this.controller);
 
     this.logger.info('\tupdating breakpoint data on server', breakpoint.id);

@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+// import {describe, it} from 'mocha';
 
 assert.ok(
   process.env.GCLOUD_PROJECT,
@@ -25,17 +25,17 @@ assert.ok(
     'this test'
 );
 
-import * as stackdriver from '../src/types/stackdriver';
-import {Debuggee} from '../src/debuggee';
-import {PackageInfo} from '../src/agent/debuglet';
-import {defaultConfig as DEFAULT_CONFIG} from '../src/agent/config';
-import {MockLogger} from '../test/mock-logger';
+// import * as stackdriver from '../src/types/stackdriver';
+// import {Debuggee} from '../src/debuggee';
+// import {PackageInfo} from '../src/agent/debuglet';
+// import {defaultConfig as DEFAULT_CONFIG} from '../src/agent/config';
+// import {MockLogger} from '../test/mock-logger';
 
-const packageInfo: PackageInfo = {
-  name: 'SomeName',
-  version: 'SomeVersion',
-};
-const agentVersion = `${packageInfo.name}/client/${packageInfo.version}`;
+// const packageInfo: PackageInfo = {
+//   name: 'SomeName',
+//   version: 'SomeVersion',
+// };
+// const agentVersion = `${packageInfo.name}/client/${packageInfo.version}`;
 
 /*
 TODO: Write tests that work for Firebase backend, if they aren't covered by E2E.
