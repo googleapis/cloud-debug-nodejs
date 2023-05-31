@@ -43,8 +43,6 @@ export function start(
 ): Debuglet | IsReady {
   options = options || {};
   const agentConfig: DebugAgentConfig = mergeConfigs(options);
-  console.log('starting module');
-  console.log(debuglet);
 
   // forceNewAgent_ is for testing purposes only.
   if (debuglet && !agentConfig.forceNewAgent_) {
@@ -54,11 +52,8 @@ export function start(
   debuglog('Running with firebase backend.');
   debuglet = new Debuglet(pjson, agentConfig);
 
-  console.log('starting debuglet');
-
   debuglet.start();
 
-  console.log('done starting');
   return agentConfig.testMode_ ? debuglet : debuglet.isReadyManager;
 }
 
