@@ -23,7 +23,7 @@ import * as util from 'util';
 const debuglog = util.debuglog('cdbg');
 
 // Singleton.
-let debuglet: Debuglet;
+let debuglet: Debuglet | undefined;
 
 /**
  * Start the Debug agent that will make your application available for debugging
@@ -85,4 +85,15 @@ function mergeConfigs<T>(options: T & {debug?: T}): T {
  */
 export function get(): Debuglet | undefined {
   return debuglet;
+}
+
+/**
+ * Cleanly shut down the debug agent.
+ *
+ * This will free up all resources.  It may be necessary to call this to allow
+ * your process to shut down cleanly.
+ */
+export function stop(): void {
+  debuglet?.stop();
+  debuglet = undefined;
 }
