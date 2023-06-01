@@ -12,9 +12,5 @@
 // limitations under the License.
 
 import * as debug from '@google-cloud/debug-agent';
-debug.start({
-  capture: {
-    maxFrames: 1,
-  },
-});
+debug.start({useFirebase: true});
 debug.stop();
