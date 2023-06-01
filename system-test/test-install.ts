@@ -32,7 +32,7 @@ async function run(path: string) {
   });
 }
 
-describe.only('📦 pack and install', () => {
+describe('📦 pack and install', () => {
   // npm pack the module, and create a tmp staging directory
   before('pack and install', async () => {
     await execa('npm', ['pack', '--unsafe-perm'], {stdio: 'inherit'});
