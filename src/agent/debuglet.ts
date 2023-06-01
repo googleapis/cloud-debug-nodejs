@@ -1087,10 +1087,7 @@ export class Debuglet extends EventEmitter {
   /**
    * Stops the Debuglet.
    *
-   * Stop should only be
-   * called on a agent that has started (i.e. emitted the 'started' event).
-   * Calling this while the agent is initializing may not necessarily stop all
-   * pending operations.
+   * Stop should only be called on a agent that has started.
    */
   stop(): void {
     if (this.running) {
