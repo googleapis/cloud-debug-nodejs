@@ -840,6 +840,49 @@ describe('Debuglet', () => {
       debuglet.start();
     });
 
+    it('should stop successfully even if stop is called quickly', () => {
+      const debug = new Debug(
+        {projectId: 'fake-project', credentials: fakeCredentials},
+        packageInfo
+      );
+
+      nocks.oauth2();
+
+      const config = debugletConfig();
+      const debuglet = new Debuglet(debug, config);
+
+      debuglet.start();
+      debuglet.stop();
+    });
+
+    it('should register successfully even if stop was called first', done => {
+      const debug = new Debug(
+        {projectId: 'fake-project', credentials: fakeCredentials},
+        packageInfo
+      );
+
+      nocks.oauth2();
+
+      const config = debugletConfig();
+      const debuglet = new Debuglet(debug, config);
+      const scope = nock(config.apiUrl)
+        .post(REGISTER_PATH)
+        .reply(200, {
+          debuggee: {id: DEBUGGEE_ID},
+        });
+
+      debuglet.once('registered', (id: string) => {
+        assert.strictEqual(id, DEBUGGEE_ID);
+        debuglet.stop();
+        scope.done();
+        done();
+      });
+
+      debuglet.stop();
+
+      debuglet.start();
+    });
+
     it('should attempt to retrieve cluster name if needed', done => {
       const savedRunningOnGCP = Debuglet.runningOnGCP;
       Debuglet.runningOnGCP = () => {

@@ -18,3 +18,4 @@ debug.start({
     service: 'Some service',
   },
 });
+debug.stop();

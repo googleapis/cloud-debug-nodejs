@@ -14,3 +14,4 @@
 require('@google-cloud/debug-agent').start({
   allowExpressions: true,
 });
+require('@google-cloud/debug-agent').stop();

@@ -13,3 +13,4 @@
 
 import * as debug from '@google-cloud/debug-agent';
 debug.start({allowExpressions: true});
+debug.stop();
