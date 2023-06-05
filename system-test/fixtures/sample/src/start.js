@@ -12,3 +12,4 @@
 // limitations under the License.
 
 require('@google-cloud/debug-agent').start();
+require('@google-cloud/debug-agent').stop();

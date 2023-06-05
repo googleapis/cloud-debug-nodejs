@@ -190,6 +190,7 @@ export interface FindFilesResult {
 export class Debuglet extends EventEmitter {
   private packageInfo: PackageInfo;
   private v8debug: DebugApi | null;
+  private started: boolean;
   private running: boolean;
   private project: string | null;
   private controller: Controller | null;
@@ -243,6 +244,9 @@ export class Debuglet extends EventEmitter {
      *     is out of date.
      */
     this.v8debug = null;
+
+    /** @private {boolean} */
+    this.started = false;
 
     /** @private {boolean} */
     this.running = false;
@@ -354,6 +358,7 @@ export class Debuglet extends EventEmitter {
    * @private
    */
   async start(): Promise<void> {
+    this.started = true;
     const stat = util.promisify(fs.stat);
 
     try {
@@ -720,6 +725,10 @@ export class Debuglet extends EventEmitter {
     }
 
     setTimeout(() => {
+      if (!this.running) {
+        this.logger.info('Debuglet is stopped; not registering');
+        return;
+      }
       assert(that.controller);
       if (!that.running) {
         onError(new Error('Debuglet not running'));
@@ -771,6 +780,10 @@ export class Debuglet extends EventEmitter {
   }
 
   startListeningForBreakpoints_(): void {
+    if (!this.running) {
+      this.logger.info('Debuglet is stopped; not listening for breakpoints');
+      return;
+    }
     assert(this.controller);
     // TODO: Handle the case where this.debuggee is null or not properly registered.
     this.controller.subscribeToBreakpoints(
@@ -1048,16 +1061,30 @@ export class Debuglet extends EventEmitter {
   }
 
   /**
-   * Stops the Debuglet. This is for testing purposes only. Stop should only be
-   * called on a agent that has started (i.e. emitted the 'started' event).
-   * Calling this while the agent is initializing may not necessarily stop all
-   * pending operations.
+   * Stops the Debuglet.
+   *
+   * Stop should only be called on a agent that has started.
    */
   stop(): void {
+    if (this.running) {
+      this.stopController();
+    } else {
+      if (!this.started) {
+        this.logger.info('Attempt to stop Debuglet before it was started');
+        return;
+      }
+      this.on('started', () => {
+        this.stopController();
+      });
+    }
+  }
+
+  stopController(): void {
     assert(this.controller);
     assert.ok(this.running, 'stop can only be called on a running agent');
     this.logger.debug('Stopping Debuglet');
     this.running = false;
+    this.started = false;
     this.controller.stop();
     this.emit('stopped');
   }

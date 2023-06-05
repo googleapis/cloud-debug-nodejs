@@ -19,3 +19,4 @@ debug.start({
     version: 'Some version',
   },
 });
+debug.stop();

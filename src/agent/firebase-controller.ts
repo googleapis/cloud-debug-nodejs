@@ -350,7 +350,7 @@ export class FirebaseController implements Controller {
     debuglog(`starting to mark every ${this.markActivePeriodMsec} ms`);
     this.markActiveInterval = setInterval(() => {
       this.markDebuggeeActive();
-    }, this.markActivePeriodMsec);
+    }, this.markActivePeriodMsec).unref();
   }
 
   /**
