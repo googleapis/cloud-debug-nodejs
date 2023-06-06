@@ -1,5 +1,22 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## [8.0.0](https://github.com/googleapis/cloud-debug-nodejs/compare/v7.2.2...v8.0.0) (2023-06-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* Remove support for deprecated Cloud Debugger API. ([#1144](https://github.com/googleapis/cloud-debug-nodejs/issues/1144))
+
+### Features
+
+* Add stop function to allow shutting down the debug agent ([#1147](https://github.com/googleapis/cloud-debug-nodejs/issues/1147)) ([c292200](https://github.com/googleapis/cloud-debug-nodejs/commit/c292200ff83660d7f9c509af2c45c5e6a1565011))
+* Remove support for deprecated Cloud Debugger API. ([#1144](https://github.com/googleapis/cloud-debug-nodejs/issues/1144)) ([7ed8fb2](https://github.com/googleapis/cloud-debug-nodejs/commit/7ed8fb2a16bea36903fbc72ebc066b19bb10143c))
+
+
+### Bug Fixes
+
+* Unblock compodoc page generation ([#1145](https://github.com/googleapis/cloud-debug-nodejs/issues/1145)) ([c5bbb4e](https://github.com/googleapis/cloud-debug-nodejs/commit/c5bbb4ead353614a548e1f962c9fdf3cc6ea9845))
+
 ## [7.2.2](https://github.com/googleapis/cloud-debug-nodejs/compare/v7.2.1...v7.2.2) (2023-01-16)
 
 
