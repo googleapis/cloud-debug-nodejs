@@ -6,9 +6,11 @@
 
 [![Open in Cloud Shell][shell_img]][shell_link]
 
-> This module provides Cloud Debugger support for Node.js applications.
-Cloud Debugger is a feature of Google Cloud Platform that lets you debug your
+> This module provides Snapshot Debugger support for Node.js applications.
+Snapshot Debugger is an open source product that lets you debug your
 applications in production without stopping or pausing your application.
+
+A Firebase Realtime Database instance is used to store your data.
 
 ## Table of Contents
 

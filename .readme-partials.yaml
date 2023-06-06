@@ -1,7 +1,9 @@
 introduction: |-
-  > This module provides Cloud Debugger support for Node.js applications.
-  Cloud Debugger is a feature of Google Cloud Platform that lets you debug your
+  > This module provides Snapshot Debugger support for Node.js applications.
+  Snapshot Debugger is an open source product that lets you debug your
   applications in production without stopping or pausing your application.
+
+  A Firebase Realtime Database instance is used to store your data.
 
 body: |-
   ## Debugger Agent Settings
@@ -24,56 +26,31 @@ body: |-
   });
   ```
 
+  The following options configure the connection to the Firebase database:
+    * firebaseDbUrl - https://**PROJECT_ID**-cdbg.firebaseio.com will be used if
+      not provided. where **PROJECT_ID** is your project ID.
+    * firebaseKeyPath - Default google application credentials are used if not
+      provided.
+
   See [the agent configuration][config-ts] for a list of possible configuration
   options.
 
   ## Using the Debugger
 
-  Once your application is running, use the [Debug UI][debug-tab] in your Cloud
-  [developer console][dev-console] to debug your application. The Debug UI can
-  be found in the 'Operations -> Debug' section in the navigation panel, or by
-  simply searching for 'Debug' in the cloud console.
+  Once your application is running, use the
+  [Snapshot Debugger CLI](https://pypi.org/project/snapshot-dbg-cli/) or the
+  [VSCode extension][extension-page]
+  to debug your application.
 
-  To take a snapshot with the debugger:
-  1. Click in the gutter (line number area) or enter a filename and line number
-     in the snapshot panel
-  2. The debugger inserts a momentary breakpoint at the specified location in
-     your code in the running instance of your application.
-  3. As soon as that line of code is reached in any of the running instances of
-     your application, the stack traces, local variables, and watch expressions
-     are captured, and your application continues.
+  ## Historical note
 
-  **Note:** The directory layout of the code that is being debugged does not
-  have to exactly match the source code specified in the Debug UI.  This is
-  because the debug agent resolves a snapshot filename by searching for a file
-  with the longest matching path suffix. If a unique match is found, that file
-  will be used to set the snapshot.
-
-  ## Snapshot Debugger - Firebase Realtime Database Backend
-
-  This functionality is available for release 6.0.0 onward of this agent and
-  provides support for the Snapshot Debugger, which is being provided as a
-  replacement for the deprecated Cloud Debugger service.
-
-  To enable the agent, add the following at the top of your app's main script
-  or entry point:
-
-  ```js
-  require('@google-cloud/debug-agent').start({
-    useFirebase: true,
-    firebaseDbUrl: 'https://my-database-url.firebaseio.com',
-    firebaseKeyPath: 'path/to/service_account.json',
-  });
-  ```
-
-  The following params are optional:
-  * firebaseDbUrl - https://**PROJECT_ID**-cdbg.firebaseio.com will be used if
-    not provided. where **PROJECT_ID** is your project ID.
-  * firebaseKeyPath - Default google application credentials are used if not
-    provided.
-
-  See https://github.com/GoogleCloudPlatform/snapshot-debugger and
-  https://cloud.google.com/debugger/docs/deprecations for more details.
+  Version 6.x and 7.x of this agent supported both the now shutdown Cloud
+  Debugger service (by default) and the
+  [Snapshot Debugger](https://github.com/GoogleCloudPlatform/snapshot-debugger/)
+  (Firebase RTDB backend) by setting the `useFirebase` flag to true. Version 8.0.0
+  removed support for the Cloud Debugger service, making the Snapshot Debugger the
+  default.  To note the `useFirebase` flag is now obsolete, but still present for
+  backward compatibility.
 
   ## Limitations and Requirements
 
@@ -94,6 +71,5 @@ body: |-
     file.
 
   [config-ts]: https://github.com/googleapis/cloud-debug-nodejs/blob/master/src/agent/config.ts
-  [debug-tab]: https://console.cloud.google.com/debug
-  [dev-console]: https://console.cloud.google.com/
+  [extension-page]: https://github.com/GoogleCloudPlatform/snapshot-debugger/tree/main/snapshot_dbg_extension
   [snapshot-debugger-readme]: https://github.com/GoogleCloudPlatform/snapshot-debugger#readme
