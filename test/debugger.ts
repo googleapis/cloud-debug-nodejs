@@ -16,49 +16,16 @@
  * @module debug/debugger
  */
 
-import {ServiceObject} from '@google-cloud/common';
-import {Debug} from '../src/client/stackdriver/debug';
-import {Debuggee} from '../src/debuggee';
+// import {Debuggee} from '../src/debuggee';
 import * as stackdriver from '../src/types/stackdriver';
 
-// TODO: Verify these types are correct.
-const qs: {
-  parse: (
-    qs: {},
-    sep?: string,
-    eq?: string,
-    options?: {maxKeys?: number}
-  ) => {};
-  stringify: (
-    obj: object | string | boolean | number,
-    sep?: string,
-    eq?: string,
-    name?: string
-  ) => string;
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-} = require('querystring');
+// TODO: Write a Debugger interface that works with the Firebase backend.
 
-/** @const {string} Cloud Debug API endpoint */
-const API = 'https://clouddebugger.googleapis.com/v2/debugger';
-
-export class Debugger extends ServiceObject {
-  private nextWaitToken: string | null;
-  private clientVersion: string;
-
+export class Debugger {
   /**
    * @constructor
    */
-  constructor(debug: Debug) {
-    super({parent: debug, baseUrl: '/debugger'});
-
-    /** @private {string} */
-    this.nextWaitToken = null;
-
-    this.clientVersion =
-      debug.packageInfo.name +
-      '/client-for-testing/v' +
-      debug.packageInfo.version;
-  }
+  constructor() {}
 
   /**
    * Gets a list of debuggees in a given project to which the user can set
@@ -67,42 +34,8 @@ export class Debugger extends ServiceObject {
    *     should be listed.
    * @param {boolean=} includeInactive - Whether or not to include inactive
    *     debuggees in the list (default false).
-   * @param {!function(?Error,Debuggee[]=)} callback - A function that will be
-   *     called with a list of Debuggee objects as a parameter, or an Error
-   *     object if an error occurred in obtaining it.
    */
-  async listDebuggees(projectId: string, includeInactive: boolean) {
-    return new Promise<Debuggee[]>((resolve, reject) => {
-      const query = {
-        clientVersion: this.clientVersion,
-        includeInactive,
-        project: projectId,
-      };
-
-      const uri = API + '/debuggees?' + qs.stringify(query);
-      this.request({uri, json: true}, (err, body, response) => {
-        if (err) {
-          reject(err);
-        } else if (!response) {
-          reject(new Error('unknown error - request response missing'));
-        } else if (response.statusCode !== 200) {
-          reject(
-            new Error(
-              'unable to list debuggees, status code ' + response.statusCode
-            )
-          );
-        } else if (!body) {
-          reject(new Error('invalid response body from server'));
-        } else {
-          if (body.debuggees) {
-            resolve(body.debuggees);
-          } else {
-            resolve([]);
-          }
-        }
-      });
-    });
-  }
+  async listDebuggees(projectId: string, includeInactive: boolean) {}
 
   /**
    * Gets a list of breakpoints in a given debuggee.
@@ -116,9 +49,6 @@ export class Debugger extends ServiceObject {
    *     inactive breakpoints in the list (default false).
    * @param {Action=} options.action - Either 'CAPTURE' or 'LOG'. If specified,
    *     only breakpoints with a matching action will be part of the list.
-   * @param {!function(?Error,Breakpoint[]=)} callback - A function that will be
-   *     called with a list of Breakpoint objects as a parameter, or an Error
-   *     object if an error occurred in obtaining it.
    */
   listBreakpoints(
     debuggeeId: string,
@@ -127,57 +57,7 @@ export class Debugger extends ServiceObject {
       includeInactive?: boolean;
       action?: stackdriver.Action;
     }
-  ) {
-    return new Promise<stackdriver.Breakpoint[]>((resolve, reject) => {
-      // TODO: Remove this cast as `any`
-      const query: {
-        clientVersion: string;
-        includeAllUsers: boolean;
-        includeInactive: boolean;
-        action?: {value: stackdriver.Action};
-        waitToken?: string;
-      } = {
-        clientVersion: this.clientVersion,
-        includeAllUsers: !!options.includeAllUsers,
-        includeInactive: !!options.includeInactive,
-      };
-      // TODO: Determine how to remove this cast.
-      if (options.action) {
-        query.action = {value: options.action};
-      }
-      if (this.nextWaitToken) {
-        query.waitToken = this.nextWaitToken;
-      }
-
-      const uri =
-        API +
-        '/debuggees/' +
-        encodeURIComponent(debuggeeId) +
-        '/breakpoints?' +
-        qs.stringify(query);
-      this.request({uri, json: true}, (err, body, response) => {
-        if (err) {
-          reject(err);
-        } else if (!response) {
-          reject(new Error('unknown error - request response missing'));
-        } else if (response.statusCode !== 200) {
-          reject(
-            new Error(
-              'unable to list breakpoints, status code ' + response.statusCode
-            )
-          );
-        } else if (!body) {
-          reject(new Error('invalid response body from server'));
-        } else {
-          if (body.breakpoints) {
-            resolve(body.breakpoints);
-          } else {
-            resolve([]);
-          }
-        }
-      });
-    });
-  }
+  ) {}
 
   /**
    * Gets information about a given breakpoint.
@@ -185,42 +65,8 @@ export class Debugger extends ServiceObject {
    *     is set.
    * @param {string} breakpointId - The ID of the breakpoint to get information
    *     about.
-   * @param {!function(?Error,Breakpoint=)} callback - A function that will be
-   *     called with information about the given breakpoint, or an Error object
-   *     if an error occurred in obtaining its information.
    */
-  getBreakpoint(debuggeeId: string, breakpointId: string) {
-    return new Promise<stackdriver.Breakpoint>((resolve, reject) => {
-      const query = {clientVersion: this.clientVersion};
-
-      const uri =
-        API +
-        '/debuggees/' +
-        encodeURIComponent(debuggeeId) +
-        '/breakpoints/' +
-        encodeURIComponent(breakpointId) +
-        '?' +
-        qs.stringify(query);
-      this.request({uri, json: true}, (err, body, response) => {
-        if (err) {
-          reject(err);
-        } else if (!response) {
-          reject(new Error('unknown error - request response missing'));
-        } else if (response.statusCode !== 200) {
-          reject(
-            new Error(
-              'unable to get breakpoint info, status code ' +
-                response.statusCode
-            )
-          );
-        } else if (!body || !body.breakpoint) {
-          reject(new Error('invalid response body from server'));
-        } else {
-          resolve(body.breakpoint);
-        }
-      });
-    });
-  }
+  getBreakpoint(debuggeeId: string, breakpointId: string) {}
 
   /**
    * Sets a new breakpoint.
@@ -228,90 +74,14 @@ export class Debugger extends ServiceObject {
    *     should be set.
    * @param {Breakpoint} breakpoint - An object representing information about
    *     the breakpoint to set.
-   * @param {!function(?Error,Breakpoint=)} callback - A function that will be
-   *     called with information about the breakpoint that was just set, or an
-   *     Error object if an error occurred in obtaining its information. Note
-   *     that the Breakpoint object here will differ from the input object in
-   *     that its id field will be set.
    */
-  setBreakpoint(debuggeeId: string, breakpoint: stackdriver.Breakpoint) {
-    return new Promise<stackdriver.Breakpoint>((resolve, reject) => {
-      const query = {clientVersion: this.clientVersion};
-      const options = {
-        uri:
-          API +
-          '/debuggees/' +
-          encodeURIComponent(debuggeeId) +
-          '/breakpoints/set?' +
-          qs.stringify(query),
-        method: 'POST',
-        json: true,
-        body: breakpoint,
-      };
-
-      this.request(options, (err, body, response) => {
-        if (err) {
-          reject(err);
-        } else if (!response) {
-          reject(new Error('unknown error - request response missing'));
-        } else if (response.statusCode !== 200) {
-          reject(
-            new Error(
-              'unable to set breakpoint, status code ' + response.statusCode
-            )
-          );
-        } else if (!body || !body.breakpoint) {
-          reject(new Error('invalid response body from server'));
-        } else {
-          resolve(body.breakpoint);
-        }
-      });
-    });
-  }
+  setBreakpoint(debuggeeId: string, breakpoint: stackdriver.Breakpoint) {}
 
   /**
    * Deletes a breakpoint.
    * @param {Debuggee} debuggeeId - The ID of the debuggee to which the breakpoint
    *     belongs.
    * @param {Breakpoint} breakpointId - The ID of the breakpoint to delete.
-   * @param {!function(?Error)} callback - A function that will be
-   *     called with a Error object as a parameter if an error occurred in
-   *     deleting a breakpoint. If no error occurred, the first argument will be
-   *     set to null.
    */
-  deleteBreakpoint(debuggeeId: string, breakpointId: string) {
-    return new Promise<void>((resolve, reject) => {
-      const query = {clientVersion: this.clientVersion};
-      const options = {
-        uri:
-          API +
-          '/debuggees/' +
-          encodeURIComponent(debuggeeId) +
-          '/breakpoints/' +
-          encodeURIComponent(breakpointId) +
-          '?' +
-          qs.stringify(query),
-        method: 'DELETE',
-        json: true,
-      };
-
-      this.request(options, (err, body, response) => {
-        if (err) {
-          reject(err);
-        } else if (!response) {
-          reject(new Error('unknown error - request response missing'));
-        } else if (response.statusCode !== 200) {
-          reject(
-            new Error(
-              'unable to delete breakpoint, status code ' + response.statusCode
-            )
-          );
-        } else if (Object.keys(body).length > 0) {
-          reject(new Error('response body is non-empty'));
-        } else {
-          resolve();
-        }
-      });
-    });
-  }
+  deleteBreakpoint(debuggeeId: string, breakpointId: string) {}
 }

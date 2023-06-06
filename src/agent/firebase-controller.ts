@@ -76,8 +76,9 @@ export class FirebaseController implements Controller {
       credential = firebase.credential.cert(serviceAccount);
     } else {
       if (!projectId) {
-        // Try grabbing it from the GCE metadata server.
-        if (await gcpMetadata.isAvailable()) {
+        if (process.env.GCLOUD_PROJECT) {
+          projectId = process.env.GCLOUD_PROJECT;
+        } else if (await gcpMetadata.isAvailable()) {
           projectId = await gcpMetadata.project('project-id');
         }
       }

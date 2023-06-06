@@ -14,7 +14,6 @@
 
 import {DebugAgentConfig, StackdriverConfig} from './agent/config';
 import {Debuglet, IsReady} from './agent/debuglet';
-import {Debug} from './client/stackdriver/debug';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pjson = require('../../package.json');
@@ -36,7 +35,7 @@ let debuglet: Debuglet | undefined;
  *
  * @example
  * ```
- * debug.startAgent();
+ * debug.start();
  * ```
  */
 export function start(
@@ -50,13 +49,8 @@ export function start(
     throw new Error('Debug Agent has already been started');
   }
 
-  if (agentConfig.useFirebase) {
-    debuglog('Running with experimental firebase backend.');
-    debuglet = new Debuglet({packageInfo: pjson} as Debug, agentConfig);
-  } else {
-    const debug = new Debug(options, pjson);
-    debuglet = new Debuglet(debug, agentConfig);
-  }
+  debuglog('Running with firebase backend.');
+  debuglet = new Debuglet(pjson, agentConfig);
 
   debuglet.start();
 
