@@ -44,7 +44,7 @@
     "precompile": "gts clean"
   },
   "dependencies": {
-    "@google-cloud/common": "^4.0.0",
+    "@google-cloud/common": "^5.0.0",
     "@fastify/busboy": "1.1.0",
     "acorn": "^8.0.0",
     "coffeescript": "^2.0.0",
