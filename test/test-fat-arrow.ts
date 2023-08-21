@@ -101,7 +101,7 @@ describe(__filename, () => {
           done();
         });
       });
-      process.nextTick(foo.bind(null, 'test'));
+      process.nextTick(foo.bind(null));
     });
   });
   it('Should process the argument value change of the fat arrow', done => {
@@ -126,7 +126,7 @@ describe(__filename, () => {
           done();
         });
       });
-      process.nextTick(foo.bind(null, 'test'));
+      process.nextTick(foo.bind(null));
     });
   });
 });
