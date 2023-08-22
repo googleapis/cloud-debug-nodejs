@@ -1049,15 +1049,18 @@ export class Debuglet extends EventEmitter {
       : now;
     const expiryTime = createdTime + this.config.breakpointExpirationSec;
 
-    setTimeout(() => {
-      this.logger.info('Expiring breakpoint ' + breakpoint.id);
-      breakpoint.status = {
-        description: {format: 'The snapshot has expired'},
-        isError: true,
-        refersTo: StatusMessage.BREAKPOINT_AGE,
-      };
-      this.completeBreakpoint_(breakpoint);
-    }, (expiryTime - now) * 1000).unref();
+    setTimeout(
+      () => {
+        this.logger.info('Expiring breakpoint ' + breakpoint.id);
+        breakpoint.status = {
+          description: {format: 'The snapshot has expired'},
+          isError: true,
+          refersTo: StatusMessage.BREAKPOINT_AGE,
+        };
+        this.completeBreakpoint_(breakpoint);
+      },
+      (expiryTime - now) * 1000
+    ).unref();
   }
 
   /**
