@@ -25,6 +25,7 @@ import * as crypto from 'crypto';
 
 import * as firebase from 'firebase-admin';
 import * as gcpMetadata from 'gcp-metadata';
+import {DataSnapshot} from 'firebase-admin/database';
 
 import * as util from 'util';
 const debuglog = util.debuglog('cdbg.firebase');
@@ -37,7 +38,11 @@ const FIREBASE_APP_NAME = 'cdbg';
  * @param promise
  * @returns Promise wrapped in a timeout.
  */
-const withTimeout = (ms: number, promise: Promise<any>) => {
+const withTimeout = (
+  ms: number,
+  promise: Promise<DataSnapshot>
+): Promise<unknown> => {
+  // Note that the type above is constrained to make the linter happy.
   const timeout = new Promise((_, reject) =>
     setTimeout(() => reject(`Timed out after ${ms} ms.`), ms)
   );
@@ -126,7 +131,7 @@ export class FirebaseController implements Controller {
           db.ref('cdbg/schema_version').get()
         );
         if (version_snapshot) {
-          const version = version_snapshot.val();
+          const version = (version_snapshot as DataSnapshot).val();
           debuglog(
             `Firebase app initialized.  Connected to ${databaseUrl}` +
               ` with schema version ${version}`
