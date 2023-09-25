@@ -32,6 +32,17 @@ body: |-
     * firebaseKeyPath - Default google application credentials are used if not
       provided.
 
+  Some key configuration options are:
+    * allowExpressions - Whether or not it is permitted to evaluate
+      epressions.  Functionality is limited when this is not set, but there
+      is some risk that malicious expressions can mutate program state.
+    * serviceContext - This information is utilized in the UI to identify all
+      the running instances of your service.  Set this if you do not like the
+      default values.
+    * capture - Configuration options on what is captured on a snapshot.  Set
+      this if the default snapshot captures are too limited.  Note that
+      relaxing constraints may cause performance impact.
+
   See [the agent configuration][config-ts] for a list of possible configuration
   options.
 
@@ -70,6 +81,6 @@ body: |-
   * The root directory of your application needs to contain a `package.json`
     file.
 
-  [config-ts]: https://github.com/googleapis/cloud-debug-nodejs/blob/master/src/agent/config.ts
+  [config-ts]: https://github.com/googleapis/cloud-debug-nodejs/blob/main/src/agent/config.ts
   [extension-page]: https://github.com/GoogleCloudPlatform/snapshot-debugger/tree/main/snapshot_dbg_extension
   [snapshot-debugger-readme]: https://github.com/GoogleCloudPlatform/snapshot-debugger#readme
