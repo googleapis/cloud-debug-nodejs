@@ -62,7 +62,7 @@
     "@compodoc/compodoc": "1.1.21",
     "@types/acorn": "^4.0.2",
     "@types/console-log-level": "^1.4.0",
-    "@types/estree": "1.0.1",
+    "@types/estree": "1.0.2",
     "@types/extend": "^3.0.0",
     "@types/mocha": "^9.0.0",
     "@types/mv": "^2.1.0",
