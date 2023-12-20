@@ -1123,8 +1123,7 @@ describe('v8debugapi', () => {
       const bp: stackdriver.Breakpoint = {
         id: 'fake-id-124',
         // TODO(dominickramer): This path can be lest strict when this file has
-        // been
-        //       converted to Typescript.
+        // been converted to Typescript.
         location: {path: 'build/test/test-v8debugapi-code.js', line: 10},
         expressions: ['process.env', 'hasGetter'],
       } as {} as stackdriver.Breakpoint;
@@ -1145,6 +1144,8 @@ describe('v8debugapi', () => {
           });
           const hasGetter = bp.evaluatedExpressions[1];
           const getterVal = bp.variableTable[hasGetter!.varTableIndex!];
+	  console.log(getterVal);
+	  console.log(getterVal!.members);
           assert(
             getterVal!.members!.some(m => {
               return m.value === '5';
