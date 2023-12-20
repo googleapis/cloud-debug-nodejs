@@ -1128,7 +1128,7 @@ describe('v8debugapi', () => {
         expressions: ['process.env', 'hasGetter'],
       } as {} as stackdriver.Breakpoint;
       const oldMaxData = config.capture.maxDataSize;
-      config.capture.maxDataSize = 20000;
+      config.capture.maxDataSize = 200000;
       api.set(bp, err1 => {
         assert.ifError(err1);
         api.wait(bp, err2 => {
