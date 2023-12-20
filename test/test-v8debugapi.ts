@@ -1123,13 +1123,12 @@ describe('v8debugapi', () => {
       const bp: stackdriver.Breakpoint = {
         id: 'fake-id-124',
         // TODO(dominickramer): This path can be lest strict when this file has
-        // been
-        //       converted to Typescript.
+        // been converted to Typescript.
         location: {path: 'build/test/test-v8debugapi-code.js', line: 10},
         expressions: ['process.env', 'hasGetter'],
       } as {} as stackdriver.Breakpoint;
       const oldMaxData = config.capture.maxDataSize;
-      config.capture.maxDataSize = 20000;
+      config.capture.maxDataSize = 200000;
       api.set(bp, err1 => {
         assert.ifError(err1);
         api.wait(bp, err2 => {
