@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import * as fs from 'fs';
-import * as pLimit from 'p-limit';
+import pLimit from 'p-limit';
 import * as path from 'path';
 import {promisify} from 'util';
 import * as sourceMap from 'source-map';
