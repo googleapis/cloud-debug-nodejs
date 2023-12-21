@@ -1,5 +1,23 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## [9.0.0](https://github.com/googleapis/cloud-debug-nodejs/compare/v8.0.0...v9.0.0) (2023-12-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* upgrade to node 14 ([#1160](https://github.com/googleapis/cloud-debug-nodejs/issues/1160))
+
+### Bug Fixes
+
+* **deps:** Update dependency firebase-admin to v12 ([#1185](https://github.com/googleapis/cloud-debug-nodejs/issues/1185)) ([f757913](https://github.com/googleapis/cloud-debug-nodejs/commit/f7579138f9cb9f6a7d967bf7c57dbef5966259d8))
+* Increase capture limit to allow Windows tests to pass ([#1188](https://github.com/googleapis/cloud-debug-nodejs/issues/1188)) ([728b90e](https://github.com/googleapis/cloud-debug-nodejs/commit/728b90ebdd6f73081261019f3d4d2c4ce121bea6))
+* Remove unused second parameter ([#1161](https://github.com/googleapis/cloud-debug-nodejs/issues/1161)) ([f8815fc](https://github.com/googleapis/cloud-debug-nodejs/commit/f8815fce6b64c73e0357873cdf1b4b752887acb1))
+
+
+### Miscellaneous Chores
+
+* Upgrade to node 14 ([#1160](https://github.com/googleapis/cloud-debug-nodejs/issues/1160)) ([bd45473](https://github.com/googleapis/cloud-debug-nodejs/commit/bd45473bda6d9f87adcbc4752f773e99a3fbcf89))
+
 ## [8.0.0](https://github.com/googleapis/cloud-debug-nodejs/compare/v7.2.2...v8.0.0) (2023-06-06)
 
 
