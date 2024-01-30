@@ -27,7 +27,7 @@ import * as stackdriver from '../src/types/stackdriver';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const code = require('./test-evaluated-expressions-code.js');
 
-describe.only('debugger provides useful information', () => {
+describe('debugger provides useful information', () => {
   let api: debugapi.DebugApi;
   const config = extend({}, defaultConfig, {
     allowExpressions: true,
@@ -216,7 +216,7 @@ describe.only('debugger provides useful information', () => {
     });
   });
 
-  it.only('should provide data about responses', done => {
+  it('should provide data about responses', done => {
     const bp: stackdriver.Breakpoint = {
       id: 'fake-id-123',
       location: {
