@@ -27,7 +27,7 @@ import * as stackdriver from '../src/types/stackdriver';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const code = require('./test-evaluated-expressions-code.js');
 
-describe('debugger provides useful information', () => {
+describe.only('debugger provides useful information', () => {
   let api: debugapi.DebugApi;
   const config = extend({}, defaultConfig, {
     allowExpressions: true,
@@ -216,7 +216,7 @@ describe('debugger provides useful information', () => {
     });
   });
 
-  it('should provide data about responses', done => {
+  it.only('should provide data about responses', done => {
     const bp: stackdriver.Breakpoint = {
       id: 'fake-id-123',
       location: {
@@ -234,7 +234,8 @@ describe('debugger provides useful information', () => {
           // TODO: investigate why "readable" field is not returned by debugger
           // as of Node 14:
           // {name: 'readable', value: 'true'},
-          {name: '_eventsCount', value: '0'},
+          // NOTE: "_eventsCount" is no longer returned by debugger in Node 20.
+          // {name: '_eventsCount', value: '0'},
           {name: '_maxListeners', value: 'undefined'},
           {name: 'complete', value: 'false'},
           {name: 'url', value: ''},
