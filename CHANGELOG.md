@@ -1,5 +1,12 @@
 # Node.js Agent for Google Cloud Debug ChangeLog
 
+## [9.0.1](https://github.com/googleapis/cloud-debug-nodejs/compare/v9.0.0...v9.0.1) (2024-02-01)
+
+
+### Bug Fixes
+
+* Repair broken test on Node 20 ([#1193](https://github.com/googleapis/cloud-debug-nodejs/issues/1193)) ([a600ea8](https://github.com/googleapis/cloud-debug-nodejs/commit/a600ea8f7868a852d47ba485c0d49864339eb072))
+
 ## [9.0.0](https://github.com/googleapis/cloud-debug-nodejs/compare/v8.0.0...v9.0.0) (2023-12-21)
 
 
