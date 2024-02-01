@@ -12,6 +12,12 @@ applications in production without stopping or pausing your application.
 
 A Firebase Realtime Database instance is used to store your data.
 
+## Project Status: Archived
+
+This project has been archived and is no longer supported. There will be no
+further bug fixes or security patches. The repository can be forked by users
+if they want to maintain it going forward.
+
 ## Table of Contents
 
 * [Before you begin](#before-you-begin)
